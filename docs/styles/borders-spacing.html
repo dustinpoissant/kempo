@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Borders and Spacing - Kempo - A Web Components Solution</title>
+  <link rel="stylesheet" href="/kempo/kempo.css" />
+  <link rel="stylesheet" href="/kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="/nav.inc.html"></k-import>
+  <h1 class="ta-center">Borders and Spacing</h1>
+  <main style="margin-bottom: 33vh">
+    <h3>Borders</h3>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"b"</span>&gt;</span>b<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"bt"</span>&gt;</span>bt<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"br"</span>&gt;</span>br<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"bb"</span>&gt;</span>bb<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"bl"</span>&gt;</span>bl<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"bx"</span>&gt;</span>bx<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"by"</span>&gt;</span>by<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*">
+          <div class="d-ib bg-alt p mr mb b">b</div>
+          <div class="d-ib bg-alt p mr mb bt">bt</div>
+          <div class="d-ib bg-alt p mr mb br">br</div>
+          <div class="d-ib bg-alt p mr mb bb">bb</div>
+          <div class="d-ib bg-alt p mr mb bl">bl</div>
+          <div class="d-ib bg-alt p mr mb bx">bx</div>
+          <div class="d-ib bg-alt p mr mb by">by</div>
+        </k-card>
+      </div>
+    </div>
+
+    <h3>Padding</h3>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"p"</span>&gt;</span>p<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"pt"</span>&gt;</span>pt<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"pr"</span>&gt;</span>pr<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"pb"</span>&gt;</span>pb<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"pl"</span>&gt;</span>pl<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"px"</span>&gt;</span>px<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"py"</span>&gt;</span>py<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*">
+          <div class="d-ib bg-success mx mb p">
+            <div class="d-ib bg-alt pq">p</div>
+          </div>
+          <div class="d-ib bg-success mx mb pt">
+            <div class="d-ib bg-alt pq">pt</div>
+          </div>
+          <div class="d-ib bg-success mx mb pr">
+            <div class="d-ib bg-alt pq">pr</div>
+          </div>
+          <div class="d-ib bg-success mx mb pb">
+            <div class="d-ib bg-alt pq">pb</div>
+          </div>
+          <div class="d-ib bg-success mx mb pl">
+            <div class="d-ib bg-alt pq">pl</div>
+          </div>
+          <div class="d-ib bg-success mx mb px">
+            <div class="d-ib bg-alt pq">px</div>
+          </div>
+          <div class="d-ib bg-success mx mb py">
+            <div class="d-ib bg-alt pq">py</div>
+          </div>
+        </k-card>
+      </div>
+    </div>
+
+    <h3>Margins</h3>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m"</span>&gt;</span>m<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"mt"</span>&gt;</span>mt<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"mr"</span>&gt;</span>mr<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"mb"</span>&gt;</span>mb<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"ml"</span>&gt;</span>ml<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"mx"</span>&gt;</span>mx<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"my"</span>&gt;</span>my<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*">
+          <div class="d-ib bg-warning mx mb p">
+            <div class="d-ib bg-alt pq">m</div>
+          </div>
+          <div class="d-ib bg-warning mx mb pt">
+            <div class="d-ib bg-alt pq">mt</div>
+          </div>
+          <div class="d-ib bg-warning mx mb pr">
+            <div class="d-ib bg-alt pq">mr</div>
+          </div>
+          <div class="d-ib bg-warning mx mb pb">
+            <div class="d-ib bg-alt pq">mb</div>
+          </div>
+          <div class="d-ib bg-warning mx mb pl">
+            <div class="d-ib bg-alt pq">ml</div>
+          </div>
+          <div class="d-ib bg-warning mx mb px">
+            <div class="d-ib bg-alt pq">mx</div>
+          </div>
+          <div class="d-ib bg-warning mx mb py">
+            <div class="d-ib bg-alt pq">my</div>
+          </div>
+        </k-card>
+      </div>
+    </div>
+
+    <h5>Negative Margins</h5>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"-m"</span>&gt;</span>-m<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"-mt"</span>&gt;</span>-mt<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"-mr"</span>&gt;</span>-mr<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"-mb"</span>&gt;</span>-mb<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"-ml"</span>&gt;</span>-ml<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"-mx"</span>&gt;</span>-mx<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"-my"</span>&gt;</span>-my<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*">
+          <div class="d-ib bg-danger mx mb p">
+            <div class="d-ib bg-alt pq">-m</div>
+          </div>
+          <div class="d-ib bg-danger mx mb pt">
+            <div class="d-ib bg-alt pq">-mt</div>
+          </div>
+          <div class="d-ib bg-danger mx mb pr">
+            <div class="d-ib bg-alt pq">-mr</div>
+          </div>
+          <div class="d-ib bg-danger mx mb pb">
+            <div class="d-ib bg-alt pq">-mb</div>
+          </div>
+          <div class="d-ib bg-danger mx mb pl">
+            <div class="d-ib bg-alt pq">-ml</div>
+          </div>
+          <div class="d-ib bg-danger mx mb px">
+            <div class="d-ib bg-alt pq">-mx</div>
+          </div>
+          <div class="d-ib bg-danger mx mb py">
+            <div class="d-ib bg-alt pq">-my</div>
+          </div>
+        </k-card>
+      </div>
+    </div>
+
+    <h5>Cancelled Margins</h5>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m m0"</span>&gt;</span>m m0<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m mt0"</span>&gt;</span>m mt0<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m mr0"</span>&gt;</span>m mr0<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m mb0"</span>&gt;</span>m mb0<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m ml0"</span>&gt;</span>m ml0<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m mx0"</span>&gt;</span>m mx0<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m my0"</span>&gt;</span>m my0<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*">
+          <div class="d-ib bg-warning mx mb">
+            <div class="d-ib bg-alt pq b" style="border-color: var(--c_danger)!important">m m0</div>
+          </div>
+          <div class="d-ib bg-warning mx mb px pb">
+            <div class="d-ib bg-alt pq bt" style="border-color: var(--c_danger)!important">m mt0</div>
+          </div>
+          <div class="d-ib bg-warning mx mb py pl">
+            <div class="d-ib bg-alt pq br" style="border-color: var(--c_danger)!important">m mr0</div>
+          </div>
+          <div class="d-ib bg-warning mx mb px pt">
+            <div class="d-ib bg-alt pq bb" style="border-color: var(--c_danger)!important">m mb0</div>
+          </div>
+          <div class="d-ib bg-warning mx mb py pr">
+            <div class="d-ib bg-alt pq bl" style="border-color: var(--c_danger)!important">m ml0</div>
+          </div>
+          <div class="d-ib bg-warning mx mb py">
+            <div class="d-ib bg-alt pq bx" style="border-color: var(--c_danger)!important">m mx0</div>
+          </div>
+          <div class="d-ib bg-warning mx mb px">
+            <div class="d-ib bg-alt pq by" style="border-color: var(--c_danger)!important">m my0</div>
+          </div>
+        </k-card>
+      </div>
+    </div>
+
+
+    <h3>* Notes</h3>
+    <p>
+      <i>Additional styles may be added to the example output (borders, spacing, colors) for demonstration.</i><br />
+      For example extra borders, margins, and paddings have in added along with colors. This is what each color represents.
+      <ul>
+        <li><b>Green</b> = Padding</li>
+        <li><b>Orange</b> = Margins</li>
+        <li><b>Red</b> = Negative Margins</li>
+        <li><b>Red Border</b> = Cancelled Margins</li>
+      </ul>
+    </p>
+    
+
+
+
+  </main>
+  <script type="module" src="/kempo/kempo.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabs - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="/kempo/kempo.css" />
+  <link rel="stylesheet" href="/kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="/nav.inc.html"></k-import>
+  <main>
+    <h1 class="ta-center">Tabs</h1>
+    <k-tabs>
+      <k-tab for="html">HTML</k-tab>
+      <k-tab for="js">Tab 2</k-tab>
+      <k-tab-content name="html">
+        <p>HTML Code</p>
+      </k-tab-content>
+      <k-tab-content name="js">
+        <p>JS Code</p>
+      </k-tab-content>
+    </k-tabs>
+  </main>
+  <script type="module" src="/kempo/kempo.js"></script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Displays and Layouts - Kempo - A Web Components Solution</title>
+  <link rel="stylesheet" href="/kempo/kempo.css" />
+  <link rel="stylesheet" href="/kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="/nav.inc.html"></k-import>
+  <h1 class="ta-center">Displays and Layouts</h1>
+  <main style="margin-bottom: 33vh">
+    <h3>Display</h3>
+    <div class="table-wrapper mb" style="max-width:30rem">
+      <table>
+        <thead>
+          <tr>
+            <th>Class</th>
+            <th>Display Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>d-b</code></td>
+            <td>block</td>
+          </tr>
+          <tr>
+            <td><code>d-ib</code></td>
+            <td>inline-block</td>
+          </tr>
+          <tr>
+            <td><code>d-i</code></td>
+            <td>inline</td>
+          </tr>
+          <tr>
+            <td><code>d-f</code></td>
+            <td>flex</td>
+          </tr>
+          <tr>
+            <td><code>d-if</code></td>
+            <td>inline-flex</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Flex Values</h3>
+    <p>Use classes <code>flex-1</code> through <code>flex-10</code> to assign a flex value to a flexed child (parent has a flex display. Flex values will flex relative to each other's values.</p>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"d-f"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"width: 100px"</span>&gt;</span><br />    100px<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex"</span>&gt;</span><br />    flex<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"d-f"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex"</span>&gt;</span><br />    flex<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex"</span>&gt;</span><br />    flex<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"d-f"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex"</span>&gt;</span><br />    flex<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex-2"</span>&gt;</span><br />    flex-2<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"d-f"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex"</span>&gt;</span><br />    flex<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"flex-3"</span>&gt;</span><br />    flex-3<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <h6>Output*</h6>
+        <k-resize dimention="width">
+          <div class="d-f mx mt">
+            <div
+              style="width: 100px"
+              class="b p"
+            >
+              100px
+            </div>
+            <div class="b p flex">
+              flex
+            </div>
+          </div>
+          <div class="d-f mx">
+            <div class="b p flex">
+              flex
+            </div>
+            <div class="b p flex">
+              flex
+            </div>
+          </div>
+          <div class="d-f mx">
+            <div class="b p flex">
+              flex
+            </div>
+            <div class="b p flex-2">
+              flex-2
+            </div>
+          </div>
+          <div class="d-f mx mb">
+            <div class="b p flex">
+              flex
+            </div>
+            <div class="b p flex-3">
+              flex-3
+            </div>
+          </div>
+        </k-resize>
+      </div>
+    </div>
+
+    <h3>12 Column Grid</h3>
+    <p>Create a parent with class <code>row</code> and children with class <code>col</code>, optionally add <code>span-*</code> classes (1-12).</p>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"row"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col"</span>&gt;</span>col<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col"</span>&gt;</span>col<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col"</span>&gt;</span>col<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"row"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col span-4"</span>&gt;</span>col span-4<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col span-8"</span>&gt;</span>col span-8<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <h6>Output*</h6>
+        <k-resize dimention="width">
+          <div class="row m">
+            <div class="col b p">col</div>
+            <div class="col b p">col</div>
+            <div class="col b p">col</div>
+          </div>
+          <div class="row m">
+            <div class="col span-4 b p">col span-4</div>
+            <div class="col span-8 b p">col span-8</div>
+          </div>
+        </k-resize>
+      </div>
+    </div>
+
+    <h5>Responsive 12 Column Grid</h5>
+    <p>Optionally use <code>d-span-*</code> for desktop, <code>t-span-*</code> for tablet, and <code>m-span-*</code> for mobile to make the grid responsive.</p>
+    <k-card label="HTML">
+      <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"row"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col d-span-3 t-span-6 m-span-12"</span>&gt;</span><br />    col d-span-3 t-span-6 m-span-12<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col d-span-3 t-span-6 m-span-12"</span>&gt;</span><br />    col d-span-3 t-span-6 m-span-12<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col d-span-3 t-span-6 m-span-12"</span>&gt;</span><br />    col d-span-3 t-span-6 m-span-12<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col d-span-3 t-span-6 m-span-12"</span>&gt;</span><br />    col d-span-3 t-span-6 m-span-12<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+    </k-card>
+    <h6>Output*</h6>
+    <k-resize dimention="width" style="height: 300px" class="mb">
+      <iframe src="./embed-1.html" style="height: 298px"></iframe>
+    </k-resize>
+
+    <h5>Alternative Responsive 12 Column Grid</h5>
+    <p>Rather than declairing a size for device sizes, you should consider just giving each section a <code>min-width</code> that correspondes to the minumum space it requires to be useable, and let Kempo do the rest.</p>
+    <k-card label="HTML">
+      <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-resize</span> <span class="hljs-attr">dimention</span>=<span class="hljs-string">"width"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"row"</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"min-width: 150px"</span>&gt;</span>col, min-width: 150px<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"min-width: 200px"</span>&gt;</span>col, min-width: 200px<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"col"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"min-width: 300px"</span>&gt;</span>col, min-width: 300px<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-resize</span>&gt;</span></code></pre>
+    </k-card>
+    <h6>Output*</h6>
+    <k-resize style="min-width: 350px" dimention="width" class="mb">
+      <div class="row m">
+        <div class="col b p" style="min-width: 150px">col, min-width: 150px</div>
+        <div class="col b p" style="min-width: 200px">col, min-width: 200px</div>
+        <div class="col b p" style="min-width: 300px">col, min-width: 300px</div>
+      </div>
+    </k-resize>
+
+
+    <h3>* Notes</h3>
+    <p><i>Additional styles may be added to the example output (borders, spacing, colors) for demonstration.</i></p>
+  </main>
+  <script type="module" src="/kempo/kempo.js"></script>
+</body>
+</html>

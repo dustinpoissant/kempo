@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Split - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="/kempo/kempo.css" />
+  <link rel="stylesheet" href="/kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="/nav.inc.html"></k-import>
+  <h1 class="ta-center">Split</h1>
+  <main>
+    <k-split style="height: 20rem" class="b" save-width="saveWidth" load-width="loadWidth">
+      <p>left</p>
+      <p slot="right">right</p>
+    </k-split>
+
+  </main>
+  <script type="module" src="/kempo/kempo.js"></script>
+  
+  
+</body>
+</html>

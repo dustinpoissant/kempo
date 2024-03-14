@@ -1,0 +1,94 @@
+{
+  "/components/codeeditor.html": {
+    "name": "Components > Code Editor",
+    "terms": [
+      "component",
+      "code",
+      "editor",
+      "html",
+      "css",
+      "js"
+    ]
+  },
+  "/components/resize.html": {
+    "name": "Components > Resize",
+    "terms": [
+      "resize",
+      "component",
+      "drag",
+      "width",
+      "height"
+    ]
+  },
+  "/components/split.html": {
+    "name": "Components > Split",
+    "terms": [
+      "component",
+      "split",
+      "resize",
+      "content"
+    ]
+  },
+  "/components/tabs.html": {
+    "name": "Components > Tabs",
+    "terms": [
+      "component",
+      "tab",
+      "content"
+    ]
+  },
+  "/components/websnippeteditor.html": {
+    "name": "Components > Web Snippet Editor",
+    "terms": [
+      "component",
+      "web",
+      "snippet",
+      "editor",
+      "code",
+      "html",
+      "css",
+      "js"
+    ]
+  },
+  "/styles/borders-spacing.html": {
+    "name": "Styles > Borders and Spacing",
+    "terms": [
+      "styles",
+      "border",
+      "spacing",
+      "margin",
+      "padding",
+      "radius"
+    ]
+  },
+  "/styles/displays-layouts.html": {
+    "name": "Styles > Displays and Layout",
+    "terms": [
+      "display",
+      "flex",
+      "grid",
+      "12",
+      "column",
+      "col",
+      "row",
+      "rows",
+      "cols",
+      "columns"
+    ]
+  },
+  "/styles/typography.html": {
+    "name": "Styles > Typography",
+    "terms": [
+      "display",
+      "text",
+      "typography",
+      "heading",
+      "paragraph",
+      "bold",
+      "italic",
+      "strike",
+      "sup",
+      "sub"
+    ]
+  }
+}

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resize - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="/kempo/kempo.css" />
+  <link rel="stylesheet" href="/kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="/nav.inc.html"></k-import>
+  <h1 class="ta-center">Resize</h1>
+  <main>
+    <h3>Basic Usage</h3>
+    <p>Set the initial height and width using normal styles.</p>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-resize</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 200px; width: 200px;"</span><br />&gt;</span><br />  Resize Me<br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-resize</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*" class="pb">
+          <k-resize
+            style="height: 200px; width: 200px;"
+          >
+            <p class="p">
+              Resize Me
+            </p>
+          </k-resize>
+        </k-card>
+      </div>
+    </div>
+    <p>Set the minimum and maximum height and width using normal styles. The default min-height and min-width is <code>10rem</code> and the default max-height and max-width is <code>100%</code>.</p>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-resize</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"min-height: 100px; height: 200px; max-height: 300px; min-width: 100px; width: 200px; max-width: 300px;"</span><br />&gt;</span><br />  Resize Me<br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-resize</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*" class="pb">
+          <k-resize
+            style="min-height: 100px; height: 200px; max-height: 300px; min-width: 100px; width: 200px; max-width: 300px;"
+          >
+            <p class="p">
+              Resize Me
+            </p>
+          </k-resize>
+        </k-card>
+      </div>
+    </div>
+
+    <h3>Resize Dimention</h3>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-resize</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 200px; width: 200px;"</span><br />  <span class="hljs-attr">dimention</span>=<span class="hljs-string">"width"</span><br />&gt;</span><br />  Resize Width<br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-resize</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*" class="pb">
+          <k-resize
+            style="height: 200px; width: 200px;"
+            dimention="width"
+          >
+            <p class="p">
+              Resize Width
+            </p>
+          </k-resize>
+        </k-card>
+      </div>
+    </div>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-resize</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 200px; width: 200px;"</span><br />  <span class="hljs-attr">dimention</span>=<span class="hljs-string">"height"</span><br />&gt;</span><br />  Resize Height<br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-resize</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*" class="pb">
+          <k-resize
+            style="height: 200px; width: 200px;"
+            dimention="height"
+          >
+            <p class="p">
+              Resize Height
+            </p>
+          </k-resize>
+        </k-card>
+      </div>
+    </div>
+
+
+    <h3>* Notes</h3>
+    <p><i>Additional styles may be added to the example output (borders, spacing, colors) for demonstration.</i></p>
+    
+  </main>
+  <script type="module" src="/kempo/kempo.js"></script>
+</body>
+</html>

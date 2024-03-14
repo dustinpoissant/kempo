@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dialog - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="/kempo/kempo.css" />
+  <link rel="stylesheet" href="/kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="/nav.inc.html"></k-import>
+  <main>
+    <h1 class="ta-center">Dialog</h1>
+
+    <h5>Basic Dialog</h5>
+    <p>Create dialogs using the <code>k-dialog</code> component. Open the dialog by calling the <code>open()</code> method, and close it by calling the <code>close()</code> method. Or it can closed using the dialogs GUI (clicking the overlay, clicking the close button, or the cancel or confirm action buttons).</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-dialog</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"d1"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"p"</span>&gt;</span>Hello World<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-dialog</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">onclick</span>=<span class="hljs-string">"doument.getElementById('d1').open()"</span>&gt;</span>Open Dialog<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span></code></pre>
+    <button class="openDialog mb" data-dialog="d1" slot="right">Open Dialog</button>
+    <k-dialog id="d1">
+      <p class="p">Hello World</p>
+    </k-dialog>
+
+    <h5>Titles</h5>
+    <p>Assign an element to the <code>title</code> slot to have it appear as the dialog title.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-dialog</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"d2"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">h6</span><br />    <span class="hljs-attr">class</span>=<span class="hljs-string">"m0 px"</span><br />    <span class="hljs-attr">slot</span>=<span class="hljs-string">"title"</span><br />  &gt;</span>This is a fact<span class="hljs-tag">&lt;/<span class="hljs-name">h6</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"p"</span>&gt;</span>A hotdog is a sandwhich<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-dialog</span>&gt;</span></code></pre>
+    <button class="openDialog mb" data-dialog="d2" slot="right">Open Dialog</button>
+    <k-dialog
+      id="d2"
+    >
+      <h6
+        class="m0 px"
+        slot="title"
+      >This is a fact</h6>
+      <p class="p">A hotdog is a sandwhich</p>
+    </k-dialog>
+
+    <h5>Action Buttons</h5>
+    <p>Add a cancel button using the <code>cancel-text</code> attribute.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-dialog</span><br />  <span class="hljs-attr">id</span>=<span class="hljs-string">"d4"</span><br />  <span class="hljs-attr">cancel-text</span>=<span class="hljs-string">"Absolutly Not"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"p"</span>&gt;</span>Mint and Chocolate belong together<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-dialog</span>&gt;</span></code></pre>
+    <button class="openDialog mb" data-dialog="d4" slot="right">Open Dialog</button>
+    <k-dialog
+      id="d4"
+      cancel-text="Absolutly Not"
+    >
+      <p class="p">Mint and Chocolate belong together</p>
+    </k-dialog>
+
+    <p>Add a confirm button using the <code>confirm-text</code> attribute.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-dialog</span><br />  <span class="hljs-attr">id</span>=<span class="hljs-string">"d5"</span><br />  <span class="hljs-attr">confirm-text</span>=<span class="hljs-string">"Confirm"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"p"</span>&gt;</span>Spaghetti is the greatest food<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-dialog</span>&gt;</span></code></pre>
+    <button class="openDialog mb" data-dialog="d5" slot="right">Open Dialog</button>
+    <k-dialog
+      id="d5"
+      confirm-text="Confirm"
+    >
+      <p class="p">Spaghetti is the greatest food</p>
+    </k-dialog>
+
+    <p>Try it with both a cancel and confirm button.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-dialog</span><br />  <span class="hljs-attr">id</span>=<span class="hljs-string">"d6"</span><br />  <span class="hljs-attr">cancel-text</span>=<span class="hljs-string">"It should be outlawed"</span><br />  <span class="hljs-attr">confirm-text</span>=<span class="hljs-string">"Of course it is"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"p"</span>&gt;</span>Ranch is gross<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-dialog</span>&gt;</span></code></pre>
+    <button class="openDialog mb" data-dialog="d6" slot="right">Open Dialog</button>
+    <k-dialog
+      id="d6"
+      cancel-text="It should be outlawed"
+      confirm-text="Of course it is"
+    >
+      <p class="p">Ranch is gross</p>
+    </k-dialog>
+
+
+
+  </main>
+  <script type="module" src="/kempo/kempo.js"></script>
+  <script>
+    document.querySelectorAll('.openDialog').forEach( $btn => {
+      $btn.addEventListener('click', () => {
+        const $dialog = document.getElementById($btn.dataset.dialog);
+        if($dialog) $dialog.open();
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Snippet Editor - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="/kempo/kempo.css" />
+  <link rel="stylesheet" href="/kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="/nav.inc.html"></k-import>
+  <h1 class="ta-center">Web Snippet Editor</h1>
+  <main>
+    <k-web-snippet-editor
+      use-kempo="false"
+    >
+      <pre for="html">
+&lt;button id="hello">
+  Click Me
+&lt;/button>
+</pre>
+      <pre for="css">
+#hello {
+  color: blue;
+}
+</pre>
+      <pre for="js">
+document.getElementById('hello').addEventListener('click', () => {
+  alert('Hello World');
+});
+</pre>
+    </k-web-snippet-editor>
+  </main>
+  <script type="module" src="/kempo/kempo.js"></script>
+</body>
+</html>
