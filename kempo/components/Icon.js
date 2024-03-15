@@ -11,7 +11,7 @@ export default class Icon extends Component {
       if(this.src){
         this.innerHTML = await (await fetch(src)).text();
       } else if(this.name){
-        this.innerHTML = await (await fetch(`/kempo/icons/${this.name}.svg`)).text();
+        this.innerHTML = await (await fetch(`/icons/${this.name}.svg`)).text();
       } else {
         this.rendered = false;
         this.innerHTML = '';

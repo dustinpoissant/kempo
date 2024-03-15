@@ -1,0 +1,1 @@
+export default(e,n="stylesheet")=>new Promise(((o,t)=>{const r=document.createElement("link");r.rel=n,r.href=e,r.onload=o,r.onerror=t,document.head.appendChild(r)}));

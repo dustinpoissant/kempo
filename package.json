@@ -3,14 +3,19 @@
   "version": "1.0.0",
   "type": "module",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "node ./test",
-    "docs": "node ./docs"
+    "test": "node ./scrips/test.js",
+    "build": "node ./scripts/build.js",
+    "docs": "node ./scripts/build.js && node ./scripts/docs.js"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.3"
+  },
+  "devDependencies": {
+    "fs-extra": "^11.2.0",
+    "terser": "^5.29.2"
   }
 }

@@ -37,9 +37,7 @@ window.kempo = {
     } else {
       document.documentElement.setAttribute('theme', theme);
     }
-  },
-  components: {},
-  utils: {}
+  }
 };
 window.kempo.autoLoadComponents();
 window.kempo._darkModeQuery.addEventListener('change', window.kempo._themeListener);

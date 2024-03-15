@@ -1,0 +1,1 @@
+function debounce(e,t=300){let u;return(...o)=>{clearTimeout(u),u=setTimeout((()=>{e.apply(this,o)}),t)}}export default debounce;
