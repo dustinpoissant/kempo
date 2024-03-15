@@ -66,7 +66,7 @@ export default class WebSnippetEditor extends Component {
     $results.appendChild($iframe);
     const iframeDoc = $iframe.contentDocument || $iframe.contentWindow.document;
     iframeDoc.body.innerHTML = `
-      ${this.useKempo?`<link rel="stylesheet" href="/kempo/kempo.css" />`:''}
+      ${this.useKempo?`<link rel="stylesheet" href="../kempo/kempo.css" />`:''}
       <style>
         body, html {
           background-color: transparent;

@@ -67,7 +67,7 @@ export default class CodeEditor extends Component {
 
   get shadowTemplate(){
     return /*html*/`
-      <link rel="stylesheet" href="/kempo/kempo-hljs.css" />
+      <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
       <pre id="editor" contenteditable="true"></pre>
     `;
   }

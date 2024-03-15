@@ -15,7 +15,7 @@ export default class Component extends HTMLElement {
   async propChangedCallback(){};
   async render(force = false){
     if(force || !this.rendered){
-      this.shadowRoot.innerHTML = `<link rel="stylesheet" href="/kempo/kempo.css" />${this.shadowTemplate}<style>${this.shadowStyles}</style>`;
+      this.shadowRoot.innerHTML = `<link rel="stylesheet" href="../kempo/kempo.css" />${this.shadowTemplate}<style>${this.shadowStyles}</style>`;
       this.rendered = true;
       return true;
     }

@@ -105,6 +105,13 @@ const minifiedKempoCSS = kempoCSS.replace(/\s*\{\s*/g, '{').replace(/\s*\}\s*/g,
 console.log('Saving kempo.css');
 await fs.writeFile('./dist/kempo.css', minifiedKempoCSS, 'utf-8');
 
+console.log('Loading kempo-hljs.css');
+const kempoHljsCSS = await fs.readFile('./kempo/kempo-hljs.css', 'utf-8');
+console.log('Minifying kempo-hljs.css');
+const minifiedKempoHljsCSS = kempoHljsCSS.replace(/\s*\{\s*/g, '{').replace(/\s*\}\s*/g, '}').replace(/\n/g, '').replace(/\r/g, '').replace(/\s+/g, ' ').replace(/\s*\:\s*/g, ':').replace(/\s*\;\s*/g, ';').replace(/;\}/g, '}');
+console.log('Saving kempo-hljs.css');
+await fs.writeFile('./dist/kempo-hljs.css', minifiedKempoHljsCSS, 'utf-8');
+
 console.log('Copying dist/ to docs/kempo/');
 await fse.copy('./dist', './docs/kempo')
 
