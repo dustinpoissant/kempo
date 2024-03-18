@@ -31,7 +31,7 @@ export default class LazyComponent extends Component {
     }
   }
   async renderSkelton(){
-    this.shadowRoot.innerHTML = `<link rel="stylesheet" href="../kempo/kempo.css" />${this.skeletonTemplate}<style>${this.shadowStyles}</style>`;
+    this.shadowRoot.innerHTML = `<link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />${this.skeletonTemplate}<style>${this.shadowStyles}</style>`;
     this.rendered = false;
   }
   get skeletonTemplate(){

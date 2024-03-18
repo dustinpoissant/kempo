@@ -1,6 +1,7 @@
 import {
   getCase
 } from '../utils/string.js';
+
 export default class Component extends HTMLElement {
   constructor(shadowDetails = {}){
     super();
@@ -15,7 +16,7 @@ export default class Component extends HTMLElement {
   async propChangedCallback(){};
   async render(force = false){
     if(force || !this.rendered){
-      this.shadowRoot.innerHTML = `<link rel="stylesheet" href="../kempo/kempo.css" />${this.shadowTemplate}<style>${this.shadowStyles}</style>`;
+      this.shadowRoot.innerHTML = `<link rel="stylesheet" href="${Component.pathToKempo}/kempo-styles.css" />${this.shadowTemplate}<style>${this.shadowStyles}</style>`;
       this.rendered = true;
       return true;
     }
@@ -104,5 +105,5 @@ export default class Component extends HTMLElement {
   }
 
   static observedAttributes = ['rendered'];
+  static pathToKempo = import.meta.url.substring(0, import.meta.url.indexOf('/components/Component.js') );
 }
-window.customElements.define('k-component', Component);

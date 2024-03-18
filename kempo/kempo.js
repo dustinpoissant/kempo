@@ -14,11 +14,16 @@ const components = {
   'k-web-snippet-editor': 'WebSnippetEditor'
 }
 const lookFor = new Set(Object.keys(components));
-window.kempo = {
+window.kempo = Object.assign({}, {
+  pathToRoot: './',
+  pathToKempoFromRoot: './kempo/',
+  pathToIconsFromRoot: './kempo/icons/',
   autoLoadComponents: () => {
     lookFor.forEach( async component => {
       if(document.querySelector(component)){
-        import(`/kempo/components/${components[component]}.js`);
+        const path = `${kempo.pathToRoot}${kempo.pathToKempoFromRoot}components/${components[component]}.js`;
+        console.log(path);
+        import(path);
         lookFor.delete(component);
       }
     });
@@ -38,7 +43,7 @@ window.kempo = {
       document.documentElement.setAttribute('theme', theme);
     }
   }
-};
+}, window.kempo || {});
 window.kempo.autoLoadComponents();
 window.kempo._darkModeQuery.addEventListener('change', window.kempo._themeListener);
 window.kempo.setTheme(document.documentElement.getAttribute('theme') || 'auto');

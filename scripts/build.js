@@ -32,6 +32,7 @@ process.stdout.write("\n");
 complete = 0;
 console.log('Saving Minified Components to dist/');
 process.stdout.write(`0/${components.length} = 0%`);
+await fse.ensureDir('./dist/components');
 await Promise.all(components.map( async component => {
   await fs.writeFile(`./dist/components/${component}.js`, minifiedCompontents[component], 'utf-8');
   process.stdout.write("\r");
@@ -70,6 +71,7 @@ process.stdout.write("\n");
 complete = 0;
 console.log('Saving Minified Utils to dist/');
 process.stdout.write(`0/${utils.length} = 0%`);
+await fse.ensureDir('./dist/utils');
 await Promise.all(utils.map( async util => {
   await fs.writeFile(`./dist/utils/${util}.js`, minifiedUtils[util], 'utf-8');
   process.stdout.write("\r");
@@ -98,12 +100,19 @@ const minifiedKempoJs = (await minify(kempoJS)).code;
 console.log('Saving minfiied kempo.js');
 await fs.writeFile('./dist/kempo.js', minifiedKempoJs, 'utf-8');
 
-console.log('Loading kempo.css');
-const kempoCSS = await fs.readFile('./kempo/kempo.css', 'utf-8');
-console.log('Minifying kempo.css');
-const minifiedKempoCSS = kempoCSS.replace(/\s*\{\s*/g, '{').replace(/\s*\}\s*/g, '}').replace(/\n/g, '').replace(/\r/g, '').replace(/\s+/g, ' ').replace(/\s*\:\s*/g, ':').replace(/\s*\;\s*/g, ';').replace(/;\}/g, '}');
-console.log('Saving kempo.css');
-await fs.writeFile('./dist/kempo.css', minifiedKempoCSS, 'utf-8');
+console.log('Loading kempo-vars.css');
+const kempoVarsCSS = await fs.readFile('./kempo/kempo-vars.css', 'utf-8');
+console.log('Minifying kempo-vars.css');
+const minifiedKempoVarsCSS = kempoVarsCSS.replace(/\s*\{\s*/g, '{').replace(/\s*\}\s*/g, '}').replace(/\n/g, '').replace(/\r/g, '').replace(/\s+/g, ' ').replace(/\s*\:\s*/g, ':').replace(/\s*\;\s*/g, ';').replace(/;\}/g, '}');
+console.log('Saving kempo-vars.css');
+await fs.writeFile('./dist/kempo-vars.css', minifiedKempoVarsCSS, 'utf-8');
+
+console.log('Loading kempo-styles.css');
+const kempoStylesCSS = await fs.readFile('./kempo/kempo-styles.css', 'utf-8');
+console.log('Minifying kempo-styles.css');
+const miniefiedKempoStylesCSS = kempoStylesCSS.replace(/\s*\{\s*/g, '{').replace(/\s*\}\s*/g, '}').replace(/\n/g, '').replace(/\r/g, '').replace(/\s+/g, ' ').replace(/\s*\:\s*/g, ':').replace(/\s*\;\s*/g, ';').replace(/;\}/g, '}');
+console.log('Saving kempo-styles.css');
+await fs.writeFile('./dist/kempo-styles.css', miniefiedKempoStylesCSS, 'utf-8');
 
 console.log('Loading kempo-hljs.css');
 const kempoHljsCSS = await fs.readFile('./kempo/kempo-hljs.css', 'utf-8');
@@ -113,9 +122,10 @@ console.log('Saving kempo-hljs.css');
 await fs.writeFile('./dist/kempo-hljs.css', minifiedKempoHljsCSS, 'utf-8');
 
 console.log('Copying dist/ to docs/kempo/');
+await fse.ensureDir('./docs/kempo/icons'); // will also ensure docs/kempo
 await fse.copy('./dist', './docs/kempo')
 
-console.log('Copying icons/ to docs/icons/');
-await fse.copy('./icons', './docs/icons')
+console.log('Copying icons/ to docs/kempo/icons/');
+await fse.copy('./icons', './docs/kempo/icons')
 
-console.log('build complete');
+console.log('Build Complete');

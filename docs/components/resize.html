@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Resize - Components - Kempo Docs - A Web Components Solution</title>
-  <link rel="stylesheet" href="../kempo/kempo.css" />
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
   <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
 </head>
 <body>
@@ -96,6 +96,11 @@
     <p><i>Additional styles may be added to the example output (borders, spacing, colors) for demonstration.</i></p>
     
   </main>
-  <script type="module" src="../kempo/kempo.js"></script>
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = '../kempo/icons';
+  </script>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+  <script type="module" src="../kempo/components/Resize.js"></script> 
 </body>
 </html>

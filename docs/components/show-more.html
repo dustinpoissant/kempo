@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ShowMore - Components - Kempo Docs - A Web Components Solution</title>
-  <link rel="stylesheet" href="../kempo/kempo.css" />
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
   <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
 </head>
 <body>
@@ -51,13 +51,13 @@
     <div class="row -mx">
       <div class="col m-span-12 px">
         <k-card label="HTML">
-          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-show-more</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"--closed_height: 2rem"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Lorem ipsum dolor...<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-show-more</span>&gt;</span></code></pre>
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-show-more</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"--closed_height: 4rem"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Lorem ipsum dolor...<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-show-more</span>&gt;</span></code></pre>
         </k-card>
       </div>
       <div class="col m-span-12 px">
         <k-card label="Output">
           <k-show-more
-            style="--closed_height: 2rem"
+            style="--closed_height: 4rem"
           >
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eius explicabo similique laudantium ipsa suscipit officia! Iusto, maxime. Sapiente velit nostrum perspiciatis aut quod ipsa maiores libero praesentium, ducimus optio ex repellendus deleniti eaque quam, consectetur vero dicta molestias est voluptate deserunt, rerum earum dolorem sequi. Doloribus deserunt ab dolor nihil! Eos quisquam, reprehenderit hic facere cumque ea possimus natus vitae veniam ratione totam aliquid iure enim, error magni. Animi laborum dignissimos odit, minima suscipit assumenda voluptates aspernatur deserunt harum atque consequuntur laudantium libero maxime nobis impedit, ducimus ipsam enim! Magnam voluptatem numquam nemo dignissimos? Dolores suscipit beatae hic aperiam dignissimos?</p>
           </k-show-more>
@@ -75,6 +75,12 @@
     </k-web-snippet-editor>
   </main>
   <div style="height: 50vh"></div>
-  <script type="module" src="../kempo/kempo.js"></script>
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = '../kempo/icons';
+  </script>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+  <script type="module" src="../kempo/components/ShowMore.js"></script> 
+  <script type="module" src="../kempo/components/WebSnippetEditor.js"></script> 
 </body>
 </html>

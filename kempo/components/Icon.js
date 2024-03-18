@@ -3,15 +3,17 @@ import Component from './Component.js';
 export default class Icon extends Component {
   constructor(){
     super();
-    this.registerAttribute('src', '');
-    this.registerAttribute('name', '');
+    this.registerAttributes({
+      src: '',
+      name: ''
+    });
   }
   async render(force){
     if(await super.render(force)){
       if(this.src){
-        this.innerHTML = await (await fetch(src)).text();
+        this.innerHTML = await (await fetch(this.src)).text();
       } else if(this.name){
-        this.innerHTML = await (await fetch(`/icons/${this.name}.svg`)).text();
+        this.innerHTML = await (await fetch(`${Icon.pathToIcons}/${this.name}.svg`)).text();
       } else {
         this.rendered = false;
         this.innerHTML = '';
@@ -21,7 +23,7 @@ export default class Icon extends Component {
     return false;
   }
   attributeChangedCallback(n, oV, nV){
-    if(n === 'src' && oV !== nV){
+    if(['src', 'name'].includes(n)){
       this.render(true);
     }
   }
@@ -37,5 +39,12 @@ export default class Icon extends Component {
       }
     `;
   }
+
+  static observedAttributes = [
+    'name',
+    'src'
+  ];
+
+  static pathToIcons = '/icons';
 }
 window.customElements.define('k-icon', Icon);

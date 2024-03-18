@@ -104,7 +104,6 @@ export default class Dialog extends Component {
   }
 
   get shadowTemplate(){
-    if(!this.opened) return '';
     return /*html*/`
       <k-focus-capture>
         <button id="overlay" aria-label="Close the Dialog"></button>
@@ -238,7 +237,6 @@ export default class Dialog extends Component {
     'confirmText',
     'cancelText'
   ];
-  static observedAttributes = this.renderOnChange;
 
   static create(contents = '', options = {}){
     const $dialog = new Dialog({

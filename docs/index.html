@@ -4,10 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kempo - A Web Components Solution</title>
-  <link rel="stylesheet" href="./kempo/kempo.css" />
+  <link rel="stylesheet" href="./kempo/kempo-vars.css" /><link rel="stylesheet" href="./kempo/kempo-styles.css" />
 </head>
 <body>
   <k-import src="./nav.inc.html"></k-import>
-  <script type="module" src="./kempo/kempo.js"></script>
+  <script type="module">
+    import Icon from './kempo/components/Icon.js';
+    Icon.pathToIcons = './kempo/icons';
+  </script>
+  <script type="module" src="./kempo/components/Import.js"></script>
 </body>
 </html>
