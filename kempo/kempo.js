@@ -1,7 +1,6 @@
 const components = {
   'k-card': 'Card',
   'k-code-editor': 'CodeEditor',
-  'k-collapse': 'Collapse',
   'k-dialog': 'Dialog',
   'k-icon': 'Icon',
   'k-import': 'Import',

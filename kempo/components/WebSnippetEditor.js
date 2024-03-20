@@ -16,10 +16,13 @@ export default class WebSnippetEditor extends Component {
       this.renderResults();
     }
 
-    this.registerAttribute('useKempo', false);
-    this.registerAttribute('showHtml', true);
-    this.registerAttribute('showCss', true);
-    this.registerAttribute('showJs', true);
+    this.registerAttributes({
+      useKempo: false,
+      showHtml: true,
+      showCss: true,
+      showJs: true,
+      scripts: ''
+    });
   }
 
   async render(){
@@ -79,11 +82,13 @@ export default class WebSnippetEditor extends Component {
       </style>
       ${html}
     `;
-    if(this.useKempo){
-      const $script = document.createElement('script');
-      $script.type = 'module';
-      $script.src = '/kempo/kempo.js';
-      iframeDoc.body.appendChild($script);
+    if(this.useKempo && this.scripts){
+      this.scripts.split(',').forEach( script => {
+        const $script = document.createElement('script');
+        $script.type = 'module';
+        $script.src = script;
+        iframeDoc.head.appendChild($script);
+      });
     }
     const $script = document.createElement('script');
     $script.textContent = js;

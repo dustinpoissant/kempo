@@ -32,7 +32,6 @@ export default class Card extends Component {
         border-radius: var(--radius);
         margin-bottom: var(--spacer);
         padding: var(--spacer);
-        padding-top: calc(1.5 * var(--spacer));
         position: relative;
         background-color: var(--c_bg);
       }
@@ -46,8 +45,11 @@ export default class Card extends Component {
         padding: var(--spacer_h);
       }
       :host([label]) {
-        padding-top: calc(2 * var(--spacer));
+        padding-top: calc(1.5 * var(--spacer));
         margin-top: var(--spacer);
+      }
+      :host([label]) #card {
+        padding-top: calc(1.5 * var(--spacer));
       }
       :host(:not([label])) #label {
         display: none;

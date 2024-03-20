@@ -110,8 +110,11 @@ export class SideMenu extends LazyComponent {
         cursor: pointer;
         color: var(--tc_light);
       }
-      :host(:not([overlay-close])) #overlay-x {
+      :host([overlay-close="false"]) #overlay-x {
         display: none;
+      }
+      :host([overlay-close="false"]) #overlay {
+        cursor: default;
       }
       #menu {
         position: absolute;
@@ -127,6 +130,18 @@ export class SideMenu extends LazyComponent {
       }
       :host([opened]) #menu {
         left: 0;
+      }
+      :host([side="right"]) #menu {
+        left: auto;
+        transition: right var(--animation_ms, 256ms);
+        right: calc(var(--width) * -1);
+      }
+      :host([opened][side="right"]) #menu {
+        right: 0;
+      }
+      :host([side="right"]) #overlay-x {
+        right: auto;
+        left: var(--spacer_h);
       }
     `;
   }

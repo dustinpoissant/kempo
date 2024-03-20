@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Card</h1>
+  <main>
+    <p>A card is a "box" around some content with a border, padding and margins that make it stand out.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-card</span>&gt;</span><br />  This is a card<br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-card</span>&gt;</span></code></pre>
+    <k-card>
+      This is a card
+    </k-card>
+
+    <h3>Labels</h3>
+    <p>A label gives some text in a box on the top border of the card, helping identify the purpose of the contents.</p>
+    <k-card label="I'm a Label">
+      This is a card
+    </k-card>
+
+  </main>
+  <div style="height:33vh"></div>
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = '../kempo/icons';
+  </script>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+  <script type="module" src="../kempo/components/Card.js"></script> 
+</body>
+</html>

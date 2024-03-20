@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Import - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Import</h1>
+  <main>
+    <h3>What is an import</h3>
+    <p>Import commonly used HTML snippets.</p>
+    <k-card label="import-me.html">
+      <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>I am html<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span></code></pre>
+    </k-card>
+    <k-card label="HTML">
+      <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-import</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"import-me.html"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-import</span>&gt;</span></code></pre>
+    </k-card>
+    <k-card label="Results">
+      <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-import</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"import-me.html"</span> <span class="hljs-attr">rendered</span>=<span class="hljs-string">"true"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>I am html<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-import</span>&gt;</span></code></pre>
+    </k-card>
+  </main>
+  <div style="height:33vh"></div>
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = '../kempo/icons';
+  </script>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+  <script type="module" src="../kempo/components/Card.js"></script> 
+</body>
+</html>

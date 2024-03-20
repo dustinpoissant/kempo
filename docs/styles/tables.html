@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Table - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Table</h1>
+  <main>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">table</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">thead</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">tr</span>&gt;</span><br />      <span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Field 1<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span><br />      <span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Field 2<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span><br />      <span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Field 3<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span><br />      <span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Field 4<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span><br />    <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span><br />  <span class="hljs-tag">&lt;/<span class="hljs-name">thead</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">tbody</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">tr</span>&gt;</span><br />      <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Row 1 - Data 1<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span><br />      <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Row 1 - Data 2<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span><br />      <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Row 1 - Data 3<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span><br />      <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Row 1 - Data 4<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span><br />    <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span><br />    <span class="hljs-comment">&lt;!-- .... --&gt;</span><br />  <span class="hljs-tag">&lt;/<span class="hljs-name">tbody</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">table</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*">
+          <table>
+            <thead>
+              <tr>
+                <th>Field 1</th>
+                <th>Field 2</th>
+                <th>Field 3</th>
+                <th>Field 4</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Row 1 - Data 1</td>
+                <td>Row 1 - Data 2</td>
+                <td>Row 1 - Data 3</td>
+                <td>Row 1 - Data 4</td>
+              </tr>
+              <tr>
+                <td>Row 2 - Data 1</td>
+                <td>Row 2 - Data 2</td>
+                <td>Row 2 - Data 3</td>
+                <td>Row 2 - Data 4</td>
+              </tr>
+              <tr>
+                <td>Row 3 - Data 1</td>
+                <td>Row 3 - Data 2</td>
+                <td>Row 3 - Data 3</td>
+                <td>Row 3 - Data 4</td>
+              </tr>
+              <tr>
+                <td>Row 4 - Data 1</td>
+                <td>Row 4 - Data 2</td>
+                <td>Row 4 - Data 3</td>
+                <td>Row 4 - Data 4</td>
+              </tr>
+              <tr>
+                <td>Row 5 - Data 1</td>
+                <td>Row 5 - Data 2</td>
+                <td>Row 5 - Data 3</td>
+                <td>Row 5 - Data 4</td>
+              </tr>
+            </tbody>
+          </table>
+        </k-card>
+      </div>
+    </div>
+
+    <h3>Responsive Table</h3>
+    <p>Wrap the table in a div with the <code>table-wrapper</code> class, and set a min-size on the columns to make the table responsive.</p>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"table-wrapper"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">table</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">thead</span>&gt;</span><br />      <span class="hljs-tag">&lt;<span class="hljs-name">tr</span>&gt;</span><br />        <span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Field 1<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span><br />        <span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Field 2<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span><br />        <span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Field 3<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span><br />        <span class="hljs-tag">&lt;<span class="hljs-name">th</span>&gt;</span>Field 4<span class="hljs-tag">&lt;/<span class="hljs-name">th</span>&gt;</span><br />      <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span><br />    <span class="hljs-tag">&lt;/<span class="hljs-name">thead</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">tbody</span>&gt;</span><br />      <span class="hljs-tag">&lt;<span class="hljs-name">tr</span>&gt;</span><br />        <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Row 1 - Data 1<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span><br />        <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Row 1 - Data 2<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span><br />        <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Row 1 - Data 3<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span><br />        <span class="hljs-tag">&lt;<span class="hljs-name">td</span>&gt;</span>Row 1 - Data 4<span class="hljs-tag">&lt;/<span class="hljs-name">td</span>&gt;</span><br />      <span class="hljs-tag">&lt;/<span class="hljs-name">tr</span>&gt;</span><br />      <span class="hljs-comment">&lt;!-- .... --&gt;</span><br />    <span class="hljs-tag">&lt;/<span class="hljs-name">tbody</span>&gt;</span><br />  <span class="hljs-tag">&lt;/<span class="hljs-name">table</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*">
+          <k-resize dimention="width">
+            <div class="table-wrapper">
+              <table>
+                <colgroup>
+                  <col style="min-width: 9rem" />
+                  <col style="min-width: 9rem" />
+                  <col style="min-width: 9rem" />
+                  <col style="min-width: 9rem" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>Field 1</th>
+                    <th>Field 2</th>
+                    <th>Field 3</th>
+                    <th>Field 4</th>
+                  </tr>
+                </thead>
+                <tbody> 
+                  <tr>
+                    <td>Row 1 - Data 1</td>
+                    <td>Row 1 - Data 2</td>
+                    <td>Row 1 - Data 3</td>
+                    <td>Row 1 - Data 4</td>
+                  </tr>
+                  <tr>
+                    <td>Row 2 - Data 1</td>
+                    <td>Row 2 - Data 2</td>
+                    <td>Row 2 - Data 3</td>
+                    <td>Row 2 - Data 4</td>
+                  </tr>
+                  <tr>
+                    <td>Row 3 - Data 1</td>
+                    <td>Row 3 - Data 2</td>
+                    <td>Row 3 - Data 3</td>
+                    <td>Row 3 - Data 4</td>
+                  </tr>
+                  <tr>
+                    <td>Row 4 - Data 1</td>
+                    <td>Row 4 - Data 2</td>
+                    <td>Row 4 - Data 3</td>
+                    <td>Row 4 - Data 4</td>
+                  </tr>
+                  <tr>
+                    <td>Row 5 - Data 1</td>
+                    <td>Row 5 - Data 2</td>
+                    <td>Row 5 - Data 3</td>
+                    <td>Row 5 - Data 4</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </k-resize>
+        </k-card>
+      </div>
+    </div>
+  </main>
+  <div style="height: 33vh"></div>
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = '../kempo/icons';
+  </script>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+  <script type="module" src="../kempo/components/Card.js"></script> 
+  <script type="module" src="../kempo/components/Resize.js"></script> 
+</body>
+</html>

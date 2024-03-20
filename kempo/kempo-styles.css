@@ -782,7 +782,7 @@ tr:last-child td:last-child {
   --tc_link__hover: var(--tc_link__inv__hover);
 
   background-color: var(--c_bg__inv);
-  color: var(--tc__inv);
+  color: var(--tc_inv);
 }
 .bg-primary {
   --tc_link: var(--tc_on_primary);

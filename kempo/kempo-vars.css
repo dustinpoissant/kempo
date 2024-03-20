@@ -48,6 +48,7 @@
   --tc: rgba(0, 0, 0, 0.93);
   --tc_dark: var(--tc);
   --tc_light: rgba(255, 255, 255, 0.93);
+  --tc_inv:  var(--tc_light);
   --tc_muted: rgba(0, 0, 0, 0.5);
   --tc_on_primary: var(--tc_light);
   --tc_on_secondary: var(--tc_light);
@@ -100,6 +101,7 @@
   --tc: rgba(255, 255, 255, 0.93);
   --tc_dark: rgba(0, 0, 0, 0.93);
   --tc_light: var(--tc);
+  --tc_inv:  var(--tc_dark);
   --tc_muted: rgba(255, 255, 255, 0.5);
   --tc_on_primary: var(--tc);
   --tc_on_secondary: var(--tc);

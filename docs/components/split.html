@@ -11,17 +11,60 @@
   <k-import src="../nav-1.inc.html"></k-import>
   <h1 class="ta-center">Split</h1>
   <main>
-    <k-split style="height: 20rem" class="b" save-width="saveWidth" load-width="loadWidth">
-      <p>left</p>
-      <p slot="right">right</p>
-    </k-split>
+    <h3>Basic Usage</h3>
+    <p>Drag the separator between the "left" and "right" sides to resize the sides. The height should be explicitly set.</p>
+    <div class="row -mx">
+      <div class="col m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-split</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 10rem"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"b"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>left<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"right"</span>&gt;</span>right<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-split</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col m-span-12 px">
+        <k-card label="Output">
+          <k-split style="height: 10rem" class="b">
+            <p>left</p>
+            <p slot="right">right</p>
+          </k-split>
+        </k-card>
+      </div>
+    </div>
+
+    <h3>Sizes</h3>
+    <p>Set the CSS Custom Property <code>--left_width</code> to set the initial size.</p>
+    <p>Set the CSS Custom Property <code>--min_pane_width</code> to set the minimum size each side can be.</p>
+    <p>Set the CSS Custom Property <code>--handle_width</code> to set the size of the handle (the draggable region between the sides).</p>
+    <div class="row -mx">
+      <div class="col m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-split</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"<br />    --left_width: 100px;<br />    --min_pane_width: 100px;<br />    --handle_width: 20px;<br />    height: 10rem<br />  "</span><br />  <span class="hljs-attr">class</span>=<span class="hljs-string">"b"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>left<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"right"</span>&gt;</span>right<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-split</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col m-span-12 px">
+        <k-card label="Output">
+          <k-split
+            style="
+              --left_width: 100px;
+              --min_pane_width: 100px;
+              --handle_width: 20px;
+              height: 10rem
+            "
+            class="b"
+          >
+            <p>left</p>
+            <p slot="right">right</p>
+          </k-split>
+        </k-card>
+      </div>
+    </div>
 
   </main>
+  <div style="height:33vh"></div>
   <script type="module">
     import Icon from '../kempo/components/Icon.js';
     Icon.pathToIcons = '../kempo/icons';
   </script>
   <script type="module" src="../kempo/components/Import.js"></script> 
+  <script type="module" src="../kempo/components/Card.js"></script> 
   <script type="module" src="../kempo/components/Split.js"></script> 
 </body>
 </html>

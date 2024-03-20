@@ -13,7 +13,10 @@
   <main>
     
   </main>
-  <script>window.kempo={pathToKempo:'../'}</script>
-  <script>window.kempo={pathToKempo:'../'}</script><script type="module" src="../kempo/kempo.js"></script>
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = '../kempo/icons';
+  </script>
+  <script type="module" src="../kempo/components/Import.js"></script> 
 </body>
 </html>
