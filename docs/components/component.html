@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Component - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Component</h1>
+  <main>
+    <details
+      class="b r mb"
+    >
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#attributes">Attributes</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
+      </div>
+    </details>
+
+    <h3>Description</h3>
+    <p><code>Component</code> is an <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components" target="_blank">Web Component</a> (JS Class) from which all <b>Kempo</b> components are created, it handles the creation of the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM" target="_blank">Shadow DOM</a> from the <a href="#shadowTemplate">shadowTemplate</a> and <a href="#shadowStyles">shadowStyles</a>, along with creating utility methods for creating attributes and methods.</p>
+
+    <h3 id="requirements">Requirements</h3>
+    <ul>
+      <li><a href="">getCase Utility Function</a></li>
+    </ul>
+
+    <h3 id="constructor">Constructor</h3>
+    <h6>Extends <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement" target="_blank">HTMLElement</a></h6>
+    <h5>
+      <code>super()</code><br />
+      <code>super(<i>Object shadowOptions</i>)</code>
+    </h5>
+    <p>This class <b class="tc-danger">can not</b> be instatiated directly, but rather <b class="tc-success">should be</b> extended, optionally passing in the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow#options" target="_blank">shadowOptions</a>.</p>
+    
+    <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> Component <span class="hljs-keyword">from</span> <span class="hljs-string">'kempo'</span>;<br /><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{<br />  <span class="hljs-keyword">constructor</span>(){<br />    <span class="hljs-keyword">super</span>();<br />    <span class="hljs-comment">// Your Constructor</span><br />  }<br />}<br /><span class="hljs-built_in">window</span>.customElements.define(<span class="hljs-string">'my-component'</span>, MyComponent);</code></pre>
+
+    <h3 id="attributes">Attributes</h3>
+    <h5><code>rendered</code> <i>Boolean</i></h5>
+    <p>A <b class="tc-damger">READ ONLY</b> boolean that indicates if this element has been rendered.</p>
+    
+    <h3>Properties</h3>
+    <h5 id="shadowTemplate"><code>shadowTemplate</code> <i>String</i></h5>
+    <p>A string of <b class="tc-primary">HTML</b> that is used to render the markup of the component. This <b class="tc-success">should be</b> overwritten in your component with your own markup, but make sure to use the <code>super.shadowTemplate</code> to get the default slot.</p>
+    <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> Component <span class="hljs-keyword">from</span> <span class="hljs-string">'kempo'</span>;<br /><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{<br />  <span class="hljs-comment">/* Other things */</span><br />  <span class="hljs-keyword">get</span> shadowTemplate(){<br />    <span class="hljs-keyword">return</span> <span class="hljs-comment">/*html*/</span><span class="hljs-string">`<br />      <span class="hljs-subst">${<span class="hljs-keyword">super</span>.shadowTemplate}</span><br />      &lt;p&gt;This is my component&lt;/p&gt;<br />    `</span>;<br />  }<br />}<br /><span class="hljs-built_in">window</span>.customElements.define(<span class="hljs-string">'my-component'</span>, MyComponent);</code></pre>
+
+    <h5 id="shadowStyles"><code>shadowStyles</code> <i>String</i></h5>
+    <p>A string of <b class="tc-primary">CSS</b> that styles the Shadow DOM (from the <code>shadowTemplate</code>).</p>
+    <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> Component <span class="hljs-keyword">from</span> <span class="hljs-string">'kempo'</span>;<br /><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{<br />  <span class="hljs-comment">/* Other things */</span><br />  <span class="hljs-keyword">get</span> shadowStyles(){<br />    <span class="hljs-keyword">return</span> <span class="hljs-comment">/*css*/</span><span class="hljs-string">`<br />      :host {<br />        /* Style this element */<br />      }<br />      p {<br />        /* Style Shadow DOM Elements */<br />      }<br />    `</span>;<br />  }<br />}<br /><span class="hljs-built_in">window</span>.customElements.define(<span class="hljs-string">'my-component'</span>, MyComponent);</code></pre>
+
+    <h3 id="methods">Methods</h3>
+    <h5><code>async render(<i>Boolean</i> force = false)</code></h5>
+    <p>This method renders the Shadow DOM if it has not already been rendered, and sets the <code>rendered</code> attribute to <code>true</code>.</p>
+    <p>This <b class="tc-success">should be</b> overwritten in your component with your own function, but make sure to use the <code>super.render(force)</code> to render the Shadow DOM.</p>
+    <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> Component <span class="hljs-keyword">from</span> <span class="hljs-string">'kempo'</span>;<br /><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{<br />  <span class="hljs-keyword">async</span> render(force){<br />    <span class="hljs-keyword">if</span>(<span class="hljs-keyword">await</span> <span class="hljs-keyword">super</span>.render(force)){<br />      <span class="hljs-comment">/* The Shadow DOM is ready, do your stuff here<br />        This is often attaching event handlers to Shadow DOM elements<br />      */</span><br />      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br />    }<br />    <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br />  }<br />}<br /><span class="hljs-built_in">window</span>.customElements.define(<span class="hljs-string">'my-component'</span>, MyComponent);</code></pre>
+
+    <h5><code>registerAttribute(<i>String</i> name, <i>Any</i> defaultValue = '')</code></h5>
+    <p>This method creates an attribute (dash case), that can also be accessed as a member with camel case. This is typically done in the constructor.</p>
+    <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> Component <span class="hljs-keyword">from</span> <span class="hljs-string">'kempo'</span>;<br /><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{<br />  <span class="hljs-keyword">constructor</span>(){<br />    <span class="hljs-keyword">super</span>();<br />    <span class="hljs-keyword">this</span>.registerAttribute(<span class="hljs-string">'my-att'</span>, <span class="hljs-string">'hello'</span>);<br />    <span class="hljs-comment">// this can now be accessed by using this.myAtt</span><br />  }<br />}<br /><span class="hljs-built_in">window</span>.customElements.define(<span class="hljs-string">'my-component'</span>, MyComponent);</code></pre>
+
+    <h5><code>registerAttributes(<i>Object</i> attributes)</code></h5>
+    <p>This is the same as <code>registerAttribute</code>, except it takes the attributes as key-value-pairs allowing you to register multiple attributes at once.</p>
+    <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> Component <span class="hljs-keyword">from</span> <span class="hljs-string">'kempo'</span>;<br /><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{<br />  <span class="hljs-keyword">constructor</span>(){<br />    <span class="hljs-keyword">super</span>();<br />    <span class="hljs-keyword">this</span>.registerAttributes({<br />      <span class="hljs-string">'myAttr1'</span>: <span class="hljs-string">'value1'</span>,<br />      <span class="hljs-string">'myAttr2'</span>: <span class="hljs-string">'value2'</span> <br />    });<br />    <span class="hljs-comment">// this can now be accessed by using this.myAttr1 and this.myAttr2</span><br />  }<br />}<br /><span class="hljs-built_in">window</span>.customElements.define(<span class="hljs-string">'my-component'</span>, MyComponent);</code></pre>
+
+    <h5><code>registerProp(<i>String</i> name, <i>Any</i> defaultValue)</code></h5>
+    <p>This method creates a property. This is typically done in the constructor.</p>
+    <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> Component <span class="hljs-keyword">from</span> <span class="hljs-string">'kempo'</span>;<br /><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{<br />  <span class="hljs-keyword">constructor</span>(){<br />    <span class="hljs-keyword">super</span>();<br />    <span class="hljs-keyword">this</span>.registerProp(<span class="hljs-string">'myProp'</span>, [<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>]);<br />    <span class="hljs-comment">// this can now be accessed by using this.myProp</span><br />  }<br />}<br /><span class="hljs-built_in">window</span>.customElements.define(<span class="hljs-string">'my-component'</span>, MyComponent);</code></pre>
+
+    <h5><code>registerProps(<i>Object</i> properties)</code></h5>
+    <p>This is the same as <code>registerProp</code>, except it takes the props as key-value-pairs allowing you to register multiple props at once.</p>
+    <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> Component <span class="hljs-keyword">from</span> <span class="hljs-string">'kempo'</span>;<br /><span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">MyComponent</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Component</span> </span>{<br />  <span class="hljs-keyword">constructor</span>(){<br />    <span class="hljs-keyword">super</span>();<br />    <span class="hljs-keyword">this</span>.registerProps({<br />      <span class="hljs-attr">myProp1</span>: [<span class="hljs-string">'foo'</span>, <span class="hljs-string">'bar'</span>],<br />      <span class="hljs-attr">myProp2</span>: <span class="hljs-number">5</span><br />    });<br />    <span class="hljs-comment">// these props can now be accessed by using this.myProp1 and this.myProp2</span><br />  }<br />}<br /><span class="hljs-built_in">window</span>.customElements.define(<span class="hljs-string">'my-component'</span>, MyComponent);</code></pre>
+
+  </main>
+  <div style="height:33vh"></div>
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = '../kempo/icons';
+  </script>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+</body>
+</html>

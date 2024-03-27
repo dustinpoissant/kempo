@@ -3,8 +3,8 @@ import { isInView } from '../utils/element.js';
 
 
 export default class LazyComponent extends Component {
-  constructor(){
-    super();
+  constructor(shadowDetails){
+    super(shadowDetails);
     (new IntersectionObserver(([comp]) => {
       if(comp.intersectionRatio > 0 && !this.rendered){
         this.inViewCallback();

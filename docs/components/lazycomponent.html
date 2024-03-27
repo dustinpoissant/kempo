@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LazyComponent - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">LazyComponent</h1>
+  <main>
+    <details
+      class="b r mb"
+    >
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#attributes">Attributes</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
+      </div>
+    </details>
+
+    <h3>Description</h3>
+    <p>This is a base class like <a href="./component.html">component</a> but the <code>render</code> method is not called until the element is visible (in the view), a skeleton is rendered until then.</p>
+
+    <h3 id="requirements">Requirements</h3>
+    <ul>
+      <li><a href="">Component Class</a></li>
+      <li><a href="">isInView Utility Function</a></li>
+    </ul>
+    <h3 id="constructor">Constructor</h3>
+    <h6>Extends <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement" target="_blank">HTMLElement</a></h6>
+    <h5>
+      <code>super()</code><br />
+      <code>super(<i>Object shadowOptions</i>)</code>
+    </h5>
+    <p>This class <b class="tc-danger">can not</b> be instatiated directly, but rather <b class="tc-success">should be</b> extended, optionally passing in the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow#options" target="_blank">shadowOptions</a>.</p>
+    
+  </main>
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = '../kempo/icons';
+  </script>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+</body>
+</html>
