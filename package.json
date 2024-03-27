@@ -2,20 +2,31 @@
   "name": "kempo",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
+  "description": "A web component library",
   "main": "dist/index.js",
   "scripts": {
     "test": "node ./scrips/test.js",
     "build": "node ./scripts/build.js",
     "docs": "node ./scripts/build.js && node ./scripts/docs.js"
   },
-  "author": "",
+  "author": "Dustin Poissant",
   "license": "MIT",
-  "dependencies": {
-    "express": "^4.18.3"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "express": "^4.18.3",
     "fs-extra": "^11.2.0",
     "terser": "^5.29.2"
-  }
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dustinpoissant/kempo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dustinpoissant/kempo/issues"
+  },
+  "homepage": "https://github.com/dustinpoissant/kempo#readme"
 }
