@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toggle - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Toggle</h1>
+  <main>
+    <details
+      class="b r mb"
+    >
+      <summary class="p">Table of Contents</summary>
+      <ul>
+        <li><a href="#basicUsage">Basic Usage</a></li>
+        <li><a href="#onByDefault">On By Default</a></li>
+        <li><a href="#customStyles">Custom Styles</a></li>
+        <li><a href="#javascriptUsage">JavaScript Usage</a></li>
+        <li>
+          <a href="#classReference">Class Reference</a>
+          <ul>
+            <li><a href="#constructor">Constructor</a></li>
+            <li><a href="#requirements">Requirements</a></li>
+            <li><a href="#attributes">Attributes</a></li>
+            <li><a href="#properties">Properties</a></li>
+            <li><a href="#methods">Methods</a></li>
+          </ul>
+        </li>
+      </ul>
+    </details>
+
+    <h3 id="basicUsage">Basic Usage</h3>
+    <div class="row -mx">
+      <div class="col m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-toggle</span>&gt;</span>Toggle Me<span class="hljs-tag">&lt;/<span class="hljs-name">k-toggle</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col m-span-12 px">
+        <k-card label="Output">
+          <k-toggle>Toggle Me</k-toggle>
+        </k-card>
+      </div>
+    </div>
+
+    <h3 id="onByDefault">On By Default</h3>
+    <div class="row -mx">
+      <div class="col m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-toggle</span> <span class="hljs-attr">value</span>=<span class="hljs-string">"true"</span>&gt;</span>Toggle Me<span class="hljs-tag">&lt;/<span class="hljs-name">k-toggle</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col m-span-12 px">
+        <k-card label="Output">
+          <k-toggle value="true">Toggle Me</k-toggle>
+        </k-card>
+      </div>
+    </div>
+
+    <h3 id="customStyles">Custom Styles</h3>
+    <div class="row -mx">
+      <div class="col m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-toggle</span> <br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"<br />    --switch_height: 3rem;<br />    --switch_width: 5rem;<br />    --switch_border: none;<br />    --switch_background__off: var(--c_danger);<br />    --switch_background__on: var(--c_success);<br />    --handle_size__off: 2rem;<br />    --handle_size__on: calc(3rem - 2px);<br />    --handle_border: none;<br />    --handle_background__off: #ddd;<br />    --handle_background__on: white;<br />  "</span><br />&gt;</span>Toggle Me<span class="hljs-tag">&lt;/<span class="hljs-name">k-toggle</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col m-span-12 px">
+        <k-card label="Output">
+          <k-toggle 
+            style="
+              --switch_height: 3rem;
+              --switch_width: 5rem;
+              --switch_border: none;
+              --switch_background__off: var(--c_danger);
+              --switch_background__on: var(--c_success);
+              --handle_size__off: 2rem;
+              --handle_size__on: calc(3rem - 2px);
+              --handle_border: none;
+              --handle_background__off: #ddd;
+              --handle_background__on: white;
+            "
+          >Toggle Me</k-toggle>
+        </k-card>
+      </div>
+    </div>
+
+    <h3 id="javascriptUsage">JavaScript Usage</h3>
+    <div class="row -mx">
+      <div class="col m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-toggle</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"tog1"</span>&gt;</span>Toggle Me<span class="hljs-tag">&lt;/<span class="hljs-name">k-toggle</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"turnOn"</span>&gt;</span>Turn On<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"turnOff"</span>&gt;</span>Turn Off<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"toggle"</span>&gt;</span>Toggle<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">const</span> $tog1 = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'tog1'</span>);<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'turnOn'</span>).addEventListener(<span class="hljs-string">'click'</span>, ()=&gt;{<br />    $tog1.on();<br />  });<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'turnOff'</span>).addEventListener(<span class="hljs-string">'click'</span>, ()=&gt;{<br />    $tog1.off();<br />  });<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'toggle'</span>).addEventListener(<span class="hljs-string">'click'</span>, ()=&gt;{<br />    $tog1.toggle();<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col m-span-12 px">
+        <k-card label="Output">
+          <k-toggle id="tog1">Toggle Me</k-toggle>
+          <button id="turnOn">Turn On</button>
+          <button id="turnOff">Turn Off</button>
+          <button id="toggle">Toggle</button>
+          <script>
+            const $tog1 = document.getElementById('tog1');
+            document.getElementById('turnOn').addEventListener('click', ()=>{
+              $tog1.on();
+            });
+            document.getElementById('turnOff').addEventListener('click', ()=>{
+              $tog1.off();
+            });
+            document.getElementById('toggle').addEventListener('click', ()=>{
+              $tog1.toggle();
+            });
+          </script>
+        </k-card>
+      </div>
+    </div>
+
+    <h2 id="classReference">Class Reference</h2>
+
+    <h3 id="constructor">Constructor</h3>
+    <h6>Extends <a href="./component.html">Component</a></h6>
+    <h5>
+      <code>new Toggle()</code>
+    </h5>
+    <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> Toggle <span class="hljs-keyword">from</span> <span class="hljs-string">'kempo'</span>;<br /><span class="hljs-keyword">const</span> myToggle = <span class="hljs-keyword">new</span> Toggle();<br /><span class="hljs-built_in">document</span>.body.appendChild(myToggle);</code></pre>
+
+    <h3 id="attributes">Attributes</h3>
+
+    <h5><code>value</code></h5>
+    <p>A boolean that indicates if the switch is on or off, the default value is <code>false</code>.</p>
+    <pre><code class="hljs javascript"><span class="hljs-built_in">console</span>.log(myToggle.value); <span class="hljs-comment">// true or false</span></code></pre>
+    <p>This can be set directly, but it is not recommended as it only triggers the a <code>change</code> event and not a <code>on</code>, <code>off</code> or <code>toggle</code> event as the methods do, so the methods are preferrable.</p>
+
+    <h3 id="methods">Methods</h3>
+    <h5><code>on(): <i>undefined</i></code></h5>
+    <p>Set's the <code>value</code> to <code>true</code>, dispatches a <code><i>change</i></code> and an <code><i>on</i></code> event. The switch visual changes to the <b>on</b> state.</p>
+
+    <h5><code>off(): <i>undefined</i></code></h5>
+    <p>Set's the <code>value</code> to <code>false</code>, dispatches a <code><i>change</i></code> and an <code><i>off</i></code> event. The switch visual changes to the <b>off</b> state.</p>
+
+    <h5><code>toggle(): <i>undefined</i></code></h5>
+    <p>Negates the <code>value</code>, if it is <code>true</code> it is now set to <code>false</code>, but if it is <code>false</code> it is now set to <code>true</code>. It also dispatches dispatches a <code><i>change</i></code> and an <code><i>on</i></code> or <code><i>off</i></code> event. The switch visual changes to the oposite state.</p>
+
+    
+  </main>
+  <div style="height:33vh"></div>
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = '../kempo/icons';
+  </script>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+  <script type="module" src="../kempo/components/Toggle.js"></script> 
+</body>
+</html>

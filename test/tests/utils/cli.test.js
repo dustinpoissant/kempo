@@ -1,4 +1,4 @@
-import cli from '../../kempo/utils/cli.js';
+import cli from '../../src/utils/cli.js';
 
 export const name = 'CLI Tests';
 export const description = 'The CLI function returns an object that contains the key-value pairs of command line arguments passed into the scripts, it supports short codes and flags (they will simply have a true value).';

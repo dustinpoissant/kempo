@@ -1,5 +1,5 @@
 import express from 'express';
-import cli from '../kempo/utils/cli.js';
+import cli from '../src/utils/cli.js';
 
 const {
  port = 8083

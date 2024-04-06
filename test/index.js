@@ -1,7 +1,7 @@
 import express from 'express';
 import fs from 'fs/promises';
 import path from 'path';
-import cli from '../kempo/utils/cli.js';
+import cli from '../src/utils/cli.js';
 
 const {
  port = 8084
