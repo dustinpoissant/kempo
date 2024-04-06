@@ -9,7 +9,7 @@ export default class Component extends HTMLElement {
     this.registerAttribute('rendered', false);
   }
   async connectedCallback(){
-    this.render();
+    this.render(true);
   };
   async disconnectedCallback(){};
   async attributeChangedCallback(){};
