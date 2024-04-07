@@ -1,5 +1,4 @@
 import Component from './Component.js';
-import hljs from 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/es/highlight.min.js';
 import {
   escapeHTML
 } from '../utils/string.js';
@@ -45,15 +44,19 @@ export default class CodeEditor extends Component {
       this.dispatchEvent(new CustomEvent('change'));
     }
     let result;
-    if(this.language){
-      result = hljs.highlight(
-        this.value,
-        { language: this.language }
-      )
+    if(typeof(hljs) !== 'undefined'){
+      if(this.language){
+        result = (hljs.highlight(
+          this.value,
+          { language: this.language }
+        )).value;
+      } else {
+        result = (hljs.highlightAuto(this.value)).value;
+      }
     } else {
-      result = hljs.highlightAuto(this.value);
+      result = this.value;
     }
-    this.shadowRoot.getElementById('editor').innerHTML = result.value.split('\n').map(p=>`<div class="line">${p}</div>`).join('');
+    this.shadowRoot.getElementById('editor').innerHTML = result.split('\n').map(p=>`<div class="line">${p}</div>`).join('');
     this[lastValue] = this.value;
   }
 

@@ -93,13 +93,6 @@ const minifiedMain = (await minify(main)).code;
 console.log('Saving minified main entry file');
 await fs.writeFile('./dist/index.js', minifiedMain, 'utf-8');
 
-console.log('Loading kempo.js');
-const kempoJS = await fs.readFile('./src/kempo.js', 'utf-8');
-console.log('Minifying kempo.js');
-const minifiedKempoJs = (await minify(kempoJS)).code;
-console.log('Saving minfiied kempo.js');
-await fs.writeFile('./dist/kempo.js', minifiedKempoJs, 'utf-8');
-
 console.log('Loading kempo-vars.css');
 const kempoVarsCSS = await fs.readFile('./src/kempo-vars.css', 'utf-8');
 console.log('Minifying kempo-vars.css');
