@@ -7,7 +7,7 @@ import {
   dispatchEvent
 } from '../utils/element.js';
 
-export class SideMenu extends LazyComponent {
+export default class SideMenu extends LazyComponent {
   constructor(){
     super();
 

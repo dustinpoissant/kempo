@@ -252,3 +252,10 @@ export class TabSpacer extends Component {
   }
 }
 window.customElements.define('k-tab-spacer', TabSpacer);
+
+export default {
+  Tab,
+  TabContent,
+  Tabs,
+  TabSpacer
+}
