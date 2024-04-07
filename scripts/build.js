@@ -121,11 +121,11 @@ const minifiedKempoHljsCSS = kempoHljsCSS.replace(/\s*\{\s*/g, '{').replace(/\s*
 console.log('Saving kempo-hljs.css');
 await fs.writeFile('./dist/kempo-hljs.css', minifiedKempoHljsCSS, 'utf-8');
 
-console.log('Copying dist/ to docs/src/');
-await fse.ensureDir('./docs/src/icons'); // will also ensure docs/kempo
+console.log('Copying dist/ to docs/');
+await fse.ensureDir('./docs/icons'); // will also ensure docs/kempo
 await fse.copy('./dist', './docs/kempo')
 
-console.log('Copying icons/ to docs/src/icons/');
-await fse.copy('./icons', './docs/src/icons')
+console.log('Copying icons/ to docs/icons/');
+await fse.copy('./icons', './docs/icons')
 
 console.log('Build Complete');

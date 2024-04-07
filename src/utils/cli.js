@@ -1,3 +1,5 @@
+import { spawn } from 'child_process';
+
 const args = {};
 let win = {};
 if(typeof(window) !== 'undefined'){
@@ -11,7 +13,7 @@ win.log = (...messages) => {
   }
 }
 
-export default (shortMap = {
+export const getArgs =  (shortMap = {
   d: 'debug'
 }) => {
   let name = '';
@@ -21,7 +23,11 @@ export default (shortMap = {
       if(values.length === 0){ // flag
         args[name] = true;
       } else if(values.length === 1){ // single value
-        args[name] = values[0];
+        if(values[0] === 'false'){
+          args[name] = false;
+        } else {
+          args[name] = values[0];
+        }
       } else { // multiple values
         args[name] = values;
       }
@@ -52,3 +58,28 @@ export default (shortMap = {
   save();
   return args;
 }
+
+export const runChildProcess = (command) => new Promise((resolve, reject) => {
+  const [cmd, ...args] = command.split(' ');
+  const child = spawn(cmd, args);
+
+  child.on('close', (code) => {
+      if (code === 0) {
+          resolve(`child process exited with code ${code}`);
+      } else {
+          reject(new Error(`child process exited with code ${code}`));
+      }
+  });
+});
+
+export const runChildNodeProcess = (scriptPath, argsObj = {}) => {
+  const args = Object.entries(argsObj).flatMap(([key, value]) => {
+      if (value === true) {
+          return [`--${key}`];
+      } else {
+          return [`--${key}`, value];
+      }
+  });
+  const command = `node ${scriptPath} ${args.join(' ')}`;
+  return runChildProcess(command);
+};

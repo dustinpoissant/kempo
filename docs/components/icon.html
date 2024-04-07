@@ -43,6 +43,24 @@
       </div>
     </div>
 
+    <h3>Fallback Icon</h3>
+    <p>Put an SVG inside of the <code>k-icon</code> to be the fallback if one is not found that matches the provided name or source. Otherwise a <k-icon></k-icon> will be the fallback icon.</p>
+    <div class="row -mx mb">
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-icon</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"invalid"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-icon</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">k-icon</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"invalid"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">svg</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">"http://www.w3.org/2000/svg"</span> <span class="hljs-attr">viewBox</span>=<span class="hljs-string">"0 -960 960 960"</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">path</span> <span class="hljs-attr">fill</span>=<span class="hljs-string">"currentColor"</span> <span class="hljs-attr">d</span>=<span class="hljs-string">"M240-280h200v-80H240v80Zm400 0h80v-80h-80v80ZM240-440h200v-80H240v80Zm400 0h80v-240h-80v240ZM240-600h200v-80H240v80Zm-80 480q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm0 0v-560 560Z"</span>/&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">svg</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-icon</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col d-span-6 m-span-12 px">
+        <k-card label="Output*">
+          <k-icon name="invalid"></k-icon>
+          <k-icon name="invalid">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960"><path fill="currentColor" d="M240-280h200v-80H240v80Zm400 0h80v-80h-80v80ZM240-440h200v-80H240v80Zm400 0h80v-240h-80v240ZM240-600h200v-80H240v80Zm-80 480q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h640q33 0 56.5 23.5T880-760v560q0 33-23.5 56.5T800-120H160Zm0-80h640v-560H160v560Zm0 0v-560 560Z"/></svg>
+          </k-icon>
+        </k-card>
+      </div>
+    </div>
+
     <h3>Changing the icon directory location</h3>
     <p>To change the location of the directory holding the icons import the <code>Icon</code> class, and set the static member <code>pathToIcons</code> to point to the correct location, do this before icons are loaded (for example in the head of the document).</p>
     <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Icon <span class="hljs-keyword">from</span> <span class="hljs-string">'/kempo/components/Icon.js'</span>;<br />  Icon.pathToIcons = <span class="hljs-string">'./pathTo/icons'</span>;<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
@@ -63,10 +81,6 @@
     </div>
   </main>
   <div style="height:33vh"></div>
-  <script type="module">
-    import Icon from '../kempo/components/Icon.js';
-    Icon.pathToIcons = '../kempo/icons';
-  </script>
   <script type="module" src="../kempo/components/Import.js"></script> 
   <script type="module" src="../kempo/components/Card.js"></script> 
 </body>

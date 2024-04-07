@@ -156,8 +156,11 @@ export default class Dialog extends Component {
       ${super.shadowStyles}
       :host {
         display: inline;
-        height: 0;
-        width: 0;
+        height: 1px;
+        width: 1px;
+        position: fixed; /* The browser seems to sometimes lazy load this if its out of view, this seems to fix it*/
+        top: 0;
+        left: 0;
       }
       :host(:not([opened])){
         display: none;
@@ -251,11 +254,14 @@ export default class Dialog extends Component {
     } else {
       $dialog.innerHTML = contents;
     }
-    document.body.appendChild($dialog);
+    document.body.prepend($dialog);
+    $dialog.open();
   }
-  static confirm(text, responseCallback, options){
+  static confirm(text, responseCallback, options = {
+    title: 'Confirm'
+  }){
     Dialog.create(`
-      <h5 slot="title" class="pyh px m0">Confirm Event Deletion</h5>
+      <h5 slot="title" class="pyh px m0">${options.title}</h5>
       <p class="p">${text}</p>
     `, {
       ...options,
@@ -271,6 +277,17 @@ export default class Dialog extends Component {
       cancelAction: () => {
         return responseCallback(false);
       }
+    });
+  }
+  static error(text, responseCallback, options = {
+    title: 'Error'
+  }){
+    Dialog.create(`
+      <h5 slot="title" class="pyh px m0 tc-danger">${options.title}</h5>
+      <p class="p">${text}</p>
+    `, {
+      ...options,
+      cancelText: 'Ok'
     });
   }
 }

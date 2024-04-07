@@ -66,21 +66,37 @@
       <p class="p">Ranch is gross</p>
     </k-dialog>
 
+    <h3>JavaScript Usage</h3>
+    <h5>Create Dialog</h5>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"d7"</span>&gt;</span>Open Dialog<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Dialog <span class="hljs-keyword">from</span> <span class="hljs-string">'/kempo/components/Dialog.js'</span>;<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'d7'</span>).addEventListener(<span class="hljs-string">'click'</span>, () =&gt; {<br />    Dialog.create(<span class="hljs-string">'&lt;p&gt;Hello World&lt;/p&gt;'</span>);<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+    <button id="d7" class="mb">Open Dialog</button>
+    <script type="module">
+      import Dialog from '/kempo/components/Dialog.js';
+      document.getElementById('d7').addEventListener('click', () => {
+        Dialog.create('<p>Hello World</p>');
+      });
+    </script>
+
+    <h5>Error Dialog</h5>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"d8"</span>&gt;</span>Open Dialog<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Dialog <span class="hljs-keyword">from</span> <span class="hljs-string">'/kempo/components/Dialog.js'</span>;<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'d8'</span>).addEventListener(<span class="hljs-string">'click'</span>, () =&gt; {<br />    Dialog.error(<span class="hljs-string">"&lt;p&gt;Oh no, don't do that!&lt;/p&gt;"</span>);<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+    <button id="d8" class="mb">Open Dialog</button>
+    <script type="module">
+      import Dialog from '/kempo/components/Dialog.js';
+      document.getElementById('d8').addEventListener('click', () => {
+        Dialog.error("Oh no, don't do that!");
+      });
+    </script>
+
 
 
   </main>
   <div style="height:33vh"></div>
-  <script type="module">
-    import Icon from '../kempo/components/Icon.js';
-    Icon.pathToIcons = '../kempo/icons';
-  </script>
   <script type="module" src="../kempo/components/Import.js"></script> 
   <script type="module" src="../kempo/components/Dialog.js"></script> 
   <script>
     document.querySelectorAll('.openDialog').forEach( $btn => {
       $btn.addEventListener('click', () => {
         const $dialog = document.getElementById($btn.dataset.dialog);
-        console.log($dialog);
         if($dialog) $dialog.open();
       });
     });

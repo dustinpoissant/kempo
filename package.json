@@ -1,13 +1,14 @@
 {
   "name": "kempo",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "A web component library",
   "main": "dist/index.js",
   "scripts": {
     "test": "node ./scrips/test.js",
     "build": "node ./scripts/build.js",
-    "docs": "node ./scripts/build.js && node ./scripts/docs.js"
+    "docs": "node ./scripts/docs.js",
+    "docs-src": "node ./scripts/docs.js -s"
   },
   "author": "Dustin Poissant",
   "license": "MIT",
