@@ -83,3 +83,9 @@ export const runChildNodeProcess = (scriptPath, argsObj = {}) => {
   const command = `node ${scriptPath} ${args.join(' ')}`;
   return runChildProcess(command);
 };
+
+export default {
+  getArgs,
+  runChildNodeProcess,
+  runChildNodeProcess
+};

@@ -53,3 +53,8 @@ export const fuzzyMatchArray = (array, targetString) => {
   const averageScore = nonZeroScores.reduce((sum, score) => sum + score, 0) / nonZeroScores.length;
   return averageScore;
 };
+
+export default {
+  fuzzyMatch,
+  fuzzyMatchArray
+};

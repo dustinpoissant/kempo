@@ -52,3 +52,14 @@ export const unescapeHTML = str => str.replace(/&amp;|&lt;|&gt;|&quot;|&#39;|&#x
 });
 export const trim = (str, chars) => str.replace(new RegExp(`^[${chars}]+|[${chars}]+$`, 'g'), '');
 export const compoundKey = keys => trim(keys.join('.'), '.');
+
+export default {
+  camelToDash,
+  dashToCamel,
+  isCamelCase,
+  getCase,
+  escapeHTML,
+  unescapeHTML,
+  trim,
+  compoundKey
+};

@@ -1,7 +1,4 @@
-import {
-	typeOf,
-	isType
-} from './type.js';
+import { typeOf } from './type.js';
 
 export const toJson = (obj) => {
 	return JSON.stringify(obj, (key, value) => {
@@ -175,3 +172,18 @@ export const diff = (obj1, obj2) => {
   compareObjects([], obj1, obj2);
   return result;
 }
+
+export default {
+	toJson,
+	flattenObject,
+	flattenedObjects,
+	objectSummary,
+	clone,
+	equalObjs,
+	pruneVars,
+	pruneObject,
+	prune,
+	getAllKeys,
+	getDifferencesKeys,
+	diff
+};

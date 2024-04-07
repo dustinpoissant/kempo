@@ -67,3 +67,12 @@ export const setProp = (element, prop, value, scope = document) => {
 		dispatchEvent(scope.querySelectorAll(element), prop, value);
 	}
 }
+
+export default {
+  onEvent,
+  offEvent,
+  dispatchEvent,
+  isInView,
+  firstFocusable,
+  setProp
+};

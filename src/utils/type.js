@@ -6,3 +6,8 @@ export const typeOf = value => {
 }
 
 export const isType = (value, type) => typeOf(value) === type;
+
+export default {
+	typeOf,
+	isType
+};
