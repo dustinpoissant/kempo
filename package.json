@@ -1,6 +1,6 @@
 {
   "name": "kempo",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "description": "A web component library",
   "main": "dist/index.js",
