@@ -173,6 +173,14 @@ export const diff = (obj1, obj2) => {
   return result;
 }
 
+export const mapObject = (obj, func) => {
+  return Object.entries(obj).reduce((newObj, [key, value]) => {
+    const [newKey, newValue] = func(key, value);
+    newObj[newKey] = newValue;
+    return newObj;
+  }, {});
+}
+
 export default {
 	toJson,
 	flattenObject,
@@ -185,5 +193,6 @@ export default {
 	prune,
 	getAllKeys,
 	getDifferencesKeys,
-	diff
+	diff,
+	mapObject
 };
