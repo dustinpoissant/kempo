@@ -188,7 +188,7 @@ export default {
 	objectSummary,
 	clone,
 	equalObjs,
-	pruneVars,
+	pruneVar,
 	pruneObject,
 	prune,
 	getAllKeys,
