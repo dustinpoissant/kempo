@@ -78,6 +78,7 @@
   --input_tc: rgba(0, 0, 0, 0.93);
   --drop_shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.333); 
 }
+[auto-theme="dark"]:not([theme="light"]),
 [theme="dark"] {
   color-scheme: dark;
   --c_bg: #333;

@@ -69,9 +69,13 @@ export default class ThemeSwitcher extends Component {
   static getCurrentTheme(){
     let theme = document.documentElement.getAttribute('theme');
     if(!theme) theme = localStorage.getItem('theme');
-    if(!theme) theme = window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
     return theme;
   }
 }
+const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+const colorSchemeChangeHandler = (event) => document.documentElement.setAttribute('auto-theme', event.matches?'dark':'light');
+colorSchemeQuery.addEventListener('change', colorSchemeChangeHandler);
+colorSchemeChangeHandler(colorSchemeQuery);
+
 ThemeSwitcher.setTheme(ThemeSwitcher.getCurrentTheme());
-window.customElements.define('k-theme-switcher', ThemeSwitcher);
+window.customElements.define('k-theme-switcher', ThemeSwitcher)
