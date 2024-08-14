@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Table - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Table</h1>
+  <main>
+    <details
+      class="b r mb"
+    >
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#customFields">Custom Fields</a><br />
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
+      </div>
+    </details>
+
+    <h3>Description</h3>
+    <p>The <code>&lt;k-table></code> component is used to render data into a <code>&lt;table></code> using JavaScript.</p>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <p>In HTML create a <code>&lt;k-table></code>, and then in JavaScript call the <code>setData</code> method passing in an array of objects containing your data.</p>
+    
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"contacts"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'contacts'</span>).setData([<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Dustin"</span>,<br />      <span class="hljs-attr">phoneNumber</span>: <span class="hljs-string">"(111) 111-1111"</span>,<br />      <span class="hljs-attr">emailAddress</span>: <span class="hljs-string">"dustin@mailserver.com"</span>,<br />      <span class="hljs-attr">gender</span>: <span class="hljs-string">"Male"</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Kayla"</span>,<br />      <span class="hljs-attr">phoneNumber</span>: <span class="hljs-string">"(222) 222-2222"</span>,<br />      <span class="hljs-attr">emailAddress</span>: <span class="hljs-string">"kayla@mailserver.com"</span>,<br />      <span class="hljs-attr">gender</span>: <span class="hljs-string">"Female"</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Alexander"</span>,<br />      <span class="hljs-attr">phoneNumber</span>: <span class="hljs-string">"(333) 333-33333"</span>,<br />      <span class="hljs-attr">emailAddress</span>: <span class="hljs-string">"alex@mailserver.com"</span>,<br />      <span class="hljs-attr">gender</span>: <span class="hljs-string">"Male"</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Amelia"</span>,<br />      <span class="hljs-attr">phoneNumber</span>: <span class="hljs-string">"(444) 444-44444"</span>,<br />      <span class="hljs-attr">emailAddress</span>: <span class="hljs-string">"amelia@mailserver.com"</span>,<br />      <span class="hljs-attr">gender</span>: <span class="hljs-string">"Female"</span><br />    },<br />  ]);<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+    <script type="module" src="../kempo/components/Table.js"></script> 
+    <k-table id="contacts"></k-table>
+    <script type="module">
+      document.getElementById('contacts').setData([
+        {
+          name: "Dustin",
+          phoneNumber: "(111) 111-1111",
+          emailAddress: "dustin@mailserver.com",
+          gender: "Male"
+        },
+        {
+          name: "Kayla",
+          phoneNumber: "(222) 222-2222",
+          emailAddress: "kayla@mailserver.com",
+          gender: "Female"
+        },
+        {
+          name: "Alexander",
+          phoneNumber: "(333) 333-33333",
+          emailAddress: "alex@mailserver.com",
+          gender: "Male"
+        },
+        {
+          name: "Amelia",
+          phoneNumber: "(444) 444-44444",
+          emailAddress: "amelia@mailserver.com",
+          gender: "Female"
+        },
+      ]);
+    </script>
+
+    <h3 id="customFields"><a href="#customFields" class="no-link">Custom Fields</a></h3>
+    <p>Use the second paramter of <code>setData</code> to define custom fields.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"movies"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'movies'</span>).setData([<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">'Good Will Hunting'</span>,<br />      <span class="hljs-attr">year</span>: <span class="hljs-number">1997</span>,<br />      <span class="hljs-attr">lead</span>: <span class="hljs-string">'Matt Damon'</span>,<br />      <span class="hljs-attr">budget</span>: <span class="hljs-number">10000000</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">'A Few Good Men'</span>,<br />      <span class="hljs-attr">year</span>: <span class="hljs-number">1992</span>,<br />      <span class="hljs-attr">lead</span>: <span class="hljs-string">'Tom Cruise'</span>,<br />      <span class="hljs-attr">prod</span>: <span class="hljs-string">'Castle Rock Entertainment'</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">'The Silence of the Lambs'</span>,<br />      <span class="hljs-attr">year</span>: <span class="hljs-number">1991</span>,<br />      <span class="hljs-attr">lead</span>: <span class="hljs-string">'Jodie Foster'</span>,<br />      <span class="hljs-attr">prequel</span>: <span class="hljs-string">'Red Dragon'</span><br />    }<br />  ],[<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"name"</span>,<br />      <span class="hljs-attr">label</span>: <span class="hljs-string">"Name"</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">'year'</span>,<br />      <span class="hljs-attr">label</span>: <span class="hljs-string">'Year'</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">'prod'</span>,<br />      <span class="hljs-attr">label</span>: <span class="hljs-string">'Production Company'</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">'lead'</span>,<br />      <span class="hljs-attr">label</span>: <span class="hljs-string">'Lead Actor / Actress'</span><br />    }<br />  ]);<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+    <k-table id="movies"></k-table>
+    <script type="module">
+      document.getElementById('movies').setData([
+        {
+          name: 'Good Will Hunting',
+          year: 1997,
+          lead: 'Matt Damon',
+          budget: 10000000
+        },
+        {
+          name: 'A Few Good Men',
+          year: 1992,
+          lead: 'Tom Cruise',
+          prod: 'Castle Rock Entertainment'
+        },
+        {
+          name: 'The Silence of the Lambs',
+          year: 1991,
+          lead: 'Jodie Foster',
+          prequel: 'Red Dragon'
+        }
+      ],[
+        {
+          name: "name",
+          label: "Name"
+        },
+        {
+          name: 'year',
+          label: 'Year'
+        },
+        {
+          name: 'prod',
+          label: 'Production Company'
+        },
+        {
+          name: 'lead',
+          label: 'Lead Actor / Actress'
+        }
+      ]);
+    </script>
+
+    <h3 id="constructor"><a href="#consttructor" class="no-link">Constructor</a></h3>
+    <h6>Extends <a href="./component.html">Component</a></h6>
+    <h5>
+      <code>new Table()</code><br />
+      <code>new Table(<i>&lt;Array>object</i> records)</code><br />
+      <code>new Table(<i>&lt;Array>object</i> records, <i>&lt;Array>object</i> fields)</code>
+    </h5>
+
+    <h4>Paramters</h4>
+    <h5><code><i>&lt;Array>object</i> records</code></h5>
+    <p>An array of objects that represent the records to be shown in the table.</p>
+
+    <h5><code><i>&lt;Array>object</i> fields</code></h5>
+    <p>An array of objects that represents the feilds of the table, each object must contain a <code>name</code> and a <code>label</code>. If this parameter is ommitted the fields will be automatically generated from the first 100 records.</p>
+
+    <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
+    <ul>
+      <li><a href="../utils/string.html"><code>toTitleCase</code> <i>from string.js</i></a></li>
+    </ul>
+
+    <h3 id="properties"><a href="#properties" class="no-link">Properties</a></h3>
+    <h5><code>fields<i>: &lt;Array>object</i></code></h5>
+    <p>An array of objects containing a <code>name</code> and <code>label</code> that represent the fields to be displayed.</p>
+
+    <h5><code>records<i>: &lt;Array>object</i></code></h5>
+    <p>An array of objects containing the data that will be the records of the table, where the object keys match the field names.</p>
+
+    <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
+
+    <h5><code>setData(<i>&lt;Array>object</i> records, <i>&lt;Array>object</i> fields)<i>: undefined</i></code></h5>
+    <p>Sets the records and the fields and renders the table, if no fields are provided then they will be automatically generated from the keys of the first 100 records.</p>
+
+    <h5><code>renderFields()<i>: undefined</i></code></h5>
+    <p>Renders the fields as table headers, this is called automatically by setData, you should never have to call it.</p>
+
+    <h5><code>renderRecords()<i>: undefined</i></code></h5>
+    <p>Renders the records as table row, this is called automatically by setData, you should never have to call it.</p>
+
+  </main>
+  <div style="height: 33.333vh"></div>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+  
+</body>
+</html>

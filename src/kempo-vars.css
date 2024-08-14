@@ -21,7 +21,9 @@
   --animation_ms: 256ms;
   --radius: 0.25rem;
   --link_decoration: underline;
+  --input_padding: var(--spacer_h) var(--spacer);
   --input_border_width: 2px;
+  --btn_padding: var(--spacer_h) var(--spacer);
 }
 
 :root,

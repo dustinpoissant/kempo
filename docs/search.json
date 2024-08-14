@@ -29,6 +29,17 @@
       "content"
     ]
   },
+  "/components/table.html": {
+    "name": "Components > Table",
+    "terms": [
+      "component",
+      "table",
+      "content",
+      "records",
+      "fields",
+      "data"
+    ]
+  },
   "/components/tabs.html": {
     "name": "Components > Tabs",
     "terms": [

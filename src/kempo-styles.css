@@ -216,7 +216,7 @@ mark {
   background-color: var(--c_highlight);
   color: inherit;
 }
-pre, code {
+.ff-mono, pre, code {
   font-family: var(--ff_mono);
 }
 code {
@@ -257,6 +257,11 @@ a:hover,
 a:focus,
 .link:focus-visible {
   box-shadow: var(--focus_shadow);
+}
+.no-link,
+.no-link:hover {
+  text-decoration: none;
+  color: inherit;
 }
 hr {
   border: none;
@@ -463,7 +468,7 @@ input[type="button"],
 input[type="submit"],
 input[type="reset"] {
   display: inline-block;
-  padding: var(--spacer_h) var(--spacer);
+  padding: var(--btn_padding);
   background-color: var(--btn_bg);
   border: 1px solid var(--btn_border);
   cursor: pointer;
@@ -641,7 +646,7 @@ textarea {
   background-color: var(--input_bg);
   color: var(--input_tc);
   border: var(--input_border_width) solid var(--c_border);
-  padding: var(--spacer_h) var(--spacer);
+  padding: var(--input_padding);
   margin-bottom: var(--spacer);
   border-radius: var(--radius);
   outline: none;

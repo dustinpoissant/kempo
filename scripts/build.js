@@ -115,10 +115,7 @@ console.log('Saving kempo-hljs.css');
 await fs.writeFile('./dist/kempo-hljs.css', minifiedKempoHljsCSS, 'utf-8');
 
 console.log('Copying dist/ to docs/');
-await fse.ensureDir('./docs/icons'); // will also ensure docs/kempo
+await fse.ensureDir('./docs/'); // will also ensure docs/kempo
 await fse.copy('./dist', './docs/kempo')
-
-console.log('Copying icons/ to docs/icons/');
-await fse.copy('./icons', './docs/icons')
 
 console.log('Build Complete');

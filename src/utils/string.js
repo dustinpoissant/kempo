@@ -52,6 +52,7 @@ export const unescapeHTML = str => str.replace(/&amp;|&lt;|&gt;|&quot;|&#39;|&#x
 });
 export const trim = (str, chars) => str.replace(new RegExp(`^[${chars}]+|[${chars}]+$`, 'g'), '');
 export const compoundKey = keys => trim(keys.join('.'), '.');
+export const toTitleCase = (input) => input.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/_/g, ' ').trim().replace(/\s+/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 
 export default {
   camelToDash,
