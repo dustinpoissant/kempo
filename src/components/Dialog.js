@@ -72,7 +72,7 @@ export default class Dialog extends Component {
   attributeChangedCallback(n, oV, nV){
     super.attributeChangedCallback(n, oV, nV);
     if(name === 'opened'){
-      dispatchEvent(this, nV?'opened':'closed');
+      dispatchEvent(this, nV?'opened':'close');
     }
   }
   open(){
@@ -161,6 +161,7 @@ export default class Dialog extends Component {
         position: fixed; /* The browser seems to sometimes lazy load this if its out of view, this seems to fix it*/
         top: 0;
         left: 0;
+        z-index: 100;
       }
       :host(:not([opened])){
         display: none;
@@ -242,6 +243,7 @@ export default class Dialog extends Component {
   ];
 
   static create(contents = '', options = {}){
+    if(options.closeExisting!==false)document.querySelectorAll('k-dialog').forEach(d=>d.close());
     const $dialog = new Dialog({
       opened: true,
       ...options 

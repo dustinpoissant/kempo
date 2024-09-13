@@ -1,15 +1,4 @@
 {
-  "/components/codeeditor.html": {
-    "name": "Components > Code Editor",
-    "terms": [
-      "component",
-      "code",
-      "editor",
-      "html",
-      "css",
-      "js"
-    ]
-  },
   "/components/resize.html": {
     "name": "Components > Resize",
     "terms": [
@@ -46,19 +35,6 @@
       "component",
       "tab",
       "content"
-    ]
-  },
-  "/components/websnippeteditor.html": {
-    "name": "Components > Web Snippet Editor",
-    "terms": [
-      "component",
-      "web",
-      "snippet",
-      "editor",
-      "code",
-      "html",
-      "css",
-      "js"
     ]
   },
   "/styles/borders-spacing.html": {
