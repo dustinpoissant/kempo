@@ -3,6 +3,7 @@ import {
   onEvent,
   dispatchEvent
 } from '../utils/element.js';
+import './Icon.js';
 
 const storageWatcher = Symbol('storageWatcher'),
       clickHandler = Symbol('clickHandler');
