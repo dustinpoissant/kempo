@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Template - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">DirectoryViewer</h1>
+  <main>
+    <details
+      class="b r mb"
+    >
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#attributes">Attributes</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
+      </div>
+    </details>
+
+    <h3>Description</h3>
+    <p>The directory viewer allows the user to select a directory from their local filesystem, and the component allows them to open/close subdirectories and select files.</p>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <div class="row -mx">
+      <div class="col d-span-6 t-span-6 m-span-12 px">
+        <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-directory-viewer</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-directory-viewer</span>&gt;</span></code></pre>
+      </div>
+      <div class="col d-span-6 t-span-6 m-span-12 px">
+        <k-directory-viewer></k-directory-viewer>
+      </div>
+    </div>
+    
+
+
+    <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
+    <h6>Extends <a href="./lazycomponent.html">LazyComponent</a></h6>
+    <h5>
+      <code>new DirectoryViewer()</code><br />
+    </h5>
+
+    <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
+    <ul>
+      <li><a href="">class <code>LazyComponent</code></a></li>
+      <li><a href="">class <code>Component</code></a></li>
+      <li><a href="">class <code>Icon</code></a></li>
+      <li><a href="">util <code>element.js</code></a></li>
+      <li><a href="">util <code>watchDirectoryHandle.js</code></a></li>
+    </ul>
+
+    <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
+    <h5><code>async selectDirectory()<i>: undefined</i></code></h5>
+    <p>Opens the directory selection dialog. When a dialog is selected it will render the directory's contents.</p>
+    <h5><code>open()<i>: undefined</i></code></h5>
+    <p>Opens the directory, this should only be called on auto-generated sub-directories.</p>
+    <h5><code>close()<i>: undefined</i></code></h5>
+    <p>Closes the directory, this should only be called on auto-generated sub-directories.</p>
+    <h5><code>toggleOpen()<i>: undefined</i></code></h5>
+    <p>Opens/Closes the directory, this should only be called on auto-generated sub-directories.</p>
+    <h5><code>clearDirectoryHandle()<i>: undefined</i></code></h5>
+    <p>Clears the handle that represents the user selected directory, allowing the user to choose a new directory.</p>
+    
+  </main>
+  <script type="module" src="../kempo/components/Import.js"></script>
+  <script type="module" src="../kempo/components/DirectoryViewer.js"></script>
+</body>
+</html>

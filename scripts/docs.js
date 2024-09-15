@@ -21,8 +21,6 @@ const {
   src = false
 } = options;
 
-console.log(port, build, src);
-
 if(build){
   runChildNodeProcess(join(__dirname, 'build.js'));
 }
@@ -32,6 +30,15 @@ const app = express();
 if(src){
   app.use('/kempo', express.static('src'));
   app.use('/icons', express.static('icons'));
+  app.get('/kempo/kempo-styles.css', (req, res) => {
+    res.set('Cache-Control', 'no-cache');
+    res.sendFile(join(__dirname, '../src/kempo-styles.css'));
+  })
+} else {
+  app.get('/kempo/kempo-styles.css', (req, res) => {
+    res.set('Cache-Control', 'private');
+    res.sendFile(join(__dirname, '../docs/kempo/kempo-styles.css'));
+  });
 }
 app.use(express.static('docs'));
 

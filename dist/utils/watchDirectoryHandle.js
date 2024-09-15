@@ -1,0 +1,1 @@
+const serializeDir=async a=>{const e=[];for await(const{kind:i,name:t}of a.values())e.push(`${i}:${t}`);return e.join("|")};export default async(a,e,i=1e3)=>{let t=await serializeDir(a);return setInterval((async()=>{const i=await serializeDir(a);i!=t&&(t=i,e())}),i)};

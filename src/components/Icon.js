@@ -1,15 +1,21 @@
 import Component from './Component.js';
 
+const cache = {};
+
+const getIconByPath = async (path) => {
+  if(!cache[path]){
+    cache[path] = new Promise(async (resolve, reject)=>{
+      try {
+        const response = await fetch(path);
+        if(response.status === 200) resolve(await (response).text());
+      } catch(e){      }
+      return reject();
+    });
+  } 
+  return await cache[path];
+}
 const getIconByName = (name) => {
-  const tryDir = async (dir) => {
-    try {
-      const response = await fetch(`${dir}/${name}.svg`);
-      if(response.status === 200) return await (response).text();
-    } catch(e){
-      console.log(e);
-    }
-    return false;
-  }
+  const tryDir = async (dir) => getIconByPath(`${dir}/${name}.svg`);
 
   return new Promise( async (resolve, reject) => {
     let svg;
@@ -40,9 +46,9 @@ export default class Icon extends Component {
   async render(force){
     if(await super.render(force)){
       if(this.src){
-        const response = await fetch(this.src);
-        if(response.status === 200){
-          this.innerHTML = await (response).text();
+        const svg = await getIconByPath(this.src);
+        if(svg){
+          this.innerHTML = svg;
           this.fixSVG();
         } else if(!this.innerHTML.length) this.innerHTML = Icon.fallback;
       } else if(this.name){

@@ -1,4 +1,35 @@
 {
+  "/components/component.html": {
+    "name": "Components > Component",
+    "terms": [
+      "component",
+      "base",
+      "root",
+      "framework",
+      "parent"
+    ]
+  },
+  "/components/lazycomponent.html": {
+    "name": "Components > LazyComponent",
+    "terms": [
+      "lazy",
+      "component",
+      "base",
+      "root",
+      "framework",
+      "parent"
+    ]
+  },
+  "/components/directoryviewer.html": {
+    "name": "Components > DirectoryViewer",
+    "terms": [
+      "directory",
+      "viewer", 
+      "pwa",
+      "folder",
+      "file"
+    ]
+  },
   "/components/resize.html": {
     "name": "Components > Resize",
     "terms": [
