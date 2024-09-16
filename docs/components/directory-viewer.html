@@ -34,7 +34,12 @@
         <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-directory-viewer</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-directory-viewer</span>&gt;</span></code></pre>
       </div>
       <div class="col d-span-6 t-span-6 m-span-12 px">
-        <k-directory-viewer></k-directory-viewer>
+        <k-directory-viewer id="dv"></k-directory-viewer>
+        <script type="module">
+          await window.customElements.whenDefined('k-directory-viewer');
+          document.getElementById('dv').addFilter(({kind})=>kind!='file');
+          document.getElementById('dv').addFilter(({name})=>!name.startsWith('.')&&!name.startsWith('_'));
+        </script>
       </div>
     </div>
     

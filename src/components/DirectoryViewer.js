@@ -12,19 +12,23 @@ const handle = Symbol(),
       openToggleClickHandler = Symbol(),
       fileSelectedHandler = Symbol(),
       watchId = Symbol(),
-      changeCallback = Symbol();
+      changeCallback = Symbol(),
+      filters = Symbol();
 export default class DirectoryViewer extends LazyComponent {
   constructor(_handle = false){
     super();
     
     /* Private Members */
     this[handle] = _handle;
+    this[watchId] = false;
+    this[filters] = [];
 
     /* Private Methods */
     this[selectDirectoryClickHandler] = () => this.selectDirectory();
     this[openToggleClickHandler] = () => {
       if(!this.root){
         this.toggleOpen();
+        this.select();
       } else {
         this.clearDirectoryHandle();
       }
@@ -38,9 +42,9 @@ export default class DirectoryViewer extends LazyComponent {
     this.registerAttributes({
       root: !_handle,
       hasHandle: !!_handle,
-      opened: !_handle
+      opened: !_handle,
+      selected: false
     });
-    this[watchId] = false;
   }
 
   /* Lifecycle Callbacks */
@@ -61,15 +65,23 @@ export default class DirectoryViewer extends LazyComponent {
   }
   async renderContents(){
     this.querySelectorAll('[slot="content"]').forEach(e=>e.remove());
-    if(this.opened || this.root){
+    if(
+      this.rendered && 
+      this[handle] &&
+      (this.opened || this.root)
+    ){
       for await(const entry of this[handle].values()){
         if(entry.kind === 'directory'){
-          this.appendChild(new DirectoryViewer(entry, false));
+          if(this.filters.every(filter=>filter(entry))){
+            this.appendChild(new DirectoryViewer(entry, false));
+          }
         }
       }
       for await(const entry of this[handle].values()){
         if(entry.kind === 'file'){
-          this.appendChild(new File(entry));
+          if(this.filters.every(filter=>filter(entry))){
+            this.appendChild(new File(entry));
+          }
         }
       }
       if(!this[watchId]) this[watchId] = watchDirectoryHandle(this[handle], this[changeCallback]);
@@ -94,6 +106,15 @@ export default class DirectoryViewer extends LazyComponent {
         this.renderContents();
       }
     }
+  }
+
+  /* Protected Members */
+  get rootDir(){
+    if(this.root) return this;
+    else return this.closest('k-directory-viewer[root="true"]')
+  }
+  get filters(){
+    return this.rootDir[filters];
   }
 
 
@@ -156,6 +177,24 @@ export default class DirectoryViewer extends LazyComponent {
       }
     }
   }
+  select(){
+    const $currentSelection = this.closest('k-directory-viewer[root]').querySelector('k-directory-viewer[selected], k-directory-viewer-file[selected]');
+    if($currentSelection === this) return;
+    if($currentSelection) $currentSelection.selected = false;
+    this.selected = true;
+    this.dispatchEvent(new CustomEvent('dirselected', {
+      detail: {
+        dirHandle: this[handle],
+        dirComponent: this
+      },
+      bubbles: true,
+      composed: true
+    }));
+  }
+  addFilter(filter){
+    this[filters].push(filter);
+    this.renderContents();
+  }
 
   /* Shadow DOM */
   get shadowTemplate(){
@@ -207,6 +246,11 @@ export default class DirectoryViewer extends LazyComponent {
       }
       #clearSelectedDirectory {
         flex: none;
+      }
+      :host([selected]) #openToggle {
+        background-color: var(--c_primary);
+        color: var(--tc_on_primary);
+        border-radius: var(--raidus);
       }
     `;
   }
@@ -263,7 +307,7 @@ export class File extends Component {
 
   /* Public Methods */
   select(){
-    const $currentSelection = this.closest('k-directory-viewer[root]').querySelector('k-directory-viewer-file[selected]');
+    const $currentSelection = this.closest('k-directory-viewer[root]').querySelector('k-directory-viewer[selected], k-directory-viewer-file[selected]');
     if($currentSelection === this) return;
     if($currentSelection) $currentSelection.selected = false;
     this.selected = true;
