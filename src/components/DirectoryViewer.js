@@ -3,12 +3,13 @@ import Component from './Component.js';
 import './Icon.js';
 import {
   onEvent,
-  offEvent
+  offEvent,
+  dispatchEvent
 } from '../utils/element.js';
 import watchDirectoryHandle from '../utils/watchDirectoryHandle.js';
 
 const handle = Symbol(),
-      selectDirectoryClickHandler = Symbol(),
+      loadDirectoryClickHandler = Symbol(),
       openToggleClickHandler = Symbol(),
       fileSelectedHandler = Symbol(),
       watchId = Symbol(),
@@ -24,7 +25,7 @@ export default class DirectoryViewer extends LazyComponent {
     this[filters] = [];
 
     /* Private Methods */
-    this[selectDirectoryClickHandler] = () => this.selectDirectory();
+    this[loadDirectoryClickHandler] = () => this.loadDirectory();
     this[openToggleClickHandler] = () => {
       if(!this.root){
         this.toggleOpen();
@@ -51,7 +52,7 @@ export default class DirectoryViewer extends LazyComponent {
   async render(force){
     if(await super.render(force)){
       onEvent(this.shadowRoot, 'fileselected', this[fileSelectedHandler]);
-      onEvent(this.shadowRoot.getElementById('selectDirectory'), 'click', this[selectDirectoryClickHandler]);
+      onEvent(this.shadowRoot.getElementById('loadDirectory'), 'click', this[loadDirectoryClickHandler]);
       onEvent(this.shadowRoot.getElementById('openToggle'), 'click', this[openToggleClickHandler]);
       this.renderDirectory();
       return true;
@@ -95,7 +96,7 @@ export default class DirectoryViewer extends LazyComponent {
   disconnectedCallback(){
     super.disconnectedCallback();
     offEvent(this.shadowRoot, 'fileselected', this[fileSelectedHandler]);
-    offEvent(this.shadowRoot.getElementById('selectDirectory'), 'click', this[selectDirectoryClickHandler]);
+    offEvent(this.shadowRoot.getElementById('loadDirectory'), 'click', this[loadDirectoryClickHandler]);
     offEvent(this.shadowRoot.getElementById('openToggle'), 'click', this[openToggleClickHandler]);
   }
   attributeChangedCallback(n, oV, nV){
@@ -119,11 +120,15 @@ export default class DirectoryViewer extends LazyComponent {
 
 
   /* Public Methods */
-  async selectDirectory(){
+  async loadDirectory(){
     if(window.showDirectoryPicker){
       this[handle] = await window.showDirectoryPicker();
       if(this[handle]){
         this.hasHandle = true;
+        dispatchEvent(this, 'directoryloaded', {
+          dirHandle: this[handle],
+          dirComponent: this
+        });
         this.renderDirectory();
       }
     }
@@ -200,7 +205,7 @@ export default class DirectoryViewer extends LazyComponent {
   get shadowTemplate(){
     return /*html*/`
       <button
-        id="selectDirectory"
+        id="loadDirectory"
       >
         <slot name="selectButton">
           <k-icon name="folder-create"></k-icon> Select Directory
@@ -223,7 +228,7 @@ export default class DirectoryViewer extends LazyComponent {
   get shadowStyles(){
     return /*css*/`
       ${super.shadowStyles}
-      :host([has-handle]) #selectDirectory,
+      :host([has-handle]) #loadDirectory,
       :host([opened]) #folder-closed,
       :host(:not([opened])) #folder-opened,
       :host(:not([has-handle])) #folder-closed,

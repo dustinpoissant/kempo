@@ -22,10 +22,13 @@ export const offEvent = (element, events, handler, scope = document) => {
     scope.querySelectorAll(element).forEach( el => offEvent(el, events, handler));
   }
 }
-export const dispatchEvent = (element, events, detail, scope = document) => {
+export const dispatchEvent = (element, events, detail, {
+  scope = document,
+  bubbles = false
+}={}) => {
   if(element instanceof EventTarget){
     events.toLowerCase().split(' ').forEach( event => {
-      element.dispatchEvent(new CustomEvent(event, { detail } ));
+      element.dispatchEvent(new CustomEvent(event, { bubbles, detail } ));
     });
   } else if(element instanceof NodeList || element instanceof Array){
     element.forEach( el => dispatchEvent(el, events, handler));

@@ -6,17 +6,37 @@ import {
   dispatchEvent
 } from '../utils/element.js';
 
+const toggleClickHandler = Symbol();
 export default class ShowMore extends LazyComponent {
   constructor(){
     super();
 
+    this[toggleClickHandler] = () => this.toggle();
+
     this.registerAttribute('opened', false);
-    this.registerProp('_toggleClickHandler', () => this.toggle());
   }
+  
+  /* Lifecycle Callbacks */
   async render(force){
     await super.render(force);
-    onEvent(this.shadowRoot.getElementById('toggle'), 'click', this._toggleClickHandler);
+    onEvent(this.shadowRoot.getElementById('toggle'), 'click', this[toggleClickHandler]);
   }
+  disconnectedCallback(){
+    super.disconnectedCallback();
+    offEvent(this.shadowRoot.getElementById('toggle'), 'click', this[toggleClickHandler]);
+  }
+  attributeChangedCallback(n, oV, nV){
+    super.attributeChangedCallback(n, oV, nV);
+    if(n === 'opened' && oV !== nV){
+      if(this.opened){
+        dispatchEvent(this, 'change opened');
+      } else {
+        dispatchEvent(this, 'change closed');
+      }
+    }
+  }
+
+  /* Public Methods */
   more(){
     this.opened = true;
   }
@@ -24,7 +44,7 @@ export default class ShowMore extends LazyComponent {
     this.opened = false;
   }
   toggle(){
-    this.opened?this.less():this.more();
+    this.opened = !this.opened;
   }
 
   get shadowTemplate(){

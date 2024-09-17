@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Content Slider - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Content Slider</h1>
+  <main>
+    <details
+      class="b r mb"
+    >
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#keyboardControls">Keyboard Controls</a><br />
+        <a href="#globalControls">Global Controls</a><br />
+        <a href="#controls">Controls</a><br />
+        <a href="#loop">Loop</a><br />
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#attributes">Attributes</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
+      </div>
+    </details>
+
+    <h3>Description</h3>
+    <p>description</p>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <div class="row -mx">
+      <div class="col d-span-6 t-span-6 m-spane-12 p">
+        <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-content-slider</span><br />  <span class="hljs-attr">class</span>=<span class="hljs-string">"bg-alt"</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 10rem"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 1<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 2<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 3<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 4<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-content-slider</span>&gt;</span></code></pre>
+      </div>
+      <div class="col d-span-6 t-span-6 m-spane-12 p">
+        <k-content-slider
+          class="bg-alt"
+          style="height: 10rem"
+        >
+          <div><p>Slide 1</p></div>
+          <div><p>Slide 2</p></div>
+          <div><p>Slide 3</p></div>
+          <div><p>Slide 4</p></div>
+        </k-content-slider>
+      </div>
+    </div>
+
+    <h3 id="keyboardControls"><a href="#keyboardControls" class="no-link">Keyboard Controls</a></h3>
+    <p>By default the <code>keyboard-controls</code> attribute is set to <code>"true"</code>, which allows the left and right keyboard buttons to change the slides when the component is focused. Set it to <code>"false"</code> to disable this functionality.</p>
+    <div class="row -mx">
+      <div class="col d-span-6 t-span-6 m-spane-12 p">
+        <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-content-slider</span><br />  <span class="hljs-attr">class</span>=<span class="hljs-string">"bg-alt"</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 10rem"</span><br />  <span class="hljs-attr">keyboard-controls</span>=<span class="hljs-string">"false"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 1<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 2<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 3<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 4<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-content-slider</span>&gt;</span></code></pre>
+      </div>
+      <div class="col d-span-6 t-span-6 m-spane-12 p">
+        <k-content-slider
+          class="bg-alt"
+          style="height: 10rem"
+          keyboard-controls="false"
+        >
+          <div><p>Slide 1</p></div>
+          <div><p>Slide 2</p></div>
+          <div><p>Slide 3</p></div>
+          <div><p>Slide 4</p></div>
+        </k-content-slider>
+      </div>
+    </div>
+
+    <h3 id="globalControls"><a href="#globalControls" class="no-link">Global Controls</a></h3>
+    <p>Use the <code>global-controls="true"</code> attribute to enable global controls (next and back arrows) anywhere in the window, even when this component is not focused. This is suggested when there is only one content slider on a page and it is of prominance (large slider on top of the page).</p>
+    <div class="row -mx">
+      <div class="col d-span-6 t-span-6 m-spane-12 p">
+        <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-content-slider</span><br />  <span class="hljs-attr">class</span>=<span class="hljs-string">"bg-alt"</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 10rem"</span><br />  <span class="hljs-attr">global-controls</span>=<span class="hljs-string">"true"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 1<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 2<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 3<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 4<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-content-slider</span>&gt;</span></code></pre>
+      </div>
+      <div class="col d-span-6 t-span-6 m-spane-12 p">
+        <k-content-slider
+          class="bg-alt"
+          style="height: 10rem"
+          global-controls="true"
+        >
+          <div><p>Slide 1</p></div>
+          <div><p>Slide 2</p></div>
+          <div><p>Slide 3</p></div>
+          <div><p>Slide 4</p></div>
+        </k-content-slider>
+      </div>
+    </div>
+
+    <h3 id="controls"><a href="#controls" class="no-link">Controls</a></h3>
+    <p>By default the <code>controls</code> attribute is set to <code>"true"</code>, this shows the previous and next buttons. To hide them set <code>controls="false"</code>.</p>
+    <div class="row -mx">
+      <div class="col d-span-6 t-span-6 m-spane-12 p">
+        <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-content-slider</span><br />  <span class="hljs-attr">class</span>=<span class="hljs-string">"bg-alt"</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 10rem"</span><br />  <span class="hljs-attr">controls</span>=<span class="hljs-string">"false"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 1<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 2<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 3<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 4<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-content-slider</span>&gt;</span></code></pre>
+      </div>
+      <div class="col d-span-6 t-span-6 m-spane-12 p">
+        <k-content-slider
+          class="bg-alt"
+          style="height: 10rem"
+          controls="false"
+        >
+          <div><p>Slide 1</p></div>
+          <div><p>Slide 2</p></div>
+          <div><p>Slide 3</p></div>
+          <div><p>Slide 4</p></div>
+        </k-content-slider>
+      </div>
+    </div>
+
+    <h3 id="loop"><a href="#loop" class="no-link">Loop</a></h3>
+    <p>To make the slider loop (go back to the beginning after it hits the last slide) use the <code>loop="true"</code> attribute.</p>
+    <div class="row -mx">
+      <div class="col d-span-6 t-span-6 m-spane-12 p">
+        <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-content-slider</span><br />  <span class="hljs-attr">class</span>=<span class="hljs-string">"bg-alt"</span><br />  <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 10rem"</span><br />  <span class="hljs-attr">loop</span>=<span class="hljs-string">"true"</span><br />&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 1<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 2<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 3<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Slide 4<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-content-slider</span>&gt;</span></code></pre>
+      </div>
+      <div class="col d-span-6 t-span-6 m-spane-12 p">
+        <k-content-slider
+          class="bg-alt"
+          style="height: 10rem"
+          loop="true"
+        >
+          <div><p>Slide 1</p></div>
+          <div><p>Slide 2</p></div>
+          <div><p>Slide 3</p></div>
+          <div><p>Slide 4</p></div>
+        </k-content-slider>
+      </div>
+    </div>
+
+    <h2 id="jsRef">JavaScript Refrerence</h2>
+
+    <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
+    <h6>Extends <a href="./lazy-component.html">LazyComponent</a></h6>
+    <h5>
+      <code>new ContentSlider()</code><br />
+      <code>new ContentSlider(<i>&lt;Array>HTMLElement</i> content)</code><br/>
+      <code>new ContentSlider(<i>&lt;Array>HTMLElement</i> content, <i>Object</i> init_attrs)</code>
+    </h5>
+
+    <h4>Paramters</h4>
+    <h5><code>content<i>: &lt;Array>HTMLElement></i></code></h5>
+    <p>An array of <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement" target="_blank">HTMLElement</a>s that will be the contents of this slider.</p>
+    <h5><code>init_attrs<i>: Object</i></code></h5>
+    <p>An options object that may contain the initial values of the attributes (see attributes below).</p>
+
+    <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
+    <ul>
+      <li><a href="">LazyComponent Class</a></li>
+      <li><a href="">elements.js Util</a></li>
+    </ul>
+
+    <h3 id="attributes"><a href="#attributes" class="no-link">Attributes</a></h3>
+    <h5><code>index<i>: number</i></code></h5>
+    <p>The index of the currently active slide (base <code>0</code>). The default value is <code>0</code>.</p>
+
+    <h5><code>controls<i>: boolean</i></code></h5>
+    <p>A boolean that indicates if the control buttons should be shown. The default value is <code>true</code>.</p>
+
+    <h5><code>keyboardControls<i>: boolean</i></code></h5>
+    <p>A boolean that indicates if the left and right arrows should be used to control the slider. The default value is <code>true</code>.</p>
+
+    <h5><code>globalControls<i>: boolean</i></code></h5>
+    <p>A boolean that indicates if the left and right arrows should be used to control the slider even when it is not focused (the listener is on the window). The default value is <code>false</code>.</p>
+
+    <h5><code>loop<i>: boolean</i></code></h5>
+    <p>A boolean that indicates index should loop. When true, after the last side it will go back to the first, and when on the first slide the previous slide will be the last. The default value is <code>false</code>.</p>
+
+    <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
+    <h5><code>previous()<i>: undefined</i></code></h5>
+    <p>Goes to the previous slide.</p>
+
+    <h5><code>next()<i>: undefined</i></code></h5>
+    <p>Goes to the next slide.</p>
+    
+    <h5><code>goto(<i>number<i> index)<i>: undefined</i></code></h5>
+    <p>Goes to the specified slide. If the index is more than the number of slides the last side will be shown. If the index is below 0, the first slide will be shown.</p>
+    
+  </main>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+  <script type="module" src="../kempo/components/ContentSlider.js"></script> 
+</body>
+</html>

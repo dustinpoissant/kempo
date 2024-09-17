@@ -18,6 +18,7 @@
   --c_deletion: #2b91af;
   --c_caret: black;
 }
+[auto-theme="dark"]:not([theme="light"]),
 [theme="dark"] {
   --c_text: #DCDCDC;
   --c_keyword: #569CD6;

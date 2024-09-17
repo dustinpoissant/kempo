@@ -9,7 +9,7 @@
       "parent"
     ]
   },
-  "/components/lazycomponent.html": {
+  "/components/lazy-component.html": {
     "name": "Components > LazyComponent",
     "terms": [
       "lazy",
@@ -18,6 +18,14 @@
       "root",
       "framework",
       "parent"
+    ]
+  },
+  "/components/content-slider.html": {
+    "name": "Components > Content Slider",
+    "terms": [
+      "content",
+      "slider",
+      "photos"
     ]
   },
   "/components/directoryviewer.html": {

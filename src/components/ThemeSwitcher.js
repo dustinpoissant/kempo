@@ -15,7 +15,10 @@ export default class ThemeSwitcher extends Component {
       this.currentTheme =  ThemeSwitcher.getCurrentTheme();
     }
     this[clickHandler] = () => {
-      ThemeSwitcher.setTheme(ThemeSwitcher.getCurrentTheme()==='light'?'dark':'light');
+      const current = ThemeSwitcher.getCurrentTheme();
+      if(current === 'auto') ThemeSwitcher.setTheme('light');
+      if(current === 'light') ThemeSwitcher.setTheme('dark');
+      if(current === 'dark') ThemeSwitcher.setTheme('auto');
     }
     this.registerAttribute('currentTheme', ThemeSwitcher.getCurrentTheme());
   }
@@ -27,6 +30,10 @@ export default class ThemeSwitcher extends Component {
     }
     return false;
   }
+  disconnectedCallback(){
+    super.disconnectedCallback();
+    offEvent(this.shadowRoot.getElementById('toggle'), 'click', this[clickHandler]);
+  }
 
   get shadowTemplate(){
     return /*html*/`
@@ -35,12 +42,19 @@ export default class ThemeSwitcher extends Component {
         class="no-btn"
       >
         <k-icon
+          id="autoMode"
+          name="mode-auto"
+          class="mode"
+        ></k-icon>
+        <k-icon
           id="lightMode"
           name="light-mode"
+          class="mode"
         ></k-icon>
         <k-icon
           id="darkMode"
           name="dark-mode"
+          class="mode"
         ></k-icon>
       </button>
     `;
@@ -55,9 +69,13 @@ export default class ThemeSwitcher extends Component {
       #toggle {
         padding: var(--padding);
       }
-      :host([current-theme="dark"]) #darkMode,
-      :host([current-theme="light"]) #lightMode {
+      .mode {
         display: none;
+      }
+      :host([current-theme="auto"]) #autoMode,
+      :host([current-theme="light"]) #lightMode,
+      :host([current-theme="dark"]) #darkMode {
+        display: block;
       }
     `;
   }
