@@ -1,0 +1,1 @@
+const raf=(a,r=1)=>{requestAnimationFrame((()=>{1===r?a():raf(a,r-1)}))};export default raf;

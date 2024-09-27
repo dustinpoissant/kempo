@@ -1,4 +1,15 @@
 {
+  "/components/accordion.html": {
+    "name": "Components > Accordion",
+    "terms": [
+      "accordion",
+      "collapsible",
+      "toggle",
+      "content",
+      "panel",
+      "header"
+    ]
+  },
   "/components/component.html": {
     "name": "Components > Component",
     "terms": [
@@ -55,6 +66,17 @@
       "split",
       "resize",
       "content"
+    ]
+  },
+  "/components/stacks.html": {
+    "name": "Components > Stacks",
+    "terms": [
+      "component",
+      "stacks",
+      "content",
+      "layout",
+      "collapsible",
+      "panel"
     ]
   },
   "/components/table.html": {

@@ -1,6 +1,9 @@
 /*
   Reset
 */
+:root {
+  interpolate-size: allow-keywords;
+}
 *, *::before, *::after {
   font-family: inherit;
   box-sizing: border-box;
