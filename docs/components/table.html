@@ -177,7 +177,22 @@
     <p>An array of objects that represents the fields of the table, each object must contain a <code>name</code> and a <code>label</code>. If this parameter is omitted, the fields will be automatically generated from the first 100 records.</p>
 
     <h5><code><i>object</i> controls</code></h5>
-    <p>An object containing arrays of controls to be displayed before and/or after each row. Each control is defined by an icon name and a callback function. The <code>controls</code> object can only contain the <code>before</code> and <code>after</code> properties, which are arrays of objects containing the <code>icon</code> (string) and <code>action</code> (function).</p>
+    <p>An object containing optional arrays of controls to be displayed before and/or after each row. Each control is defined by an icon name and a callback function. The <code>controls</code> object can contain the optional <code>before</code> and <code>after</code> properties, which are arrays of objects containing the <code>icon</code> (string) and <code>action</code> (function).</p>
+    <p>Example:</p>
+    <pre><code class="hljs javascript">{
+      before: [
+        {
+          icon: 'edit',
+          action: (record, table) => console.log('Edit', record, table)
+        }
+      ],
+      after: [
+        {
+          icon: 'delete',
+          action: (record, table) => console.log('Delete', record, table)
+        }
+      ]
+    }</code></pre>
 
     <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
     <ul>

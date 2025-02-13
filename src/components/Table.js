@@ -26,8 +26,8 @@ export default class Table extends Component {
     return false;
   }
   renderFields(){
-    const beforeControls = this.controls.before.length ? '<th></th>' : '';
-    const afterControls = this.controls.after.length ? '<th></th>' : '';
+    const beforeControls = this.controls.before?.length ? '<th></th>' : '';
+    const afterControls = this.controls.after?.length ? '<th></th>' : '';
     this.shadowRoot.getElementById('fields').innerHTML = `${beforeControls}${this.fields.map(({label})=>`<th>${label}</th>`).join('')}${afterControls}`;
   }
   renderRecords(){
@@ -42,7 +42,7 @@ export default class Table extends Component {
     }).join('');
   }
   
-  renderControls(controls, record) {
+  renderControls(controls = [], record) {
     if (controls.length === 0) return '';
     return `<td>${controls.map(({ icon, action }) => {
       const button = document.createElement('button');
