@@ -3,13 +3,13 @@ import Icon from './Icon.js'; // Import Icon component
 import { toTitleCase } from '../utils/string.js';
 
 export default class Table extends Component {
-  constructor(data = false, fields = false, controls = { before: [], after: [] }){
+  constructor(data = false, fields = false, controls = { before: [], after: [], top: [], bottom: [] }){
     super();
 
     this.registerProps({
       fields: [],
       records: [],
-      controls: { before: [], after: [] }
+      controls: { before: [], after: [], top: [], bottom: [] }
     });
 
     /* Init */
@@ -19,8 +19,10 @@ export default class Table extends Component {
   }
   async render(force){
     if(await super.render(force)){
+      this.renderControls(this.controls.top, 'top');
       this.renderFields();
       this.renderRecords();
+      this.renderControls(this.controls.bottom, 'bottom');
       return true;
     }
     return false;
@@ -36,7 +38,7 @@ export default class Table extends Component {
     this.records.forEach((record) => {
       const $tr = document.createElement('tr');
       if(this.controls?.before?.length){
-        $tr.appendChild(this.renderControls(this.controls.before, record));
+        $tr.appendChild(this.renderRowControls(this.controls.before, record));
       }
       this.fields.forEach(({name}) => {
         const $td = document.createElement('td');
@@ -48,19 +50,19 @@ export default class Table extends Component {
         $tr.appendChild($td);
       });
       if(this.controls?.after?.length){
-        $tr.appendChild(this.renderControls(this.controls.after, record));
+        $tr.appendChild(this.renderRowControls(this.controls.after, record));
       }
       $records.appendChild($tr);
     });
   }
   
-  renderControls(controls = [], record) {
+  renderRowControls(controls = [], record) {
     const $td = document.createElement('td');
     controls.forEach(({ html, icon, action, render }) => {
       if(html){
         $td.appendChild(document.createRange().createContextualFragment(html));
       } else if(render && typeof(render) === 'function'){
-        const rendered = render(record, this);
+        const rendered = render(this, record);
         if(rendered instanceof HTMLElement){
           $td.appendChild(rendered);
         } else if(typeof(rendered) === 'string'){
@@ -70,7 +72,7 @@ export default class Table extends Component {
         const $button = document.createElement('button');
         $button.appendChild(new Icon(icon));
         if (action) {
-          $button.addEventListener('click', () => action(record, this));
+          $button.addEventListener('click', () => action(this, record));
         }
         $td.appendChild($button);
       }
@@ -78,22 +80,51 @@ export default class Table extends Component {
     return $td;
   }
 
-  setData(records, fields = false, controls = { before: [], after: [] }){
+  renderControls(controls = [], position) {
+    const $container = document.createElement('div');
+    controls.forEach(({ html, icon, action, render }) => {
+      if(html){
+        $container.appendChild(document.createRange().createContextualFragment(html));
+      } else if(render && typeof(render) === 'function'){
+        const rendered = render(this);
+        if(rendered instanceof HTMLElement){
+          $container.appendChild(rendered);
+        } else if(typeof(rendered) === 'string'){
+          $container.appendChild(document.createRange().createContextualFragment(rendered));
+        }
+      } else if(icon){
+        const $button = document.createElement('button');
+        $button.appendChild(new Icon(icon));
+        if (action) {
+          $button.addEventListener('click', () => action(this));
+        }
+        $container.appendChild($button);
+      }
+    });
+    this.shadowRoot.getElementById(position).innerHTML = '';
+    this.shadowRoot.getElementById(position).appendChild($container);
+  }
+
+  setData(records, fields = false, controls = { before: [], after: [], top: [], bottom: [] }){
     this.records = records;
     this.fields = fields || Table.extractFieldsFromRecords(this.records);
     this.controls = controls;
+    this.renderControls(this.controls.top, 'top');
     this.renderFields();
     this.renderRecords();
+    this.renderControls(this.controls.bottom, 'bottom');
   }
 
   get shadowTemplate(){
     return /*html*/`
       ${super.shadowTemplate}
       <div class="responsive-table">
+        <div id="top"></div>
         <table>
           <thead id="fields"></thead>
           <tbody id="records"></tbody>
         </table>
+        <div id="bottom"></div>
       </div>
     `;
   }

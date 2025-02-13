@@ -131,19 +131,31 @@
         before: [
           {
             icon: 'edit',
-            action: (record, table) => console.log('Edit', record, table)
+            action: (table, record) => console.log('Edit', table, record)
           }
         ],
         after: [
           {
             icon: 'delete',
-            action: (record, table) => console.log('Delete', record, table)
+            action: (table, record) => console.log('Delete', table, record)
           },
           {
             html: '<span>Custom HTML</span>'
           },
           {
-            render: (record, table) => `<a href="mailto:${record.emailAddress}">Email</a>`
+            render: (table, record) => `<a href="mailto:${record.emailAddress}">Email</a>`
+          }
+        ],
+        top: [
+          {
+            icon: 'add',
+            action: (table) => console.log('Add', table)
+          }
+        ],
+        bottom: [
+          {
+            icon: 'refresh',
+            action: (table) => console.log('Refresh', table)
           }
         ]
       });
