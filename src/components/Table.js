@@ -44,11 +44,18 @@ export default class Table extends Component {
   
   renderControls(controls = [], record) {
     if (controls.length === 0) return '';
-    return `<td>${controls.map(({ icon, action }) => {
-      const button = document.createElement('button');
-      const iconElement = new Icon(icon); // Pass icon name as parameter
-      button.appendChild(iconElement);
-      button.addEventListener('click', () => action(record, this));
+    return `<td>${controls.map(({ html, icon, action }) => {
+      if(html){
+        return html;
+      } else if(render && typeof(render) === 'function'){
+        return render(record, this);
+      } else {
+        const $button = document.createElement('button');
+        $button.appendChild(new Icon(icon));
+        if (action) {
+          $button.addEventListener('click', () => action(record, this));
+        }
+      }
       return button.outerHTML;
     }).join('')}</td>`;
   }
@@ -59,6 +66,7 @@ export default class Table extends Component {
     this.controls = controls;
     this.renderFields();
     this.renderRecords();
+    this.renderControls();
   }
 
   get shadowTemplate(){

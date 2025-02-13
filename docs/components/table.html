@@ -22,16 +22,14 @@
         <a href="#requirements">Requirements</a><br />
         <a href="#properties">Properties</a><br />
         <a href="#methods">Methods</a><br />
-        <a href="#arrays">Displaying Arrays</a><br />
-        <a href="#controls">Row Controls</a><br />
       </div>
     </details>
 
     <h3>Description</h3>
-    <p>The <code>&lt;k-table&gt;</code> component is used to render data into a <code>&lt;table&gt;</code> using JavaScript.</p>
+    <p>The <code>&lt;k-table></code> component is used to render data into a <code>&lt;table></code> using JavaScript.</p>
 
     <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
-    <p>In HTML create a <code>&lt;k-table&gt;</code>, and then in JavaScript call the <code>setData</code> method passing in an array of objects containing your data.</p>
+    <p>In HTML create a <code>&lt;k-table></code>, and then in JavaScript call the <code>setData</code> method passing in an array of objects containing your data.</p>
     
     <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"contacts"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'contacts'</span>).setData([<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Dustin"</span>,<br />      <span class="hljs-attr">phoneNumber</span>: <span class="hljs-string">"(111) 111-1111"</span>,<br />      <span class="hljs-attr">emailAddress</span>: <span class="hljs-string">"dustin@mailserver.com"</span>,<br />      <span class="hljs-attr">gender</span>: <span class="hljs-string">"Male"</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Kayla"</span>,<br />      <span class="hljs-attr">phoneNumber</span>: <span class="hljs-string">"(222) 222-2222"</span>,<br />      <span class="hljs-attr">emailAddress</span>: <span class="hljs-string">"kayla@mailserver.com"</span>,<br />      <span class="hljs-attr">gender</span>: <span class="hljs-string">"Female"</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Alexander"</span>,<br />      <span class="hljs-attr">phoneNumber</span>: <span class="hljs-string">"(333) 333-33333"</span>,<br />      <span class="hljs-attr">emailAddress</span>: <span class="hljs-string">"alex@mailserver.com"</span>,<br />      <span class="hljs-attr">gender</span>: <span class="hljs-string">"Male"</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Amelia"</span>,<br />      <span class="hljs-attr">phoneNumber</span>: <span class="hljs-string">"(444) 444-44444"</span>,<br />      <span class="hljs-attr">emailAddress</span>: <span class="hljs-string">"amelia@mailserver.com"</span>,<br />      <span class="hljs-attr">gender</span>: <span class="hljs-string">"Female"</span><br />    },<br />  ]);<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
     <script type="module" src="../kempo/components/Table.js"></script> 
@@ -61,7 +59,7 @@
           phoneNumber: "(444) 444-44444",
           emailAddress: "amelia@mailserver.com",
           gender: "Female"
-        }
+        },
       ]);
     </script>
 
@@ -109,90 +107,20 @@
       ]);
     </script>
 
-    <h3 id="arrays"><a href="#arrays" class="no-link">Displaying Arrays</a></h3>
-    <p>The table component can display arrays of strings or numbers by joining them with a comma and a space.</p>
-    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"hobbies"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'hobbies'</span>).setData([<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Dustin"</span>,<br />      <span class="hljs-attr">hobbies</span>: [<span class="hljs-string">"Reading"</span>, <span class="hljs-string">"Hiking"</span>, <span class="hljs-string">"Gaming"</span>]<br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Kayla"</span>,<br />      <span class="hljs-attr">hobbies</span>: [<span class="hljs-string">"Cooking"</span>, <span class="hljs-string">"Traveling"</span>]<br />    }<br />  ]);<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-    <k-table id="hobbies"></k-table>
-    <script type="module">
-      document.getElementById('hobbies').setData([
-        {
-          name: "Dustin",
-          hobbies: ["Reading", "Hiking", "Gaming"]
-        },
-        {
-          name: "Kayla",
-          hobbies: ["Cooking", "Traveling"]
-        }
-      ]);
-    </script>
-
-    <h3 id="controls"><a href="#controls" class="no-link">Row Controls</a></h3>
-    <p>The table component can display controls before or after each row. Each control is defined by an icon name and a callback function. All controls are combined into a single <code>&lt;td&gt;</code> with each control being a button.</p>
-    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"contacts"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'contacts'</span>).setData([<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Dustin"</span>,<br />      <span class="hljs-attr">phoneNumber</span>: <span class="hljs-string">"(111) 111-1111"</span>,<br />      <span class="hljs-attr">emailAddress</span>: <span class="hljs-string">"dustin@mailserver.com"</span>,<br />      <span class="hljs-attr">gender</span>: <span class="hljs-string">"Male"</span><br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Kayla"</span>,<br />      <span class="hljs-attr">phoneNumber</span>: <span class="hljs-string">"(222) 222-2222"</span>,<br />      <span class="hljs-attr">emailAddress</span>: <span class="hljs-string">"kayla@mailserver.com"</span>,<br />      <span class="hljs-attr">gender</span>: <span class="hljs-string">"Female"</span><br />    }<br />  ], false, {<br />    before: [<br />      {<br />        icon: 'edit',<br />        action: (record, table) => console.log('Edit', record, table)<br />      }<br />    ],<br />    after: [<br />      {<br />        icon: 'delete',<br />        action: (record, table) => console.log('Delete', record, table)<br />      }<br />    ]<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-    <k-table id="contacts2"></k-table>
-    <script type="module">
-      document.getElementById('contacts2').setData([
-        {
-          name: "Dustin",
-          phoneNumber: "(111) 111-1111",
-          emailAddress: "dustin@mailserver.com",
-          gender: "Male"
-        },
-        {
-          name: "Kayla",
-          phoneNumber: "(222) 222-2222",
-          emailAddress: "kayla@mailserver.com",
-          gender: "Female"
-        }
-      ], false, {
-        before: [
-          {
-            icon: 'edit',
-            action: (record, table) => console.log('Edit', record, table)
-          }
-        ],
-        after: [
-          {
-            icon: 'delete',
-            action: (record, table) => console.log('Delete', record, table)
-          }
-        ]
-      });
-    </script>
-
-    <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
+    <h3 id="constructor"><a href="#consttructor" class="no-link">Constructor</a></h3>
     <h6>Extends <a href="./component.html">Component</a></h6>
     <h5>
       <code>new Table()</code><br />
       <code>new Table(<i>&lt;Array>object</i> records)</code><br />
-      <code>new Table(<i>&lt;Array>object</i> records, <i>&lt;Array>object</i> fields)</code><br />
-      <code>new Table(<i>&lt;Array>object</i> records, <i>&lt;Array>object</i> fields, <i>object</i> controls)</code>
+      <code>new Table(<i>&lt;Array>object</i> records, <i>&lt;Array>object</i> fields)</code>
     </h5>
 
-    <h4>Parameters</h4>
+    <h4>Paramters</h4>
     <h5><code><i>&lt;Array>object</i> records</code></h5>
     <p>An array of objects that represent the records to be shown in the table.</p>
 
     <h5><code><i>&lt;Array>object</i> fields</code></h5>
-    <p>An array of objects that represents the fields of the table, each object must contain a <code>name</code> and a <code>label</code>. If this parameter is omitted, the fields will be automatically generated from the first 100 records.</p>
-
-    <h5><code><i>object</i> controls</code></h5>
-    <p>An object containing optional arrays of controls to be displayed before and/or after each row. Each control is defined by an icon name and a callback function. The <code>controls</code> object can contain the optional <code>before</code> and <code>after</code> properties, which are arrays of objects containing the <code>icon</code> (string) and <code>action</code> (function).</p>
-    <p>Example:</p>
-    <pre><code class="hljs javascript">{
-      before: [
-        {
-          icon: 'edit',
-          action: (record, table) => console.log('Edit', record, table)
-        }
-      ],
-      after: [
-        {
-          icon: 'delete',
-          action: (record, table) => console.log('Delete', record, table)
-        }
-      ]
-    }</code></pre>
+    <p>An array of objects that represents the feilds of the table, each object must contain a <code>name</code> and a <code>label</code>. If this parameter is ommitted the fields will be automatically generated from the first 100 records.</p>
 
     <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
     <ul>
@@ -206,8 +134,8 @@
     <h5><code>records<i>: &lt;Array>object</i></code></h5>
     <p>An array of objects containing the data that will be the records of the table, where the object keys match the field names.</p>
 
-    <h5><code>controls<i>: object</i></code></h5>
-    <p>An object containing arrays of controls to be displayed before and/or after each row. Each control is defined by an icon name and a callback function. The <code>controls</code> object can only contain the <code>before</code> and <code>after</code> properties, which are arrays of objects containing the <code>icon</code> (string) and <code>action</code> (function).</p>
+    <h5><code><i>object</i> controls</code></h5>
+    <p>An object containing optional arrays of controls to be displayed before and/or after each row. Each control is defined by an icon name, a callback function, and optionally an HTML string or a render function. The <code>controls</code> object can contain the optional <code>before</code> and <code>after</code> properties, which are arrays of objects containing the <code>icon</code> (string), <code>action</code> (function), <code>html</code> (string), and <code>render</code> (function). If <code>html</code> is present, it overrides the icon and is rendered in its place. If <code>render</code> is present, it is used to render the control.</p>
     <p>Example:</p>
     <pre><code class="hljs javascript">{
       before: [
@@ -220,6 +148,13 @@
         {
           icon: 'delete',
           action: (record, table) => console.log('Delete', record, table)
+        },
+        {
+          html: '<span>Custom HTML</span>',
+          action: (record, table) => console.log('Custom Action', record, table)
+        },
+        {
+          render: (record, table) => `<button onclick="console.log('Rendered Action', ${record}, ${table})">Rendered Button</button>`
         }
       ]
     }</code></pre>
@@ -233,10 +168,7 @@
     <p>Renders the fields as table headers, this is called automatically by setData, you should never have to call it.</p>
 
     <h5><code>renderRecords()<i>: undefined</i></code></h5>
-    <p>Renders the records as table rows, this is called automatically by setData, you should never have to call it.</p>
-
-    <h5><code>renderControls(<i>&lt;Array>object</i> controls, <i>object</i> record)<i>: string</i></code></h5>
-    <p>Renders the controls as table cells. Each control is defined by an icon name and a callback function. This is called automatically by renderRecords, you should never have to call it.</p>
+    <p>Renders the records as table row, this is called automatically by setData, you should never have to call it.</p>
 
   </main>
   <div style="height: 33.333vh"></div>
