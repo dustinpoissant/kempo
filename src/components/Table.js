@@ -28,7 +28,13 @@ export default class Table extends Component {
   }
   renderRecords(){
     this.shadowRoot.getElementById('records').innerHTML = this.records.map((record) => {
-      return `<tr>${this.fields.map(({name})=>`<td>${record[name] || ''}</td>`).join('')}</tr>`;
+      return `<tr>${this.fields.map(({name}) => {
+        let value = record[name] || '';
+        if (Array.isArray(value)) {
+          value = value.join(', ');
+        }
+        return `<td>${value}</td>`;
+      }).join('')}</tr>`;
     }).join('');
   }
   

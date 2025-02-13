@@ -22,6 +22,7 @@
         <a href="#requirements">Requirements</a><br />
         <a href="#properties">Properties</a><br />
         <a href="#methods">Methods</a><br />
+        <a href="#arrays">Displaying Arrays</a><br />
       </div>
     </details>
 
@@ -107,6 +108,23 @@
       ]);
     </script>
 
+    <h3 id="arrays"><a href="#arrays" class="no-link">Displaying Arrays</a></h3>
+    <p>The table component can display arrays of strings or numbers by joining them with a comma and a space.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"hobbies"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'hobbies'</span>).setData([<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Dustin"</span>,<br />      <span class="hljs-attr">hobbies</span>: [<span class="hljs-string">"Reading"</span>, <span class="hljs-string">"Hiking"</span>, <span class="hljs-string">"Gaming"</span>]<br />    },<br />    {<br />      <span class="hljs-attr">name</span>: <span class="hljs-string">"Kayla"</span>,<br />      <span class="hljs-attr">hobbies</span>: [<span class="hljs-string">"Cooking"</span>, <span class="hljs-string">"Traveling"</span>]<br />    }<br />  ]);<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+    <k-table id="hobbies"></k-table>
+    <script type="module">
+      document.getElementById('hobbies').setData([
+        {
+          name: "Dustin",
+          hobbies: ["Reading", "Hiking", "Gaming"]
+        },
+        {
+          name: "Kayla",
+          hobbies: ["Cooking", "Traveling"]
+        }
+      ]);
+    </script>
+
     <h3 id="constructor"><a href="#consttructor" class="no-link">Constructor</a></h3>
     <h6>Extends <a href="./component.html">Component</a></h6>
     <h5>
@@ -139,10 +157,10 @@
     <h5><code>setData(<i>&lt;Array>object</i> records, <i>&lt;Array>object</i> fields)<i>: undefined</i></code></h5>
     <p>Sets the records and the fields and renders the table, if no fields are provided then they will be automatically generated from the keys of the first 100 records.</p>
 
-    <h5><code>renderFields()<i>: undefined</i></code></h5>
+    <h5><code>renderFields()<i>: undefined</i></h5>
     <p>Renders the fields as table headers, this is called automatically by setData, you should never have to call it.</p>
 
-    <h5><code>renderRecords()<i>: undefined</i></code></h5>
+    <h5><code>renderRecords()<i>: undefined</i></h5>
     <p>Renders the records as table row, this is called automatically by setData, you should never have to call it.</p>
 
   </main>
