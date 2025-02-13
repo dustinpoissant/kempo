@@ -88,7 +88,7 @@ export default class ThemeSwitcher extends Component {
   static getCurrentTheme(){
     let theme = document.documentElement.getAttribute('theme');
     if(!theme) theme = localStorage.getItem('theme');
-    return theme;
+    return theme || 'auto';
   }
 }
 const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');

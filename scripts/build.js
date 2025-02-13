@@ -1,6 +1,11 @@
 import fs from 'fs/promises';
 import fse from 'fs-extra';
 import { minify } from 'terser';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 console.log('Loading utils');
 const components = (await fs.readdir('./src/components/')).map(f=>f.substring(0,f.length-3));
@@ -117,5 +122,14 @@ await fs.writeFile('./dist/kempo-hljs.css', minifiedKempoHljsCSS, 'utf-8');
 console.log('Copying dist/ to docs/');
 await fse.ensureDir('./docs/'); // will also ensure docs/kempo
 await fse.copy('./dist', './docs/kempo')
+
+const iconsSrcDir = path.join(__dirname, '../icons');
+const iconsDestDir = path.join(__dirname, '../docs/icons');
+
+console.log('Deleting svg icons currently in docs/icons');
+await fse.ensureDir(iconsDestDir);
+await fse.emptyDir(iconsDestDir);
+console.log('Copying all files from icons to docs/icons');
+await fse.copy(iconsSrcDir, iconsDestDir);
 
 console.log('Build Complete');
