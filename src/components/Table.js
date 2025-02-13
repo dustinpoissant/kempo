@@ -44,7 +44,7 @@ export default class Table extends Component {
   
   renderControls(controls = [], record) {
     if (controls.length === 0) return '';
-    return `<td>${controls.map(({ html, icon, action }) => {
+    return `<td>${controls.map(({ html, icon, action, render }) => {
       if(html){
         return html;
       } else if(render && typeof(render) === 'function'){
