@@ -8,7 +8,7 @@ const getIconByPath = async (path) => {
       try {
         const response = await fetch(path);
         if(response.status === 200) resolve(await (response).text());
-      } catch(e){      }
+      } catch(e){ }
       return reject();
     });
   } 
@@ -31,11 +31,11 @@ const getIconByName = (name) => {
 }
 
 export default class Icon extends Component {
-  constructor(){
+  constructor(name = ''){
     super();
     this.registerAttributes({
       src: '',
-      name: ''
+      name: name
     });
   }
   connectedCallback(){

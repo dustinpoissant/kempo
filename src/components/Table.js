@@ -1,18 +1,20 @@
 import Component from './Component.js';
+import Icon from './Icon.js'; // Import Icon component
 import { toTitleCase } from '../utils/string.js';
 
 export default class Table extends Component {
-  constructor(data = false, fields = false){
+  constructor(data = false, fields = false, controls = { before: [], after: [] }){
     super();
 
     this.registerProps({
       fields: [],
-      records: []
+      records: [],
+      controls: { before: [], after: [] }
     });
 
     /* Init */
     if(data){
-      this.setData(data, fields);
+      this.setData(data, fields, controls);
     }
   }
   async render(force){
@@ -24,23 +26,37 @@ export default class Table extends Component {
     return false;
   }
   renderFields(){
-    this.shadowRoot.getElementById('fields').innerHTML = this.fields.map(({label})=>`<th>${label}</th>`).join('');
+    const beforeControls = this.controls.before.length ? '<th></th>' : '';
+    const afterControls = this.controls.after.length ? '<th></th>' : '';
+    this.shadowRoot.getElementById('fields').innerHTML = `${beforeControls}${this.fields.map(({label})=>`<th>${label}</th>`).join('')}${afterControls}`;
   }
   renderRecords(){
     this.shadowRoot.getElementById('records').innerHTML = this.records.map((record) => {
-      return `<tr>${this.fields.map(({name}) => {
+      return `<tr>${this.renderControls(this.controls.before, record)}${this.fields.map(({name}) => {
         let value = record[name] || '';
         if (Array.isArray(value)) {
           value = value.join(', ');
         }
         return `<td>${value}</td>`;
-      }).join('')}</tr>`;
+      }).join('')}${this.renderControls(this.controls.after, record)}</tr>`;
     }).join('');
   }
   
-  setData(records, fields = false){
+  renderControls(controls, record) {
+    if (controls.length === 0) return '';
+    return `<td>${controls.map(({ icon, action }) => {
+      const button = document.createElement('button');
+      const iconElement = new Icon(icon); // Pass icon name as parameter
+      button.appendChild(iconElement);
+      button.addEventListener('click', () => action(record, this));
+      return button.outerHTML;
+    }).join('')}</td>`;
+  }
+
+  setData(records, fields = false, controls = { before: [], after: [] }){
     this.records = records;
     this.fields = fields || Table.extractFieldsFromRecords(this.records);
+    this.controls = controls;
     this.renderFields();
     this.renderRecords();
   }
