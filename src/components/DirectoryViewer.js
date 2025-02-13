@@ -10,8 +10,7 @@ import watchDirectoryHandle from '../utils/watchDirectoryHandle.js';
 
 const handle = Symbol(),
       loadDirectoryClickHandler = Symbol(),
-      openToggleClickHandler = Symbol(),
-      fileSelectedHandler = Symbol(),
+      selectedHandler = Symbol(),
       watchId = Symbol(),
       changeCallback = Symbol(),
       filters = Symbol();
@@ -37,13 +36,13 @@ export default class DirectoryViewer extends LazyComponent {
     this[changeCallback] = () => {
       this.updateContents();
     }
+    this[selectedHandler] = (e) => {
+      
+    }
 
     /* Init */
-    this.slot = 'content';
     this.registerAttributes({
-      root: !_handle,
       hasHandle: !!_handle,
-      opened: !_handle,
       selected: false
     });
   }
@@ -51,9 +50,8 @@ export default class DirectoryViewer extends LazyComponent {
   /* Lifecycle Callbacks */
   async render(force){
     if(await super.render(force)){
-      onEvent(this.shadowRoot, 'fileselected', this[fileSelectedHandler]);
+      onEvent(this.shadowRoot, 'fileSelected directorySelected', this[selectedHandler]);
       onEvent(this.shadowRoot.getElementById('loadDirectory'), 'click', this[loadDirectoryClickHandler]);
-      onEvent(this.shadowRoot.getElementById('openToggle'), 'click', this[openToggleClickHandler]);
       this.renderDirectory();
       return true;
     }
@@ -133,15 +131,6 @@ export default class DirectoryViewer extends LazyComponent {
       }
     }
   }
-  open(){
-    this.opened = true;
-  }
-  close(){
-    if(!this.root) this.opened = false;
-  }
-  toggleOpen(){
-    if(!this.root) this.opened = !this.opened;
-  }
   clearDirectoryHandle(){
     this[handle] = false;
     this.hasHandle = false;
@@ -183,11 +172,11 @@ export default class DirectoryViewer extends LazyComponent {
     }
   }
   select(){
-    const $currentSelection = this.closest('k-directory-viewer[root]').querySelector('k-directory-viewer[selected], k-directory-viewer-file[selected]');
+    const $currentSelection = this.querySelector('k-directory[selected], k-file[selected]');
     if($currentSelection === this) return;
     if($currentSelection) $currentSelection.selected = false;
     this.selected = true;
-    this.dispatchEvent(new CustomEvent('dirselected', {
+    this.dispatchEvent(new CustomEvent('dirSelected', {
       detail: {
         dirHandle: this[handle],
         dirComponent: this
@@ -269,6 +258,83 @@ export default class DirectoryViewer extends LazyComponent {
 }
 window.customElements.define('k-directory-viewer', DirectoryViewer);
 
+export class Directory extends Component {
+  constructor(_handle = false){
+    super();
+
+    /* Private Members */
+    this[handle] = _handle;
+
+    /* Private Methods */
+    this[selectDirectoryClickHandler] = () => this.select();
+
+    /* Init */
+    this.slot = 'content';
+    this.registerAttribute('selected', false);
+  }
+
+  /* Lifecycle Callbacks */
+  async render(force){
+    if(await super.render(force)){
+      if(this[handle]){
+        this.innerHTML = this[handle].name;
+        onEvent(this.shadowRoot.getElementById('selectDirectory'), 'click', this[selectDirectoryClickHandler]);
+      }
+      return true;
+    }
+    return false;
+  }
+  disconnectedCallback(){
+    super.disconnectedCallback();
+    offEvent(this.shadowRoot.getElementById('selectDirectory'), 'click', this[selectDirectoryClickHandler]);
+  }
+
+  /* Protected Members */
+  get rootDir(){
+    return this.closest('k-directory-viewer')
+  }
+
+  /* Public Methods */
+  select(){
+    const $currentSelection = this.rootDir.querySelector('k-directory[selected], k-file[selected]');
+    if($currentSelection === this) return;
+    if($currentSelection) $currentSelection.selected = false;
+    this.selected = true;
+    this.dispatchEvent(new CustomEvent('directorySelected', {
+      detail: {
+        fileHandle: this[handle],
+        fileComponent: this
+      },
+      bubbles: true,
+      composed: true
+    }));
+  }
+
+  /* Shadow DOM */
+  get shadowTemplate(){
+    return /*html*/`
+      <button
+        id="selectDirectory"
+      >
+        <slot name="selectButton">
+          <k-icon id="extIcon" name="file"></k-icon> ${this[handle].name}
+        </slot>
+      </button>
+      ${super.shadowTemplate}
+    `;
+  }
+  get shadowStyles(){
+    return /*css*/`
+      ${super.shadowStyles}
+      :host([selected]) #selectFile {
+        background-color: var(--c_primary);
+        color: var(--tc_on_primary);
+        border-radius: var(--raidus);
+      }
+    `;
+  }
+}
+
 const selectFileClickHandler = Symbol();
 export class File extends Component {
   constructor(_handle = false){
@@ -310,13 +376,18 @@ export class File extends Component {
     offEvent(this.shadowRoot.getElementById('selectFile'), 'click', this[selectFileClickHandler]);
   }
 
+  /* Protected Members */
+  get rootDir(){
+    return this.closest('k-directory-viewer')
+  }
+
   /* Public Methods */
   select(){
-    const $currentSelection = this.closest('k-directory-viewer[root]').querySelector('k-directory-viewer[selected], k-directory-viewer-file[selected]');
+    const $currentSelection = this.rootDir.querySelector('k-directory[selected], k-file[selected]');
     if($currentSelection === this) return;
     if($currentSelection) $currentSelection.selected = false;
     this.selected = true;
-    this.dispatchEvent(new CustomEvent('fileselected', {
+    this.dispatchEvent(new CustomEvent('fileSelected', {
       detail: {
         fileHandle: this[handle],
         fileComponent: this

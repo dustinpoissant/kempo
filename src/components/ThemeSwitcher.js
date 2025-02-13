@@ -48,12 +48,12 @@ export default class ThemeSwitcher extends Component {
         ></k-icon>
         <k-icon
           id="lightMode"
-          name="light-mode"
+          name="mode-light"
           class="mode"
         ></k-icon>
         <k-icon
           id="darkMode"
-          name="dark-mode"
+          name="mode-dark"
           class="mode"
         ></k-icon>
       </button>
