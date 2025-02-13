@@ -22,6 +22,7 @@
         <a href="#requirements">Requirements</a><br />
         <a href="#properties">Properties</a><br />
         <a href="#methods">Methods</a><br />
+        <a href="#controls">Row Controls</a><br />
       </div>
     </details>
 
@@ -107,6 +108,47 @@
       ]);
     </script>
 
+    <h3 id="controls"><a href="#controls" class="no-link">Row Controls</a></h3>
+    <p>The table component can display controls before or after each row. Each control is defined by an icon name, a callback function, and optionally an HTML string or a render function. All controls are combined into a single <code>&lt;td&gt;</code> with each control being a button.</p>
+
+    
+    <k-table id="contacts2"></k-table>
+    <script type="module">
+      document.getElementById('contacts2').setData([
+        {
+          name: "Dustin",
+          phoneNumber: "(111) 111-1111",
+          emailAddress: "dustin@mailserver.com",
+          gender: "Male"
+        },
+        {
+          name: "Kayla",
+          phoneNumber: "(222) 222-2222",
+          emailAddress: "kayla@mailserver.com",
+          gender: "Female"
+        }
+      ], false, {
+        before: [
+          {
+            icon: 'edit',
+            action: (record, table) => console.log('Edit', record, table)
+          }
+        ],
+        after: [
+          {
+            icon: 'delete',
+            action: (record, table) => console.log('Delete', record, table)
+          },
+          {
+            html: '<span>Custom HTML</span>'
+          },
+          {
+            render: (record, table) => `<a href="mailto:${record.emailAddress}">Email</a>`
+          }
+        ]
+      });
+    </script>
+
     <h3 id="constructor"><a href="#consttructor" class="no-link">Constructor</a></h3>
     <h6>Extends <a href="./component.html">Component</a></h6>
     <h5>
@@ -150,11 +192,10 @@
           action: (record, table) => console.log('Delete', record, table)
         },
         {
-          html: '<span>Custom HTML</span>',
-          action: (record, table) => console.log('Custom Action', record, table)
+          html: '<span>Custom HTML</span>'
         },
         {
-          render: (record, table) => `<button onclick="console.log('Rendered Action', ${record}, ${table})">Rendered Button</button>`
+          render: (record, table) => `&lt;button onclick="console.log('Rendered Action', ${record}, ${table})">Rendered Button&lt;/button>`
         }
       ]
     }</code></pre>

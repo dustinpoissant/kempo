@@ -26,38 +26,56 @@ export default class Table extends Component {
     return false;
   }
   renderFields(){
-    const beforeControls = this.controls.before?.length ? '<th></th>' : '';
-    const afterControls = this.controls.after?.length ? '<th></th>' : '';
+    const beforeControls = this.controls?.before?.length ? '<th></th>' : '';
+    const afterControls = this.controls?.after?.length ? '<th></th>' : '';
     this.shadowRoot.getElementById('fields').innerHTML = `${beforeControls}${this.fields.map(({label})=>`<th>${label}</th>`).join('')}${afterControls}`;
   }
   renderRecords(){
-    this.shadowRoot.getElementById('records').innerHTML = this.records.map((record) => {
-      return `<tr>${this.renderControls(this.controls.before, record)}${this.fields.map(({name}) => {
+    const $records = this.shadowRoot.getElementById('records');
+    $records.innerHTML = '';
+    this.records.forEach((record) => {
+      const $tr = document.createElement('tr');
+      if(this.controls?.before?.length){
+        $tr.appendChild(this.renderControls(this.controls.before, record));
+      }
+      this.fields.forEach(({name}) => {
+        const $td = document.createElement('td');
         let value = record[name] || '';
         if (Array.isArray(value)) {
           value = value.join(', ');
         }
-        return `<td>${value}</td>`;
-      }).join('')}${this.renderControls(this.controls.after, record)}</tr>`;
-    }).join('');
+        $td.innerHTML = value;
+        $tr.appendChild($td);
+      });
+      if(this.controls?.after?.length){
+        $tr.appendChild(this.renderControls(this.controls.after, record));
+      }
+      $records.appendChild($tr);
+    });
   }
   
   renderControls(controls = [], record) {
-    if (controls.length === 0) return '';
-    return `<td>${controls.map(({ html, icon, action, render }) => {
+    const $td = document.createElement('td');
+    controls.forEach(({ html, icon, action, render }) => {
       if(html){
-        return html;
+        $td.appendChild(document.createRange().createContextualFragment(html));
       } else if(render && typeof(render) === 'function'){
-        return render(record, this);
-      } else {
+        const rendered = render(record, this);
+        if(rendered instanceof HTMLElement){
+          $td.appendChild(rendered);
+        } else if(typeof(rendered) === 'string'){
+          $td.appendChild(document.createRange().createContextualFragment(rendered));
+        }
+      } else if(icon){
         const $button = document.createElement('button');
         $button.appendChild(new Icon(icon));
         if (action) {
           $button.addEventListener('click', () => action(record, this));
         }
+        $td.appendChild($button);
       }
-      return button.outerHTML;
-    }).join('')}</td>`;
+    });
+    return $td;
   }
 
   setData(records, fields = false, controls = { before: [], after: [] }){
@@ -66,7 +84,6 @@ export default class Table extends Component {
     this.controls = controls;
     this.renderFields();
     this.renderRecords();
-    this.renderControls();
   }
 
   get shadowTemplate(){
