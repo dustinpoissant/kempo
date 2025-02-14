@@ -127,6 +127,7 @@ export default class Table extends Component {
     const start = (this.currentPage - 1) * this.pageSize;
     const end = start + this.pageSize;
     const paginatedRecords = this.records.slice(start, end);
+    let fetchRecords = false;
     paginatedRecords.forEach((record, index) => {
       const $tr = document.createElement('tr');
       if (this.enableSelection) {
@@ -149,12 +150,15 @@ export default class Table extends Component {
       if(this.controls?.before?.length){
         $tr.appendChild(this.renderRowControls(this.controls.before, record, start + index));
       }
-      this.fields.forEach(({name, formatter, calculator}) => {
+      if(record === null){
         const $td = document.createElement('td');
-        if (record === null) {
-          $td.innerHTML = 'Loading...';
-            dispatchEvent(this, 'fetchRecords', { start, end });
-        } else {
+        $td.colSpan = this.fields.length;
+        $td.innerHTML = '<i>Loading...</i>';
+        fetchRecords = true;
+        $tr.appendChild($td);
+      } else {
+        this.fields.forEach(({name, formatter, calculator}, index) => {
+          const $td = document.createElement('td');
           let value;
           if(calculator){
             value = calculator(record, this);
@@ -173,14 +177,17 @@ export default class Table extends Component {
             }
           }
           $td.innerHTML = value;
-        }
-        $tr.appendChild($td);
-      });
+          $tr.appendChild($td);
+        });
+      }
       if(this.controls?.after?.length){
         $tr.appendChild(this.renderRowControls(this.controls.after, record, start + index));
       }
       $records.appendChild($tr);
     });
+    if(fetchRecords){
+      dispatchEvent(this, 'fetchRecords', { start, end });
+    }
   }
   
   renderRowControls(controls = [], record, index) {
