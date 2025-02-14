@@ -99,8 +99,26 @@ export default class Table extends Component {
     if(!this.rendered) return;
     const beforeControls = this.controls?.before?.length ? '<th></th>' : '';
     const afterControls = this.controls?.after?.length ? '<th></th>' : '';
-    const selectionControl = this.enableSelection ? '<th class="selection"></th>' : '';
+    const selectionControl = this.enableSelection ? '<th class="selection"><input type="checkbox" id="select-all"></th>' : '';
     this.shadowRoot.getElementById('fields').innerHTML = `${selectionControl}${beforeControls}${this.fields.map(({label})=>`<th>${label}</th>`).join('')}${afterControls}`;
+
+    if (this.enableSelection) {
+      const selectAllCheckbox = this.shadowRoot.getElementById('select-all');
+      selectAllCheckbox.addEventListener('change', () => {
+        if (selectAllCheckbox.checked) {
+          this.selectAllOnPage();
+        } else {
+          this.deselectAllOnPage();
+        }
+      });
+      onEvent(this, 'selectionChange pageChange', () => {
+        if(this.allOnPageSelected()){
+          selectAllCheckbox.checked = true;
+        } else {
+          selectAllCheckbox.checked = false;
+        }
+      });
+    }
   }
   renderRecords(){
     if(!this.rendered) return;
@@ -337,6 +355,9 @@ export default class Table extends Component {
 
   deleteRecord(index) {
     if (index >= 0 && index < this.records.length) {
+      // Deselect the record before deleting
+      this.selectedIndexes = this.selectedIndexes.filter(i => i !== index);
+      dispatchEvent(this, 'selectionChange', { selectedIndexes: this.selectedIndexes });
       this.records.splice(index, 1);
       this.renderRecords();
       dispatchEvent(this, 'recordDeleted', { index });
@@ -344,7 +365,38 @@ export default class Table extends Component {
   }
 
   getSelectedRecords() {
-    return this.selectedIndexes.map(index => JSON.parse(JSON.stringify(this.records[index])));
+    return this.selectedIndexes.map(index => this.records[index]);
+  }
+
+  selectAllOnPage() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = Math.min(start + this.pageSize, this.records.length);
+    for (let i = start; i < end; i++) {
+      if (!this.selectedIndexes.includes(i)) {
+        this.selectedIndexes.push(i);
+      }
+    }
+    this.renderRecords();
+    dispatchEvent(this, 'selectionChange', { selectedIndexes: this.selectedIndexes });
+  }
+
+  deselectAllOnPage() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = Math.min(start + this.pageSize, this.records.length);
+    this.selectedIndexes = this.selectedIndexes.filter(index => index < start || index >= end);
+    this.renderRecords();
+    dispatchEvent(this, 'selectionChange', { selectedIndexes: this.selectedIndexes });
+  }
+
+  allOnPageSelected() {
+    const start = (this.currentPage - 1) * this.pageSize;
+    const end = Math.min(start + this.pageSize, this.records.length);
+    for (let i = start; i < end; i++) {
+      if (!this.selectedIndexes.includes(i)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   get shadowTemplate(){
@@ -402,11 +454,8 @@ export default class Table extends Component {
       th.selection input,
       td.selection input {
         margin: 0;
-        transform: scale(1.5); /* Adjust the scale value as needed */
-        -webkit-transform: scale(1.5); /* For Safari */
-        -moz-transform: scale(1.5); /* For Firefox */
-        -ms-transform: scale(1.5); /* For IE */
-        -o-transform: scale(1.5); /* For Opera */
+        width: 1.35rem;
+        height: 1.35rem;
       }
     `;
   }

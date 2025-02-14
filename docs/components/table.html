@@ -257,22 +257,25 @@
 
     <h3 id="recordSelection"><a href="#recordSelection" class="no-link">Record Selection</a></h3>
     <p>The table component supports record selection. You can enable record selection by setting the <code>enableSelection</code> property to <code>true</code>.</p>
-
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"recordSelectionExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Table <span class="hljs-keyword">from</span> <span class="hljs-string">'../kempo/components/Table.js'</span>;<br /><br />  <span class="hljs-keyword">const</span> $recordSelectionExample = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'recordSelectionExample'</span>);<br />  $recordSelectionExample.setData({<br />    <span class="hljs-attr">records</span>: contacts,<br />    <span class="hljs-attr">enableSelection</span>: <span class="hljs-literal">true</span>,<br />    <span class="hljs-attr">controls</span>: {<br />      <span class="hljs-attr">bottom</span>: [<br />        Table.controls.prevPage,<br />        Table.controls.nextPage,<br />        Table.controls.spacer,<br />        Table.controls.selectCount,<br />        Table.controls.deleteSelected<br />      ]<br />    },<br />    <span class="hljs-attr">pageSize</span>: <span class="hljs-number">10</span><br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
     <k-table id="recordSelectionExample"></k-table>
     <script type="module">
       import Table from '../kempo/components/Table.js';
 
       const $recordSelectionExample = document.getElementById('recordSelectionExample');
       $recordSelectionExample.setData({
-        records: contacts.slice(30, 40),
+        records: contacts,
         enableSelection: true,
         controls: {
           bottom: [
-            Table.controls.selectCount,
+            Table.controls.prevPage,
+            Table.controls.nextPage,
             Table.controls.spacer,
+            Table.controls.selectCount,
             Table.controls.deleteSelected
           ]
-        }
+        },
+        pageSize: 10
       });
     </script>
 
@@ -351,6 +354,22 @@
 
     <h5><code>goToPage(<i>number</i> pageNumber)<i>: undefined</i></code></h5>
     <p>Navigates to the specified page number.</p>
+
+    <h5><code>getSelectedRecords()<i>: Array</i></code></h5>
+    <p>Returns an array of the currently selected records.</p>
+
+    <h5><code>deleteSelectedRecords()<i>: undefined</i></code></h5>
+    <p>Deletes all currently selected records from the table.</p>
+
+    <h5><code>selectAllOnPage()<i>: undefined</i></code></h5>
+    <p>Selects all the records on the current page.</p>
+
+    <h5><code>deselectAllOnPage()<i>: undefined</i></code></h5>
+    <p>Deselects all the records on the current page.</p>
+
+    <h5><code>allOnPageSelected()<i>: undefined</i></code></h5>
+    <p>Returns <code>true</code> if all the records on the current page are selected, and <code>false</code> if they are not.</p>
+    
 
   </main>
   <div style="height: 33.333vh"></div>
