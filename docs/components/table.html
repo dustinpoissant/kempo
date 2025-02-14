@@ -255,6 +255,26 @@
       });
     </script>
 
+    <h3 id="recordSelection"><a href="#recordSelection" class="no-link">Record Selection</a></h3>
+    <p>The table component supports record selection. You can enable record selection by setting the <code>enableSelection</code> property to <code>true</code>.</p>
+
+    <k-table id="recordSelectionExample"></k-table>
+    <script type="module">
+      import Table from '../kempo/components/Table.js';
+
+      const $recordSelectionExample = document.getElementById('recordSelectionExample');
+      $recordSelectionExample.setData({
+        records: contacts.slice(30, 40),
+        enableSelection: true,
+        controls: {
+          bottom: [
+            Table.controls.selectCount,
+            Table.controls.spacer,
+            Table.controls.deleteSelected
+          ]
+        }
+      });
+    </script>
 
     <h2>JavaScript Reference</h2>
     <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>

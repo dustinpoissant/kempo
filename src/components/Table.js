@@ -1,5 +1,9 @@
 import Component from './Component.js';
 import Icon from './Icon.js';
+import SelectCount from './tableControls/SelectCount.js';
+import PageSelect from './tableControls/PageSelect.js';
+import PageSize from './tableControls/PageSize.js';
+import DeleteSelected from './tableControls/DeleteSelected.js';
 import { toTitleCase } from '../utils/string.js';
 import { onEvent, dispatchEvent } from '../utils/element.js';
 
@@ -41,6 +45,12 @@ export default class Table extends Component {
     pageSize: {
       render: (table) => new PageSize(table)
     },
+    selectCount: {
+      render: (table) => new SelectCount(table)
+    },
+    deleteSelected: {
+      render: (table) => new DeleteSelected(table)
+    },
     spacer: {
       html: '<div class="flex"></div>'
     }
@@ -53,6 +63,7 @@ export default class Table extends Component {
     pageSize = 100,
     pageSizeOptions = [10, 25, 50, 100, 500],
     currentPage = 1,
+    enableSelection = false,
   } = {}) {
     super();
 
@@ -63,6 +74,8 @@ export default class Table extends Component {
       pageSize,
       pageSizeOptions,
       currentPage,
+      enableSelection,
+      selectedIndexes: [], // Renamed property
     });
 
     /* Init */
@@ -86,7 +99,8 @@ export default class Table extends Component {
     if(!this.rendered) return;
     const beforeControls = this.controls?.before?.length ? '<th></th>' : '';
     const afterControls = this.controls?.after?.length ? '<th></th>' : '';
-    this.shadowRoot.getElementById('fields').innerHTML = `${beforeControls}${this.fields.map(({label})=>`<th>${label}</th>`).join('')}${afterControls}`;
+    const selectionControl = this.enableSelection ? '<th class="selection"></th>' : '';
+    this.shadowRoot.getElementById('fields').innerHTML = `${selectionControl}${beforeControls}${this.fields.map(({label})=>`<th>${label}</th>`).join('')}${afterControls}`;
   }
   renderRecords(){
     if(!this.rendered) return;
@@ -97,6 +111,23 @@ export default class Table extends Component {
     const paginatedRecords = this.records.slice(start, end);
     paginatedRecords.forEach((record, index) => {
       const $tr = document.createElement('tr');
+      if (this.enableSelection) {
+        const $td = document.createElement('td');
+        $td.classList.add('selection');
+        const $checkbox = document.createElement('input');
+        $checkbox.type = 'checkbox';
+        $checkbox.checked = this.selectedIndexes.includes(start + index);
+        $checkbox.addEventListener('change', () => {
+          if ($checkbox.checked) {
+            this.selectedIndexes.push(start + index);
+          } else {
+            this.selectedIndexes = this.selectedIndexes.filter(i => i !== start + index);
+          }
+          dispatchEvent(this, 'selectionChange', { selectedIndexes: this.selectedIndexes });
+        });
+        $td.appendChild($checkbox);
+        $tr.appendChild($td);
+      }
       if(this.controls?.before?.length){
         $tr.appendChild(this.renderRowControls(this.controls.before, record, start + index));
       }
@@ -228,7 +259,8 @@ export default class Table extends Component {
     controls = false,
     pageSize = false,
     pageSizeOptions = false,
-    currentPage = false
+    currentPage = false,
+    enableSelection = false // Add enableSelection property
   } = {}) {
     let rerender = false;
     let rerenderControls = false;
@@ -250,6 +282,10 @@ export default class Table extends Component {
     }
     if(currentPage){
       this.currentPage = currentPage;
+      rerender = true;
+    }
+    if(enableSelection !== undefined){
+      this.enableSelection = enableSelection;
       rerender = true;
     }
     if(rerender){
@@ -307,6 +343,10 @@ export default class Table extends Component {
     }
   }
 
+  getSelectedRecords() {
+    return this.selectedIndexes.map(index => JSON.parse(JSON.stringify(this.records[index])));
+  }
+
   get shadowTemplate(){
     return /*html*/`
       ${super.shadowTemplate}
@@ -356,6 +396,18 @@ export default class Table extends Component {
       #bottom:not(:empty) {
         border-top: 1px solid var(--c_border);
       }
+      th.selection, td.selection {
+        width: 50px;
+      }
+      th.selection input,
+      td.selection input {
+        margin: 0;
+        transform: scale(1.5); /* Adjust the scale value as needed */
+        -webkit-transform: scale(1.5); /* For Safari */
+        -moz-transform: scale(1.5); /* For Firefox */
+        -ms-transform: scale(1.5); /* For IE */
+        -o-transform: scale(1.5); /* For Opera */
+      }
     `;
   }
 
@@ -368,131 +420,3 @@ export default class Table extends Component {
   }
 }
 window.customElements.define('k-table', Table);
-
-class PageSelect extends Component {
-  constructor(table) {
-    super();
-    this.table = table;
-    this.classList.add('mxq');
-  }
-
-  connectedCallback() {
-    this.render();
-  }
-
-  async render() {
-    if(await super.render()){
-      this.updateOptions();
-      return true;
-    }
-    return false;
-  }
-
-  updateOptions() {
-    const $select = this.shadowRoot.getElementById('pageSelect');
-    $select.innerHTML = '';
-    for (let i = 1; i <= this.table.getTotalPages(); i++) {
-      const $option = document.createElement('option');
-      $option.value = i;
-      $option.textContent = i;
-      $select.appendChild($option);
-    }
-    $select.value = this.table.getCurrentPage();
-    const $totalPages = this.shadowRoot.getElementById('totalPages');
-    $totalPages.textContent = this.table.getTotalPages();
-
-    onEvent($select, 'change', () => {
-      this.table.setPage(parseInt($select.value));
-    });
-
-    onEvent(this.table, 'pageSizeChange', () => {
-      this.updateOptions();
-    });
-
-    onEvent(this.table, 'pageChange', () => {
-      $select.value = this.table.getCurrentPage();
-    });
-  }
-
-  get shadowTemplate() {
-    return /*html*/`
-      <select id="pageSelect" class="mxq"></select>
-      <label> out of <span id="totalPages"></span></label>
-    `;
-  }
-
-  get shadowStyles() {
-    return /*css*/`
-      :host {
-        display: inline-flex;
-        width: max-content;
-        align-items: baseline;
-      }
-      #pageSelect, label {
-        display: inline;
-      }
-      label {
-        white-space: nowrap;
-      }
-    `;
-  }
-}
-window.customElements.define('k-table-page-select', PageSelect);
-
-class PageSize extends Component {
-  constructor(table) {
-    super();
-    this.table = table;
-    this.classList.add('mxq');
-  }
-
-  connectedCallback() {
-    this.render();
-  }
-
-  async render() {
-    if(await super.render()){
-      const $select = this.shadowRoot.getElementById('pageSizeSelect');
-      const options = this.table.pageSizeOptions;
-      options.forEach(size => {
-        const $option = document.createElement('option');
-        $option.value = size;
-        $option.textContent = size;
-        $select.appendChild($option);
-      });
-      $select.value = this.table.pageSize;
-
-      onEvent($select, 'change', () => {
-        this.table.setPageSize(parseInt($select.value));
-      });
-
-      onEvent(this.table, 'pageSizeChange', () => {
-        $select.value = this.table.pageSize;
-      });
-
-      return true;
-    }
-    return false;
-  }
-
-  get shadowTemplate() {
-    return /*html*/`
-      <label for="pageSizeSelect">Page Size: </label>
-      <select id="pageSizeSelect" class="mxq"></select>
-    `;
-  }
-
-  get shadowStyles() {
-    return /*css*/`
-      :host {
-        display: inline-flex;
-        width: max-content;
-        align-items: baseline;
-      }
-      label {
-        white-space: nowrap;
-      }
-    `;
-  }
-}
-window.customElements.define('k-table-page-size', PageSize);
