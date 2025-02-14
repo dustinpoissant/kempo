@@ -259,37 +259,31 @@
       });
     </script>
 
-    <h3 id="fetchRecords"><a href="#fetchRecords" class="no-link">Fetch Records</a></h3>
-    <p>The table component supports fetching records dynamically. You can set up the fetch records feature by using the <code>setupFetchRecords</code> method.</p>
-    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"fetchRecordsExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Table <span class="hljs-keyword">from</span> <span class="hljs-string">'../kempo/components/Table.js'</span>;<br /><br />  <span class="hljs-keyword">const</span> $fetchRecordsExample = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'fetchRecordsExample'</span>);<br />  <span class="hljs-keyword">const</span> totalRecords = <span class="hljs-number">100</span>;<br />  $fetchRecordsExample.setData({<br />    <span class="hljs-attr">pageSize</span>: <span class="hljs-number">10</span>,<br />    <span class="hljs-attr">records</span>: contacts.slice(<span class="hljs-number">0</span>, <span class="hljs-number">10</span>),<br />    <span class="hljs-attr">controls</span>: {<br />      <span class="hljs-attr">bottom</span>: [<br />        Table.controls.prevPage,<br />        Table.controls.nextPage,<br />        Table.controls.pageSelect,<br />        Table.controls.spacer,<br />        Table.controls.pageSize<br />      ]<br />    }<br />  });<br />  <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">mockFetchRecords</span>(<span class="hljs-params">start, count</span>) </span>{<br />    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve</span>) =&gt;</span> {<br />      setTimeout(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {<br />        resolve(contacts.slice(start, start + count));<br />      }, <span class="hljs-number">1000</span>);<br />    });<br />  }<br />  $fetchRecordsExample.setupFetchRecords(totalRecords, mockFetchRecords);<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-    <k-table id="fetchRecordsExample"></k-table>
+    <h3 id="recordSelection"><a href="#recordSelection" class="no-link">Record Selection</a></h3>
+    <p>The table component supports record selection. You can enable selection by setting the <code>enableSelection</code> property to <code>true</code>. This will add a checkbox to each row and a "Select All" checkbox to the header.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"recordSelectionExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Table <span class="hljs-keyword">from</span> <span class="hljs-string">'../kempo/components/Table.js'</span>;<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'recordSelectionExample'</span>).setData({<br />    <span class="hljs-attr">records</span>: contacts,<br />    <span class="hljs-attr">enableSelection</span>: <span class="hljs-literal">true</span>,<br />    <span class="hljs-attr">controls</span>: {<br />      <span class="hljs-attr">bottom</span>: [<br />        Table.controls.prevPage,<br />        Table.controls.nextPage,<br />        Table.controls.pageSelect,<br />        Table.controls.spacer,<br />        Table.controls.selectCount,<br />        Table.controls.deleteSelected<br />      ]<br />    },<br />    <span class="hljs-attr">pageSize</span>: <span class="hljs-number">10</span><br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+    <k-table id="recordSelectionExample"></k-table>
     <script type="module">
       import Table from '../kempo/components/Table.js';
-
-      const $fetchRecordsExample = document.getElementById('fetchRecordsExample');
-      const totalRecords = 100;
-      $fetchRecordsExample.setData({
-        pageSize: 10,
-        records: contacts.slice(0, 10),
+      document.getElementById('recordSelectionExample').setData({
+        records: contacts,
+        enableSelection: true,
         controls: {
           bottom: [
             Table.controls.prevPage,
             Table.controls.nextPage,
             Table.controls.pageSelect,
             Table.controls.spacer,
-            Table.controls.pageSize
+            Table.controls.selectCount,
+            Table.controls.deleteSelected
           ]
-        }
+        },
+        pageSize: 10
       });
-      function mockFetchRecords(start, count) {
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            resolve(contacts.slice(start, start + count));
-          }, 1000);
-        });
-      }
-      $fetchRecordsExample.setupFetchRecords(totalRecords, mockFetchRecords);
     </script>
+
+    <br />
+    <hr class="my" />
 
     <h2>JavaScript Reference</h2>
     <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
