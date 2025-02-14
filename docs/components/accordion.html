@@ -16,7 +16,10 @@
     >
       <summary class="p">Table of Contents</summary>
       <div class="m mt0 pl">
+        <h6>Examples</h6>
         <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#defaultOpen">Default Open Panel</a><br />
+        <h6 class="mt">JavaScript Reference</h6>
         <a href="#constructor">Constructor</a><br />
         <a href="#requirements">Requirements</a><br />
         <a href="#attributes">Attributes</a><br />
@@ -29,6 +32,7 @@
     <p>A widget that allows a single panel of content to be opened and closed.</p>
 
     <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-accordion</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-header</span> <span class="hljs-attr">for-panel</span>=<span class="hljs-string">"panel1"</span>&gt;</span>Panel 1<span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-header</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-panel</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"panel1"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m"</span>&gt;</span>Panel 1 content<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-panel</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-header</span> <span class="hljs-attr">for-panel</span>=<span class="hljs-string">"panel2"</span>&gt;</span>Panel 2<span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-header</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-panel</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"panel2"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m"</span>&gt;</span>Panel 2 content<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-panel</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-header</span> <span class="hljs-attr">for-panel</span>=<span class="hljs-string">"panel3"</span>&gt;</span>Panel 3<span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-header</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-panel</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"panel3"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m"</span>&gt;</span>Panel 3 content<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-panel</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion</span>&gt;</span></code></pre>
     <k-accordion
       class="mb"
     >
@@ -46,7 +50,27 @@
       </k-accordion-panel>
     </k-accordion>
 
-    <h2 id="jsRef">JavaScript Refrerence</h2>
+    <h3 id="defaultOpen"><a href="#defaultOpen" class="no-link">Default Open Panel</a></h3>
+    <p>You can have a panel open by default by setting the <code>active</code> attribute to <code>true</code> on both the header and the panel.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-accordion</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-header</span> <span class="hljs-attr">for-panel</span>=<span class="hljs-string">"panel1"</span> <span class="hljs-attr">active</span>=<span class="hljs-string">"true"</span>&gt;</span>Panel 1<span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-header</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-panel</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"panel1"</span> <span class="hljs-attr">active</span>=<span class="hljs-string">"true"</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m"</span>&gt;</span>Panel 1 content<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />  <span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-panel</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-header</span> <span class="hljs-attr">for-panel</span>=<span class="hljs-string">"panel2"</span>&gt;</span>Panel 2<span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-header</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-panel</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"panel2"</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m"</span>&gt;</span>Panel 2 content<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />  <span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-panel</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-header</span> <span class="hljs-attr">for-panel</span>=<span class="hljs-string">"panel3"</span>&gt;</span>Panel 3<span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-header</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-accordion-panel</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"panel3"</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"m"</span>&gt;</span>Panel 3 content<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />  <span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion-panel</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-accordion</span>&gt;</span></code></pre>
+    <k-accordion
+      class="mb"
+    >
+      <k-accordion-header for-panel="panel1" active="true">Panel 1</k-accordion-header>
+      <k-accordion-panel name="panel1" active="true">
+        <p class="m">Panel 1 content</p>
+      </k-accordion-panel>
+      <k-accordion-header for-panel="panel2">Panel 2</k-accordion-header>
+      <k-accordion-panel name="panel2">
+        <p class="m">Panel 2 content</p>
+      </k-accordion-panel>
+      <k-accordion-header for-panel="panel3">Panel 3</k-accordion-header>
+      <k-accordion-panel name="panel3">
+        <p class="m">Panel 3 content</p>
+      </k-accordion-panel>
+    </k-accordion>
+
+    <h2 id="jsRef">JavaScript Reference</h2>
 
     <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
     <h6>Extends <a href="./component.html">Component</a></h6>
@@ -54,26 +78,36 @@
       <code>new Accordion()</code><br />
     </h5>
 
-    <h4>Paramters</h4>
-    <h5><code>param<i>: type</i></code></h5>
-    <p>param_description</p>
-
     <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
     <ul>
-      <li><a href=""></a></li>
+      <li><a href="../utils/element.html">utils/element.js</a></li>
     </ul>
 
     <h3 id="attributes"><a href="#attributes" class="no-link">Attributes</a></h3>
-    <h5><code>attr<i>: type</i></code></h5>
-    <p>attr_description</p>
+    <h5><code>forPanel: string</code></h5>
+    <p>Specifies the panel associated with the header.</p>
+    <h5><code>active: boolean</code></h5>
+    <p>Indicates whether the panel or header is active.</p>
+    <h5><code>transitioning: boolean</code></h5>
+    <p>Indicates whether the panel is in the process of transitioning.</p>
 
     <h3 id="properties"><a href="#properties" class="no-link">Properties</a></h3>
-    <h5><code>prop<i>: type</i></code></h5>
-    <p>prop_description</p>
+    <h5><code>activeHeader: HTMLElement</code></h5>
+    <p>Returns the currently active header element.</p>
+    <h5><code>activePanel: HTMLElement</code></h5>
+    <p>Returns the currently active panel element.</p>
 
     <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
-    <h5><code>method(<i>type<i> arg)<i>: return_type</i></code></h5>
-    <p>method_description</p>
+    <h5><code>getHeader(panelName: string): HTMLElement</code></h5>
+    <p>Returns the header element associated with the specified panel name.</p>
+    <h5><code>getPanel(panelName: string): HTMLElement</code></h5>
+    <p>Returns the panel element associated with the specified panel name.</p>
+    <h5><code>openPanel(panelName: string): void</code></h5>
+    <p>Opens the panel associated with the specified panel name.</p>
+    <h5><code>closePanel(panelName: string): void</code></h5>
+    <p>Closes the panel associated with the specified panel name.</p>
+    <h5><code>togglePanel(panelName: string): void</code></h5>
+    <p>Toggles the panel associated with the specified panel name.</p>
     
   </main>
   <script type="module" src="../kempo/components/Import.js"></script>

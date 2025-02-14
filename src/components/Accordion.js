@@ -4,7 +4,6 @@ import {
   offEvent,
   dispatchEvent
 } from '../utils/element.js';
-import raf from '../utils/raf.js';
 
 export default class Accordion extends Component {
   constructor(){
