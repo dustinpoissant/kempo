@@ -26,7 +26,7 @@ export default class SelectCount extends Component {
 
   get shadowTemplate() {
     return /*html*/`
-      <label>Selected: <span id="selectCount"></span></label>
+      Selected: <span id="selectCount"></span>
     `;
   }
 
@@ -36,6 +36,7 @@ export default class SelectCount extends Component {
         display: inline-flex;
         width: max-content;
         align-items: baseline;
+        align-self: center;
       }
       label {
         white-space: nowrap;

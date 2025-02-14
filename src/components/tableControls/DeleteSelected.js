@@ -35,7 +35,7 @@ export default class DeleteSelected extends Component {
 
   get shadowTemplate() {
     return /*html*/`
-      <button id="deleteSelectedButton" class="pq">
+      <button id="deleteSelectedButton" class="pq no-btn">
         <k-icon name="delete"></k-icon>
       </button>
     `;

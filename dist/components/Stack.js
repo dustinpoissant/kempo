@@ -1,1 +1,0 @@
-import Component from"./components/Component.js";export default class Stack extends Component{constructor(){super()}}window.customElements.define("k-stack",Stack);export class StackPanel extends Component{get shadowStyles(){return"\n      :host {\n        display: block;\n      }\n    "}}window.customElements.define("k-stack-panel",StackPanel);

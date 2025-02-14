@@ -12,7 +12,7 @@ export default class Table extends Component {
     prevPage: {
       render: (table) => {
         const $button = document.createElement('button');
-        $button.classList.add('pq');
+        $button.classList.add('pq', 'no-btn');
         $button.appendChild(new Icon('chevron-left'));
         onEvent($button, 'click', () => table.prevPage());
 
@@ -27,7 +27,7 @@ export default class Table extends Component {
     nextPage: {
       render: (table) => {
         const $button = document.createElement('button');
-        $button.classList.add('pq');
+        $button.classList.add('pq', 'no-btn');
         $button.appendChild(new Icon('chevron-right'));
         onEvent($button, 'click', () => table.nextPage());
 
@@ -198,7 +198,7 @@ export default class Table extends Component {
         }
       } else if(icon){
         const $button = document.createElement('button');
-        $button.classList.add('pq');
+        $button.classList.add('pq', 'no-btn');
         $button.appendChild(new Icon(icon));
         if (action) {
           onEvent($button, 'click', () => action(this, record, index));
@@ -225,7 +225,7 @@ export default class Table extends Component {
         }
       } else if(icon){
         const $button = document.createElement('button');
-        $button.classList.add('pq');
+        $button.classList.add('pq', 'no-btn');
         $button.appendChild(new Icon(icon));
         if (action) {
           onEvent($button, 'click', () => action(this));
