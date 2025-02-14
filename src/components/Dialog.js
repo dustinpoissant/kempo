@@ -284,13 +284,14 @@ export default class Dialog extends Component {
   static error(text, responseCallback, options = {
     title: 'Error'
   }){
-    Dialog.create(`
+    const $dialog = Dialog.create(`
       <h5 slot="title" class="pyh px m0 tc-danger">${options.title}</h5>
       <p class="p">${text}</p>
     `, {
       ...options,
-      cancelText: 'Ok'
+      cancelText: 'Ok',
     });
+    onEvent($dialog, 'close',  responseCallback);
   }
 }
 window.customElements.define('k-dialog', Dialog);
