@@ -1,4 +1,5 @@
 import LazyComponent from './LazyComponent.js';
+import { onEvent } from '../utils/element.js';
 
 export default class FocusCapture extends LazyComponent {
   constructor(){
@@ -8,7 +9,7 @@ export default class FocusCapture extends LazyComponent {
   }
   render(){
     super.render();
-    this.shadowRoot.getElementById('after').addEventListener('focus', () => {
+    onEvent(this.shadowRoot.getElementById('after'), 'focus', () => {
       this.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])').focus();
     });
   }

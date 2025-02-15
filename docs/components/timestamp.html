@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timestamp - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = ['../icons'];
+  </script>
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Timestamp</h1>
+  <main>
+    <details class="b r mb">
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <h6>Examples</h6>
+        <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#customFormat">Custom Format</a><br />
+        
+        <h6 class="mt">JavaScript Reference</h6>
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#attributes">Attributes</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
+      </div>
+    </details>
+
+    <h3>Description</h3>
+    <p>The <code>Timestamp</code> component displays a formatted timestamp. It extends the <a href="./component.html">Component</a> class.</p>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <p>Use the <code>Timestamp</code> component to display a formatted timestamp. The component will automatically format the timestamp based on the provided locale or the user's current locale if no locale is provided.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-timestamp</span> <span class="hljs-attr">timestamp</span>=<span class="hljs-string">"1633024800000"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-timestamp</span>&gt;</span></code></pre>
+    <k-timestamp timestamp="1633024800000"></k-timestamp>
+
+    <h3 id="customFormat"><a href="#customFormat" class="no-link">Custom Format</a></h3>
+    <p>Use the <code>format</code> attribute to specify a custom format for the timestamp. The format should be a string like <code>YYYY-MM-DD hh:mm:ss:iiii</code>.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-timestamp</span> <span class="hljs-attr">timestamp</span>=<span class="hljs-string">"1633024800000"</span> <span class="hljs-attr">format</span>=<span class="hljs-string">"YYYY-MM-DD hh:mm:ss"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-timestamp</span>&gt;</span></code></pre>
+    <k-timestamp timestamp="1633024800000" format="YYYY-MM-DD hh:mm:ss"></k-timestamp>
+
+    <h2 id="jsRef">JavaScript Reference</h2>
+
+    <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
+    <h6>Extends <a href="./component.html">Component</a></h6>
+    <h5>
+      <code>new Timestamp(timestamp, format, locale)</code>
+    </h5>
+
+    <h4>Parameters</h4>
+    <h5><code>timestamp<i>: number</i></code></h5>
+    <p>The timestamp to be formatted and displayed.</p>
+    <h5><code>format<i>: string</i></code></h5>
+    <p>The format to be used for formatting the timestamp. If not provided, the user's current locale format will be used.</p>
+    <h5><code>locale<i>: string</i></code></h5>
+    <p>The locale to be used for formatting the timestamp. If not provided, the user's current locale will be used.</p>
+
+    <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
+    <ul>
+      <li><a href="./component.html">Component</a></li>
+      <li><a href="../utils/formatTimestamp.js">formatTimestamp Utility Function</a></li>
+    </ul>
+
+    <h3 id="attributes"><a href="#attributes" class="no-link">Attributes</a></h3>
+    <h5><code>timestamp<i>: number</i></code></h5>
+    <p>The timestamp to be formatted and displayed.</p>
+    <h5><code>format<i>: string</i></code></h5>
+    <p>The format to be used for formatting the timestamp. If not provided, the user's current locale format will be used.</p>
+    <h5><code>locale<i>: string</i></code></h5>
+    <p>The locale to be used for formatting the timestamp. If not provided, the user's current locale will be used.</p>
+
+    <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
+    <p>The <code>Timestamp</code> class does not introduce any new methods beyond those provided by the <a href="./component.html">Component</a> class.</p>
+
+  </main>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+  <script type="module" src="../kempo/components/Timestamp.js"></script> 
+</body>
+</html>

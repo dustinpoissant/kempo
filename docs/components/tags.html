@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tags - Components - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = ['../icons'];
+  </script>
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Tags</h1>
+  <main>
+    <details class="b r mb">
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <h6>Examples</h6>
+        <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#allowedTags">Allowed Tags</a><br />
+        <a href="#disallowedTags">Disallowed Tags</a><br />
+        
+        <h6 class="mt">JavaScript Reference</h6>
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#attributes">Attributes</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
+      </div>
+    </details>
+
+    <h3>Description</h3>
+    <p>The <code>Tags</code> component allows users to add and remove tags. It extends the <a href="./component.html">Component</a> class.</p>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <p>Use the <code>Tags</code> component to allow users to add and remove tags. Tags can be added by typing them into the input field and pressing Enter or by pasting a comma-separated list of tags. You can delete a tag by clicking on it.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-tags</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span>Tags<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-tags</span>&gt;</span></code></pre>
+    <k-tags>
+      <label>Tags</label>
+    </k-tags>
+
+    <h3 id="allowedTags"><a href="#allowedTags" class="no-link">Allowed Tags</a></h3>
+    <p>Use the <code>allowedTags</code> attribute to specify a comma-separated list of allowed tags. Only these tags can be added.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-tags</span> <span class="hljs-attr">allowed-tags</span>=<span class="hljs-string">"tag1,tag2,tag3"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span>Allowed Tags<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-tags</span>&gt;</span></code></pre>
+    <k-tags allowed-tags="tag1,tag2,tag3">
+      <label>Allowed Tags</label>
+    </k-tags>
+
+    <h3 id="disallowedTags"><a href="#disallowedTags" class="no-link">Disallowed Tags</a></h3>
+    <p>Use the <code>disallowedTags</code> attribute to specify a comma-separated list of disallowed tags. These tags cannot be added.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-tags</span> <span class="hljs-attr">disallowed-tags</span>=<span class="hljs-string">"tag1,tag2,tag3"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">label</span>&gt;</span>Disallowed Tags<span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-tags</span>&gt;</span></code></pre>
+    <k-tags disallowed-tags="tag1,tag2,tag3">
+      <label>Disallowed Tags</label>
+    </k-tags>
+
+    <h2 id="jsRef">JavaScript Reference</h2>
+
+    <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
+    <h6>Extends <a href="./component.html">Component</a></h6>
+    <h5>
+      <code>new Tags()</code>
+    </h5>
+
+    <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
+    <ul>
+      <li><a href="./component.html">Component</a></li>
+    </ul>
+
+    <h3 id="attributes"><a href="#attributes" class="no-link">Attributes</a></h3>
+    <h5><code>value<i>: string</i></code></h5>
+    <p>A comma-separated list of tags.</p>
+    <h5><code>allowedTags<i>: string</i></code></h5>
+    <p>A comma-separated list of allowed tags. If specified, only these tags can be added.</p>
+    <h5><code>disallowedTags<i>: string</i></code></h5>
+    <p>A comma-separated list of disallowed tags. If specified, these tags cannot be added.</p>
+
+    <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
+    <h5><code>addTag(tag)<i>: void</i></code></h5>
+    <p>Adds a tag to the list of tags.</p>
+    <h5><code>removeTag(tag)<i>: void</i></code></h5>
+    <p>Removes a tag from the list of tags.</p>
+    <h5><code>validateTags()<i>: string</i></code></h5>
+    <p>Validates the list of tags against the allowed and disallowed tags and returns the valid tags as a comma-separated string.</p>
+
+  </main>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+  <script type="module" src="../kempo/components/Tags.js"></script>
+</body>
+</html>

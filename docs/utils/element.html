@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Element - Utils - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" />
+  <link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = ['../icons'];
+  </script>
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Element</h1>
+  <main>
+    <details class="b r mb">
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <h6>Examples</h6>
+        <a href="#basicUsage">Basic Usage</a><br />
+
+        <h6 class="mt">JavaScript Reference</h6>
+        <a href="#onEvent">onEvent</a><br />
+        <a href="#offEvent">offEvent</a><br />
+        <a href="#dispatchEvent">dispatchEvent</a><br />
+        <a href="#isInView">isInView</a><br />
+        <a href="#firstFocusable">firstFocusable</a><br />
+        <a href="#setProp">setProp</a><br />
+      </div>
+    </details>
+
+    <br><h3>Description</h3>
+    <p>The Element utility provides functions to handle DOM events, check element visibility, and manipulate element properties.</p>
+
+    <br><h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> { onEvent, offEvent, dispatchEvent, isInView, firstFocusable, setProp } <span class="hljs-keyword">from</span> <span class="hljs-string">'../src/utils/element.js'</span>;<br /><br /><span class="hljs-comment">// Add event listener</span><br />onEvent(<span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'myElement'</span>), <span class="hljs-string">'click'</span>, () =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Clicked'</span>));<br /><br /><span class="hljs-comment">// Remove event listener</span><br />offEvent(<span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'myElement'</span>), <span class="hljs-string">'click'</span>, () =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Clicked'</span>));<br /><br /><span class="hljs-comment">// Dispatch event</span><br />dispatchEvent(<span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'myElement'</span>), <span class="hljs-string">'customEvent'</span>, { <span class="hljs-attr">detail</span>: <span class="hljs-string">'example'</span> });<br /><br /><span class="hljs-comment">// Check if element is in view</span><br />isInView(<span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'myElement'</span>)).then(<span class="hljs-function"><span class="hljs-params">inView</span> =&gt;</span> <span class="hljs-built_in">console</span>.log(inView));<br /><br /><span class="hljs-comment">// Get first focusable element</span><br /><span class="hljs-keyword">const</span> firstFocusableElement = firstFocusable(<span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'myContainer'</span>));<br /><span class="hljs-built_in">console</span>.log(firstFocusableElement);<br /><br /><span class="hljs-comment">// Set property on element</span><br />setProp(<span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'myElement'</span>), <span class="hljs-string">'innerText'</span>, <span class="hljs-string">'New Text'</span>);</code></pre>
+
+    <br><h2 id="jsRef">JavaScript Reference</h2>
+
+    <br><h3 id="onEvent"><a href="#onEvent" class="no-link">onEvent</a></h3>
+    <h6>
+      <code>onEvent(<i>element</i> EventTarget | NodeList | Array | string, <i>events</i> string, <i>handler</i> function, <i>scope</i> Document)</code>
+    </h6>
+    <h5>Parameters</h5>
+    <h6><code>element<i>: EventTarget | NodeList | Array | string</i></code></h6>
+    <p>The element(s) to attach the event listener to.</p>
+    <h6><code>events<i>: string</i></code></h6>
+    <p>The event(s) to listen for, separated by spaces.</p>
+    <h6><code>handler<i>: function</i></code></h6>
+    <p>The function to call when the event is triggered.</p>
+    <h6><code>scope<i>: Document</i></code></h6>
+    <p>The scope to query for elements if a string selector is provided. Default is <code>document</code>.</p>
+
+    <br><h3 id="offEvent"><a href="#offEvent" class="no-link">offEvent</a></h3>
+    <h6>
+      <code>offEvent(<i>element</i> EventTarget | NodeList | Array | string, <i>events</i> string, <i>handler</i> function, <i>scope</i> Document)</code>
+    </h6>
+    <h5>Parameters</h5>
+    <h6><code>element<i>: EventTarget | NodeList | Array | string</i></code></h6>
+    <p>The element(s) to remove the event listener from.</p>
+    <h6><code>events<i>: string</i></code></h6>
+    <p>The event(s) to stop listening for, separated by spaces.</p>
+    <h6><code>handler<i>: function</i></code></h6>
+    <p>The function to remove from the event listener.</p>
+    <h6><code>scope<i>: Document</i></code></h6>
+    <p>The scope to query for elements if a string selector is provided. Default is <code>document</code>.</p>
+
+    <br><h3 id="dispatchEvent"><a href="#dispatchEvent" class="no-link">dispatchEvent</a></h3>
+    <h6>
+      <code>dispatchEvent(<i>element</i> EventTarget | NodeList | Array | string, <i>events</i> string, <i>detail</i> any, <i>options</i> object)</code>
+    </h6>
+    <h5>Parameters</h5>
+    <h6><code>element<i>: EventTarget | NodeList | Array | string</i></code></h6>
+    <p>The element(s) to dispatch the event on.</p>
+    <h6><code>events<i>: string</i></code></h6>
+    <p>The event(s) to dispatch, separated by spaces.</p>
+    <h6><code>detail<i>: any</i></code></h6>
+    <p>The detail to include in the event.</p>
+    <h6><code>options<i>: object</i></code></h6>
+    <p>Additional options for the event. Default is <code>{ scope: document, bubbles: false }</code>.</p>
+
+    <br><h3 id="isInView"><a href="#isInView" class="no-link">isInView</a></h3>
+    <h6>
+      <code>isInView(<i>element</i> HTMLElement)</code>
+    </h6>
+    <h5>Parameters</h5>
+    <h6><code>element<i>: HTMLElement</i></code></h6>
+    <p>The element to check for visibility.</p>
+    <h5>Returns</h5>
+    <p>A promise that resolves to <code>true</code> if the element is in view, and <code>false</code> otherwise.</p>
+
+    <br><h3 id="firstFocusable"><a href="#firstFocusable" class="no-link">firstFocusable</a></h3>
+    <h6>
+      <code>firstFocusable(<i>scope</i> HTMLElement)</code>
+    </h6>
+    <h5>Parameters</h5>
+    <h6><code>scope<i>: HTMLElement</i></code></h6>
+    <p>The scope to query for focusable elements.</p>
+    <h5>Returns</h5>
+    <p>The first focusable element within the scope.</p>
+
+    <br><h3 id="setProp"><a href="#setProp" class="no-link">setProp</a></h3>
+    <h6>
+      <code>setProp(<i>element</i> HTMLElement | NodeList | Array | string, <i>prop</i> string, <i>value</i> any, <i>scope</i> Document)</code>
+    </h6>
+    <h5>Parameters</h5>
+    <h6><code>element<i>: HTMLElement | NodeList | Array | string</i></code></h6>
+    <p>The element(s) to set the property on.</p>
+    <h6><code>prop<i>: string</i></code></h6>
+    <p>The property to set.</p>
+    <h6><code>value<i>: any</i></code></h6>
+    <p>The value to set the property to.</p>
+    <h6><code>scope<i>: Document</i></code></h6>
+    <p>The scope to query for elements if a string selector is provided. Default is <code>document</code>.</p>
+    
+  </main>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+</body>
+</html>

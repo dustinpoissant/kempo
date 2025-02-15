@@ -13,18 +13,80 @@
 </head>
 <body>
   <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Tabs</h1>
   <main>
-    <h1 class="ta-center">Tabs</h1>
+    <details class="b r mb">
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <h6>Examples</h6>
+        <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#tabSpacers">Tab Spacers</a><br />
+        
+        <h6 class="mt">JavaScript Reference</h6>
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#attributes">Attributes</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
+      </div>
+    </details>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <p>Create tabs using the <code>k-tabs</code> component. Add tabs using the <code>k-tab</code> component and tab contents using the <code>k-tab-content</code> component. Use the <code>for</code> attribute on the <code>k-tab</code> component to link it to the corresponding <code>k-tab-content</code> component.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-tabs</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"html"</span>&gt;</span>HTML<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"js"</span>&gt;</span>JavaScript<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"html"</span>&gt;</span><br />    HTML Content<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"js"</span>&gt;</span><br />    JavaScript Content<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-tabs</span>&gt;</span></code></pre>
     <k-tabs>
       <k-tab for="html">HTML</k-tab>
-      <k-tab for="js">Tab 2</k-tab>
+      <k-tab for="js">JavaScript</k-tab>
       <k-tab-content name="html">
-        <p>HTML Code</p>
+        <p>HTML Content</p>
       </k-tab-content>
       <k-tab-content name="js">
-        <p>JS Code</p>
+        <p>JavaScript Content</p>
       </k-tab-content>
     </k-tabs>
+
+    <h3 id="tabSpacers"><a href="#tabSpacers" class="no-link">Tab Spacers</a></h3>
+    <p>Use the <code>k-tab-spacer</code> component to add a flexible space between tabs.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-tabs</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"html"</span>&gt;</span>HTML<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-spacer</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-spacer</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"js"</span>&gt;</span>JavaScript<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"html"</span>&gt;</span><br />    HTML Content<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"js"</span>&gt;</span><br />    JavaScript Content<br />  <span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-tabs</span>&gt;</span></code></pre>
+    <k-tabs>
+      <k-tab for="html">HTML</k-tab>
+      <k-tab-spacer></k-tab-spacer>
+      <k-tab for="js">JavaScript</k-tab>
+      <k-tab-content name="html">
+        <p>HTML Content</p>
+      </k-tab-content>
+      <k-tab-content name="js">
+        <p>JavaScript Content</p>
+      </k-tab-content>
+    </k-tabs>
+
+    <h2 id="jsRef">JavaScript Reference</h2>
+
+    <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
+    <h6>Extends <a href="./component.html">Component</a></h6>
+    <h5>
+      <code>new Tabs()</code>
+    </h5>
+
+    <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
+    <ul>
+      <li><a href="./component.html">Component</a></li>
+    </ul>
+
+    <h3 id="attributes"><a href="#attributes" class="no-link">Attributes</a></h3>
+    <h5><code>active<i>: string</i></code></h5>
+    <p>The name of the active tab.</p>
+
+    <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
+    <h5><code>getTab(id)<i>: Tab</i></code></h5>
+    <p>Returns the tab with the specified id.</p>
+    <h5><code>getActiveTab()<i>: Tab</i></code></h5>
+    <p>Returns the currently active tab.</p>
+    <h5><code>getContent(id)<i>: TabContent</i></code></h5>
+    <p>Returns the tab content with the specified id.</p>
+    <h5><code>getActiveContent()<i>: TabContent</i></code></h5>
+    <p>Returns the currently active tab content.</p>
+
   </main>
   <div style="height:33vh"></div>
   <script type="module" src="../kempo/components/Import.js"></script> 

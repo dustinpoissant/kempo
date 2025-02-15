@@ -15,23 +15,37 @@
   <k-import src="../nav-1.inc.html"></k-import>
   <h1 class="ta-center">Split</h1>
   <main>
-    <h3>Basic Usage</h3>
-    <p>Drag the separator between the "left" and "right" sides to resize the sides. The height should be explicitly set.</p>
-    <div class="row -mx">
-      <div class="col m-span-12 px">
-        <k-card label="HTML">
-          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-split</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 10rem"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"b"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>left<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"right"</span>&gt;</span>right<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-split</span>&gt;</span></code></pre>
-        </k-card>
+    <details class="b r mb">
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <h6>Examples</h6>
+        <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#resizing">Resizing</a><br />
+        
+        <h6 class="mt">JavaScript Reference</h6>
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#attributes">Attributes</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
       </div>
-      <div class="col m-span-12 px">
-        <k-card label="Output">
-          <k-split style="height: 10rem" class="b">
-            <p>left</p>
-            <p slot="right">right</p>
-          </k-split>
-        </k-card>
-      </div>
-    </div>
+    </details>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <p>Create a split view using the <code>k-split</code> component. Add content to the left pane by placing it inside the component, and add content to the right pane by using the <code>slot="right"</code> attribute.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-split</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 10rem"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"b"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Left Pane Content<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"right"</span>&gt;</span>Right Pane Content<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-split</span>&gt;</span></code></pre>
+    <k-split style="height: 10rem" class="b">
+      <div>Left Pane Content</div>
+      <div slot="right">Right Pane Content</div>
+    </k-split>
+
+    <h3 id="resizing"><a href="#resizing" class="no-link">Resizing</a></h3>
+    <p>The split view can be resized by dragging the divider handle. The initial width of the left pane can be set using the <code>--left_width</code> CSS custom property.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-split</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"--left_width: 30%; height: 10rem"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"b"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Left Pane Content<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"right"</span>&gt;</span>Right Pane Content<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-split</span>&gt;</span></code></pre>
+    <k-split style="--left_width: 30%; height: 10rem" class="b">
+      <div>Left Pane Content</div>
+      <div slot="right">Right Pane Content</div>
+    </k-split>
 
     <h3>Sizes</h3>
     <p>Set the CSS Custom Property <code>--left_width</code> to set the initial size.</p>
@@ -60,6 +74,27 @@
         </k-card>
       </div>
     </div>
+
+    <h2 id="jsRef">JavaScript Reference</h2>
+
+    <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
+    <h6>Extends <a href="./component.html">Component</a></h6>
+    <h5>
+      <code>new Split()</code>
+    </h5>
+
+    <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
+    <ul>
+      <li><a href="./component.html">Component</a></li>
+    </ul>
+
+    <h3 id="attributes"><a href="#attributes" class="no-link">Attributes</a></h3>
+    <h5><code>resizing<i>: boolean</i></code></h5>
+    <p>Indicates whether the split view is currently being resized.</p>
+
+    <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
+    <h5><code>setSize(size)<i>: void</i></code></h5>
+    <p>Sets the width of the left pane.</p>
 
   </main>
   <div style="height:33vh"></div>

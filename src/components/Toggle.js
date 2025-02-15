@@ -45,15 +45,18 @@ export default class Toggle extends Component {
   on(){
     this.value = true;
     dispatchEvent(this, 'on', { value: true });
+    return this;
   }
   off(){
     this.value = false;
     dispatchEvent(this, 'on', { value: false });
+    return this;
   }
   toggle(){
     if(this.value) this.off();
     else this.on();
     dispatchEvent(this, 'toggle', { value: this.value });
+    return this;
   }
 
   get shadowTemplate(){

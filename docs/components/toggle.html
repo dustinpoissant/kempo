@@ -15,29 +15,25 @@
   <k-import src="../nav-1.inc.html"></k-import>
   <h1 class="ta-center">Toggle</h1>
   <main>
-    <details
-      class="b r mb"
-    >
+    <details class="b r mb">
       <summary class="p">Table of Contents</summary>
-      <ul>
-        <li><a href="#basicUsage">Basic Usage</a></li>
-        <li><a href="#onByDefault">On By Default</a></li>
-        <li><a href="#customStyles">Custom Styles</a></li>
-        <li><a href="#javascriptUsage">JavaScript Usage</a></li>
-        <li>
-          <a href="#classReference">Class Reference</a>
-          <ul>
-            <li><a href="#constructor">Constructor</a></li>
-            <li><a href="#requirements">Requirements</a></li>
-            <li><a href="#attributes">Attributes</a></li>
-            <li><a href="#properties">Properties</a></li>
-            <li><a href="#methods">Methods</a></li>
-          </ul>
-        </li>
-      </ul>
+      <div class="m mt0 pl">
+        <h6>Examples</h6>
+        <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#onByDefault">On By Default</a><br />
+        <a href="#customStyles">Custom Styles</a><br />
+        <a href="#javascriptUsage">JavaScript Usage</a><br />
+        
+        <h6 class="mt">JavaScript Reference</h6>
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#attributes">Attributes</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
+      </div>
     </details>
 
-    <h3 id="basicUsage">Basic Usage</h3>
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
     <div class="row -mx">
       <div class="col m-span-12 px">
         <k-card label="HTML">
@@ -51,7 +47,7 @@
       </div>
     </div>
 
-    <h3 id="onByDefault">On By Default</h3>
+    <h3 id="onByDefault"><a href="#onByDefault" class="no-link">On By Default</a></h3>
     <div class="row -mx">
       <div class="col m-span-12 px">
         <k-card label="HTML">
@@ -65,7 +61,7 @@
       </div>
     </div>
 
-    <h3 id="customStyles">Custom Styles</h3>
+    <h3 id="customStyles"><a href="#customStyles" class="no-link">Custom Styles</a></h3>
     <div class="row -mx">
       <div class="col m-span-12 px">
         <k-card label="HTML">
@@ -92,7 +88,7 @@
       </div>
     </div>
 
-    <h3 id="javascriptUsage">JavaScript Usage</h3>
+    <h3 id="javascriptUsage"><a href="#javascriptUsage" class="no-link">JavaScript Usage</a></h3>
     <div class="row -mx">
       <div class="col m-span-12 px">
         <k-card label="HTML">
@@ -121,33 +117,34 @@
       </div>
     </div>
 
-    <h2 id="classReference">Class Reference</h2>
+    <h2 id="jsRef">JavaScript Reference</h2>
 
-    <h3 id="constructor">Constructor</h3>
+    <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
     <h6>Extends <a href="./component.html">Component</a></h6>
     <h5>
       <code>new Toggle()</code>
     </h5>
-    <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> Toggle <span class="hljs-keyword">from</span> <span class="hljs-string">'kempo'</span>;<br /><span class="hljs-keyword">const</span> myToggle = <span class="hljs-keyword">new</span> Toggle();<br /><span class="hljs-built_in">document</span>.body.appendChild(myToggle);</code></pre>
 
-    <h3 id="attributes">Attributes</h3>
+    <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
+    <ul>
+      <li><a href="./component.html">Component</a></li>
+    </ul>
 
-    <h5><code>value</code></h5>
+    <h3 id="attributes"><a href="#attributes" class="no-link">Attributes</a></h3>
+    <h5><code>value<i>: boolean</i></code></h5>
     <p>A boolean that indicates if the switch is on or off, the default value is <code>false</code>.</p>
-    <pre><code class="hljs javascript"><span class="hljs-built_in">console</span>.log(myToggle.value); <span class="hljs-comment">// true or false</span></code></pre>
     <p>This can be set directly, but it is not recommended as it only triggers the a <code>change</code> event and not a <code>on</code>, <code>off</code> or <code>toggle</code> event as the methods do, so the methods are preferrable.</p>
 
-    <h3 id="methods">Methods</h3>
-    <h5><code>on(): <i>undefined</i></code></h5>
+    <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
+    <h5><code>on()<i>: this</i></code></h5>
     <p>Set's the <code>value</code> to <code>true</code>, dispatches a <code><i>change</i></code> and an <code><i>on</i></code> event. The switch visual changes to the <b>on</b> state.</p>
 
-    <h5><code>off(): <i>undefined</i></code></h5>
+    <h5><code>off()<i>: this</i></code></h5>
     <p>Set's the <code>value</code> to <code>false</code>, dispatches a <code><i>change</i></code> and an <code><i>off</i></code> event. The switch visual changes to the <b>off</b> state.</p>
 
-    <h5><code>toggle(): <i>undefined</i></code></h5>
+    <h5><code>toggle()<i>: this</i></code></h5>
     <p>Negates the <code>value</code>, if it is <code>true</code> it is now set to <code>false</code>, but if it is <code>false</code> it is now set to <code>true</code>. It also dispatches dispatches a <code><i>change</i></code> and an <code><i>on</i></code> or <code><i>off</i></code> event. The switch visual changes to the oposite state.</p>
 
-    
   </main>
   <div style="height:33vh"></div>
   <script type="module" src="../kempo/components/Import.js"></script> 

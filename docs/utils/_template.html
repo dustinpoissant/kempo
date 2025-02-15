@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stacks - Components - Kempo Docs - A Web Components Solution</title>
+  <title>Template - Utils - Kempo Docs - A Web Components Solution</title>
   <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
   <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
   <script type="module">
@@ -13,14 +13,17 @@
 </head>
 <body>
   <k-import src="../nav-1.inc.html"></k-import>
-  <h1 class="ta-center">Stacks</h1>
+  <h1 class="ta-center">Template</h1>
   <main>
     <details
       class="b r mb"
     >
       <summary class="p">Table of Contents</summary>
       <div class="m mt0 pl">
+        <h6>Examples</h6>
         <a href="#basicUsage">Basic Usage</a><br />
+
+        <h6 class="mt">JavaScript Reference</h6>
         <a href="#constructor">Constructor</a><br />
         <a href="#requirements">Requirements</a><br />
         <a href="#attributes">Attributes</a><br />
@@ -33,33 +36,6 @@
     <p>description</p>
 
     <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
-    <k-stacks
-      style="
-        height: 20rem;
-      "
-    >
-      <k-stack-panel
-        class="b r"
-        stack="1"
-        style="background: #633"
-      >
-        <p>Panel 1</p>
-      </k-stack-panel>
-      <k-stack-panel
-        class="b r"
-        stack="1"
-        style="background: #363;"
-      >
-        <p>Panel 2</p>
-      </k-stack-panel>
-      <k-stack-panel
-        class="b r"
-        stack="1"
-        style="background: #336;"
-      >
-        <p>Panel 3</p>
-      </k-stack-panel>
-    </k-stacks>
 
     <h2 id="jsRef">JavaScript Refrerence</h2>
 
@@ -93,6 +69,5 @@
     
   </main>
   <script type="module" src="../kempo/components/Import.js"></script> 
-  <script type="module" src="../kempo/components/Stacks.js"></script>
 </body>
 </html>

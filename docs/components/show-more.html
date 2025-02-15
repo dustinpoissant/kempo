@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShowMore - Components - Kempo Docs - A Web Components Solution</title>
+  <title>Show More - Components - Kempo Docs - A Web Components Solution</title>
   <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
   <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
   <script type="module">
@@ -15,7 +15,24 @@
   <k-import src="../nav-1.inc.html"></k-import>
   <main>
     <h1 class="ta-center">Show More</h1>
-    <h3>Basic Usage</h3>
+    <details class="b r mb">
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <h6>Examples</h6>
+        <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#moreLessButtonText">"More" / "Less" Button Text</a><br />
+        <a href="#closedHeight">Closed Height</a><br />
+        
+        <h6 class="mt">JavaScript Reference</h6>
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#attributes">Attributes</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
+      </div>
+    </details>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
     <div class="row -mx">
       <div class="col m-span-12 px">
         <k-card label="HTML">
@@ -31,7 +48,7 @@
       </div>
     </div>
 
-    <h3>"More" / "Less" Button Text</h3>
+    <h3 id="moreLessButtonText"><a href="#moreLessButtonText" class="no-link">"More" / "Less" Button Text</a></h3>
     <p>Change the text of the show "more" or "less" buttons by creating an element that has a <code>slot</code> attribute of <code>"more"</code> or <code>"less"</code>.</p>
     <div class="row -mx">
       <div class="col m-span-12 px">
@@ -50,7 +67,7 @@
       </div>
     </div>
 
-    <h3>Closed Height</h3>
+    <h3 id="closedHeight"><a href="#closedHeight" class="no-link">Closed Height</a></h3>
     <p>Change the height of the closed state by setting the <code>--closed_height</code> CSS Custom Property.</p>
     <div class="row -mx">
       <div class="col m-span-12 px">
@@ -68,7 +85,33 @@
         </k-card>
       </div>
     </div>
-    
+
+    <h2 id="jsRef">JavaScript Reference</h2>
+
+    <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
+    <h6>Extends <a href="./component.html">LazyComponent</a></h6>
+    <h5>
+      <code>new ShowMore()</code>
+    </h5>
+
+    <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
+    <ul>
+      <li><a href="./component.html">Component</a></li>
+      <li><a href="./lazy-component.html">LazyComponent</a></li>
+    </ul>
+
+    <h3 id="attributes"><a href="#attributes" class="no-link">Attributes</a></h3>
+    <h5><code>opened<i>: boolean</i></code></h5>
+    <p>Whether the content is expanded.</p>
+
+    <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
+    <h5><code>more()<i>: void</i></code></h5>
+    <p>Expands the content.</p>
+    <h5><code>less()<i>: void</i></code></h5>
+    <p>Collapses the content.</p>
+    <h5><code>toggle()<i>: void</i></code></h5>
+    <p>Toggles the content between expanded and collapsed states.</p>
+
   </main>
   <div style="height:33vh"></div>
   

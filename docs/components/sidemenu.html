@@ -15,7 +15,24 @@
   <k-import src="../nav-1.inc.html"></k-import>
   <h1 class="ta-center">SideMenu</h1>
   <main>
-    <h3>Basic Usage</h3>
+    <details class="b r mb">
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <h6>Examples</h6>
+        <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#closing">Closing</a><br />
+        <a href="#rightSideMenu">Right Side Menu</a><br />
+        
+        <h6 class="mt">JavaScript Reference</h6>
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#attributes">Attributes</a><br />
+        <a href="#properties">Properties</a><br />
+        <a href="#methods">Methods</a><br />
+      </div>
+    </details>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
     <p>Side Menus are closed by default, to open them call the <code>open()</code> method.</p>
     <div class="row -mx">
       <div class="col m-span-12 px">
@@ -38,7 +55,7 @@
       </div>
     </div>
 
-    <h3>Closing</h3>
+    <h3 id="closing"><a href="#closing" class="no-link">Closing</a></h3>
     <p>By default clicking on the overlay (the part that covers the page while the Side Menu is open) will close the Side Menu. Use the <code>overlay-close="false"</code> attribute/value to disable this.</p>
     <p>Use the <code>close()</code> method to close the Side Menu, alternately you can use the <code>toggle()</code> method which can be used to open or close the Side Menu.</p>
     <div class="row -mx">
@@ -67,7 +84,7 @@
       </div>
     </div>
 
-    <h3>Right Side Menu</h3>
+    <h3 id="rightSideMenu"><a href="#rightSideMenu" class="no-link">Right Side Menu</a></h3>
     <p>Give the menu the <code>side="right"</code> attribute/value to make it open from the right side.</p>
     <div class="row -mx">
       <div class="col m-span-12 px">
@@ -89,6 +106,36 @@
         </k-card>
       </div>
     </div>
+
+    <h2 id="jsRef">JavaScript Reference</h2>
+
+    <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
+    <h6>Extends <a href="./component.html">Component</a></h6>
+    <h5>
+      <code>new SideMenu()</code>
+    </h5>
+
+    <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
+    <ul>
+      <li><a href="./component.html">Component</a></li>
+    </ul>
+
+    <h3 id="attributes"><a href="#attributes" class="no-link">Attributes</a></h3>
+    <h5><code>opened<i>: boolean</i></code></h5>
+    <p>Whether the side menu is opened.</p>
+    <h5><code>overlayClose<i>: boolean</i></code></h5>
+    <p>Whether clicking the overlay closes the side menu.</p>
+    <h5><code>side<i>: string</i></code></h5>
+    <p>The side from which the menu opens. Can be <code>"left"</code> or <code>"right"</code>.</p>
+
+    <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
+    <h5><code>open()<i>: void</i></code></h5>
+    <p>Opens the side menu.</p>
+    <h5><code>close()<i>: void</i></code></h5>
+    <p>Closes the side menu.</p>
+    <h5><code>toggle()<i>: void</i></code></h5>
+    <p>Toggles the side menu open or closed.</p>
+
   </main>
   <div style="height:33vh"></div>
   <script type="module" src="../kempo/components/Import.js"></script> 

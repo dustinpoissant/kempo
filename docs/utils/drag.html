@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drag - Utils - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" />
+  <link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    Icon.pathToIcons = ['../icons'];
+  </script>
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Drag</h1>
+  <main>
+    <details class="b r mb">
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <h6>Examples</h6>
+        <a href="#basicUsage">Basic Usage</a><br />
+
+        <h6 class="mt">JavaScript Reference</h6>
+        <a href="#drag">drag</a><br />
+      </div>
+    </details>
+
+    <h3>Description</h3>
+    <p>The Drag utility provides a function to handle drag events and execute callbacks during the drag lifecycle.</p>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <pre><code class="language-js">import drag from '../src/utils/drag.js';
+
+const element = document.getElementById('draggable');
+const removeListeners = drag({ 
+  element, 
+  callback: (diff) => console.log(diff),
+  startCallback: () => console.log('Drag started'),
+  moveCallback: (diff) => console.log('Dragging', diff),
+  endCallback: (diff) => console.log('Drag ended', diff),
+  preventScroll: true
+});
+
+// To remove event listeners
+removeListeners();</code></pre>
+
+    <h2 id="jsRef">JavaScript Reference</h2>
+
+    <h3 id="drag"><a href="#drag" class="no-link">drag</a></h3>
+    <h5>
+      <code>drag(<i>options</i> object)</code>
+    </h5>
+    <h4>Parameters</h4>
+    <h5><code>options<i>: object</i></code></h5>
+    <p>An object containing the following properties:</p>
+
+    <h6><code>element<i>: HTMLElement</i></code></h6>
+    <p>The element to attach drag events to.</p>
+
+    <h6><code>callback<i>: function</i></code></h6>
+    <p>A function to call on drag move. The object passed into the callback contains an <code>x</code> and a <code>y</code> that represents the distance the mouse has traveled in x and y since the drag started, with positive x being to the right, negative x to the left, positive y towards the bottom, and negative y towards the top.</p>
+
+    <h6><code>startCallback<i>: function</i></code></h6>
+    <p>A function to call on drag start. The object passed into the callback contains an <code>x</code> and a <code>y</code> that represents the initial position of the mouse.</p>
+
+    <h6><code>moveCallback<i>: function</i></code></h6>
+    <p>A function to call on drag move. The object passed into the callback contains an <code>x</code> and a <code>y</code> that represents the distance the mouse has traveled in x and y since the drag started, with positive x being to the right, negative x to the left, positive y towards the bottom, and negative y towards the top.</p>
+
+    <h6><code>endCallback<i>: function</i></code></h6>
+    <p>A function to call on drag end. The object passed into the callback contains an <code>x</code> and a <code>y</code> that represents the distance the mouse has traveled in x and y since the drag started, with positive x being to the right, negative x to the left, positive y towards the bottom, and negative y towards the top.</p>
+
+    <h6><code>preventScroll<i>: boolean</i></code></h6>
+    <p>Whether to prevent scrolling during drag. Default is false.</p>
+
+    <h4>Returns</h4>
+    <p>A function to remove the event listeners.</p>
+    
+  </main>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+</body>
+</html>
