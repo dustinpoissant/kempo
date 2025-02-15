@@ -10,20 +10,18 @@
       "header"
     ]
   },
+  "/components/card.html": {
+    "name": "Components > Card",
+    "terms": [
+      "card",
+      "box",
+      "content",
+      "panel"
+    ]
+  },
   "/components/component.html": {
     "name": "Components > Component",
     "terms": [
-      "component",
-      "base",
-      "root",
-      "framework",
-      "parent"
-    ]
-  },
-  "/components/lazy-component.html": {
-    "name": "Components > LazyComponent",
-    "terms": [
-      "lazy",
       "component",
       "base",
       "root",
@@ -39,14 +37,84 @@
       "photos"
     ]
   },
-  "/components/directoryviewer.html": {
+  "/components/dialog.html": {
+    "name": "Components > Dialog",
+    "terms": [
+      "dialog",
+      "modal",
+      "popup",
+      "overlay",
+      "window"
+    ]
+  },
+  "/components/directory-viewer.html": {
     "name": "Components > DirectoryViewer",
     "terms": [
       "directory",
-      "viewer", 
+      "viewer",
       "pwa",
       "folder",
       "file"
+    ]
+  },
+  "/components/focus-capture.html": {
+    "name": "Components > FocusCapture",
+    "terms": [
+      "focus",
+      "capture",
+      "trap",
+      "keyboard",
+      "navigation"
+    ]
+  },
+  "/components/icon.html": {
+    "name": "Components > Icon",
+    "terms": [
+      "icon",
+      "symbol",
+      "image",
+      "graphic"
+    ]
+  },
+  "/components/import.html": {
+    "name": "Components > Import",
+    "terms": [
+      "import",
+      "html",
+      "snippet",
+      "include"
+    ]
+  },
+  "/components/lazy-component.html": {
+    "name": "Components > LazyComponent",
+    "terms": [
+      "lazy",
+      "component",
+      "base",
+      "root",
+      "framework",
+      "parent"
+    ]
+  },
+  "/components/reactive-component.html": {
+    "name": "Components > ReactiveComponent",
+    "terms": [
+      "reactive",
+      "component",
+      "dynamic",
+      "update",
+      "render"
+    ]
+  },
+  "/components/reactive-lazy-component.html": {
+    "name": "Components > ReactiveLazyComponent",
+    "terms": [
+      "reactive",
+      "lazy",
+      "component",
+      "dynamic",
+      "update",
+      "render"
     ]
   },
   "/components/resize.html": {
@@ -59,6 +127,36 @@
       "height"
     ]
   },
+  "/components/search.html": {
+    "name": "Components > Search",
+    "terms": [
+      "search",
+      "find",
+      "query",
+      "input",
+      "results"
+    ]
+  },
+  "/components/show-more.html": {
+    "name": "Components > ShowMore",
+    "terms": [
+      "show more",
+      "expand",
+      "collapse",
+      "toggle",
+      "content"
+    ]
+  },
+  "/components/side-menu.html": {
+    "name": "Components > SideMenu",
+    "terms": [
+      "side menu",
+      "navigation",
+      "drawer",
+      "slide",
+      "menu"
+    ]
+  },
   "/components/split.html": {
     "name": "Components > Split",
     "terms": [
@@ -66,17 +164,6 @@
       "split",
       "resize",
       "content"
-    ]
-  },
-  "/components/stacks.html": {
-    "name": "Components > Stacks",
-    "terms": [
-      "component",
-      "stacks",
-      "content",
-      "layout",
-      "collapsible",
-      "panel"
     ]
   },
   "/components/table.html": {
@@ -98,6 +185,46 @@
       "content"
     ]
   },
+  "/components/tags.html": {
+    "name": "Components > Tags",
+    "terms": [
+      "tags",
+      "labels",
+      "input",
+      "add",
+      "remove"
+    ]
+  },
+  "/components/theme-switcher.html": {
+    "name": "Components > ThemeSwitcher",
+    "terms": [
+      "theme",
+      "switcher",
+      "toggle",
+      "dark mode",
+      "light mode"
+    ]
+  },
+  "/components/timestamp.html": {
+    "name": "Components > Timestamp",
+    "terms": [
+      "timestamp",
+      "date",
+      "time",
+      "format",
+      "locale"
+    ]
+  },
+  "/components/toggle.html": {
+    "name": "Components > Toggle",
+    "terms": [
+      "toggle",
+      "switch",
+      "on",
+      "off",
+      "button"
+    ]
+  },
   "/styles/borders-spacing.html": {
     "name": "Styles > Borders and Spacing",
     "terms": [
@@ -107,6 +234,32 @@
       "margin",
       "padding",
       "radius"
+    ]
+  },
+  "/styles/buttons.html": {
+    "name": "Styles > Buttons",
+    "terms": [
+      "styles",
+      "buttons",
+      "button",
+      "input",
+      "submit",
+      "reset",
+      "link"
+    ]
+  },
+  "/styles/colors.html": {
+    "name": "Styles > Colors",
+    "terms": [
+      "styles",
+      "colors",
+      "background",
+      "text",
+      "primary",
+      "secondary",
+      "success",
+      "warning",
+      "danger"
     ]
   },
   "/styles/displays-layouts.html": {
@@ -124,6 +277,29 @@
       "columns"
     ]
   },
+  "/styles/inputs.html": {
+    "name": "Styles > Inputs",
+    "terms": [
+      "styles",
+      "inputs",
+      "input",
+      "textarea",
+      "select",
+      "checkbox",
+      "radio"
+    ]
+  },
+  "/styles/tables.html": {
+    "name": "Styles > Tables",
+    "terms": [
+      "styles",
+      "tables",
+      "table",
+      "rows",
+      "columns",
+      "data"
+    ]
+  },
   "/styles/typography.html": {
     "name": "Styles > Typography",
     "terms": [
@@ -137,6 +313,88 @@
       "strike",
       "sup",
       "sub"
+    ]
+  },
+  "/utils/clie.html": {
+    "name": "Styles > Typography",
+    "terms": [
+      "command",
+      "line",
+      "interface",
+      "cli",
+      "node",
+      "terminal",
+      "script",
+      "util"
+    ]
+  },
+  "/utils/cookie.html": {
+    "name": "Utils > Cookie",
+    "terms": [
+      "cookie",
+      "cookies",
+      "save",
+      "get",
+      "delete",
+      "browser",
+      "storage",
+      "util"
+    ]
+  },
+  "/utils/debounce.html": {
+    "name": "Utils > Debounce",
+    "terms": [
+      "debounce",
+      "delay",
+      "throttle",
+      "function",
+      "timeout",
+      "wait",
+      "util"
+    ]
+  },
+  "/utils/drag.html": {
+    "name": "Utils > Drag",
+    "terms": [
+      "drag",
+      "draggable",
+      "move",
+      "mouse",
+      "event",
+      "callback",
+      "util"
+    ]
+  },
+  "/utils/element.html": {
+    "name": "Utils > Element",
+    "terms": [
+      "element",
+      "dom",
+      "event",
+      "visibility",
+      "property",
+      "focus",
+      "util"
+    ]
+  },
+  "/utils/format-timestamp.html": {
+    "name": "Utils > Format Timestamp",
+    "terms": [
+      "format",
+      "timestamp",
+      "date",
+      "time",
+      "util"
+    ]
+  },
+  "/utils/fuzzy-match.html": {
+    "name": "Utils > Fuzzy Match",
+    "terms": [
+      "fuzzy",
+      "match",
+      "string",
+      "comparison",
+      "util"
     ]
   }
 }

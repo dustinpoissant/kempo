@@ -4,7 +4,10 @@ import debounce from '../utils/debounce.js';
 const inputHandler = Symbol('inputHandler'),
       focusHandler = Symbol('focusHandler'),
       blurHandler = Symbol('blurHandler');
+
 export default class Search extends Component {
+  static searchDataUrl = '/search.json';
+
   constructor(){
     super();
 
@@ -25,7 +28,7 @@ export default class Search extends Component {
   }
   async render(force){
     if(await super.render(force)){
-      this.pages = await (await fetch('/search.json')).json();
+      this.pages = await (await fetch(Search.searchDataUrl)).json();
       const $input = this.shadowRoot.getElementById('input')
       $input.addEventListener('input', this[inputHandler]);
       $input.addEventListener('focus', this[focusHandler]);

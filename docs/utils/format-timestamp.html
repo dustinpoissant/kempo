@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>formatTimestamp - Utils - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" />
+  <link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    import Search from '../kempo/components/Search.js';
+    Icon.pathToIcons = ['../icons'];
+    Search.searchDataUrl = '../search.json';
+  </script>
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">formatTimestamp</h1>
+  <main>
+    <details class="b r mb">
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <h6>Examples</h6>
+        <a href="#basicUsage">Basic Usage</a><br />
+
+        <h6 class="mt">JavaScript Reference</h6>
+        <a href="#function">Function</a><br />
+        <a href="#parameters">Parameters</a><br />
+        <a href="#returns">Returns</a><br />
+      </div>
+    </details>
+
+    <h3>Description</h3>
+    <p>The <code>formatTimestamp</code> function formats a given timestamp into a specified format or locale string.</p>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <pre><code class="language-javascript">
+import formatTimestamp from '../../src/utils/formatTimestamp.js';
+
+const timestamp = Date.now();
+console.log(formatTimestamp(timestamp, 'YYYY-MM-DD hh:mm:ss')); // Example output: 2023-10-05 14:48:32
+console.log(formatTimestamp(timestamp)); // Example output: 10/5/2023, 2:48:32 PM if the browser locale is en-US
+    </code></pre>
+
+    <h2 id="jsRef">JavaScript Reference</h2>
+
+    <h3 id="function"><a href="#function" class="no-link">Function</a></h3>
+    <h5><code>formatTimestamp(timestamp, format, forceLocale)</code></h5>
+
+    <h3 id="parameters"><a href="#parameters" class="no-link">Parameters</a></h3>
+    <ul>
+      <li><code>timestamp</code> <i>: number</i> - The timestamp to format.</li>
+      <li><code>format</code> <i>: string</i> (optional) - The format string. If not provided, the locale string is returned.</li>
+      <li><code>forceLocale</code> <i>: string</i> (optional) - The locale to use for formatting.</li>
+    </ul>
+
+    <h3 id="returns"><a href="#returns" class="no-link">Returns</a></h3>
+    <p><code>string</code> - The formatted timestamp.</p>
+    
+  </main>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuzzy Match Utility Documentation</title>
+    <link rel="stylesheet" href="../kempo/kempo-vars.css">
+    <link rel="stylesheet" href="../kempo/kempo-styles.css">
+    <link rel="stylesheet" href="../kempo/kempo-hljs.css">
+    <script type="module">
+        import Icon from '../kempo/components/Icon.js';
+        Icon.pathToIcons = ['../icons'];
+    </script>
+</head>
+<body>
+    <k-import src="../nav-1.inc.html"></k-import>
+    <h1 class="ta-center">Fuzzy Match Utility Documentation</h1>
+    <main>
+        <details class="b r mb">
+            <summary class="p">Table of Contents</summary>
+            <div class="m mt0 pl">
+                <h6>Examples</h6>
+                <a href="#basicUsage">Basic Usage</a><br />
+
+                <h6 class="mt">JavaScript Reference</h6>
+                <a href="#fuzzyMatch">fuzzyMatch</a><br />
+                <a href="#fuzzyMatchArray">fuzzyMatchArray</a><br />
+            </div>
+        </details>
+
+        <h3>Description</h3>
+        <p>This module provides functions for performing fuzzy matching on strings.</p>
+
+        <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+
+        <h2 id="jsRef">JavaScript Reference</h2>
+
+        <h3 id="fuzzyMatch"><a href="#fuzzyMatch" class="no-link">fuzzyMatch(str1, str2)</a></h3>
+        <p>Performs a fuzzy match between two strings and returns a score between 0 and 10.</p>
+        <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> { fuzzyMatch } <span class="hljs-keyword">from</span> <span class="hljs-string">'./src/utils/fuzzyMatch.js'</span>;<br /><br /><span class="hljs-keyword">const</span> score = fuzzyMatch(<span class="hljs-string">'example'</span>, <span class="hljs-string">'exampel'</span>);<br /><span class="hljs-built_in">console</span>.log(score); <span class="hljs-comment">// Outputs a score between 0 and 10</span></code></pre>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li><code>str1</code> (string): The first string to match against.</li>
+            <li><code>str2</code> (string): The second string to match.</li>
+        </ul>
+        <p><strong>Returns:</strong> (number): A score between 0 and 10 indicating the strength of the match.</p>
+
+        <h3 id="fuzzyMatchArray"><a href="#fuzzyMatchArray" class="no-link">fuzzyMatchArray(array, targetString)</a></h3>
+        <p>Calculates the average non-zero fuzzy match score of a target string against an array of strings.</p>
+        <pre><code class="hljs javascript"><span class="hljs-keyword">import</span> { fuzzyMatchArray } <span class="hljs-keyword">from</span> <span class="hljs-string">'./src/utils/fuzzyMatch.js'</span>;<br /><br /><span class="hljs-keyword">const</span> averageScore = fuzzyMatchArray([<span class="hljs-string">'example'</span>, <span class="hljs-string">'sample'</span>, <span class="hljs-string">'exampel'</span>], <span class="hljs-string">'exampel'</span>);<br /><span class="hljs-built_in">console</span>.log(averageScore); <span class="hljs-comment">// Outputs the average non-zero score</span></code></pre>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li><code>array</code> (Array&lt;string&gt;): An array of strings to match against.</li>
+            <li><code>targetString</code> (string): The string to match.</li>
+        </ul>
+        <p><strong>Returns:</strong> (number): The average non-zero match score.</p>
+    </main>
+    <script type="module" src="../kempo/components/Import.js"></script>
+</body>
+</html>
