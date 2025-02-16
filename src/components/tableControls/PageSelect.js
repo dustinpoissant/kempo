@@ -35,10 +35,15 @@ export default class PageSelect extends Component {
 
     onEvent(this.table, 'pageSizeChange', () => {
       this.updateOptions();
+      $select.value = this.table.getCurrentPage();
     });
 
-    onEvent(this.table, 'pageChange', () => {
+    onEvent(this.table, 'pageChange pageCountChanged', () => {
       $select.value = this.table.getCurrentPage();
+    });
+
+    onEvent(this.table, 'pageCountChanged', () => {
+      $totalPages.textContent = this.table.getTotalPages();
     });
   }
 

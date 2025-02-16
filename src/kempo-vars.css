@@ -24,6 +24,7 @@
   --input_padding: var(--spacer_h) var(--spacer);
   --input_border_width: 2px;
   --btn_padding: var(--spacer_h) var(--spacer);
+  --date_picker_icon_filter: invert(0);
 }
 
 :root,
@@ -154,4 +155,5 @@
   --drop_shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.25); 
   --link_decoration: underline;
   --input_border_width: 2px;
+  --date_picker_icon_filter: invert(1)
 }

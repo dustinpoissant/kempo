@@ -210,18 +210,17 @@
           after: [
             {
               icon: 'edit',
-              action: (table, record, index) => {
+              action: (table, record) => {
                 const newName = prompt("Enter a new name:", record.name);
-                if (newName) {
-                  record.name = newName;
-                  table.updateRecord(index, record);
+                if (newName && newName !== record.name) {
+                  table.updateRecord(record, { name: newName });
                 }
               }
             },
             {
               icon: 'delete',
-              action: (table, record, index) => {
-                table.deleteRecord(index);
+              action: (table, record) => {
+                table.deleteRecord(record);
               }
             }
           ]

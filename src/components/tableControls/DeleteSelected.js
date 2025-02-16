@@ -20,17 +20,13 @@ export default class DeleteSelected extends Component {
   }
 
   deleteSelected() {
-    const selectedIndexes = this.table.selectedIndexes;
-    selectedIndexes.sort((a, b) => b - a); // Sort in descending order
-    selectedIndexes.forEach(index => this.table.deleteRecord(index));
-    this.table.selectedIndexes = [];
-    this.table.renderRecords();
+    this.table.deleteSelected();
     this.updateButtonState();
   }
 
   updateButtonState() {
     const $button = this.shadowRoot.getElementById('deleteSelectedButton');
-    $button.disabled = this.table.selectedIndexes.length === 0;
+    $button.disabled = this.table.getSelectedRecords().length === 0;
   }
 
   get shadowTemplate() {

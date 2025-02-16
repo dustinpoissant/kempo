@@ -7,59 +7,18 @@ import DeleteSelected from './tableControls/DeleteSelected.js';
 import { toTitleCase } from '../utils/string.js';
 import { onEvent, dispatchEvent } from '../utils/element.js';
 
+const selected = Symbol('selected');
+const hidden = Symbol('hidden');
+const index = Symbol('index');
+const editing = Symbol('editing');
+
 export default class Table extends Component {
-  static controls = {
-    prevPage: {
-      render: (table) => {
-        const $button = document.createElement('button');
-        $button.classList.add('pq', 'no-btn');
-        $button.appendChild(new Icon('chevron-left'));
-        onEvent($button, 'click', () => table.prevPage());
-
-        // Disable button if on the first page
-        onEvent(table, 'pageChange', () => {
-          $button.disabled = table.getCurrentPage() === 1;
-        });
-
-        return $button;
-      }
-    },
-    nextPage: {
-      render: (table) => {
-        const $button = document.createElement('button');
-        $button.classList.add('pq', 'no-btn');
-        $button.appendChild(new Icon('chevron-right'));
-        onEvent($button, 'click', () => table.nextPage());
-
-        // Disable button if on the last page
-        onEvent(table, 'pageChange', () => {
-          $button.disabled = table.getCurrentPage() === table.getTotalPages();
-        });
-
-        return $button;
-      }
-    },
-    pageSelect: {
-      render: (table) => new PageSelect(table)
-    },
-    pageSize: {
-      render: (table) => new PageSize(table)
-    },
-    selectCount: {
-      render: (table) => new SelectCount(table)
-    },
-    deleteSelected: {
-      render: (table) => new DeleteSelected(table)
-    },
-    spacer: {
-      html: '<div class="flex"></div>'
-    }
-  };
 
   constructor({
     records = [],
     fields = [],
     controls = { before: [], after: [], top: [], bottom: [] },
+    enablePages = false,
     pageSize = 100,
     pageSizeOptions = [10, 25, 50, 100, 500],
     currentPage = 1,
@@ -75,7 +34,8 @@ export default class Table extends Component {
       pageSizeOptions,
       currentPage,
       enableSelection,
-      selectedIndexes: [], // Renamed property
+      enablePages,
+      sort: []
     });
 
     /* Init */
@@ -120,58 +80,54 @@ export default class Table extends Component {
       });
     }
   }
-  renderRecords(){
-    if(!this.rendered) return;
+  renderRecords() {
+    if (!this.rendered) return;
     const $records = this.shadowRoot.getElementById('records');
     $records.innerHTML = '';
     const start = (this.currentPage - 1) * this.pageSize;
     const end = start + this.pageSize;
-    const paginatedRecords = this.records.slice(start, end);
+    const paginatedRecords = this.getDisplayedRecords().slice(start, end);
     let fetchRecords = false;
-    paginatedRecords.forEach((record, index) => {
+    paginatedRecords.forEach((record) => {
       const $tr = document.createElement('tr');
       if (this.enableSelection) {
         const $td = document.createElement('td');
         $td.classList.add('selection');
         const $checkbox = document.createElement('input');
         $checkbox.type = 'checkbox';
-        $checkbox.checked = this.selectedIndexes.includes(start + index);
-        $checkbox.addEventListener('change', () => {
-          if ($checkbox.checked) {
-            this.selectedIndexes.push(start + index);
-          } else {
-            this.selectedIndexes = this.selectedIndexes.filter(i => i !== start + index);
-          }
-          dispatchEvent(this, 'selectionChange', { selectedIndexes: this.selectedIndexes });
+        $checkbox.checked = record[selected];
+        $checkbox.addEventListener('change', (event) => {
+          record[selected] = !!event.target.checked;
+          dispatchEvent(this, 'selectionChange');
         });
         $td.appendChild($checkbox);
         $tr.appendChild($td);
       }
-      if(this.controls?.before?.length){
-        $tr.appendChild(this.renderRowControls(this.controls.before, record, start + index));
+      if (this.controls?.before?.length) {
+        $tr.appendChild(this.renderRowControls(this.controls.before, record));
       }
-      if(record === null){
+      if (record === null) {
         const $td = document.createElement('td');
         $td.colSpan = this.fields.length;
         $td.innerHTML = '<i>Loading...</i>';
         fetchRecords = true;
         $tr.appendChild($td);
       } else {
-        this.fields.forEach(({name, formatter, calculator}, index) => {
+        this.fields.forEach(({ name, formatter, calculator }) => {
           const $td = document.createElement('td');
           let value;
-          if(calculator){
+          if (calculator) {
             value = calculator(record, this);
           } else {
             value = record[name] || '';
             if (Array.isArray(value)) {
-              if(formatter){
+              if (formatter) {
                 value = value.map(formatter).join(', ');
               } else {
                 value = value.join(', ');
               }
             } else {
-              if(formatter){
+              if (formatter) {
                 value = formatter(value);
               }
             }
@@ -180,24 +136,32 @@ export default class Table extends Component {
           $tr.appendChild($td);
         });
       }
-      if(this.controls?.after?.length){
-        $tr.appendChild(this.renderRowControls(this.controls.after, record, start + index));
+      if (this.controls?.after?.length) {
+        $tr.appendChild(this.renderRowControls(this.controls.after, record));
       }
       $records.appendChild($tr);
     });
-    if(fetchRecords){
+    if (fetchRecords) {
       dispatchEvent(this, 'fetchRecords', { start, end });
     }
   }
+
+  renderRecord(record){
+    // todo move individual record rendering to a separate method
+    // this should render in both display mode and editing mode
+    // it should return a tr element, which renderRecords uses to render the table
+    //   and when i implement inline editing, it should be used to replace the row with an editable row
+    //   to do this we will also need to store the index as a tr attribute so we query it to replace it
+  }
   
-  renderRowControls(controls = [], record, index) {
+  renderRowControls(controls = [], record) {
     if(!this.rendered) return;
     const $td = document.createElement('td');
     controls.forEach(({ html, icon, action, render }) => {
       if(html){
         $td.appendChild(document.createRange().createContextualFragment(html));
       } else if(render && typeof(render) === 'function'){
-        const rendered = render(this, record, index);
+        const rendered = render(this, record);
         if(rendered instanceof HTMLElement){
           $td.appendChild(rendered);
         } else if(typeof(rendered) === 'string'){
@@ -208,7 +172,7 @@ export default class Table extends Component {
         $button.classList.add('pq', 'no-btn');
         $button.appendChild(new Icon(icon));
         if (action) {
-          onEvent($button, 'click', () => action(this, record, index));
+          onEvent($button, 'click', () => action(this, record));
         }
         $td.appendChild($button);
       }
@@ -247,7 +211,7 @@ export default class Table extends Component {
   }
 
   getTotalPages() {
-    return Math.ceil(this.records.length / this.pageSize);
+    return Math.ceil(this.getDisplayedRecords().length / this.pageSize);
   }
 
   setPage(page) {
@@ -287,10 +251,18 @@ export default class Table extends Component {
     currentPage = false,
     enableSelection = false // Add enableSelection property
   } = {}) {
-    let rerender = false;
-    let rerenderControls = false;
+    let rerender = false,
+        rerenderControls = false,
+        pageCountBefore = this.getTotalPages(),
+        pageBefore = this.currentPage;
     if(records){
-      this.records = records;
+      this.records = records.map(r=>({...r}));
+      this.records.forEach((record, idx) => {
+        record[index] = idx;
+        record[selected] = false;
+        record[hidden] = false;
+        record[editing] = false;
+      });
       this.fields = fields || Table.extractFieldsFromRecords(this.records);
       rerender = true;
     }
@@ -321,13 +293,34 @@ export default class Table extends Component {
       this.renderControls(this.controls.top, 'top');
       this.renderControls(this.controls.bottom, 'bottom');
     }
+    const newPageCount = this.getTotalPages();
+    if(newPageCount !== pageCountBefore){
+      dispatchEvent(this, 'pageCountChanged', { totalPages: this.getTotalPages() });
+    }
+    if(pageBefore > newPageCount){
+      this.setPage(newPageCount); 
+    }
   }
 
   setRecords(records) {
-    this.records = records;
-    this.currentPage = 1;
+    let pageCountBefore = this.getTotalPages(),
+        pageBefore = this.currentPage;
+    this.records = records.map(r=>({...r}));
+    this.records.forEach((record, idx) => {
+      record[index] = idx;
+      record[selected] = false;
+      record[hidden] = false;
+      record[editing] = false;
+    });
     this.renderRecords();
     dispatchEvent(this, 'recordsSet', { records });
+    const newPageCount = this.getTotalPages();
+    if(newPageCount !== pageCountBefore){
+      dispatchEvent(this, 'pageCountChanged', { totalPages: this.getTotalPages() });
+    }
+    if(pageBefore > newPageCount){
+      this.setPage(newPageCount); 
+    }
   }
 
   setupFetchRecords(totalRecords, callback) {
@@ -346,64 +339,197 @@ export default class Table extends Component {
   }
 
   addRecord(record) {
+    record[selected] = false;
+    record[hidden] = false;
+    record[index] = this.records.length;
     this.records.push(record);
     this.renderRecords();
     dispatchEvent(this, 'recordAdded', { record });
   }
 
-  updateRecord(index, newRecord) {
-    this.records[index] = newRecord;
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    if (index >= start && index < end) {
-      this.renderRecords();
+  updateRecord(record, newData) {
+    let updated = false;
+    let originalRecord = this.records.find(r => r === record);
+    if (!originalRecord && record[index] !== undefined) {
+      originalRecord = this.records[record[index]];
+    }
+    Object.keys(newData).forEach(key => {
+      if (originalRecord.hasOwnProperty(key)) {
+        originalRecord[key] = newData[key];
+        updated = true;
+      }
+    });
+    if(updated){
+      const start = (this.currentPage - 1) * this.pageSize;
+      const end = start + this.pageSize;
+      if (
+        !this.enablePages ||
+        (originalRecord[index] >= start && originalRecord[index] < end)
+      ) {
+        this.renderRecords();
+      }
     }
   }
 
-  deleteRecord(index) {
-    if (index >= 0 && index < this.records.length) {
-      // Deselect the record before deleting
-      this.selectedIndexes = this.selectedIndexes.filter(i => i !== index);
-      dispatchEvent(this, 'selectionChange', { selectedIndexes: this.selectedIndexes });
-      this.records.splice(index, 1);
-      this.renderRecords();
-      dispatchEvent(this, 'recordDeleted', { index });
+  deleteRecord(record) {
+    let originalRecord = this.records.find(r => r === record),
+        totalPagesBefore = this.getTotalPages();
+    if (!originalRecord && record[index] !== undefined) {
+      originalRecord = this.records[record[index]];
     }
+    if (originalRecord) {
+      const recordIndex = this.records.indexOf(originalRecord);
+      this.records.splice(recordIndex, 1);
+      // Update the index of remaining records
+      this.records.forEach((rec, idx) => {
+        rec[index] = idx;
+      });
+      this.renderRecords();
+      dispatchEvent(this, 'selectionChange');
+      dispatchEvent(this, 'recordDeleted', { index: recordIndex });
+      const totalPages = this.getTotalPages();
+      if (this.currentPage > totalPages) {
+        this.setPage(totalPages);
+      }
+      if(totalPages !== totalPagesBefore){
+        dispatchEvent(this, 'pageCountChanged', { totalPages });
+      }
+    }
+  }
+
+  deleteSelected() {
+    let totalPagesBefore = this.getTotalPages();
+    const selectedRecords = this.getSelectedRecords();
+    selectedRecords.forEach(record => {
+      let originalRecord = this.records.find(r => r === record);
+      if (!originalRecord && record[index] !== undefined) {
+        originalRecord = this.records[record[index]];
+      }
+      if (originalRecord) {
+        const recordIndex = this.records.indexOf(originalRecord);
+        this.records.splice(recordIndex, 1);
+      }
+    });
+    this.records.forEach((rec, idx) => {
+      rec[index] = idx;
+    });
+    this.renderRecords();
+    const totalPages = this.getTotalPages();
+      if (this.currentPage > totalPages) {
+        this.setPage(totalPages);
+      }
+      if(totalPages !== totalPagesBefore){
+        dispatchEvent(this, 'pageCountChanged', { totalPages });
+      }
+    dispatchEvent(this, 'selectionChange');
   }
 
   getSelectedRecords() {
-    return this.selectedIndexes.map(index => this.records[index]);
+    const selectedRecords = this.records.filter(record => {
+      const isSelected = record[selected];
+      return isSelected;
+    });
+    return selectedRecords;
   }
 
   selectAllOnPage() {
     const start = (this.currentPage - 1) * this.pageSize;
     const end = Math.min(start + this.pageSize, this.records.length);
     for (let i = start; i < end; i++) {
-      if (!this.selectedIndexes.includes(i)) {
-        this.selectedIndexes.push(i);
-      }
+      this.records[i][selected] = true;
     }
     this.renderRecords();
-    dispatchEvent(this, 'selectionChange', { selectedIndexes: this.selectedIndexes });
+    setTimeout(() => {
+      dispatchEvent(this, 'selectionChange');
+    }, 0);
   }
 
   deselectAllOnPage() {
     const start = (this.currentPage - 1) * this.pageSize;
     const end = Math.min(start + this.pageSize, this.records.length);
-    this.selectedIndexes = this.selectedIndexes.filter(index => index < start || index >= end);
+    for (let i = start; i < end; i++) {
+      this.records[i][selected] = false;
+    }
     this.renderRecords();
-    dispatchEvent(this, 'selectionChange', { selectedIndexes: this.selectedIndexes });
+    setTimeout(() => {
+      dispatchEvent(this, 'selectionChange');
+    }, 0);
   }
 
   allOnPageSelected() {
     const start = (this.currentPage - 1) * this.pageSize;
     const end = Math.min(start + this.pageSize, this.records.length);
     for (let i = start; i < end; i++) {
-      if (!this.selectedIndexes.includes(i)) {
+      if (!this.records[i][selected]) {
         return false;
       }
     }
     return true;
+  }
+
+  sortBy(field, asc = true) {
+    this.sort = this.sort.filter(item => item.name !== field);
+    this.sort.push({ name: field, asc });
+    this.renderRecords();
+  }
+
+  hideRecord(record) {
+    let originalRecord = this.records.find(r => r === record);
+    if (!originalRecord && record[index] !== undefined) {
+      originalRecord = this.records[record[index]];
+    }
+    if (originalRecord) {
+      originalRecord[hidden] = true;
+      this.renderRecords();
+    }
+  }
+
+  showRecord(record) {
+    let originalRecord = this.records.find(r => r === record);
+    if (!originalRecord && record[index] !== undefined) {
+      originalRecord = this.records[record[index]];
+    }
+    if (originalRecord) {
+      originalRecord[hidden] = false;
+      this.renderRecords();
+    }
+  }
+
+  filterRecordsByField({ field, value, condition = 'eq' }) {
+    this.records.forEach(record => {
+      if (condition === 'eq') {
+        record[hidden] = record[field] !== value;
+      } else if (condition === 'not') {
+        record[hidden] = record[field] === value;
+      } else if (condition === 'gt') {
+        record[hidden] = record[field] <= value;
+      } else if (condition === 'lt') {
+        record[hidden] = record[field] >= value;
+      } else if (condition === 'gte') {
+        record[hidden] = record[field] < value;
+      } else if (condition === 'lte') {
+        record[hidden] = record[field] > value;
+      } else if (condition === 'contains') {
+        record[hidden] = !String(record[field]).includes(String(value));
+      } else if (condition === 'notContains') {
+        record[hidden] = String(record[field]).includes(value);
+      }
+    });
+    this.renderRecords();
+  }
+
+  getDisplayedRecords() {
+    let displayedRecords = this.records.filter(record => !record[hidden]);
+
+    this.sort.forEach(({ name, asc }) => {
+      displayedRecords.sort((a, b) => {
+        if (a[name] < b[name]) return asc ? -1 : 1;
+        if (a[name] > b[name]) return asc ? 1 : -1;
+        return 0;
+      });
+    });
+
+    return displayedRecords;
   }
 
   get shadowTemplate(){
@@ -474,5 +600,97 @@ export default class Table extends Component {
     });
     return [...names].map(name=>({name,label:toTitleCase(name)}));
   }
+
+  static controls = {
+    prevPage: {
+      render: (table) => {
+        const $button = document.createElement('button');
+        $button.classList.add('pq', 'no-btn');
+        $button.appendChild(new Icon('chevron-left'));
+        onEvent($button, 'click', () => table.prevPage());
+
+        // Disable button if on the first page
+        onEvent(table, 'pageChange', () => {
+          $button.disabled = table.getCurrentPage() === 1;
+        });
+
+        return $button;
+      }
+    },
+    nextPage: {
+      render: (table) => {
+        const $button = document.createElement('button');
+        $button.classList.add('pq', 'no-btn');
+        $button.appendChild(new Icon('chevron-right'));
+        onEvent($button, 'click', () => table.nextPage());
+
+        // Disable button if on the last page
+        onEvent(table, 'pageChange', () => {
+          $button.disabled = table.getCurrentPage() === table.getTotalPages();
+        });
+
+        return $button;
+      }
+    },
+    pageSelect: {
+      render: (table) => new PageSelect(table)
+    },
+    pageSize: {
+      render: (table) => new PageSize(table)
+    },
+    selectCount: {
+      render: (table) => new SelectCount(table)
+    },
+    deleteSelected: {
+      render: (table) => new DeleteSelected(table)
+    },
+    spacer: {
+      html: '<div class="flex"></div>'
+    }
+  };
+
+  static format(value){
+    const f = Array.isArray(value) ? Table.formatters.array : Table.formatters[typeof value];
+    return f(value);
+  }
+
+  static formatters = {
+    string: v=>v,
+    number: v=>`${v}`,
+    date: v=>v.toLocaleDateString(),
+    boolean: v=>v ? 'True' : 'False',
+    array: v=>v.map(i=>Table.format(i)).join(', '),
+    'undefined': v=>'',
+    'null': v=>'<code>null</code>'
+  };
+
+  static editors = {
+    string: (value) => {
+      const $i = new Input();
+      $i.value = value;
+      return $i;
+    },
+    number: (value) => {
+      const $i = new Input();
+      $i.type = 'number';
+      $i.value = value;
+      return $i;
+    },
+    date: (value) => {
+      const $i = new Input();
+      $i.type = 'date';
+      $i.value = value;
+      return $i;
+    },
+    boolean: (value) => {
+      const $i = document.createElement('select');
+      $i.innerHTML = `
+        <option value="true" ${value ? 'selected' : ''}>True</option>
+        <option value="false" ${!value ? 'selected' : ''}>False</option>
+      `;
+      $i.value = value;
+      return $i;
+    },
+  };
 }
 window.customElements.define('k-table', Table);
