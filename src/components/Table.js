@@ -5,6 +5,9 @@ import PageSelect from './tableControls/PageSelect.js';
 import PageSize from './tableControls/PageSize.js';
 import DeleteSelected from './tableControls/DeleteSelected.js';
 import Edit from './tableControls/Edit.js';
+import Hide from './tableControls/Hide.js';
+import HiddenCount from './tableControls/HiddenCount.js';
+import ShowAll from './tableControls/ShowAll.js';
 import { toTitleCase } from '../utils/string.js';
 import { onEvent, offEvent, dispatchEvent } from '../utils/element.js';
 
@@ -126,37 +129,29 @@ export default class Table extends Component {
       this.fields.forEach(({ name, formatter, calculator, type, editor }) => {
         const $td = document.createElement('td');
         $td.dataset.field = name;
-        if (calculator) {
-          $td.innerHTML = calculator(record, this);
-        } else {
-          let value = record[name] || '';
-          if(record[editing]){
-            $tr.setAttribute('editing', true);
-            if(editor){
-              $td.appendChild(editor(value));
-            } else {
-              let editorGen = Table.editors[type || typeof value];
-              if(!editorGen){
-                editorGen = Table.editors.string;
-              }
-              $td.appendChild(editorGen(value));
-            }
+        let value = record[name] || '';
+        if(record[editing]){
+          $tr.setAttribute('editing', true);
+          if (calculator) {
+            $td.appendChild(Table.editors.calculated(calculator(record, this)));
+          } else if(editor){
+            $td.appendChild(editor(value));
           } else {
-            if (Array.isArray(value)) {
-              if (formatter) {
-                value = value.map(formatter).join(', ');
-              } else {
-                value = value.join(', ');
-              }
-            } else {
-              if (formatter) {
-                value = formatter(value);
-              }
+            let editorGen = Table.editors[type || typeof value];
+            if(!editorGen){
+              editorGen = Table.editors.string;
             }
+            $td.appendChild(editorGen(value));
+          }
+        } else {
+          if (calculator) {
+            $td.innerHTML = calculator(record, this);
+          } else if (formatter) {
+            $td.innerHTML = formatter(value);
+          } else {
             $td.innerHTML = value;
           }
         }
-        
         $tr.appendChild($td);
       });
     }
@@ -178,9 +173,13 @@ export default class Table extends Component {
     record[editing] = false;
     const $currentTr = this.shadowRoot.querySelector(`tr[data-index="${record[index]}"]`);
     $currentTr.querySelectorAll('td').forEach(($td) => {
-      const $input = $td.children.length === 1 ? $td.firstChild : $td.querySelector('input, select');
-      if ($input) {
-        record[$td.dataset.field] = $input.value;
+      const field = $td.dataset.field;
+      const fieldDef = this.fields.find(f => f.name === field);
+      if(fieldDef && !fieldDef.calculator){ // calculated fields cannot be udated
+        const $input = $td.children.length === 1 ? $td.firstChild : $td.querySelector('input, select');
+        if ($input) {
+          record[field] = $input.value;
+        }
       }
     });
     const $newTr = this.renderRecord(record);
@@ -201,7 +200,7 @@ export default class Table extends Component {
   renderRowControls(controls = [], record) {
     if(!this.rendered) return;
     const $td = document.createElement('td');
-    controls.forEach(({ html, icon, action, render }) => {
+    controls.filter(c=>!!c).forEach(({ html, icon, action, render }) => {
       if(html){
         $td.appendChild(document.createRange().createContextualFragment(html));
       } else if(render && typeof(render) === 'function'){
@@ -228,7 +227,7 @@ export default class Table extends Component {
     if(!this.rendered) return;
     const $container = this.shadowRoot.getElementById(position);
     $container.innerHTML = '';
-    controls.forEach(({ html, icon, action, render }) => {
+    controls.filter(c=>!!c).forEach(({ html, icon, action, render }) => {
       if(html){
         $container.appendChild(document.createRange().createContextualFragment(html));
       } else if(render && typeof(render) === 'function'){
@@ -525,6 +524,7 @@ export default class Table extends Component {
     if (originalRecord) {
       originalRecord[hidden] = true;
       this.renderRecords();
+      dispatchEvent(this, 'recordHidden');
     }
   }
 
@@ -536,7 +536,15 @@ export default class Table extends Component {
     if (originalRecord) {
       originalRecord[hidden] = false;
       this.renderRecords();
+      dispatchEvent(this, 'recordShown');
     }
+  }
+  showAllRecords() {
+    this.records.forEach(record => {
+      record[hidden] = false; 
+    });
+    this.renderRecords();
+    dispatchEvent(this, 'recordShown allRecordsShown');
   }
 
   filterRecordsByField({ field, value, condition = 'eq' }) {
@@ -574,6 +582,10 @@ export default class Table extends Component {
     });
 
     return displayedRecords;
+  }
+
+  getHiddenRecords() {
+    return this.records.filter(record => record[hidden]);
   }
 
   get shadowTemplate(){
@@ -702,6 +714,15 @@ export default class Table extends Component {
     },
     edit: {
       render: (table, record) => new Edit(table, record)
+    },
+    hide: {
+      render: (table, record) => new Hide(table, record)
+    },
+    hiddenCount: {
+      render: (table) => new HiddenCount(table)
+    },
+    showAll: {
+      render: (table) => new ShowAll(table)
     }
   };
 
@@ -747,6 +768,12 @@ export default class Table extends Component {
       $i.value = value;
       return $i;
     },
+    calculated: (value) => {
+      const $i = document.createElement('input');
+      $i.disabled = true;
+      $i.value = value;
+      return $i;
+    }
   };
 }
 window.customElements.define('k-table', Table);

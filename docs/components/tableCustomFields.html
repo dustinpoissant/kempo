@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Fields - Table - Kempo Docs</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" />
+  <link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+  <script type="module" src="../kempo/components/Table.js"></script>
+  <script type="module">
+    import Icon from '../kempo/components/Icon.js';
+    import Search from '../kempo/components/Search.js';
+    Icon.pathToIcons = ['../icons'];
+    Search.searchDataUrl = '../search.json';
+  </script>
+  <script>
+    window.contacts = [];
+    function generateContact(){
+      const maleNames = [
+        "Liam", "Noah", "Oliver", "Elijah", "William", "James", "Benjamin", 
+        "Lucas", "Henry", "Alexander", "Mason", "Michael", "Ethan", "Daniel", 
+        "Jacob", "Logan", "Jackson", "Levi", "Sebastian", "Mateo", "Jack", 
+        "Owen", "Theodore", "Aiden", "Samuel", "Joseph", "John", "David", 
+        "Wyatt", "Matthew"
+      ];
+      const femaleNames = [
+        "Olivia", "Emma", "Ava", "Sophia", "Isabella", "Mia", "Amelia", 
+        "Harper", "Evelyn", "Abigail", "Emily", "Ella", "Elizabeth", 
+        "Camila", "Luna", "Sofia", "Avery", "Mila", "Aria", "Scarlett", 
+        "Penelope", "Layla", "Chloe", "Victoria", "Madison", "Eleanor", 
+        "Grace", "Nora", "Riley", "Zoey"
+      ];
+      const lastNames = [
+        "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", 
+        "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", 
+        "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", 
+        "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", 
+        "Ramirez", "Lewis", "Robinson"
+      ];
+      const gender = Math.random() > 0.5 ? 'm' : 'f';
+      const firstName = gender === 'm' ? maleNames[Math.floor(Math.random() * maleNames.length)] : femaleNames[Math.floor(Math.random() * femaleNames.length)];
+      const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+      const name = `${firstName} ${lastName}`;
+      const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@mailserver.com`;
+      const birthday = `${Math.floor(Math.random() * 100) + 1920}-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 28) + 1).padStart(2, '0')}`;
+      const phoneNumber = `(${Math.floor(Math.random() * 900) + 100}) ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`;
+      return { name, email, birthday, phoneNumber, gender };
+    }
+    for (let i = 0; i < 10; i++) {
+      contacts.push(generateContact());
+    };
+  </script>
+</head>
+<body>
+  <k-import src="../nav-1.inc.html"></k-import>
+  <h1 class="ta-center">Table - Custom Fields</h1>
+  <main>
+
+    <a href="./table.html"><h5>Back to Table Component Documentation</h5></a>
+
+    <p>Use the <code>fields</code> property of the options object in <code>setData</code> to define custom fields. This is useful for hiding fields, reordering fields, changing the labels, formatting the output, or creating a calculated field.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"customFieldsExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'customFieldsExample'</span>).setData({<br />    <span class="hljs-attr">records</span>: contacts,<br />    <span class="hljs-attr">fields</span>: [<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">"name"</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">"Name"</span><br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">'phoneNumber'</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">'Phone Number'</span><br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">'email'</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">'Email Address'</span><br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">'birthday'</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">'Birthday'</span><br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">'age'</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">'Age'</span>,<br />        <span class="hljs-attr">calculator</span>: <span class="hljs-function">(<span class="hljs-params">record</span>) =&gt;</span> {<br />          <span class="hljs-comment">// record.birthday is a string in the format "YYYY-MM-DD"</span><br />          <span class="hljs-keyword">const</span> today = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>();<br />          <span class="hljs-keyword">const</span> birthDate = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(record.birthday);<br />          <span class="hljs-keyword">let</span> age = today.getFullYear() - birthDate.getFullYear();<br />          <span class="hljs-keyword">const</span> monthDifference = today.getMonth() - birthDate.getMonth();<br />          <span class="hljs-keyword">if</span> (monthDifference &lt; <span class="hljs-number">0</span> || (monthDifference === <span class="hljs-number">0</span> &amp;&amp; today.getDate() &lt; birthDate.getDate())) {<br />            age--;<br />          }<br />          <span class="hljs-keyword">return</span> age;<br />        }<br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">'gender'</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">'Gender'</span>,<br />        <span class="hljs-attr">formatter</span>: <span class="hljs-function">(<span class="hljs-params">v</span>) =&gt;</span> v===<span class="hljs-string">'m'</span>?<span class="hljs-string">'Male'</span>:<span class="hljs-string">'Female'</span> <span class="hljs-comment">// original value is "m" or "f"</span><br />      }<br />    ]<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+    <k-table id="customFieldsExample"></k-table>
+    <script type="module">
+      document.getElementById('customFieldsExample').setData({
+        records: contacts,
+        fields: [
+          {
+            name: "name",
+            label: "Name"
+          },
+          {
+            name: 'phoneNumber',
+            label: 'Phone Number'
+          },
+          {
+            name: 'email',
+            label: 'Email Address'
+          },
+          {
+            name: 'birthday',
+            label: 'Birthday'
+          },
+          {
+            name: 'age',
+            label: 'Age',
+            calculator: (record) => {
+              // record.birthday is a string in the format "YYYY-MM-DD"
+              const today = new Date();
+              const birthDate = new Date(record.birthday);
+              let age = today.getFullYear() - birthDate.getFullYear();
+              const monthDifference = today.getMonth() - birthDate.getMonth();
+              if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+              }
+              return age;
+            }
+          },
+          {
+            name: 'gender',
+            label: 'Gender',
+            formatter: (v) => v==='m'?'Male':'Female' // original value is "m" or "f"
+          }
+        ]
+      });
+    </script>
+  </main>
+  <div style="height: 33.333vh"></div>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+</body>
+</html>

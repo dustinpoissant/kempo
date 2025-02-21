@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Table - Components - Kempo Docs - A Web Components Solution</title>
-  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" />
+  <link rel="stylesheet" href="../kempo/kempo-styles.css" />
   <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
   <script type="module" src="../kempo/components/Table.js"></script>
   <script type="module">
@@ -63,10 +64,13 @@
       <div class="m mt0 pl">
         <h6>Examples</h6>
         <a href="#basicUsage">Basic Usage</a><br />
-        <a href="#customFields">Custom Fields</a><br />
-        <a href="#topBottomControls">Top and Bottom Controls</a><br />
-        <a href="#rowControls">Row Controls</a><br />
-        <a href="#pagination">Pagination</a><br />
+        <a href="tableCustomFields.html">Custom Fields</a><br />
+        <a href="tableControls.html">Top and Bottom Controls</a><br />
+        <a href="tableRowControls.html">Row Controls</a><br />
+        <a href="tablePagination.html">Pagination</a><br />
+        <a href="tableRecordSelection.html">Record Selection</a><br />
+        <a href="tableRecordEditing.html">Record Editing</a><br />
+        <a href="tableRecordHiding.html">Record Hiding</a><br />
         <h6 class="mt">JavaScript Reference</h6>
         <a href="#constructor">Constructor</a><br />
         <a href="#requirements">Requirements</a><br />
@@ -114,241 +118,20 @@
       });
     </script>
 
-    <h3 id="customFields"><a href="#customFields" class="no-link">Custom Fields</a></h3>
-    <p>Use the <code>fields</code> property of the options object in <code>setData</code> to define custom fields. This is useful for hiding fields, reordering fields, changing the labels, formatting the output, or creating a calculated field.</p>
-    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"customFieldsExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'customFieldsExample'</span>).setData({<br />    records: contacts.slice(<span class="hljs-number">0</span>,<span class="hljs-number">10</span>),<br />    fields: [<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">"name"</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">"Name"</span><br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">'phoneNumber'</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">'Phone Number'</span><br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">'email'</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">'Email Address'</span><br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">'birthday'</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">'Birthday'</span><br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">'age'</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">'Age'</span>,<br />        <span class="hljs-attr">calculator</span>: <span class="hljs-function">(<span class="hljs-params">record</span>) =&gt;</span> {<br />          <span class="hljs-comment">// record.birthday is a string in the format "YYYY-MM-DD"</span><br />          <span class="hljs-keyword">const</span> today = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>();<br />          <span class="hljs-keyword">const</span> birthDate = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(record.birthday);<br />          <span class="hljs-keyword">let</span> age = today.getFullYear() - birthDate.getFullYear();<br />          <span class="hljs-keyword">const</span> monthDifference = today.getMonth() - birthDate.getMonth();<br />          <span class="hljs-keyword">if</span> (monthDifference &lt; <span class="hljs-number">0</span> || (monthDifference === <span class="hljs-number">0</span> &amp;&amp; today.getDate() &lt; birthDate.getDate())) {<br />            age--;<br />          }<br />          <span class="hljs-keyword">return</span> age;<br />        }<br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">'gender'</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">'Gender'</span>,<br />        <span class="hljs-attr">formatter</span>: <span class="hljs-function">(<span class="hljs-params">v</span>) =&gt;</span> v===<span class="hljs-string">'m'</span>?<span class="hljs-string">'Male'</span>:<span class="hljs-string">'Female'</span> <span class="hljs-comment">// original value is "m" or "f"</span><br />      }<br />    ]<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-    <k-table id="customFieldsExample"></k-table>
-    <script type="module">
-      document.getElementById('customFieldsExample').setData({
-        records: contacts.slice(0,10),
-        fields: [
-          {
-            name: "name",
-            label: "Name"
-          },
-          {
-            name: 'phoneNumber',
-            label: 'Phone Number'
-          },
-          {
-            name: 'email',
-            label: 'Email Address'
-          },
-          {
-            name: 'birthday',
-            label: 'Birthday'
-          },
-          {
-            name: 'age',
-            label: 'Age',
-            calculator: (record) => {
-              // record.birthday is a string in the format "YYYY-MM-DD"
-              const today = new Date();
-              const birthDate = new Date(record.birthday);
-              let age = today.getFullYear() - birthDate.getFullYear();
-              const monthDifference = today.getMonth() - birthDate.getMonth();
-              if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-                age--;
-              }
-              return age;
-            }
-          },
-          {
-            name: 'gender',
-            label: 'Gender',
-            formatter: (v) => v==='m'?'Male':'Female' // original value is "m" or "f"
-          }
-        ]
-      });
-    </script>
+    <a href="tableCustomFields.html"><h3>Custom Fields Example</h3></a>
 
-    <h3 id="topBottomControls"><a href="#topBottomControls" class="no-link">Top and Bottom Controls</a></h3>
-    <p>The table component can display controls at the top and bottom of the table. These controls can be used for pagination, adding new records, or any other actions. Each control is defined by an icon name, a callback function, and optionally an HTML string or a render function.</p>
-    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"topBottomControlsExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'topBottomControlsExample'</span>).setData({<br />    records: contacts.slice(<span class="hljs-number">10</span>, <span class="hljs-number">20</span>),<br />    controls: {<br />      <span class="hljs-attr">top</span>: [<br />        {<br />          <span class="hljs-attr">icon</span>: <span class="hljs-string">'add'</span>,<br />          <span class="hljs-attr">action</span>: <span class="hljs-function">(<span class="hljs-params">table</span>) =&gt;</span> table.addRecord(generateContact())<br />        }<br />      ],<br />      <span class="hljs-attr">bottom</span>: [<br />        {<br />          <span class="hljs-attr">icon</span>: <span class="hljs-string">'refresh'</span>,<br />          <span class="hljs-attr">action</span>: <span class="hljs-function">(<span class="hljs-params">table</span>) =&gt;</span> {<br />            contacts = contacts.sort(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">Math</span>.random() - <span class="hljs-number">0.5</span>);<br />            table.setRecords(contacts.slice(<span class="hljs-number">0</span>, <span class="hljs-number">10</span>));<br />          }<br />        }<br />      ]<br />    }<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-    <k-table id="topBottomControlsExample"></k-table>
-    <script type="module">
-      document.getElementById('topBottomControlsExample').setData({
-        records: contacts.slice(10, 20),
-        controls: {
-          top: [
-            {
-              icon: 'add',
-              action: (table) => table.addRecord(generateContact())
-            }
-          ],
-          bottom: [
-            {
-              icon: 'refresh',
-              action: (table) => {
-                contacts = contacts.sort(() => Math.random() - 0.5);
-                table.setRecords(contacts.slice(0, 10));
-              }
-            }
-          ]
-        }
-      });
-    </script>
+    <a href="tableControls.html"><h3>Top and Bottom Controls</h3></a>
 
-    <h3 id="rowControls"><a href="#rowControls" class="no-link">Row Controls</a></h3>
-    <p>The table component can display controls before or after each row. Each control is defined by an icon name, a callback function, and optionally an HTML string or a render function.</p>
-    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"rowControlsExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'rowControlsExample'</span>).setData({<br />    records: contacts.slice(20, 25),<br />    controls: {<br />      <span class="hljs-attr">before</span>: [<br />        {<br />          <span class="hljs-attr">html</span>: <span class="hljs-string">'&lt;span&gt;Custom HTML&lt;/span&gt; '</span><br />        },<br />        {<br />          <span class="hljs-attr">render</span>: <span class="hljs-function">(<span class="hljs-params">table, record</span>) =&gt;</span> {<br />            <span class="hljs-keyword">return</span> <span class="hljs-string">`&lt;button onclick="alert('<span class="hljs-subst">${record.name}</span>')"&gt;Alert&lt;/button&gt;`</span>;<br />          }<br />        }<br />      ],<br />      <span class="hljs-attr">after</span>: [<br />        {<br />          <span class="hljs-attr">icon</span>: <span class="hljs-string">'edit'</span>,<br />          <span class="hljs-attr">action</span>: <span class="hljs-function">(<span class="hljs-params">table, record, index</span>) =&gt;</span> {<br />            <span class="hljs-keyword">const</span> newName = prompt(<span class="hljs-string">"Enter a new name:"</span>, record.name);<br />            <span class="hljs-keyword">if</span> (newName) {<br />              record.name = newName;<br />              table.updateRecord(index, record);<br />            }<br />          }<br />        },<br />        {<br />          <span class="hljs-attr">icon</span>: <span class="hljs-string">'delete'</span>,<br />          <span class="hljs-attr">action</span>: <span class="hljs-function">(<span class="hljs-params">table, record, index</span>) =&gt;</span> {<br />            table.deleteRecord(index);<br />          }<br />        }<br />      ]<br />    }<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-    <k-table id="rowControlsExample"></k-table>
-    <script type="module">
-      document.getElementById('rowControlsExample').setData({
-        records: contacts.slice(20, 25),
-        controls: {
-          before: [
-            {
-              html: '<span>Custom HTML</span> '
-            },
-            {
-              render: (table, record) => {
-                return `<button onclick="alert('${record.name}')">Alert</button>`;
-              }
-            }
-          ],
-          after: [
-            {
-              icon: 'edit',
-              action: (table, record) => {
-                const newName = prompt("Enter a new name:", record.name);
-                if (newName && newName !== record.name) {
-                  table.updateRecord(record, { name: newName });
-                }
-              }
-            },
-            {
-              icon: 'delete',
-              action: (table, record) => {
-                table.deleteRecord(record);
-              }
-            }
-          ]
-        }
-      });
-    </script>
+    <a href="tableRowControls.html"><h3>Row Controls</h3></a>
 
+    <a href="tablePagination.html"><h3>Pagination</h3></a>
 
-    <h3 id="pagination"><a href="#pagination" class="no-link">Pagination</a></h3>
-    <p>The table component supports pagination. You can set the page size and navigate through pages using the provided methods.</p>
-    <p>There are some predefined controls that you can use directly from <code>Table.controls</code>. These controls include:</p>
-    <ul>
-      <li><code>prevPage</code>: A control to navigate to the previous page.</li>
-      <li><code>nextPage</code>: A control to navigate to the next page.</li>
-      <li><code>pageSelect</code>: A control to select a specific page.</li>
-      <li><code>spacer</code>: A spacer that flexes to separate the other controls to before it to the left, and after it to the far right.</li>
-      <li><code>pageSize</code>: A control to select the number of records per page.</li>
-    </ul>
-    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"paginationExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Table <span class="hljs-keyword">from</span> <span class="hljs-string">'../kempo/components/Table.js'</span>;<br />  <span class="hljs-keyword">const</span> $paginationExample = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'paginationExample'</span>);<br />  $paginationExample.setData({<br />    <span class="hljs-attr">records</span>: contacts,<br />    <span class="hljs-attr">controls</span>: {<br />      <span class="hljs-attr">bottom</span>: [<br />        Table.controls.prevPage,<br />        Table.controls.nextPage,<br />        Table.controls.pageSelect,<br />        Table.controls.spacer,<br />        Table.controls.pageSize<br />      ]<br />    },<br />    <span class="hljs-attr">pageSize</span>: <span class="hljs-number">10</span>,<br />    <span class="hljs-attr">pageSizeOptions</span>: [<span class="hljs-number">5</span>, <span class="hljs-number">10</span>, <span class="hljs-number">20</span>]<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-    <k-table id="paginationExample"></k-table>
-    <script type="module">
-      import Table from '../kempo/components/Table.js';
-      const $paginationExample = document.getElementById('paginationExample');
-      $paginationExample.setData({
-        records: contacts,
-        controls: {
-          bottom: [
-            Table.controls.prevPage,
-            Table.controls.nextPage,
-            Table.controls.pageSelect,
-            Table.controls.spacer,
-            Table.controls.pageSize
-          ]
-        },
-        pageSize: 10,
-        pageSizeOptions: [5, 10, 20]
-      });
-    </script>
+    <a href="tableRecordSelection.html"><h3>Record Selection</h3></a>
 
-    <h3 id="recordSelection"><a href="#recordSelection" class="no-link">Record Selection</a></h3>
-    <p>The table component supports record selection. You can enable selection by setting the <code>enableSelection</code> property to <code>true</code>. This will add a checkbox to each row and a "Select All" checkbox to the header.</p>
-    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"recordSelectionExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Table <span class="hljs-keyword">from</span> <span class="hljs-string">'../kempo/components/Table.js'</span>;<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'recordSelectionExample'</span>).setData({<br />    <span class="hljs-attr">records</span>: contacts,<br />    <span class="hljs-attr">enableSelection</span>: <span class="hljs-literal">true</span>,<br />    <span class="hljs-attr">controls</span>: {<br />      <span class="hljs-attr">bottom</span>: [<br />        Table.controls.prevPage,<br />        Table.controls.nextPage,<br />        Table.controls.pageSelect,<br />        Table.controls.spacer,<br />        Table.controls.selectCount,<br />        Table.controls.deleteSelected<br />      ]<br />    },<br />    <span class="hljs-attr">pageSize</span>: <span class="hljs-number">10</span><br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-    <k-table id="recordSelectionExample"></k-table>
-    <script type="module">
-      import Table from '../kempo/components/Table.js';
-      document.getElementById('recordSelectionExample').setData({
-        records: contacts,
-        enableSelection: true,
-        controls: {
-          bottom: [
-            Table.controls.prevPage,
-            Table.controls.nextPage,
-            Table.controls.pageSelect,
-            Table.controls.spacer,
-            Table.controls.selectCount,
-            Table.controls.deleteSelected
-          ]
-        },
-        pageSize: 10
-      });
-    </script>
+    <a href="tableRecordEditing.html"><h3>Record Editing</h3></a>
 
-    <h3 id="recordEditing"><a href="#recordEditing" class="no-link">Record Editing</a></h3>
-    <p>The table component supports record editing. To allow for editing add the "edit" control to the "before" or "after" controls. You may define a "type" on the field, which will tell the table to use a specific editor for that field. If you do not define a "type" it will attempt to find the correct type using the value.</p>
-    <p>You can also define a custom editor by adding a generator function to the <code>Table.editors</code> object that will generate an input (or select). This will be global to all tables on the page.</p>
-    <p>You can also define a custom editor on a per-field basis by adding an "editor" generator function to the field object. This will override the global editor for that field.</p>
-    <pre><code class="hljs javascript">&lt;k-table id=<span class="hljs-string">"recordEditingExample"</span>&gt;<span class="xml"><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span></span><br /><span class="xml"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Table <span class="hljs-keyword">from</span> <span class="hljs-string">'../kempo/components/Table.js'</span>;<br />  Table.editors.tel = <span class="hljs-function">(<span class="hljs-params">v</span>) =&gt;</span> {<br />    <span class="hljs-keyword">const</span> $input = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">"input"</span>);<br />    $input.value = v;<br />    $input.addEventListener(<span class="hljs-string">'change'</span>, () =&gt; {<br />      $input.value = $input.value.replace(<span class="hljs-regexp">/\D/g</span>, <span class="hljs-string">''</span>); <span class="hljs-comment">// Remove all non-digit characters</span><br />      <span class="hljs-keyword">if</span> ($input.value.length === <span class="hljs-number">7</span>) {<br />        $input.value = $input.value.replace(<span class="hljs-regexp">/(\d{3})(\d{4})/</span>, <span class="hljs-string">'$1-$2'</span>);<br />      } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> ($input.value.length === <span class="hljs-number">10</span>) {<br />        $input.value = $input.value.replace(<span class="hljs-regexp">/(\d{3})(\d{3})(\d{4})/</span>, <span class="hljs-string">'($1) $2-$3'</span>);<br />      } <span class="hljs-keyword">else</span> {<br />        $input.value = v; <span class="hljs-comment">// Reset to default value if not 7 or 10 digits</span><br />      }<br />    });<br />    <span class="hljs-keyword">return</span> $input;<br />  };<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'recordEditingExample'</span>).setData({<br />    <span class="hljs-attr">records</span>: contacts.slice(<span class="hljs-number">30</span>, <span class="hljs-number">35</span>),<br />    <span class="hljs-attr">fields</span>: [<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">"name"</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">"Name"</span><br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">"email"</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">"Email"</span><br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">"birthday"</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">"Birthday"</span>,<br />        <span class="hljs-attr">type</span>: <span class="hljs-string">"date"</span>,<br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">"phoneNumber"</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">"Phone Number"</span>,<br />        <span class="hljs-attr">type</span>: <span class="hljs-string">"tel"</span><br />      },<br />      {<br />        <span class="hljs-attr">name</span>: <span class="hljs-string">"gender"</span>,<br />        <span class="hljs-attr">label</span>: <span class="hljs-string">"Gender"</span>,<br />        <span class="hljs-attr">formatter</span>: <span class="hljs-function">(<span class="hljs-params">v</span>) =&gt;</span> v === <span class="hljs-string">"m"</span> ? <span class="hljs-string">"Male"</span> : <span class="hljs-string">"Female"</span>,<br />        <span class="hljs-attr">editor</span>: <span class="hljs-function">(<span class="hljs-params">v</span>) =&gt;</span> {<br />          <span class="hljs-keyword">const</span> $select = <span class="hljs-built_in">document</span>.createElement(<span class="hljs-string">"select"</span>);<br />          $select.innerHTML = <span class="hljs-string">`<br />            &lt;option value="m"&gt;Male&lt;/option&gt;<br />            &lt;option value="f"&gt;Female&lt;/option&gt;<br />          `</span>;<br />          $select.value = v;<br />          <span class="hljs-keyword">return</span> $select;<br />        }<br />      }<br />    ],<br />    <span class="hljs-attr">controls</span>: {<br />      <span class="hljs-attr">after</span>: [<br />        Table.controls.edit,<br />      ]<br />    }<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></span></code></pre>
-    <k-table id="recordEditingExample"></k-table>
-    <script type="module">
-      import Table from '../kempo/components/Table.js';
-      Table.editors.tel = (v) => {
-        const $input = document.createElement("input");
-        $input.value = v;
-        $input.addEventListener('change', () => {
-          $input.value = $input.value.replace(/\D/g, ''); // Remove all non-digit characters
-          if ($input.value.length === 7) {
-            $input.value = $input.value.replace(/(\d{3})(\d{4})/, '$1-$2');
-          } else if ($input.value.length === 10) {
-            $input.value = $input.value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-          } else {
-            $input.value = v; // Reset to default value if not 7 or 10 digits
-          }
-        });
-        return $input;
-      };
-      document.getElementById('recordEditingExample').setData({
-        records: contacts.slice(30, 35),
-        fields: [
-          {
-            name: "name",
-            label: "Name"
-          },
-          {
-            name: "email",
-            label: "Email"
-          },
-          {
-            name: "birthday",
-            label: "Birthday",
-            type: "date",
-          },
-          {
-            name: "phoneNumber",
-            label: "Phone Number",
-            type: "tel"
-          },
-          {
-            name: "gender",
-            label: "Gender",
-            formatter: (v) => v === "m" ? "Male" : "Female",
-            editor: (v) => {
-              const $select = document.createElement("select");
-              $select.innerHTML = `
-                <option value="m">Male</option>
-                <option value="f">Female</option>
-              `;
-              $select.value = v;
-              return $select;
-            }
-          }
-        ],
-        controls: {
-          after: [
-            Table.controls.edit,
-          ]
-        }
-      });
-    </script>
+    <a href="tableRecordHiding.html"><h3>Record Hiding</h3></a>
+    
 
     <br />
     <hr class="my" />
