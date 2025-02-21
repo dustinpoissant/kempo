@@ -20,7 +20,9 @@ const getIconByName = (name) => {
   return new Promise( async (resolve, reject) => {
     let svg;
     for(let i=0; i < Icon.pathToIcons.length && !svg; i++){
-      svg = await tryDir(Icon.pathToIcons[i]);
+      try {
+        svg = await tryDir(Icon.pathToIcons[i]);
+      } catch(e){}
     }
     if(svg){
       resolve(svg);

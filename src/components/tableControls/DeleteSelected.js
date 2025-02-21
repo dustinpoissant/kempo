@@ -1,32 +1,45 @@
 import Component from '../Component.js';
-import { onEvent } from '../../utils/element.js';
+import { onEvent, offEvent } from '../../utils/element.js';
 
+const table = Symbol('table'),
+      deleteSelected = Symbol('deleteSelected'),
+      updateButtonState = Symbol('updateButtonState');
 export default class DeleteSelected extends Component {
-  constructor(table) {
+  constructor(_table) {
     super();
-    this.table = table;
+
+    /* Private Members */
+    this[table] = _table;
+
+    /* Private Methods */
+    this[deleteSelected] = this.deleteSelected.bind(this);
+    this[updateButtonState] = (()=>{
+      this.shadowRoot.getElementById('deleteSelectedButton').disabled = this[table].getSelectedRecords().length === 0;
+    }).bind(this);
+
+
+    /* Init */
     this.classList.add('mxq');
   }
-
-  async render() {
-    if (await super.render()) {
-      this.updateButtonState();
-      const $button = this.shadowRoot.getElementById('deleteSelectedButton');
-      onEvent($button, 'click', () => this.deleteSelected());
-      onEvent(this.table, 'selectionChange', () => this.updateButtonState());
+  /* Lifecycle Callbacks */
+  async render(force = false) {
+    if (await super.render(force)) {
+      this[updateButtonState]();
+      onEvent(this.shadowRoot.getElementById('deleteSelectedButton'), 'click', this[deleteSelected]);
+      onEvent(this[table], 'selectionChange', this[updateButtonState]);
       return true;
     }
     return false;
   }
-
-  deleteSelected() {
-    this.table.deleteSelected();
-    this.updateButtonState();
+  disconnectedCallback(){
+    super.disconnectedCallback();
+    offEvent(this.shadowRoot.getElementById('deleteSelectedButton'), 'click', this[deleteSelected]);
+    offEvent(this[table], 'selectionChange', this[updateButtonState]);
   }
 
-  updateButtonState() {
-    const $button = this.shadowRoot.getElementById('deleteSelectedButton');
-    $button.disabled = this.table.getSelectedRecords().length === 0;
+  deleteSelected() {
+    this[table].deleteSelected();
+    this[updateButtonState]();
   }
 
   get shadowTemplate() {
@@ -44,9 +57,14 @@ export default class DeleteSelected extends Component {
         width: max-content;
         align-items: baseline;
       }
-      button {
+      #deleteSelectedButton {
         display: flex;
         align-items: center;
+      }
+      #deleteSelectedButton:disabled,
+      #deleteSelectedButton[disabled] {
+        cursor: not-allowed;
+        opacity: 0.5;
       }
     `;
   }

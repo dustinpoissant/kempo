@@ -4,8 +4,9 @@ import SelectCount from './tableControls/SelectCount.js';
 import PageSelect from './tableControls/PageSelect.js';
 import PageSize from './tableControls/PageSize.js';
 import DeleteSelected from './tableControls/DeleteSelected.js';
+import Edit from './tableControls/Edit.js';
 import { toTitleCase } from '../utils/string.js';
-import { onEvent, dispatchEvent } from '../utils/element.js';
+import { onEvent, offEvent, dispatchEvent } from '../utils/element.js';
 
 const selected = Symbol('selected');
 const hidden = Symbol('hidden');
@@ -89,37 +90,58 @@ export default class Table extends Component {
     const paginatedRecords = this.getDisplayedRecords().slice(start, end);
     let fetchRecords = false;
     paginatedRecords.forEach((record) => {
-      const $tr = document.createElement('tr');
-      if (this.enableSelection) {
+      $records.appendChild(this.renderRecord(record));
+    });
+    if (fetchRecords) {
+      dispatchEvent(this, 'fetchRecords', { start, end });
+    }
+  }
+
+  renderRecord(record){
+    const $tr = document.createElement('tr');
+    $tr.dataset.index = record[index];
+    if (this.enableSelection) {
+      const $td = document.createElement('td');
+      $td.classList.add('selection');
+      const $checkbox = document.createElement('input');
+      $checkbox.type = 'checkbox';
+      $checkbox.checked = record[selected];
+      $checkbox.addEventListener('change', (event) => {
+        record[selected] = !!event.target.checked;
+        dispatchEvent(this, 'selectionChange');
+      });
+      $td.appendChild($checkbox);
+      $tr.appendChild($td);
+    }
+    if (this.controls?.before?.length) {
+      $tr.appendChild(this.renderRowControls(this.controls.before, record));
+    }
+    if (record === null) {
+      const $td = document.createElement('td');
+      $td.colSpan = this.fields.length;
+      $td.innerHTML = '<i>Loading...</i>';
+      fetchRecords = true;
+      $tr.appendChild($td);
+    } else {
+      this.fields.forEach(({ name, formatter, calculator, type, editor }) => {
         const $td = document.createElement('td');
-        $td.classList.add('selection');
-        const $checkbox = document.createElement('input');
-        $checkbox.type = 'checkbox';
-        $checkbox.checked = record[selected];
-        $checkbox.addEventListener('change', (event) => {
-          record[selected] = !!event.target.checked;
-          dispatchEvent(this, 'selectionChange');
-        });
-        $td.appendChild($checkbox);
-        $tr.appendChild($td);
-      }
-      if (this.controls?.before?.length) {
-        $tr.appendChild(this.renderRowControls(this.controls.before, record));
-      }
-      if (record === null) {
-        const $td = document.createElement('td');
-        $td.colSpan = this.fields.length;
-        $td.innerHTML = '<i>Loading...</i>';
-        fetchRecords = true;
-        $tr.appendChild($td);
-      } else {
-        this.fields.forEach(({ name, formatter, calculator }) => {
-          const $td = document.createElement('td');
-          let value;
-          if (calculator) {
-            value = calculator(record, this);
+        $td.dataset.field = name;
+        if (calculator) {
+          $td.innerHTML = calculator(record, this);
+        } else {
+          let value = record[name] || '';
+          if(record[editing]){
+            $tr.setAttribute('editing', true);
+            if(editor){
+              $td.appendChild(editor(value));
+            } else {
+              let editorGen = Table.editors[type || typeof value];
+              if(!editorGen){
+                editorGen = Table.editors.string;
+              }
+              $td.appendChild(editorGen(value));
+            }
           } else {
-            value = record[name] || '';
             if (Array.isArray(value)) {
               if (formatter) {
                 value = value.map(formatter).join(', ');
@@ -131,27 +153,49 @@ export default class Table extends Component {
                 value = formatter(value);
               }
             }
+            $td.innerHTML = value;
           }
-          $td.innerHTML = value;
-          $tr.appendChild($td);
-        });
-      }
-      if (this.controls?.after?.length) {
-        $tr.appendChild(this.renderRowControls(this.controls.after, record));
-      }
-      $records.appendChild($tr);
-    });
-    if (fetchRecords) {
-      dispatchEvent(this, 'fetchRecords', { start, end });
+        }
+        
+        $tr.appendChild($td);
+      });
     }
+    if (this.controls?.after?.length) {
+      $tr.appendChild(this.renderRowControls(this.controls.after, record));
+    }
+    return $tr;
   }
 
-  renderRecord(record){
-    // todo move individual record rendering to a separate method
-    // this should render in both display mode and editing mode
-    // it should return a tr element, which renderRecords uses to render the table
-    //   and when i implement inline editing, it should be used to replace the row with an editable row
-    //   to do this we will also need to store the index as a tr attribute so we query it to replace it
+  editRecord(record){
+    record[editing] = true;
+    const $currentTr = this.shadowRoot.querySelector(`tr[data-index="${record[index]}"]`);
+    const $newTr = this.renderRecord(record);
+    $currentTr.replaceWith($newTr);
+    dispatchEvent(this, 'editingChange');
+  }
+  
+  saveEditedRecord(record){
+    record[editing] = false;
+    const $currentTr = this.shadowRoot.querySelector(`tr[data-index="${record[index]}"]`);
+    $currentTr.querySelectorAll('td').forEach(($td) => {
+      const $input = $td.children.length === 1 ? $td.firstChild : $td.querySelector('input, select');
+      if ($input) {
+        record[$td.dataset.field] = $input.value;
+      }
+    });
+    const $newTr = this.renderRecord(record);
+    $currentTr.replaceWith($newTr);
+  }
+
+  cancelEditedRecord(record){
+    record[editing] = false;
+    const $currentTr = this.shadowRoot.querySelector(`tr[data-index="${record[index]}"]`);
+    const $newTr = this.renderRecord(record);
+    $currentTr.replaceWith($newTr);
+  }
+
+  recordIsEditing(record){
+    return record[editing];
   }
   
   renderRowControls(controls = [], record) {
@@ -590,6 +634,15 @@ export default class Table extends Component {
         width: 1.35rem;
         height: 1.35rem;
       }
+      tr[editing] td {
+        padding: 0;
+      }
+      tr[editing] input,
+      tr[editing] select,
+      tr[editing] .input {
+        padding: calc(0.75 * var(--spacer)) var(--spacer) !important;
+        width: 100%;
+      }
     `;
   }
 
@@ -646,6 +699,9 @@ export default class Table extends Component {
     },
     spacer: {
       html: '<div class="flex"></div>'
+    },
+    edit: {
+      render: (table, record) => new Edit(table, record)
     }
   };
 
@@ -666,18 +722,18 @@ export default class Table extends Component {
 
   static editors = {
     string: (value) => {
-      const $i = new Input();
+      const $i = document.createElement('input');
       $i.value = value;
       return $i;
     },
     number: (value) => {
-      const $i = new Input();
+      const $i = document.createElement('input');
       $i.type = 'number';
       $i.value = value;
       return $i;
     },
     date: (value) => {
-      const $i = new Input();
+      const $i = document.createElement('input');
       $i.type = 'date';
       $i.value = value;
       return $i;

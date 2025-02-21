@@ -1,36 +1,53 @@
 import Component from '../Component.js';
-import { onEvent } from '../../utils/element.js';
+import { onEvent, offEvent } from '../../utils/element.js';
 
+const table = Symbol('table'),
+      updateOptions = Symbol('updateOptions'),
+      changeHandler = Symbol('changeHandler'),
+      pageSizeChangeHandler = Symbol('pageSizeChangeHandler');
 export default class PageSize extends Component {
-  constructor(table) {
+  constructor(_table) {
     super();
-    this.table = table;
-    this.classList.add('mxq');
-  }
 
-  async render() {
-    if(await super.render()){
+    /* Private Members */
+    this[table] = _table;
+
+    /* Private Methods */
+    this[updateOptions] = (()=>{
       const $select = this.shadowRoot.getElementById('pageSizeSelect');
-      const options = this.table.pageSizeOptions;
+      const options = this[table].pageSizeOptions;
       options.forEach(size => {
         const $option = document.createElement('option');
         $option.value = size;
         $option.textContent = size;
         $select.appendChild($option);
       });
-      $select.value = this.table.pageSize;
+      $select.value = this[table].pageSize;
+    }).bind(this);
+    this[changeHandler] = (()=>{
+      this[table].setPageSize(parseInt(this.shadowRoot.getElementById('pageSizeSelect').value));
+    }).bind(this);
+    this[pageSizeChangeHandler] = (()=>{
+      this.shadowRoot.getElementById('pageSizeSelect').value = this[table].pageSize;
+    }).bind(this);
 
-      onEvent($select, 'change', () => {
-        this.table.setPageSize(parseInt($select.value));
-      });
+    /* Init */
+    this.classList.add('mxq');
+  }
 
-      onEvent(this.table, 'pageSizeChange', () => {
-        $select.value = this.table.pageSize;
-      });
-
+  async render(force = false) {
+    if(await super.render(force)){
+      onEvent(this.shadowRoot.getElementById('pageSizeSelect'), 'change', this[changeHandler]);
+      onEvent(this[table], 'pageSizeChange', this[pageSizeChangeHandler]);
+      this[updateOptions]();
       return true;
     }
     return false;
+  }
+  disconnectedCallback(){
+    super.disconnectedCallback();
+    offEvent(this.shadowRoot.getElementById('pageSizeSelect'), 'change', this[changeHandler]);
+    offEvent(this[table], 'pageSizeChange', this[pageSizeChangeHandler]);
   }
 
   get shadowTemplate() {
