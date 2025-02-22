@@ -71,6 +71,7 @@
         <a href="tableRecordSelection.html">Record Selection</a><br />
         <a href="tableRecordEditing.html">Record Editing</a><br />
         <a href="tableRecordHiding.html">Record Hiding</a><br />
+        <a href="tableRecordFiltering.html">Record Filtering</a><br />
         <h6 class="mt">JavaScript Reference</h6>
         <a href="#constructor">Constructor</a><br />
         <a href="#requirements">Requirements</a><br />
@@ -118,20 +119,17 @@
       });
     </script>
 
-    <a href="tableCustomFields.html"><h3>Custom Fields Example</h3></a>
-
-    <a href="tableControls.html"><h3>Top and Bottom Controls</h3></a>
-
-    <a href="tableRowControls.html"><h3>Row Controls</h3></a>
-
-    <a href="tablePagination.html"><h3>Pagination</h3></a>
-
-    <a href="tableRecordSelection.html"><h3>Record Selection</h3></a>
-
-    <a href="tableRecordEditing.html"><h3>Record Editing</h3></a>
-
-    <a href="tableRecordHiding.html"><h3>Record Hiding</h3></a>
-    
+    <h3>Examples</h3>
+    <ul>
+      <li><a href="tableCustomFields.html">Custom Fields Example</a></li>
+      <li><a href="tableControls.html">Top and Bottom Controls</a></li>
+      <li><a href="tableRowControls.html">Row Controls</a></li>
+      <li><a href="tablePagination.html">Pagination</a></li>
+      <li><a href="tableRecordSelection.html">Record Selection</a></li>
+      <li><a href="tableRecordEditing.html">Record Editing</a></li>
+      <li><a href="tableRecordHiding.html">Record Hiding</a></li>
+      <li><a href="tableRecordFiltering.html">Record Filtering</a></li>
+    </ul>
 
     <br />
     <hr class="my" />
@@ -186,6 +184,10 @@
       <li><code>controls</code>: An object containing optional arrays of controls to be displayed before and/or after each row. Each control is defined by an icon name, a callback function, and optionally an HTML string or a render function. The <code>controls</code> object can contain the optional <code>before</code> and <code>after</code> properties, which are arrays of objects containing the <code>icon</code> (string), <code>action</code> (function), <code>html</code> (string), and <code>render</code> (function). If <code>html</code> is present, it overrides the icon and is rendered in its place. If <code>render</code> is present, it is used to render the control.</li>
       <li><code>pageSize</code>: The number of records to display per page.</li>
       <li><code>pageSizeOptions</code>: An array of numbers representing the available page size options.</li>
+      <li><code>currentPage</code>: The current page to display.</li>
+      <li><code>enableSelection</code>: A boolean to enable or disable record selection.</li>
+      <li><code>enablePages</code>: A boolean to enable or disable pagination.</li>
+      <li><code>filters</code>: An array of filter objects to apply to the records.</li>
     </ul>
 
     <h5><code>renderFields()<i>: undefined</i></code></h5>
@@ -197,11 +199,11 @@
     <h5><code>addRecord(<i>object</i> record)<i>: undefined</i></code></h5>
     <p>Adds a new record to the table.</p>
 
-    <h5><code>updateRecord(<i>number</i> index, <i>object</i> record)<i>: undefined</i></code></h5>
-    <p>Updates an existing record at the specified index.</p>
+    <h5><code>updateRecord(<i>object</i> record, <i>object</i> newData)<i>: undefined</i></code></h5>
+    <p>Updates an existing record with new data.</p>
 
-    <h5><code>deleteRecord(<i>number</i> index)<i>: undefined</i></code></h5>
-    <p>Deletes a record at the specified index.</p>
+    <h5><code>deleteRecord(<i>object</i> record)<i>: undefined</i></code></h5>
+    <p>Deletes a record from the table.</p>
 
     <h5><code>setRecords(<i>Array</i> records)<i>: undefined</i></code></h5>
     <p>Sets the records for the table and re-renders the rows.</p>
@@ -209,13 +211,25 @@
     <h5><code>setPageSize(<i>number</i> pageSize)<i>: undefined</i></code></h5>
     <p>Sets the number of records to display per page.</p>
 
-    <h5><code>goToPage(<i>number</i> pageNumber)<i>: undefined</i></code></h5>
-    <p>Navigates to the specified page number.</p>
+    <h5><code>setPage(<i>number</i> page)<i>: undefined</i></code></h5>
+    <p>Sets the current page to display.</p>
+
+    <h5><code>nextPage()<i>: undefined</i></code></h5>
+    <p>Moves to the next page.</p>
+
+    <h5><code>prevPage()<i>: undefined</i></h5>
+    <p>Moves to the previous page.</p>
+
+    <h5><code>getCurrentPage()<i>: number</i></code></h5>
+    <p>Returns the current page number.</p>
+
+    <h5><code>getTotalPages()<i>: number</i></code></h5>
+    <p>Returns the total number of pages.</p>
 
     <h5><code>getSelectedRecords()<i>: Array</i></code></h5>
     <p>Returns an array of the currently selected records.</p>
 
-    <h5><code>deleteSelectedRecords()<i>: undefined</i></code></h5>
+    <h5><code>deleteSelected()<i>: undefined</i></code></h5>
     <p>Deletes all currently selected records from the table.</p>
 
     <h5><code>selectAllOnPage()<i>: undefined</i></code></h5>
@@ -224,9 +238,47 @@
     <h5><code>deselectAllOnPage()<i>: undefined</i></code></h5>
     <p>Deselects all the records on the current page.</p>
 
-    <h5><code>allOnPageSelected()<i>: undefined</i></code></h5>
+    <h5><code>allOnPageSelected()<i>: boolean</i></code></h5>
     <p>Returns <code>true</code> if all the records on the current page are selected, and <code>false</code> if they are not.</p>
-    
+
+    <h5><code>editRecord(<i>object</i> record)<i>: undefined</i></code></h5>
+    <p>Enables editing mode for a record.</p>
+
+    <h5><code>saveEditedRecord(<i>object</i> record)<i>: undefined</i></code></h5>
+    <p>Saves the changes made to an edited record.</p>
+
+    <h5><code>cancelEditedRecord(<i>object</i> record)<i>: undefined</i></code></h5>
+    <p>Cancels the editing mode for a record.</p>
+
+    <h5><code>recordIsEditing(<i>object</i> record)<i>: boolean</i></code></h5>
+    <p>Returns <code>true</code> if the record is in editing mode, and <code>false</code> if it is not.</p>
+
+    <h5><code>hideRecord(<i>object</i> record)<i>: undefined</i></code></h5>
+    <p>Hides a record from the table.</p>
+
+    <h5><code>showRecord(<i>object</i> record)<i>: undefined</i></code></h5>
+    <p>Shows a hidden record in the table.</p>
+
+    <h5><code>showAllRecords()<i>: undefined</i></code></h5>
+    <p>Shows all hidden records in the table.</p>
+
+    <h5><code>addFilter(<i>string</i> field, <i>string</i> condition, <i>any</i> value)<i>: undefined</i></h5>
+    <p>Adds a filter to the table.</p>
+
+    <h5><code>removeFilter(<i>string</i> field, <i>string</i> condition, <i>any</i> value)<i>: undefined</i></h5>
+    <p>Removes a filter from the table.</p>
+
+    <h5><code>getDisplayedRecords()<i>: Array</i></code></h5>
+    <p>Returns an array of the records currently displayed in the table.</p>
+
+    <h5><code>getHiddenRecords()<i>: Array</i></code></h5>
+    <p>Returns an array of the hidden records in the table.</p>
+
+    <h5><code>setupFetchRecords(<i>number</i> totalRecords, <i>function</i> callback)<i>: undefined</i></h5>
+    <p>Sets up the table to fetch records dynamically.</p>
+
+    <h5><code>sortBy(<i>string</i> field, <i>boolean</i> asc)<i>: undefined</i></h5>
+    <p>Sorts the records by the specified field in ascending or descending order.</p>
 
   </main>
   <div style="height: 33.333vh"></div>

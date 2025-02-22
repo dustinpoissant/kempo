@@ -182,7 +182,7 @@ export default class Dialog extends Component {
         justify-content: center;
         align-items: center;
         position: fixed;
-        width: 100vw;
+        width: 100%;
         height: 100vh;
         top: 0;
         left: 0;
@@ -194,10 +194,10 @@ export default class Dialog extends Component {
         flex-direction: column;
         min-width: var(--min_width, 20rem);
         width: var(--width, fit-content);
-        max-width: var(--max_width, calc(100vw - 2rem));
+        max-width: var(--max_width, calc(100vw - 4rem));
         min-height: var(--min_height, 12rem);
         height: var(--height, fit-content);
-        max-height: var(--max_height, calc(100vh - 2rem));
+        max-height: var(--max_height, calc(100vh - 4rem));
         background-color: var(--c_bg);
         box-shadow: var(--drop_shadow);
         border-radius: var(--radius);
@@ -256,13 +256,20 @@ export default class Dialog extends Component {
     } else {
       $dialog.innerHTML = contents;
     }
+    if (options.width) $dialog.style.setProperty('--width', options.width);
+    if (options.minWidth) $dialog.style.setProperty('--min_width', options.minWidth);
+    if (options.maxWidth) $dialog.style.setProperty('--max_width', options.maxWidth);
+    if (options.height) $dialog.style.setProperty('--height', options.height);
+    if (options.minHeight) $dialog.style.setProperty('--min_height', options.minHeight);
+    if (options.maxHeight) $dialog.style.setProperty('--max_height', options.maxHeight);
     document.body.prepend($dialog);
     $dialog.open();
+    return $dialog;
   }
   static confirm(text, responseCallback, options = {
     title: 'Confirm'
   }){
-    Dialog.create(`
+    return Dialog.create(`
       <h5 slot="title" class="pyh px m0">${options.title}</h5>
       <p class="p">${text}</p>
     `, {
@@ -292,6 +299,7 @@ export default class Dialog extends Component {
       cancelText: 'Ok',
     });
     onEvent($dialog, 'close',  responseCallback);
+    return $dialog;
   }
 }
 window.customElements.define('k-dialog', Dialog);
