@@ -60,7 +60,6 @@
     <a href="./table.html"><h5>Back to Table Component Documentation</h5></a>
 
     <p>Record filtering is a feature that allows users to filter the records displayed in the table. The table component provides a filter control that can be used to filter records based on the values in the columns. This control uses a Dialog to display the current filters and allows the user to create filters.</p>
-    <p>It is not recommended to use both filters and hidden records in the same table, as you will know know why a specific record is hidden, or how to reshow it.</p>
     <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"recordHidingExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Table <span class="hljs-keyword">from</span> <span class="hljs-string">'../kempo/components/Table.js'</span>;<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'recordHidingExample'</span>).setData({<br />    <span class="hljs-attr">records</span>: contacts,<br />    <span class="hljs-attr">controls</span>: {<br />      <span class="hljs-attr">top</span>: [<br />        Table.controls.filters<br />      ]<br />    }<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
     <k-table id="recordHidingExample"></k-table>
     <script type="module">
@@ -74,7 +73,21 @@
         }
       });
     </script>
-    
+
+    <h3>Quick Search</h3>
+    <p>The search control (aka quick filter) is a feature that allows users to filter the records displayed in the table. The control is a search input that can be used to filter records based on the values in the columns.</p>
+    <k-table id="quickFilterExample"></k-table>
+    <script type="module">
+      import Table from '../kempo/components/Table.js';
+      document.getElementById('quickFilterExample').setData({
+        records: contacts,
+        controls: {
+          top: [
+            Table.controls.search
+          ]
+        }
+      });
+    </script>
   </main>
   <div style="height: 33.333vh"></div>
   <script type="module" src="../kempo/components/Import.js"></script> 

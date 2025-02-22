@@ -87,7 +87,10 @@ export default class Filters extends Component {
             }).map(([key, value]) => /*html*/`<option value="${key}" ${key==='contains'?'selected':''}>${value}</option>`).join('') 
           }</select>
           <input id="filterValue" type="text" class="mb" />
-          <button type="submit" class="btn primary">Add Filter</button>
+          <button type="submit" class="btn primary mb mr">Add Filter</button>
+          ${this[table].filters.length === 0 ? '' : /*html*/`
+            <button type="button" id="clearFilters" class="btn danger mb mr">Clear All Filters</button>
+          `}
         </form>
       </div>
     `, {
@@ -113,6 +116,10 @@ export default class Filters extends Component {
           $dialog.close();
           this.revealFilters();
         }
+      }
+      if(e.target.id === 'clearFilters'){
+        this[table].removeAllFilters();
+        $dialog.close();
       }
     });
   }

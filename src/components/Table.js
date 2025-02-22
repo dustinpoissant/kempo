@@ -9,6 +9,7 @@ import Hide from './tableControls/Hide.js';
 import HiddenCount from './tableControls/HiddenCount.js';
 import ShowAll from './tableControls/ShowAll.js';
 import Filters from './tableControls/Filters.js';
+import Search from './tableControls/Search.js';
 import { toTitleCase } from '../utils/string.js';
 import { onEvent, offEvent, dispatchEvent } from '../utils/element.js';
 
@@ -549,6 +550,10 @@ export default class Table extends Component {
     this.records.forEach(record => {
       record[hidden] = false; 
     });
+    if(this.filters.length){
+      this.filters = [];
+      dispatchEvent(this, 'filterRemoved filterChange');
+    }
     this.renderRecords();
     dispatchEvent(this, 'recordShown allRecordsShown');
   }
@@ -559,44 +564,87 @@ export default class Table extends Component {
     this.renderRecords();
   }
   
-  removeFilter(field, condition, value) {
-    this.filters = this.filters.filter(f => f.field !== field || f.condition !== condition || f.value !== value);
-    dispatchEvent(this, 'filterRemoved filterChange');
-    this.renderRecords();
+  removeFilter(field, condition, value, rerender = true) {
+    const filterIndex = this.filters.findIndex(f => f.field === field && f.condition === condition && f.value === value);
+    if (filterIndex !== -1) {
+      this.records.forEach(record => {
+        if(!this.testFilter(record, field, condition, value)){
+          record[hidden] = false;
+        }
+      });
+      this.filters.splice(filterIndex, 1);
+      dispatchEvent(this, 'filterRemoved filterChange');
+      if(rerender) this.renderRecords();
+    }
+  }
+
+  testFilter(record, field, condition, value) {
+    const recordValue = record[field];
+    switch (condition) {
+      case 'equals':
+        return recordValue === value;
+      case 'not-equals':
+        return recordValue !== value;
+      case 'contains':
+        return recordValue.includes(value);
+      case 'not-contains':
+        return !recordValue.includes(value);
+      case 'greater-than':
+        return recordValue > value;
+      case 'less-than':
+        return recordValue < value;
+      case 'greater-than-or-equal':
+        return recordValue >= value;
+      case 'less-than-or-equal':
+        return recordValue <= value;
+      default:
+        return true;
+    }
+  }
+
+  removeAllFilters() {
+    if(this.filters.length){
+      this.filters.forEach(({ field, condition, value }) => {
+        this.removeFilter(field, condition, value, false);
+      });
+      this.renderRecords();
+    }
+  }
+
+  search(term) {
+    const t = term.trim().toLowerCase();
+    let changed = false;
+    this.records.forEach(record => {
+      if (record[hidden]) return;
+      let match = false;
+      this.fields.forEach(({ name }) => {
+        const val = record[name]?.toString().toLowerCase() || '';
+        if (val.includes(t)) {
+          match = true;
+        }
+      });
+      if (record[hidden] !== !match) {
+        record[hidden] = !match;
+        changed = true;
+      }
+    });
+    if (changed) {
+      dispatchEvent(this, 'recordHidden');
+      this.renderRecords();
+    }
+    dispatchEvent(this, 'search', { term });
   }
 
   getDisplayedRecords() {
-    let displayedRecords = this.records.filter(record => !record[hidden]);
-
     this.filters.forEach(({ field, condition, value }) => {
-      displayedRecords = displayedRecords.filter(record => {  
-        if (condition === 'eq') {
-          return record[field] === value;
+      this.records.forEach(record => {  
+        if (!this.testFilter(record, field, condition, value)) {
+          record[hidden] = true;
         }
-        if (condition === 'neq') {
-          return record[field] !== value;
-        }
-        if (condition === 'gt') {
-          return record[field] > value;
-        }
-        if (condition === 'lt') {
-          return record[field] < value;
-        }
-        if (condition === 'gte') {
-          return record[field] >= value;
-        }
-        if (condition === 'lte') {
-          return record[field] <= value;
-        }
-        if (condition === 'contains') {
-          return record[field].includes(value);
-        }
-        if (condition === 'ncontains') {
-          return !record[field].includes(value);
-        }
-        return true;
       });
     });
+
+    let displayedRecords = this.records.filter(record => !record[hidden]);
 
     this.sort.forEach(({ name, asc }) => {
       displayedRecords.sort((a, b) => {
@@ -752,6 +800,9 @@ export default class Table extends Component {
     },
     filters: {
       render: (table) => new Filters(table)
+    },
+    search: {
+      render: (table) => new Search(table)
     }
   };
 
