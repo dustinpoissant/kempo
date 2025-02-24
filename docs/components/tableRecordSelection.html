@@ -47,7 +47,7 @@
       const phoneNumber = `(${Math.floor(Math.random() * 900) + 100}) ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`;
       return { name, email, birthday, phoneNumber, gender };
     }
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
       contacts.push(generateContact());
     };
   </script>
@@ -58,26 +58,15 @@
   <main>
     <a href="./table.html"><h5>Back to Table Component Documentation</h5></a>
     
-    <p>The table component supports record selection. You can enable selection by setting the <code>enableSelection</code> property to <code>true</code>. This will add a checkbox to each row and a "Select All" checkbox to the header.</p>
-    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"recordSelectionExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Table <span class="hljs-keyword">from</span> <span class="hljs-string">'../kempo/components/Table.js'</span>;<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'recordSelectionExample'</span>).setData({<br />    <span class="hljs-attr">records</span>: contacts,<br />    <span class="hljs-attr">enableSelection</span>: <span class="hljs-literal">true</span>,<br />    <span class="hljs-attr">controls</span>: {<br />      <span class="hljs-attr">bottom</span>: [<br />        Table.controls.prevPage,<br />        Table.controls.nextPage,<br />        Table.controls.pageSelect,<br />        Table.controls.spacer,<br />        Table.controls.selectCount,<br />        Table.controls.deleteSelected<br />      ]<br />    },<br />    <span class="hljs-attr">pageSize</span>: <span class="hljs-number">10</span><br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-    <k-table id="recordSelectionExample"></k-table>
+    <p>The table component supports record selection. You can enable selection by setting the <code>enable-selection</code> attribute to <code>true</code>. This will add a checkbox to each row and a "Select All" checkbox to the header.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span><br />  <span class="hljs-attr">id</span>=<span class="hljs-string">"recordSelectionExample"</span><br />  <span class="hljs-attr">enable-selection</span>=<span class="hljs-string">"true"</span><br />&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-keyword">import</span> Table <span class="hljs-keyword">from</span> <span class="hljs-string">'../kempo/components/Table.js'</span>;<br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'recordSelectionExample'</span>).setRecords(contacts);<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+    <k-table
+      id="recordSelectionExample"
+      enable-selection="true"
+    ></k-table>
     <script type="module">
       import Table from '../kempo/components/Table.js';
-      document.getElementById('recordSelectionExample').setData({
-        records: contacts,
-        enableSelection: true,
-        controls: {
-          bottom: [
-            Table.controls.prevPage,
-            Table.controls.nextPage,
-            Table.controls.pageSelect,
-            Table.controls.spacer,
-            Table.controls.selectCount,
-            Table.controls.deleteSelected
-          ]
-        },
-        pageSize: 10
-      });
+      document.getElementById('recordSelectionExample').setRecords(contacts);
     </script>
   </main>
   <div style="height: 33.333vh"></div>

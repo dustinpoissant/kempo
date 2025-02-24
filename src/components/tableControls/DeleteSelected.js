@@ -1,32 +1,29 @@
-import Component from '../Component.js';
+import TableControl from './TableControl.js';
 import { onEvent, offEvent } from '../../utils/element.js';
 
-const table = Symbol('table'),
-      deleteSelected = Symbol('deleteSelected'),
+const deleteSelected = Symbol('deleteSelected'),
       updateButtonState = Symbol('updateButtonState');
-export default class DeleteSelected extends Component {
-  constructor(_table) {
+export default class DeleteSelected extends TableControl {
+  constructor() {
     super();
-
-    /* Private Members */
-    this[table] = _table;
 
     /* Private Methods */
     this[deleteSelected] = this.deleteSelected.bind(this);
     this[updateButtonState] = (()=>{
-      this.shadowRoot.getElementById('deleteSelectedButton').disabled = this[table].getSelectedRecords().length === 0;
+      this.shadowRoot.getElementById('deleteSelectedButton').disabled = this.table.getSelectedRecords().length === 0;
     }).bind(this);
 
 
     /* Init */
-    this.classList.add('mxq');
+    
   }
+
   /* Lifecycle Callbacks */
   async render(force = false) {
     if (await super.render(force)) {
       this[updateButtonState]();
       onEvent(this.shadowRoot.getElementById('deleteSelectedButton'), 'click', this[deleteSelected]);
-      onEvent(this[table], 'selectionChange', this[updateButtonState]);
+      onEvent(this.table, 'selectionChange', this[updateButtonState]);
       return true;
     }
     return false;
@@ -34,11 +31,12 @@ export default class DeleteSelected extends Component {
   disconnectedCallback(){
     super.disconnectedCallback();
     offEvent(this.shadowRoot.getElementById('deleteSelectedButton'), 'click', this[deleteSelected]);
-    offEvent(this[table], 'selectionChange', this[updateButtonState]);
+    offEvent(this.table, 'selectionChange', this[updateButtonState]);
   }
 
+  /* Public Methods */
   deleteSelected() {
-    this[table].deleteSelected();
+    this.table.deleteSelected();
     this[updateButtonState]();
   }
 

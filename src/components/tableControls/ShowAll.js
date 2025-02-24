@@ -1,21 +1,17 @@
-import Component from '../Component.js';
+import TableControl from './TableControl.js';
 import { offEvent, onEvent } from '../../utils/element.js';
 
-const table = Symbol('table'),
-      clickHandler = Symbol('clickHandler');
-export default class HiddenCount extends Component {
-  constructor(_table) {
+const clickHandler = Symbol('clickHandler');
+export default class HiddenCount extends TableControl {
+  constructor() {
     super();
-
-    /* Private Members */
-    this[table] = _table;
 
     /* Private Methods */
     this[clickHandler] = (()=>{
-      this[table].showAllRecords();
+      this.table.showAllRecords();
     }).bind(this);
 
-    this.classList.add('mxq');
+    
   }
   async render(force = false) {
     if (await super.render(force)) {
@@ -29,12 +25,13 @@ export default class HiddenCount extends Component {
     offEvent(this.shadowRoot.getElementById('showAllButton'), 'click', this[clickHandler]);
   }
 
+  /* Shadow DOM */
   get shadowTemplate() {
     return /*html*/`
-      <button id="showAllButton" class="pq no-btn">
+      <button id="showAllButton" class="no-btn icon-btn">
         <k-icon name="show"></k-icon>
       </button>
     `;
   }
 }
-window.customElements.define('k-table-show-all', HiddenCount);
+window.customElements.define('k-tc-show-all', HiddenCount);

@@ -47,7 +47,7 @@
       const phoneNumber = `(${Math.floor(Math.random() * 900) + 100}) ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`;
       return { name, email, birthday, phoneNumber, gender };
     }
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
       contacts.push(generateContact());
     };
   </script>
@@ -59,30 +59,16 @@
 
     <a href="./table.html"><h5>Back to Table Component Documentation</h5></a>
 
-    <p>The table component can display controls at the top and bottom of the table. These controls can be used for pagination, adding new records, or any other actions. Each control is defined by an icon name, a callback function, and optionally an HTML string or a render function.</p>
-    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"topBottomControlsExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'topBottomControlsExample'</span>).setData({<br />    <span class="hljs-attr">records</span>: contacts.slice(<span class="hljs-number">0</span>, <span class="hljs-number">10</span>),<br />    <span class="hljs-attr">controls</span>: {<br />      <span class="hljs-attr">top</span>: [<br />        {<br />          <span class="hljs-attr">icon</span>: <span class="hljs-string">'add'</span>,<br />          <span class="hljs-attr">action</span>: <span class="hljs-function">(<span class="hljs-params">table</span>) =&gt;</span> table.addRecord(generateContact())<br />        }<br />      ],<br />      <span class="hljs-attr">bottom</span>: [<br />        {<br />          <span class="hljs-attr">icon</span>: <span class="hljs-string">'refresh'</span>,<br />          <span class="hljs-attr">action</span>: <span class="hljs-function">(<span class="hljs-params">table</span>) =&gt;</span> {<br />            contacts = contacts.sort(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">Math</span>.random() - <span class="hljs-number">0.5</span>);<br />            table.setRecords(contacts.slice(<span class="hljs-number">0</span>, <span class="hljs-number">10</span>));<br />          }<br />        }<br />      ]<br />    }<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-    <k-table id="topBottomControlsExample"></k-table>
+    <p>The table component supports controls at both the top and bottom. These controls can handle pagination, adding new records, or other actions. They are web components that interact with their parent <code>k-table</code> by accessing its methods and listening for its events.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"topBottomControlsExample"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tc-export-json</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"top"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-tc-export-json</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tc-export-csv</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-tc-export-csv</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"../kempo/components/tableControls/ExportJson.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"../kempo/components/tableControls/ExportCsv.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'topBottomControlsExample'</span>).setRecords(contacts);<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+    <k-table id="topBottomControlsExample">
+      <k-tc-export-json slot="top"></k-tc-export-json>
+      <k-tc-export-csv></k-tc-export-csv>
+    </k-table>
+    <script type="module" src="../kempo/components/tableControls/ExportJson.js"></script>
+    <script type="module" src="../kempo/components/tableControls/ExportCsv.js"></script>
     <script type="module">
-      document.getElementById('topBottomControlsExample').setData({
-        records: contacts.slice(0, 10),
-        controls: {
-          top: [
-            {
-              icon: 'add',
-              action: (table) => table.addRecord(generateContact())
-            }
-          ],
-          bottom: [
-            {
-              icon: 'refresh',
-              action: (table) => {
-                contacts = contacts.sort(() => Math.random() - 0.5);
-                table.setRecords(contacts.slice(0, 10));
-              }
-            }
-          ]
-        }
-      });
+      document.getElementById('topBottomControlsExample').setRecords(contacts);
     </script>
   </main>
   <div style="height: 33.333vh"></div>

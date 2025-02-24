@@ -72,6 +72,10 @@
         <a href="tableRecordEditing.html">Record Editing</a><br />
         <a href="tableRecordHiding.html">Record Hiding</a><br />
         <a href="tableRecordFiltering.html">Record Filtering</a><br />
+        <a href="tableRecordSearching.html">Record Searching</a><br />
+        <a href="tableSorting.html">Sorting</a><br />
+        <a href="tableFieldSortHide.html">Field Sorting and Hiding</a><br />
+        <a href="tableFetchRecords.html">Fetching Records</a><br />
         <h6 class="mt">JavaScript Reference</h6>
         <a href="#constructor">Constructor</a><br />
         <a href="#requirements">Requirements</a><br />
@@ -129,6 +133,10 @@
       <li><a href="tableRecordEditing.html">Record Editing</a></li>
       <li><a href="tableRecordHiding.html">Record Hiding</a></li>
       <li><a href="tableRecordFiltering.html">Record Filtering</a></li>
+      <li><a href="tableRecordSearching.html">Record Searching</a></li>
+      <li><a href="tableSorting.html">Sorting</a></li>
+      <li><a href="tableFieldSortHide.html">Field Sorting and Hiding</a></li>
+      <li><a href="tableFetchRecords.html">Fetching Records</a></li>
     </ul>
 
     <br />
@@ -181,13 +189,12 @@
     <ul>
       <li><code>records</code>: An array of objects representing the records to be shown in the table.</li>
       <li><code>fields</code>: An array of objects representing the fields of the table, each object must contain a <code>name</code> and a <code>label</code>. If this property is omitted, the fields will be automatically generated from the first 100 records.</li>
-      <li><code>controls</code>: An object containing optional arrays of controls to be displayed before and/or after each row. Each control is defined by an icon name, a callback function, and optionally an HTML string or a render function. The <code>controls</code> object can contain the optional <code>before</code> and <code>after</code> properties, which are arrays of objects containing the <code>icon</code> (string), <code>action</code> (function), <code>html</code> (string), and <code>render</code> (function). If <code>html</code> is present, it overrides the icon and is rendered in its place. If <code>render</code> is present, it is used to render the control.</li>
+      <li><code>filters</code>: An array of filter objects to apply to the records.</li>
       <li><code>pageSize</code>: The number of records to display per page.</li>
       <li><code>pageSizeOptions</code>: An array of numbers representing the available page size options.</li>
       <li><code>currentPage</code>: The current page to display.</li>
       <li><code>enableSelection</code>: A boolean to enable or disable record selection.</li>
       <li><code>enablePages</code>: A boolean to enable or disable pagination.</li>
-      <li><code>filters</code>: An array of filter objects to apply to the records.</li>
     </ul>
 
     <h5><code>renderFields()<i>: undefined</i></code></h5>
@@ -217,7 +224,7 @@
     <h5><code>nextPage()<i>: undefined</i></code></h5>
     <p>Moves to the next page.</p>
 
-    <h5><code>prevPage()<i>: undefined</i></h5>
+    <h5><code>prevPage()<i>: undefined</i></code></h5>
     <p>Moves to the previous page.</p>
 
     <h5><code>getCurrentPage()<i>: number</i></code></h5>
@@ -262,11 +269,17 @@
     <h5><code>showAllRecords()<i>: undefined</i></code></h5>
     <p>Shows all hidden records in the table.</p>
 
-    <h5><code>addFilter(<i>string</i> field, <i>string</i> condition, <i>any</i> value)<i>: undefined</i></h5>
+    <h5><code>addFilter(<i>string</i> field, <i>string</i> condition, <i>any</i> value)<i>: undefined</i></code></h5>
     <p>Adds a filter to the table.</p>
 
-    <h5><code>removeFilter(<i>string</i> field, <i>string</i> condition, <i>any</i> value)<i>: undefined</i></h5>
+    <h5><code>removeFilter(<i>string</i> field, <i>string</i> condition, <i>any</i> value)<i>: undefined</i></code></h5>
     <p>Removes a filter from the table.</p>
+
+    <h5><code>removeAllFilters()<i>: undefined</i></code></h5>
+    <p>Removes all filters from the table.</p>
+
+    <h5><code>search(<i>string</i> term)<i>: undefined</i></code></h5>
+    <p>Searches the records for the specified term.</p>
 
     <h5><code>getDisplayedRecords()<i>: Array</i></code></h5>
     <p>Returns an array of the records currently displayed in the table.</p>
@@ -274,11 +287,23 @@
     <h5><code>getHiddenRecords()<i>: Array</i></code></h5>
     <p>Returns an array of the hidden records in the table.</p>
 
-    <h5><code>setupFetchRecords(<i>number</i> totalRecords, <i>function</i> callback)<i>: undefined</i></h5>
+    <h5><code>setupFetchRecords(<i>number</i> totalRecords, <i>function</i> callback)<i>: undefined</i></code></h5>
     <p>Sets up the table to fetch records dynamically.</p>
 
-    <h5><code>sortBy(<i>string</i> field, <i>boolean</i> asc)<i>: undefined</i></h5>
+    <h5><code>sortBy(<i>string</i> field, <i>boolean</i> asc)<i>: undefined</i></code></h5>
     <p>Sorts the records by the specified field in ascending or descending order.</p>
+
+    <h5><code>setFieldHiddenState(<i>string</i> fieldName, <i>boolean</i> hidden)<i>: undefined</i></code></h5>
+    <p>Sets the hidden state of a field.</p>
+
+    <h5><code>hideField(<i>string</i> fieldName)<i>: undefined</i></code></h5>
+    <p>Hides a field in the table.</p>
+
+    <h5><code>showField(<i>string</i> fieldName)<i>: undefined</i></code></h5>
+    <p>Shows a hidden field in the table.</p>
+
+    <h5><code>reorderFields(<i>Array</i> newOrder)<i>: undefined</i></code></h5>
+    <p>Reorders the fields in the table based on the new order array.</p>
 
   </main>
   <div style="height: 33.333vh"></div>

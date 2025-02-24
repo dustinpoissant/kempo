@@ -1,21 +1,15 @@
-import Component from '../Component.js';
+import TableControl from './TableControl.js';
 import Dialog from '../Dialog.js';
 import { offEvent, onEvent } from '../../utils/element.js';
 
 const table = Symbol('table'),
       clickHandler = Symbol('clickHandler');
-export default class Filters extends Component {
-  constructor(_table) {
+export default class Filters extends TableControl {
+  constructor() {
     super();
-
-    /* Private Members */
-    this[table] = _table;
 
     /* Private Methods */
     this[clickHandler] = this.revealFilters.bind(this);
-
-    /* Init */
-    this.classList.add('mxq');
   }
 
   /* Lifecycle Callbacks */
@@ -59,19 +53,19 @@ export default class Filters extends Component {
     const $dialog = Dialog.create( /*html*/`
       <h3 slot="title" class="m0 pyh px">Filters</h3>
       <div class="p">
-        ${this[table].filters.length === 0 ? /*html*/`
+        ${this.table.filters.length === 0 ? /*html*/`
           <p>No Current Filters.</p>
         ` :  /*html*/`
           <h5>Current Filters</h5>
           <ul id="currentFilters">${
-            this[table].filters.map(formatFilter).join('') 
+            this.table.filters.map(formatFilter).join('') 
           }</ul>
         `}
         <hr />
         <h5>Add A Filter</h5>
         <form id="addFilter">
           <select id="filterField" class="mb">${
-            this[table].fields.map(({name, label}) => /*html*/`<option value="${name}">${label}</option>`).join('') 
+            this.table.fields.map(({name, label}) => /*html*/`<option value="${name}">${label}</option>`).join('') 
           }</select>
           <select id="filterCondition" class="mb">${
             Object.entries({
@@ -88,7 +82,7 @@ export default class Filters extends Component {
           }</select>
           <input id="filterValue" type="text" class="mb" />
           <button type="submit" class="btn primary mb mr">Add Filter</button>
-          ${this[table].filters.length === 0 ? '' : /*html*/`
+          ${this.table.filters.length === 0 ? '' : /*html*/`
             <button type="button" id="clearFilters" class="btn danger mb mr">Clear All Filters</button>
           `}
         </form>
@@ -99,7 +93,7 @@ export default class Filters extends Component {
     const $form = $dialog.querySelector('#addFilter');
     onEvent($form, 'submit', (e) => {
       e.preventDefault();
-      this[table].addFilter(
+      this.table.addFilter(
         $form.filterField.value,
         $form.filterCondition.value,
         $form.filterValue.value
@@ -112,13 +106,13 @@ export default class Filters extends Component {
         const $li = e.target.closest('li');
         if($li){
           const {field, condition, value} = $li.dataset;
-          this[table].removeFilter(field, condition, value);
+          this.table.removeFilter(field, condition, value);
           $dialog.close();
           this.revealFilters();
         }
       }
       if(e.target.id === 'clearFilters'){
-        this[table].removeAllFilters();
+        this.table.removeAllFilters();
         $dialog.close();
       }
     });
@@ -126,10 +120,10 @@ export default class Filters extends Component {
 
   get shadowTemplate() {
     return /*html*/`
-      <button id="filterBtn" class="no-btn pq">
+      <button id="filterBtn" class="no-btn icon-btn">
         <k-icon name="filter"></k-icon>
       </button>
     `;
   }
 }
-window.customElements.define('k-table-filters', Filters);
+window.customElements.define('k-tc-filters', Filters);

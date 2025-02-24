@@ -60,21 +60,17 @@
     <a href="./table.html"><h5>Back to Table Component Documentation</h5></a>
 
     <p>The table component supports record hiding. To allow for hiding add the "hide" control to the "before" or "after" controls. There is a built-in "showAll" control that can be added to the "top" or "bottom" controls to reveal previously hidden fields.</p>
-    <k-table id="recordHidingExample"></k-table>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"recordHidingExample"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tc-hide</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"after"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-tc-hide</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tc-hidden-count</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-tc-hidden-count</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tc-show-all</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-tc-show-all</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"../kempo/components/tableControls/Hide.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"../kempo/components/tableControls/HiddenCount.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"../kempo/components/tableControls/ShowAll.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'recordHidingExample'</span>).setRecords(contacts);<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
+    <k-table id="recordHidingExample">
+      <k-tc-hide slot="after"></k-tc-hide>
+      <k-tc-hidden-count></k-tc-hidden-count>
+      <k-tc-show-all></k-tc-show-all>
+    </k-table>
+    <script type="module" src="../kempo/components/tableControls/Hide.js"></script>
+    <script type="module" src="../kempo/components/tableControls/HiddenCount.js"></script>
+    <script type="module" src="../kempo/components/tableControls/ShowAll.js"></script>
     <script type="module">
-      import Table from '../kempo/components/Table.js';
-      document.getElementById('recordHidingExample').setData({
-        records: contacts,
-        controls: {
-          after: [
-            Table.controls.hide,
-          ],
-          bottom: [
-            Table.controls.hiddenCount,
-            Table.controls.showAll
-          ]
-        }
-      });
+      document.getElementById('recordHidingExample').setRecords(contacts);
     </script>
     
   </main>

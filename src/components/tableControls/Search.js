@@ -1,21 +1,14 @@
-import Component from '../Component.js';
+import TableControl from './TableControl.js';
 import { offEvent, onEvent } from '../../utils/element.js';
 import debounce from '../../utils/debounce.js';
 
-const table = Symbol('table'),
-      changeHandler = Symbol('changeHandler');
-export default class Search extends Component {
-  constructor(_table) {
+const changeHandler = Symbol('changeHandler');
+export default class Search extends TableControl {
+  constructor() {
     super();
-
-    /* Private Members */
-    this[table] = _table;
 
     /* Private Methods */
     this[changeHandler] = debounce(this.search.bind(this), 200);
-
-    /* Init */
-    this.classList.add('mxq');
   }
 
   /* Lifecycle Callbacks */
@@ -35,9 +28,9 @@ export default class Search extends Component {
   search() {
     const term = this.shadowRoot.getElementById('search').value;
     if (term.length < 3) {
-      this[table].showAllRecords();
+      this.table.showAllRecords();
     } else {
-      this[table].search(term);
+      this.table.search(term);
     }
   }
 
@@ -49,7 +42,8 @@ export default class Search extends Component {
         placeholder="Search"
         class="px pyh"
       />
+      ${super.shadowTemplate}
     `;
   }
 }
-window.customElements.define('k-table-search', Search);
+window.customElements.define('k-tc-search', Search);

@@ -1,24 +1,20 @@
-import Component from '../Component.js';
+import TableControl from './TableControl.js';
 import { offEvent, onEvent } from '../../utils/element.js';
 
-const table = Symbol('table'),
-      record = Symbol('record'),
-      clickHandler = Symbol('clickHandler');
+const clickHandler = Symbol('clickHandler');
 
-export default class Hide extends Component {
-  constructor(_table, _record) {
+export default class Hide extends TableControl {
+  constructor() {
     super();
-
-    /* Private Members */
-    this[table] = _table;
-    this[record] = _record;
     
     /* Private Methods */
     this[clickHandler] = (()=>{
-      this[table].hideRecord(this[record]);
+      const table = this.table;
+      const record = this.record;
+      if(table && record){
+        table.hideRecord(record);
+      }
     }).bind(this);
-
-    this.classList.add('mxq');
   }
   async render(force = false) {
     if (await super.render(force)) {
@@ -32,12 +28,13 @@ export default class Hide extends Component {
     offEvent(this.shadowRoot.getElementById('hideButton'), 'click', this[clickHandler]);
   }
 
+  /* Shadow DOM */
   get shadowTemplate() {
     return /*html*/`
-      <button id="hideButton" class="pq no-btn">
+      <button id="hideButton" class="no-btn icon-btn">
         <k-icon name="hide"></k-icon>
       </button>
     `;
   }
 }
-window.customElements.define('k-table-hide', Hide);
+window.customElements.define('k-tc-hide', Hide);

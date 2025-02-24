@@ -1,15 +1,9 @@
-import Component from '../Component.js';
+import TableControl from './TableControl.js';
 import { onEvent } from '../../utils/element.js';
 
-export default class SelectCount extends Component {
-  constructor(table) {
-    super();
-    this.table = table;
-    this.classList.add('mxq');
-  }
-
-  async render() {
-    if (await super.render()) {
+export default class SelectCount extends TableControl {
+  async render(forced = false) {
+    if (await super.render(forced)) {
       this.updateCount();
       onEvent(this.table, 'selectionChange', () => {
         this.updateCount();
@@ -24,6 +18,7 @@ export default class SelectCount extends Component {
     $count.textContent = this.table.getSelectedRecords().length;
   }
 
+  /* Shadow DOM */
   get shadowTemplate() {
     return /*html*/`
       Selected: <span id="selectCount"></span>

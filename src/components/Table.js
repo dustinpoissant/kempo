@@ -1,15 +1,4 @@
 import Component from './Component.js';
-import Icon from './Icon.js';
-import SelectCount from './tableControls/SelectCount.js';
-import PageSelect from './tableControls/PageSelect.js';
-import PageSize from './tableControls/PageSize.js';
-import DeleteSelected from './tableControls/DeleteSelected.js';
-import Edit from './tableControls/Edit.js';
-import Hide from './tableControls/Hide.js';
-import HiddenCount from './tableControls/HiddenCount.js';
-import ShowAll from './tableControls/ShowAll.js';
-import Filters from './tableControls/Filters.js';
-import Search from './tableControls/Search.js';
 import { toTitleCase } from '../utils/string.js';
 import { onEvent, offEvent, dispatchEvent } from '../utils/element.js';
 
@@ -23,53 +12,107 @@ export default class Table extends Component {
     records = [],
     fields = [],
     filters = [],
-    controls = { before: [], after: [], top: [], bottom: [] },
     enablePages = false,
-    pageSize = 100,
+    pageSize = 50,
     pageSizeOptions = [10, 25, 50, 100, 500],
     currentPage = 1,
     enableSelection = false,
+    enableSorting = false
   } = {}) {
     super();
+
+    this.registerAttributes({
+      enablePages,
+      pageSize,
+      currentPage,
+      pageSizeOptions,
+      enableSelection,
+      enableSorting
+    });
 
     this.registerProps({
       fields: fields,
       records: records,
-      controls: controls,
       filters: filters,
-      pageSize,
-      pageSizeOptions,
-      currentPage,
-      enableSelection,
-      enablePages,
-      sort: []
+      sort: [],
+      columnSizes: {},
+      fetchPending: false
     });
-
-    /* Init */
-    // 
   }
   async render(force){
     if(await super.render(force)){
       this.setData({
         records: this.records,
         fields: this.fields,
-        controls: this.controls,
-        filters: this.filters,
-        pageSize: this.pageSize,
-        pageSizeOptions: this.pageSizeOptions,
-        currentPage: this.currentPage
+        filters: this.filters
       });
       return true;
     }
     return false;
   }
 
+
+  /*
+    Render Functions
+  */
+
   renderFields(){
     if(!this.rendered) return;
-    const beforeControls = this.controls?.before?.length ? '<th></th>' : '';
-    const afterControls = this.controls?.after?.length ? '<th></th>' : '';
-    const selectionControl = this.enableSelection ? '<th class="selection"><input type="checkbox" id="select-all"></th>' : '';
-    this.shadowRoot.getElementById('fields').innerHTML = `${selectionControl}${beforeControls}${this.fields.map(({label})=>`<th>${label}</th>`).join('')}${afterControls}`;
+    this.calculateColumnSizes();
+    this.hasTopControls()?this.setAttribute('top-controls', 'true'):this.removeAttribute('top-controls');
+    this.hasBottomControls()?this.setAttribute('bottom-controls', 'true'):this.removeAttribute('bottom-controls');
+
+    const $fields = this.shadowRoot.getElementById('fields');
+    $fields.innerHTML = '';
+
+    if(this.enableSelection){
+      const $selectDiv = document.createElement('div');
+      $selectDiv.classList.add('field', 'controls', 'cell', 'field-select');
+      $selectDiv.style.width = '40px';
+      $selectDiv.innerHTML = `<input type="checkbox" id="select-all" />`;
+      $fields.appendChild($selectDiv);
+    }
+    if(this.hasBeforeControls()){
+      const $beforeDiv = document.createElement('div');
+      $beforeDiv.classList.add('field', 'cell', 'field-before-controls');
+      $beforeDiv.style.width = this.columnSizes.beforeControls + 'px';
+      $fields.appendChild($beforeDiv);
+    }
+    this.fields.forEach( ({name, label, hidden}) => {
+      if (hidden) return; // Skip hidden fields
+      const $fieldDiv = document.createElement('div');
+      $fieldDiv.classList.add('field', 'cell');
+      $fieldDiv.style.width = this.columnSizes[name] + 'px';
+      $fieldDiv.innerHTML = label;
+      if (this.enableSorting) {
+        $fieldDiv.style.cursor = 'pointer';
+        const currentSort = this.sort.find(s => s.name === name);
+        if (currentSort) {
+          $fieldDiv.classList.add(currentSort.asc ? 'sort-asc' : 'sort-desc');
+          const $icon = document.createElement('k-icon');
+          $icon.classList.add('icon-sort');
+          $icon.setAttribute('name', currentSort.asc ? 'arrow-down' : 'arrow-up');
+          $fieldDiv.appendChild($icon);
+        }
+        $fieldDiv.addEventListener('click', () => {
+          const currentSort = this.sort.find(s => s.name === name);
+          const asc = currentSort ? !currentSort.asc : true;
+          this.sortBy(name, asc);
+        });
+      }
+      $fields.appendChild($fieldDiv);
+    });
+    if(this.hasAfterControls()){
+      const $afterDiv = document.createElement('div');
+      $afterDiv.classList.add('field', 'cell', 'field-after-controls');
+      $afterDiv.style.width = this.columnSizes.afterControls + 'px';
+      $fields.appendChild($afterDiv);
+    }
+
+    $fields.style.width = 
+      this.shadowRoot.getElementById('top').style.width = 
+      this.shadowRoot.getElementById('bottom').style.width = 
+      this.shadowRoot.getElementById('records').style.width = this.columnSizes.total + 'px';
 
     if (this.enableSelection) {
       const selectAllCheckbox = this.shadowRoot.getElementById('select-all');
@@ -94,24 +137,47 @@ export default class Table extends Component {
     if (!this.rendered) return;
     const $records = this.shadowRoot.getElementById('records');
     $records.innerHTML = '';
-    const start = (this.currentPage - 1) * this.pageSize;
-    const end = start + this.pageSize;
-    const paginatedRecords = this.getDisplayedRecords().slice(start, end);
-    let fetchRecords = false;
-    paginatedRecords.forEach((record) => {
-      $records.appendChild(this.renderRecord(record));
+
+    let displayedRecords = this.getDisplayedRecords(),
+        start = 0,
+        end = this.pageSize;
+
+    if(this.enablePages){
+      start = (this.currentPage - 1) * this.pageSize;
+      end = start + this.pageSize;
+      displayedRecords = displayedRecords.slice(start, end);
+    }
+    
+    let fetchStart,
+        fetchCount = 0;
+    displayedRecords.forEach((record, index) => {
+      if(record !== null){
+        $records.appendChild(this.renderRecord(record));
+      } else {
+        if(!fetchStart) fetchStart = start + index;
+        fetchCount++;
+        const $div = document.createElement('div');
+        $div.classList.add('record', 'fetching');
+        $div.innerHTML = '<div class="cell">Loading...</div>';
+        $records.appendChild($div);
+      }
     });
-    if (fetchRecords) {
-      dispatchEvent(this, 'fetchRecords', { start, end });
+    if(fetchStart && !this.fetchPending){
+      dispatchEvent(this, 'fetchRecords', {
+        start: fetchStart,
+        count: fetchCount
+      });
     }
   }
 
   renderRecord(record){
-    const $tr = document.createElement('tr');
-    $tr.dataset.index = record[index];
+    const $record = document.createElement('div');
+    $record.classList.add('record');
+    $record.dataset.index = record[index];
     if (this.enableSelection) {
-      const $td = document.createElement('td');
-      $td.classList.add('selection');
+      const $selectionDiv = document.createElement('div');
+      $selectionDiv.style.width = '40px';
+      $selectionDiv.classList.add('cell', 'selection', 'controls');
       const $checkbox = document.createElement('input');
       $checkbox.type = 'checkbox';
       $checkbox.checked = record[selected];
@@ -119,140 +185,120 @@ export default class Table extends Component {
         record[selected] = !!event.target.checked;
         dispatchEvent(this, 'selectionChange');
       });
-      $td.appendChild($checkbox);
-      $tr.appendChild($td);
+      $selectionDiv.appendChild($checkbox);
+      $record.appendChild($selectionDiv);
     }
-    if (this.controls?.before?.length) {
-      $tr.appendChild(this.renderRowControls(this.controls.before, record));
+    if (this.hasBeforeControls()) {
+      $record.appendChild(this.renderBeforeControls());
     }
-    if (record === null) {
-      const $td = document.createElement('td');
-      $td.colSpan = this.fields.length;
-      $td.innerHTML = '<i>Loading...</i>';
-      fetchRecords = true;
-      $tr.appendChild($td);
-    } else {
-      this.fields.forEach(({ name, formatter, calculator, type, editor }) => {
-        const $td = document.createElement('td');
-        $td.dataset.field = name;
-        let value = record[name] || '';
-        if(record[editing]){
-          $tr.setAttribute('editing', true);
-          if (calculator) {
-            $td.appendChild(Table.editors.calculated(calculator(record, this)));
-          } else if(editor){
-            $td.appendChild(editor(value));
-          } else {
-            let editorGen = Table.editors[type || typeof value];
-            if(!editorGen){
-              editorGen = Table.editors.string;
-            }
-            $td.appendChild(editorGen(value));
-          }
+    this.fields.forEach(({ name, formatter, calculator, type, editor, hidden }) => {
+      if (hidden) return; // Skip hidden fields
+      const $div = document.createElement('div');
+      $div.classList.add('cell');
+      $div.dataset.field = name;
+      $div.style.width = this.columnSizes[name] + 'px';
+      let value = record[name] || '';
+      if(record[editing]){
+        $record.setAttribute('editing', true);
+        if (calculator) {
+          $div.appendChild(Table.editors.calculated(calculator(record, this)));
+        } else if(editor){
+          $div.appendChild(editor(value));
         } else {
-          if (calculator) {
-            $td.innerHTML = calculator(record, this);
-          } else if (formatter) {
-            $td.innerHTML = formatter(value);
-          } else {
-            $td.innerHTML = value;
+          let editorGen = Table.editors[type || typeof value];
+          if(!editorGen){
+            editorGen = Table.editors.string;
           }
+          $div.appendChild(editorGen(value));
         }
-        $tr.appendChild($td);
-      });
+      } else {
+        if (calculator) {
+          $div.innerHTML = calculator(record, this);
+        } else if (formatter) {
+          $div.innerHTML = formatter(value);
+        } else {
+          $div.innerHTML = value;
+        }
+      }
+      $record.appendChild($div);
+    });
+    if (this.hasAfterControls()) {
+      $record.appendChild(this.renderAfterControls());
     }
-    if (this.controls?.after?.length) {
-      $tr.appendChild(this.renderRowControls(this.controls.after, record));
-    }
-    return $tr;
+    return $record;
+  }
+
+  renderBeforeControls(){
+    const $div = document.createElement('div');
+    $div.style.width = this.columnSizes.beforeControls + 'px';
+    $div.classList.add('cell', 'controls', 'controls-before');
+    this.querySelectorAll('[slot="before"]').forEach($control => {
+      $div.appendChild($control.cloneNode(true));
+    });
+    return $div;
+  }
+
+  renderAfterControls(){
+    const $div = document.createElement('div');
+    $div.style.width = this.columnSizes.afterControls + 'px';
+    $div.classList.add('cell', 'controls', 'controls-after');
+    this.querySelectorAll('[slot="after"]').forEach($control => {
+      $div.appendChild($control.cloneNode(true));
+    });
+    return $div;
+  }
+
+
+
+
+
+  hasBeforeControls(){
+    return !!this.querySelector('[slot="before"]');
+  }
+
+  hasAfterControls(){
+    return !!this.querySelector('[slot="after"]');
+  }
+
+  hasTopControls(){
+    return !!this.querySelector('[slot="top"]');
+  }
+
+  hasBottomControls(){
+    return !!this.querySelector(':scope > :not([slot])'); // bottom is default slot, detect direct child with no slot
   }
 
   editRecord(record){
     record[editing] = true;
-    const $currentTr = this.shadowRoot.querySelector(`tr[data-index="${record[index]}"]`);
-    const $newTr = this.renderRecord(record);
-    $currentTr.replaceWith($newTr);
+    const $currentRecord = this.shadowRoot.querySelector(`.record[data-index="${record[index]}"]`);
+    const $newRecord = this.renderRecord(record);
+    $currentRecord.replaceWith($newRecord);
     dispatchEvent(this, 'editingChange');
   }
   
   saveEditedRecord(record){
     record[editing] = false;
-    const $currentTr = this.shadowRoot.querySelector(`tr[data-index="${record[index]}"]`);
-    $currentTr.querySelectorAll('td').forEach(($td) => {
-      const field = $td.dataset.field;
+    const $currentRecord = this.shadowRoot.querySelector(`.record[data-index="${record[index]}"]`);
+    $currentRecord.querySelectorAll('.cell').forEach(($cell) => {
+      const field = $cell.dataset.field;
       const fieldDef = this.fields.find(f => f.name === field);
       if(fieldDef && !fieldDef.calculator){ // calculated fields cannot be udated
-        const $input = $td.children.length === 1 ? $td.firstChild : $td.querySelector('input, select');
+        const $input = $cell.children.length === 1 ? $cell.firstChild : $cell.querySelector('input, select');
         if ($input) {
           record[field] = $input.value;
         }
       }
     });
-    const $newTr = this.renderRecord(record);
-    $currentTr.replaceWith($newTr);
+    $currentRecord.replaceWith(this.renderRecord(record));
   }
 
   cancelEditedRecord(record){
     record[editing] = false;
-    const $currentTr = this.shadowRoot.querySelector(`tr[data-index="${record[index]}"]`);
-    const $newTr = this.renderRecord(record);
-    $currentTr.replaceWith($newTr);
+    this.shadowRoot.querySelector(`.record[data-index="${record[index]}"]`).replaceWith(this.renderRecord(record));
   }
 
   recordIsEditing(record){
     return record[editing];
-  }
-  
-  renderRowControls(controls = [], record) {
-    if(!this.rendered) return;
-    const $td = document.createElement('td');
-    controls.filter(c=>!!c).forEach(({ html, icon, action, render }) => {
-      if(html){
-        $td.appendChild(document.createRange().createContextualFragment(html));
-      } else if(render && typeof(render) === 'function'){
-        const rendered = render(this, record);
-        if(rendered instanceof HTMLElement){
-          $td.appendChild(rendered);
-        } else if(typeof(rendered) === 'string'){
-          $td.appendChild(document.createRange().createContextualFragment(rendered));
-        }
-      } else if(icon){
-        const $button = document.createElement('button');
-        $button.classList.add('pq', 'no-btn');
-        $button.appendChild(new Icon(icon));
-        if (action) {
-          onEvent($button, 'click', () => action(this, record));
-        }
-        $td.appendChild($button);
-      }
-    });
-    return $td;
-  }
-
-  renderControls(controls = [], position) {
-    if(!this.rendered) return;
-    const $container = this.shadowRoot.getElementById(position);
-    $container.innerHTML = '';
-    controls.filter(c=>!!c).forEach(({ html, icon, action, render }) => {
-      if(html){
-        $container.appendChild(document.createRange().createContextualFragment(html));
-      } else if(render && typeof(render) === 'function'){
-        const rendered = render(this);
-        if(rendered instanceof HTMLElement){
-          $container.appendChild(rendered);
-        } else if(typeof(rendered) === 'string'){
-          $container.appendChild(document.createRange().createContextualFragment(rendered));
-        }
-      } else if(icon){
-        const $button = document.createElement('button');
-        $button.classList.add('pq', 'no-btn');
-        $button.appendChild(new Icon(icon));
-        if (action) {
-          onEvent($button, 'click', () => action(this));
-        }
-        $container.appendChild($button);
-      }
-    });
   }
 
   getCurrentPage() {
@@ -271,6 +317,12 @@ export default class Table extends Component {
     dispatchEvent(this, 'pageChange');
   }
 
+  firstPage(){
+    if(this.currentPage !== 1){
+      this.setPage(1);
+    }
+  }
+
   nextPage() {
     if (this.currentPage < this.getTotalPages()) {
       this.setPage(this.currentPage + 1);
@@ -280,6 +332,12 @@ export default class Table extends Component {
   prevPage() {
     if (this.currentPage > 1) {
       this.setPage(this.currentPage - 1);
+    }
+  }
+
+  lastPage() {
+    if (this.currentPage !== this.getTotalPages()) {
+      this.setPage(this.getTotalPages());
     }
   }
 
@@ -294,14 +352,12 @@ export default class Table extends Component {
   setData({
     records = false,
     fields = false,
-    controls = false,
     pageSize = false,
     pageSizeOptions = false,
     currentPage = false,
-    enableSelection = false // Add enableSelection property
+    enableSelection
   } = {}) {
     let rerender = false,
-        rerenderControls = false,
         pageCountBefore = this.getTotalPages(),
         pageBefore = this.currentPage;
     if(records){
@@ -322,10 +378,6 @@ export default class Table extends Component {
     if (pageSizeOptions) {
       this.pageSizeOptions = pageSizeOptions;
     }
-    if (controls) {
-      this.controls = controls;
-      rerenderControls = true;
-    }
     if(currentPage){
       this.currentPage = currentPage;
       rerender = true;
@@ -338,10 +390,6 @@ export default class Table extends Component {
       this.renderFields();
       this.renderRecords();
     }
-    if(rerenderControls){
-      this.renderControls(this.controls.top, 'top');
-      this.renderControls(this.controls.bottom, 'bottom');
-    }
     const newPageCount = this.getTotalPages();
     if(newPageCount !== pageCountBefore){
       dispatchEvent(this, 'pageCountChanged', { totalPages: this.getTotalPages() });
@@ -351,9 +399,10 @@ export default class Table extends Component {
     }
   }
 
-  setRecords(records) {
+  setRecords(records, fields) {
     let pageCountBefore = this.getTotalPages(),
         pageBefore = this.currentPage;
+
     this.records = records.map(r=>({...r}));
     this.records.forEach((record, idx) => {
       record[index] = idx;
@@ -361,6 +410,8 @@ export default class Table extends Component {
       record[hidden] = false;
       record[editing] = false;
     });
+    this.fields = fields || Table.extractFieldsFromRecords(this.records);
+    this.renderFields();
     this.renderRecords();
     dispatchEvent(this, 'recordsSet', { records });
     const newPageCount = this.getTotalPages();
@@ -380,9 +431,12 @@ export default class Table extends Component {
     }
 
     onEvent(this, 'fetchRecords', async (event) => {
-      const { start, end } = event.detail;
-      const records = await callback(start, end - start);
+      if(this.fetchPending) return;
+      this.fetchPending = true;
+      const { start, count } = event.detail;
+      const records = await callback(start, count);
       this.records.splice(start, records.length, ...records);
+      this.fetchPending = false;
       this.renderRecords();
     });
   }
@@ -519,6 +573,7 @@ export default class Table extends Component {
   sortBy(field, asc = true) {
     this.sort = this.sort.filter(item => item.name !== field);
     this.sort.push({ name: field, asc });
+    this.renderFields(); // Re-render fields to update sort classes and icons
     this.renderRecords();
   }
 
@@ -644,7 +699,7 @@ export default class Table extends Component {
       });
     });
 
-    let displayedRecords = this.records.filter(record => !record[hidden]);
+    let displayedRecords = this.records.filter(record => record === null || !record[hidden]);
 
     this.sort.forEach(({ name, asc }) => {
       displayedRecords.sort((a, b) => {
@@ -661,16 +716,85 @@ export default class Table extends Component {
     return this.records.filter(record => record[hidden]);
   }
 
+  calculateColumnSizes() {
+    this.columnSizes = {};
+    this.columnSizes.total = 0;
+    if(this.enableSelection) this.columnSizes.total += 40;
+    this.columnSizes.beforeControls = Array.from(this.querySelectorAll('[slot="before"]')).reduce((total, el) => total + (el.maxWidth || 40), 0);
+    this.columnSizes.afterControls = Array.from(this.querySelectorAll('[slot="after"]')).reduce((total, el) => total + (el.maxWidth || 40), 0);
+    if(this.hasBeforeControls()) this.columnSizes.total += this.columnSizes.beforeControls;
+    if(this.hasAfterControls()) this.columnSizes.total += this.columnSizes.afterControls;
+    
+    this.fields.forEach(field => {
+      if (field.size) {
+      this.columnSizes[field.name] = field.size;
+      } else {
+      let maxLength = 0;
+      this.records.slice(0, 100).forEach(record => {
+        let value = record[field.name];
+        if (field.calculator) {
+          value = field.calculator(record, this);
+        }
+        if (field.formatter) {
+          value = field.formatter(value);
+        }
+        if (value && value.toString().length > maxLength) {
+        maxLength = value.toString().length;
+        }
+      });
+      this.columnSizes[field.name] = Math.max((maxLength * 10 + 32), 128);
+      if(!field.hidden) this.columnSizes.total += this.columnSizes[field.name];
+      }
+    });
+    return this.columnSizes;
+  }
+
+  setFieldHiddenState(fieldName, hidden) {
+    const field = this.fields.find(f => f.name === fieldName);
+    if (field) {
+      field.hidden = hidden;
+      this.calculateColumnSizes();
+      this.renderFields();
+      this.renderRecords();
+      dispatchEvent(this, 'fieldVisibilityChanged ' + (hidden ? 'fieldHidden' : 'fieldShown'), { field });
+    }
+  }
+
+  hideField(fieldName) {
+    this.setFieldHiddenState(fieldName, true);
+  }
+
+  showField(fieldName) {
+    this.setFieldHiddenState(fieldName, false);
+  }
+
+  reorderFields(newOrder) {
+    const newFields = [];
+    newOrder.forEach(fieldName => {
+      const field = this.fields.find(f => f.name === fieldName);
+      if (field) {
+        newFields.push(field);
+      }
+    });
+    this.fields = newFields;
+    this.renderFields();
+    this.renderRecords();
+  }
+
+  /* Shadow DOM */
   get shadowTemplate(){
     return /*html*/`
-      ${super.shadowTemplate}
-      <div class="responsive-table">
-        <div id="top"></div>
-        <table class="b0">
-          <thead id="fields"></thead>
-          <tbody id="records"></tbody>
-        </table>
-        <div id="bottom"></div>
+      <div id="wrapper">
+        <div id="top"><slot name="top"></slot></div>
+        <div id="table">
+          <div id="fields"></div>
+          <div id="records"></div>
+        </div>
+        <div id="bottom">${super.shadowTemplate}</div>
+      </div>
+      <div style="display: none">
+        <slot name="before"></slot>
+        <slot name="after"></slot>
       </div>
     `;
   }
@@ -680,58 +804,74 @@ export default class Table extends Component {
       ${super.shadowStyles}
       :host {
         display: block;
+        width: 100%;
+        overflow: auto;
         margin-bottom: var(--spacer);
+      }
+      #wrapper {
+        width: min-content;
         border: 1px solid var(--c_border);
         border-radius: var(--radius);
       }
-      #top, #bottom {
+      #table {
+        width: min-content;
+      }
+      #fields,
+      .record {
         display: flex;
       }
-      th {
-        border-top: none;
-      }
-      tr:last-child td:first-child {
-        border-bottom-left-radius: 0;
-      }
-      tr:last-child td:last-child {
-        border-bottom-right-radius: 0;
-      }
-      tr:last-child td {
-        border-bottom: none;
-      }
-      th:first-child, td:first-child {
-        border-left: none;
-      }
-      th:last-child, td:last-child {
-        border-right: none;
-      }
-      #top:not(:empty) {
+      #fields {
+        background-color: var(--c_bg__alt);
         border-bottom: 1px solid var(--c_border);
       }
-      #bottom:not(:empty) {
+      .record:not([editing="true"]) .cell:not(.controls),
+      #fields .cell:not(.controls) {
+        padding: calc(0.5 * var(--spacer)) var(--spacer);
+      }
+      .cell:not(:first-child) {
+        border-left: 1px solid var(--c_border);
+      }
+      .record:not(:last-child) .cell {
+        border-bottom: 1px solid var(--c_border);
+      }
+      #top, #bottom {
+        display: flex;
+        width: 100%;
+      }
+      #top slot {
+        display: block;
+        width: 100%;
+        border-bottom: 1px solid var(--c_border);
+      }
+      #bottom slot {
+        display: block;
+        width: 100%;
         border-top: 1px solid var(--c_border);
       }
-      th.selection, td.selection {
-        width: 50px;
+      :host(:not([top-controls])) #top,
+      :host(:not([bottom-controls])) #bottom {
+        display: none;
       }
-      th.selection input,
-      td.selection input {
-        margin: 0;
-        width: 1.35rem;
-        height: 1.35rem;
+      .field-select,
+      .selection {
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
-      tr[editing] td {
-        padding: 0;
+      .field-select input,
+      .selection input {
+        width: 1.25rem;
+        height: 1.25rem;
       }
-      tr[editing] input,
-      tr[editing] select,
-      tr[editing] .input {
-        padding: calc(0.75 * var(--spacer)) var(--spacer) !important;
-        width: 100%;
+      .icon-sort {
+        float: right;
+        opacity: 0.5;
       }
     `;
   }
 
+
+  /* Static Methods */
   static extractFieldsFromRecords(records, recordLimit = 100){
     const names = new Set();
     records.slice(0, recordLimit).forEach( record => {
@@ -740,72 +880,7 @@ export default class Table extends Component {
     return [...names].map(name=>({name,label:toTitleCase(name)}));
   };
 
-  static controls = {
-    prevPage: {
-      render: (table) => {
-        const $button = document.createElement('button');
-        $button.classList.add('pq', 'no-btn');
-        $button.appendChild(new Icon('chevron-left'));
-        onEvent($button, 'click', () => table.prevPage());
-
-        // Disable button if on the first page
-        onEvent(table, 'pageChange', () => {
-          $button.disabled = table.getCurrentPage() === 1;
-        });
-
-        return $button;
-      }
-    },
-    nextPage: {
-      render: (table) => {
-        const $button = document.createElement('button');
-        $button.classList.add('pq', 'no-btn');
-        $button.appendChild(new Icon('chevron-right'));
-        onEvent($button, 'click', () => table.nextPage());
-
-        // Disable button if on the last page
-        onEvent(table, 'pageChange', () => {
-          $button.disabled = table.getCurrentPage() === table.getTotalPages();
-        });
-
-        return $button;
-      }
-    },
-    pageSelect: {
-      render: (table) => new PageSelect(table)
-    },
-    pageSize: {
-      render: (table) => new PageSize(table)
-    },
-    selectCount: {
-      render: (table) => new SelectCount(table)
-    },
-    deleteSelected: {
-      render: (table) => new DeleteSelected(table)
-    },
-    spacer: {
-      html: '<div class="flex"></div>'
-    },
-    edit: {
-      render: (table, record) => new Edit(table, record)
-    },
-    hide: {
-      render: (table, record) => new Hide(table, record)
-    },
-    hiddenCount: {
-      render: (table) => new HiddenCount(table)
-    },
-    showAll: {
-      render: (table) => new ShowAll(table)
-    },
-    filters: {
-      render: (table) => new Filters(table)
-    },
-    search: {
-      render: (table) => new Search(table)
-    }
-  };
-
+  /* Static Members */
   static format(value){
     const f = Array.isArray(value) ? Table.formatters.array : Table.formatters[typeof value];
     return f(value);

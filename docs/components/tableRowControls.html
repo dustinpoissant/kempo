@@ -58,43 +58,18 @@
   <main>
 
     <a href="./table.html"><h5>Back to Table Component Documentation</h5></a>
-
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"rowControlsExample"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tc-export-json</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"before"</span> <span class="hljs-attr">max-width</span>=<span class="hljs-string">"40"</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">k-icon</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"export-file"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-icon</span>&gt;</span><br />  <span class="hljs-tag">&lt;/<span class="hljs-name">k-tc-export-json</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tc-delete-record</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"after"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-tc-delete-record</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"../kempo/components/tableControls/ExportJson.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span> <span class="hljs-attr">src</span>=<span class="hljs-string">"../kempo/components/tableControls/DeleteRecord.js"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'rowControlsExample'</span>).setRecords(contacts);<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
     <p>The table component can display controls before or after each row. Each control is defined by an icon name, a callback function, and optionally an HTML string or a render function.</p>
-    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-table</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"rowControlsExample"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">k-table</span>&gt;</span><br /><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"module"</span>&gt;</span><span class="javascript"><br />  <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'rowControlsExample'</span>).setData({<br />    <span class="hljs-attr">records</span>: contacts,<br />    <span class="hljs-attr">controls</span>: {<br />      <span class="hljs-attr">before</span>: [<br />        {<br />          <span class="hljs-attr">html</span>: <span class="hljs-string">'&lt;span&gt;Custom HTML&lt;/span&gt; '</span><br />        },<br />        {<br />          <span class="hljs-attr">render</span>: <span class="hljs-function">(<span class="hljs-params">table, record</span>) =&gt;</span> {<br />            <span class="hljs-keyword">return</span> <span class="hljs-string">`&lt;button onclick="alert('<span class="hljs-subst">${record.name}</span>')"&gt;Alert&lt;/button&gt;`</span>;<br />          }<br />        }<br />      ],<br />      <span class="hljs-attr">after</span>: [<br />        {<br />          <span class="hljs-attr">icon</span>: <span class="hljs-string">'edit'</span>,<br />          <span class="hljs-attr">action</span>: <span class="hljs-function">(<span class="hljs-params">table, record</span>) =&gt;</span> {<br />            <span class="hljs-keyword">const</span> newName = prompt(<span class="hljs-string">"Enter a new name:"</span>, record.name);<br />            <span class="hljs-keyword">if</span> (newName &amp;&amp; newName !== record.name) {<br />              table.updateRecord(record, { <span class="hljs-attr">name</span>: newName });<br />            }<br />          }<br />        },<br />        {<br />          <span class="hljs-attr">icon</span>: <span class="hljs-string">'delete'</span>,<br />          <span class="hljs-attr">action</span>: <span class="hljs-function">(<span class="hljs-params">table, record</span>) =&gt;</span> {<br />            table.deleteRecord(record);<br />          }<br />        }<br />      ]<br />    }<br />  });<br /></span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span></code></pre>
-    <k-table id="rowControlsExample"></k-table>
+    <k-table id="rowControlsExample">
+      <k-tc-export-json slot="before" max-width="40">
+        <k-icon name="export-file"></k-icon>
+      </k-tc-export-json>
+      <k-tc-delete-record slot="after"></k-tc-delete-record>
+    </k-table>
+    <script type="module" src="../kempo/components/tableControls/ExportJson.js"></script>
+    <script type="module" src="../kempo/components/tableControls/DeleteRecord.js"></script>
     <script type="module">
-      document.getElementById('rowControlsExample').setData({
-        records: contacts,
-        controls: {
-          before: [
-            {
-              html: '<span>Custom HTML</span> '
-            },
-            {
-              render: (table, record) => {
-                return `<button onclick="alert('${record.name}')">Alert</button>`;
-              }
-            }
-          ],
-          after: [
-            {
-              icon: 'edit',
-              action: (table, record) => {
-                const newName = prompt("Enter a new name:", record.name);
-                if (newName && newName !== record.name) {
-                  table.updateRecord(record, { name: newName });
-                }
-              }
-            },
-            {
-              icon: 'delete',
-              action: (table, record) => {
-                table.deleteRecord(record);
-              }
-            }
-          ]
-        }
-      });
+      document.getElementById('rowControlsExample').setRecords(contacts);
     </script>
   </main>
   <div style="height: 33.333vh"></div>
