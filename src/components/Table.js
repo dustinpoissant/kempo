@@ -727,23 +727,24 @@ export default class Table extends Component {
     
     this.fields.forEach(field => {
       if (field.size) {
-      this.columnSizes[field.name] = field.size;
+        this.columnSizes[field.name] = field.size;
+        this.columnSizes.total += field.size;
       } else {
-      let maxLength = 0;
-      this.records.slice(0, 100).forEach(record => {
-        let value = record[field.name];
-        if (field.calculator) {
-          value = field.calculator(record, this);
-        }
-        if (field.formatter) {
-          value = field.formatter(value);
-        }
-        if (value && value.toString().length > maxLength) {
-        maxLength = value.toString().length;
-        }
-      });
-      this.columnSizes[field.name] = Math.max((maxLength * 10 + 32), 128);
-      if(!field.hidden) this.columnSizes.total += this.columnSizes[field.name];
+        let maxLength = 0;
+        this.records.slice(0, 100).forEach(record => {
+          let value = record[field.name];
+          if (field.calculator) {
+            value = field.calculator(record, this);
+          }
+          if (field.formatter) {
+            value = field.formatter(value);
+          }
+          if (value && value.toString().length > maxLength) {
+          maxLength = value.toString().length;
+          }
+        });
+        this.columnSizes[field.name] = Math.max((maxLength * 10 + 32), 128);
+        if(!field.hidden) this.columnSizes.total += this.columnSizes[field.name];
       }
     });
     return this.columnSizes;

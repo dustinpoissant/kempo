@@ -129,6 +129,7 @@ export default class Search extends Component {
         text-decoration: none;
         border-bottom: 1px solid var(--c_border);
         border-radius: 0;
+        color: var(--tc_primary);
       }
       #results a:last-child {
         border-bottom: 0;
