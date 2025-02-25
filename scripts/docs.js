@@ -42,8 +42,6 @@ if(src){
 }
 app.use(express.static('docs'));
 
-
-
 app.listen(port, () => {
   console.log(`Docs Running on: http://localhost:${port}`);
 });

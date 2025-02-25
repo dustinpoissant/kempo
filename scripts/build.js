@@ -104,18 +104,18 @@ await Promise.all(utils.map(async util => {
 }));
 process.stdout.write("\n");
 
-console.log('Generating export file');
-const main = `
-  ${components.map(component => `import ${path.basename(component, '.js')} from './components/${path.relative(componentsDir, component)}';`).join('')}
-  ${utils.map(util => `import ${util} from './utils/${util}.js';`).join('')}
-  export default {
-    ${components.map(component => `${path.basename(component, '.js')}`).join(',')},
-    ${utils.map(util => `${util}`).join(',')}
-  };
-`;
-const minifiedMain = (await minify(main)).code;
-console.log('Saving minified main entry file');
-await fs.writeFile('./dist/index.js', minifiedMain, 'utf-8');
+// console.log('Generating export file');
+// const main = `
+//   ${components.map(component => `import ${path.basename(component, '.js')} from './components/${path.relative(componentsDir, component)}';`).join('')}
+//   ${utils.map(util => `import ${util} from './utils/${util}.js';`).join('')}
+//   export default {
+//     ${components.map(component => `${path.basename(component, '.js')}`).join(',')},
+//     ${utils.map(util => `${util}`).join(',')}
+//   };
+// `;
+// const minifiedMain = (await minify(main)).code;
+// console.log('Saving minified main entry file');
+// await fs.writeFile('./dist/index.js', minifiedMain, 'utf-8');
 
 console.log('Loading kempo-vars.css');
 const kempoVarsCSS = await fs.readFile('./src/kempo-vars.css', 'utf-8');
