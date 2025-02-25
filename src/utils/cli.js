@@ -92,7 +92,7 @@ export const promptUser = (query) => {
   });
 
   return new Promise((resolve) => {
-    rl.question(query, (answer) => {
+    rl.question(`${query}: `, (answer) => {
       rl.close();
       resolve(answer);
     });
@@ -100,7 +100,7 @@ export const promptUser = (query) => {
 };
 
 export const promptYN = (query, defaultValue = 'y') => {
-  const formattedQuery = `${query} [${defaultValue}] `;
+  const formattedQuery = `${query} (${defaultValue === 'y' ? 'Y/n' : 'y/N'}): `;
   return promptUser(formattedQuery).then((answer) => {
     const normalizedAnswer = answer.trim().toLowerCase();
     if (normalizedAnswer === '') {
