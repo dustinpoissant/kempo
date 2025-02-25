@@ -99,9 +99,21 @@ export const promptUser = (query) => {
   });
 };
 
+export const promptYN = (query, defaultValue = 'y') => {
+  const formattedQuery = `${query} [${defaultValue}] `;
+  return promptUser(formattedQuery).then((answer) => {
+    const normalizedAnswer = answer.trim().toLowerCase();
+    if (normalizedAnswer === '') {
+      return defaultValue === 'y';
+    }
+    return normalizedAnswer === 'y';
+  });
+};
+
 export default {
   getArgs,
   runChildNodeProcess,
   runChildNodeProcess,
-  promptUser
+  promptUser,
+  promptYN
 };

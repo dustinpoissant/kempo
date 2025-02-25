@@ -1,9 +1,14 @@
 {
   "name": "kempo",
-  "version": "2.10.5",
+  "version": "2.10.7",
   "type": "module",
   "description": "A web component library",
   "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./utils/*": "./dist/utils/*",
+    "./components/*": "./dist/components/*"
+  },
   "scripts": {
     "test": "node ./scrips/test.js",
     "build": "node ./scripts/build.js",
