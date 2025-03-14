@@ -57,9 +57,6 @@ export default class Card extends Component {
 
     `;
   }
-
-  static get renderOnAttributes(){
-    return ["label"];
-  }
+  static observedAttributes = [...super.observedAttributes, 'label'];
 }
 window.customElements.define('k-card', Card);

@@ -31,9 +31,9 @@ export const dispatchEvent = (element, events, detail, {
       element.dispatchEvent(new CustomEvent(event, { bubbles, detail } ));
     });
   } else if(element instanceof NodeList || element instanceof Array){
-    element.forEach( el => dispatchEvent(el, events, handler));
+    element.forEach( el => dispatchEvent(el, events, detail, { scope, bubbles }));
   } else if(typeof(element) == 'string'){
-    scope.querySelectorAll(element).forEach( el => dispatchEvent(el, events, handler));
+    scope.querySelectorAll(element).forEach( el => dispatchEvent(el, events, detail, { scope, bubbles }));
   }
 }
 export const isInView = async (element) => {

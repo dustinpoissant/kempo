@@ -145,12 +145,6 @@ export default class SideMenu extends LazyComponent {
       }
     `;
   }
-
-  static get observedAttributes(){
-    return [
-      'opened',
-      ...super.observedAttributes
-    ]
-  }
+  static observedAttributes = [...super.observedAttributes, 'opened'];
 }
 window.customElements.define('k-side-menu', SideMenu);

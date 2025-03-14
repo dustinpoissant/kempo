@@ -1,9 +1,9 @@
 import Component from './Component.js';
 
 export default class Import extends Component {
-  constructor(){
+  constructor(src = ''){
     super();
-    this.registerAttribute('src');
+    this.registerAttribute('src', src);
   }
   attributeChangedCallback(n, oV, nV){
     if(n === 'src' && oV !== nV){
@@ -13,7 +13,11 @@ export default class Import extends Component {
   async render(force){
     const src = this.src;
     if(src && await super.render(force)){
-      this.innerHTML = await (await fetch(src)).text();
+      let contents = await (await fetch(src)).text();
+      for (const [name, value] of Object.entries(Import.replacements)) {
+        contents = contents.replace(new RegExp(`%%${name}%%`, 'g'), value);
+      }
+      this.innerHTML = contents;
       this.querySelectorAll('script').forEach( $badScript => {
         const $goodScript = document.createElement('script');
         if($badScript.getAttribute('type')) $goodScript.type = $badScript.getAttribute('type');
@@ -21,20 +25,29 @@ export default class Import extends Component {
         if($badScript.textContent) $goodScript.textContent = $badScript.textContent;
         $badScript.parentElement.replaceChild($goodScript, $badScript);
       });
-      
+      return true;
     }
+    return false;
   }
 
   get shadowStyles(){
     return /*css*/`
       :host {
-        display: inline;
+        display: contents;
       }
     `;
   }
 
-  static get renderOnAttributes(){
-    retur ['src'];
+  /* Static Members */
+  static replacements = {
+    root: './' 
+  };
+  static addReplacement(name, value){
+    this.replacements = {
+      ...this.replacements,
+      [name]: value,
+    };
   }
+  static observedAttributes = [...super.observedAttributes, 'src'];
 }
 window.customElements.define('k-import', Import);
