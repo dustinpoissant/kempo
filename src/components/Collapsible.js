@@ -1,4 +1,4 @@
-import Component from './/Component.js';
+import Component from './Component.js';
 import './Icon.js';
 import { onEvent, offEvent, dispatchEvent } from '../utils/element.js';
 
