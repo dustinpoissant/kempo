@@ -1,5 +1,5 @@
 import Component from './/Component.js';
-import '.s/Icon.js';
+import './Icon.js';
 import { onEvent, offEvent, dispatchEvent } from '../utils/element.js';
 
 const clickHandler = Symbol('clickHandler');
