@@ -1,6 +1,6 @@
 {
   "name": "kempo",
-  "version": "2.12.2",
+  "version": "2.13.0",
   "type": "module",
   "description": "A web component library",
   "exports": {

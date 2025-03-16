@@ -22,7 +22,8 @@
   --radius: 0.25rem;
   --link_decoration: underline;
   --input_padding: var(--spacer_h) var(--spacer);
-  --input_border_width: 2px;
+  --input_border_width: 1px;
+  --c_input_border: var(--c_border);
   --btn_padding: var(--spacer_h) var(--spacer);
   --date_picker_icon_filter: invert(0);
 }
@@ -131,8 +132,8 @@
   --tc_link__inv__hover: var(--tc_secondary__inv);
   --focus_shadow: 0 0 2px 2px var(--c_primary);
   --focus_shadow_on_primary: 0 0 2px 2px var(--tc_on_primary);
-  --input_bg: white;
-  --input_tc: rgba(0, 0, 0, 0.93);
+  --input_bg: var(--c_bg__alt);
+  --input_tc: var(--tc);
   --ff_body: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --ff_heading: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --ff_mono: Consolas, monaco, monospace;
@@ -154,6 +155,5 @@
   --radius: 0.25rem;
   --drop_shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.25); 
   --link_decoration: underline;
-  --input_border_width: 2px;
   --date_picker_icon_filter: invert(1)
 }

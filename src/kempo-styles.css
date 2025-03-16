@@ -648,7 +648,7 @@ textarea {
   width: 100%;
   background-color: var(--input_bg);
   color: var(--input_tc);
-  border: var(--input_border_width) solid var(--c_border);
+  border: var(--input_border_width) solid var(--c_input_border);
   padding: var(--input_padding);
   border-radius: var(--radius);
   outline: none;
