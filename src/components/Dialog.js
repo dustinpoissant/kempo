@@ -266,6 +266,12 @@ export default class Dialog extends Component {
     $dialog.open();
     return $dialog;
   }
+  static alert(message = '', callback, options = {}){
+    return Dialog.create(message, {
+      closeCallback: callback,
+      ...options
+    });
+  }
   static confirm(text, responseCallback, options = {
     title: 'Confirm'
   }){
