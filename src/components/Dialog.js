@@ -266,12 +266,6 @@ export default class Dialog extends Component {
     $dialog.open();
     return $dialog;
   }
-  static alert(message = '', callback, options = {}){
-    return Dialog.create(message, {
-      closeCallback: callback,
-      ...options
-    });
-  }
   static confirm(text, responseCallback, options = {
     title: 'Confirm'
   }){
@@ -294,18 +288,41 @@ export default class Dialog extends Component {
       }
     });
   }
+  static alert(text, responseCallback, options = {
+    title: 'Alert'
+  }){
+    return Dialog.create(`
+      <h5 slot="title" class="pyh px m0">${options.title}</h5>
+      <p class="p">${text}</p>
+    `, {
+      closeCallback: responseCallback,
+      cancelText: 'Ok',
+      ...options,
+    });
+  }
   static error(text, responseCallback, options = {
     title: 'Error'
   }){
-    const $dialog = Dialog.create(`
+    return Dialog.create(`
       <h5 slot="title" class="pyh px m0 tc-danger">${options.title}</h5>
       <p class="p">${text}</p>
     `, {
-      ...options,
+      closeCallback: responseCallback,
       cancelText: 'Ok',
+      ...options,
     });
-    onEvent($dialog, 'close',  responseCallback);
-    return $dialog;
+  }
+  static success(text, responseCallback, options = {
+    title: 'Success'
+  }){
+    return Dialog.create(`
+      <h5 slot="title" class="pyh px m0 tc-success">${options.title}</h5>
+      <p class="p">${text}</p>
+    `, {
+      closeCallback: responseCallback,
+      cancelText: 'Ok',
+      ...options,
+    });
   }
 }
 window.customElements.define('k-dialog', Dialog);
