@@ -66,12 +66,7 @@
     </div>
   </menu>
 </k-side-menu>
-<script>
-  document.getElementById('open-side-menu').addEventListener('click', async () => {
-    await window.customElements.whenDefined('k-side-menu');
-    document.getElementById('side-menu').open();
-  });
-</script>
+<script src="%%root%%js/nav.inc.js" type="module"></script>
 <script src="%%root%%kempo/components/SideMenu.js" type="module"></script>
 <script src="%%root%%kempo/components/Icon.js" type="module"></script>
 <script src="%%root%%kempo/components/ThemeSwitcher.js" type="module"></script>

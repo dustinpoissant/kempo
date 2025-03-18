@@ -7,14 +7,16 @@
   <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
   <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
   <script type="module">
+    import Import from '../kempo/components/Import.js';
     import Icon from '../kempo/components/Icon.js';
     import Search from '../kempo/components/Search.js';
+    Import.addReplacement('root', '../');
     Icon.pathToIcons = ['../icons'];
     Search.searchDataUrl = '../search.json';
   </script>
 </head>
 <body>
-  <k-import src="../nav-1.inc.html"></k-import>
+  <k-import src="../nav.inc.html"></k-import>
   <main>
     <h1 class="ta-center">Dialog</h1>
 

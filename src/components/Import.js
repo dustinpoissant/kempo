@@ -13,18 +13,37 @@ export default class Import extends Component {
   async render(force){
     const src = this.src;
     if(src && await super.render(force)){
+      // Get raw text and process replacements first
       let contents = await (await fetch(src)).text();
       for (const [name, value] of Object.entries(Import.replacements)) {
         contents = contents.replace(new RegExp(`%%${name}%%`, 'g'), value);
       }
-      this.innerHTML = contents;
-      this.querySelectorAll('script').forEach( $badScript => {
-        const $goodScript = document.createElement('script');
-        if($badScript.getAttribute('type')) $goodScript.type = $badScript.getAttribute('type');
-        if($badScript.getAttribute('src')) $goodScript.src = $badScript.getAttribute('src');
-        if($badScript.textContent) $goodScript.textContent = $badScript.textContent;
-        $badScript.parentElement.replaceChild($goodScript, $badScript);
-      });
+      
+      // Now parse into template
+      const temp = document.createElement('template');
+      temp.innerHTML = contents;
+      
+      // Extract and handle scripts
+      const scripts = Array.from(temp.content.querySelectorAll('script[src]'));
+      scripts.forEach(script => script.remove());
+      
+      // Set content
+      this.innerHTML = temp.innerHTML;
+      
+      // Add scripts back
+      for (const script of scripts) {
+        const newScript = document.createElement('script');
+        Array.from(script.attributes).forEach(attr => {
+          newScript.setAttribute(attr.name, attr.value);
+        });
+        console.log('Adding script with src:', newScript.src); // Debug
+        await new Promise((resolve, reject) => {
+          newScript.onload = resolve;
+          newScript.onerror = reject;
+          this.appendChild(newScript);
+        });
+      }
+      
       return true;
     }
     return false;

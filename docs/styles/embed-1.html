@@ -6,8 +6,10 @@
   <title>Template - Components - Kempo Docs - A Web Components Solution</title>
   <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
   <script type="module">
+    import Import from '../kempo/components/Import.js';
     import Icon from '../kempo/components/Icon.js';
     import Search from '../kempo/components/Search.js';
+    Import.addReplacement('root', '../');
     Icon.pathToIcons = ['../icons'];
     Search.searchDataUrl = '../search.json';
   </script>
