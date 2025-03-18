@@ -23,6 +23,7 @@
         <h6>Examples</h6>
         <a href="#basicUsage">Basic Usage</a><br />
         <a href="#tabSpacers">Tab Spacers</a><br />
+        <a href="#scrollingTabs">Scrolling Tabs</a><br />
         
         <h6 class="mt">JavaScript Reference</h6>
         <a href="#constructor">Constructor</a><br />
@@ -62,36 +63,77 @@
       </k-tab-content>
     </k-tabs>
 
-    <h2 id="jsRef">JavaScript Reference</h2>
+    <h3 id="scrollingTabs"><a href="#scrollingTabs" class="no-link">Scrolling Tabs</a></h3>
+    <p>When there are many tabs, they will scroll horizontally with gradient indicators showing when more tabs are available.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-tabs</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"tab1"</span>&gt;</span>Tab 1<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"tab2"</span>&gt;</span>Tab 2<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"tab3"</span>&gt;</span>Tab 3<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"tab4"</span>&gt;</span>Tab 4<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"tab5"</span>&gt;</span>Tab 5<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"tab6"</span>&gt;</span>Tab 6<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"tab7"</span>&gt;</span>Tab 7<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"tab8"</span>&gt;</span>Tab 8<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"tab9"</span>&gt;</span>Tab 9<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"tab10"</span>&gt;</span>Tab 10<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span>
+  <span class="hljs-comment">&lt;!-- Tab Contents --&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"tab1"</span>&gt;</span>Content 1<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"tab2"</span>&gt;</span>Content 2<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"tab3"</span>&gt;</span>Content 3<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"tab4"</span>&gt;</span>Content 4<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"tab5"</span>&gt;</span>Content 5<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"tab6"</span>&gt;</span>Content 6<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"tab7"</span>&gt;</span>Content 7<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"tab8"</span>&gt;</span>Content 8<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"tab9"</span>&gt;</span>Content 9<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"tab10"</span>&gt;</span>Content 10<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">k-tabs</span>&gt;</span></code></pre>
+    <k-tabs>
+      <k-tab for="tab1">Long Tab Name 1</k-tab>
+      <k-tab for="tab2">Long Tab Name 2</k-tab>
+      <k-tab for="tab3">Long Tab Name 3</k-tab>
+      <k-tab for="tab4">Long Tab Name 4</k-tab>
+      <k-tab for="tab5">Long Tab Name 5</k-tab>
+      <k-tab for="tab6">Long Tab Name 6</k-tab>
+      <k-tab for="tab7">Long Tab Name 7</k-tab>
+      <k-tab for="tab8">Long Tab Name 8</k-tab>
+      <k-tab for="tab9">Long Tab Name 9</k-tab>
+      <k-tab for="tab10">Long Tab Name 10</k-tab>
+      <k-tab-content name="tab1"><p>Content 1</p></k-tab-content>
+      <k-tab-content name="tab2"><p>Content 2</p></k-tab-content>
+      <k-tab-content name="tab3"><p>Content 3</p></k-tab-content>
+      <k-tab-content name="tab4"><p>Content 4</p></k-tab-content>
+      <k-tab-content name="tab5"><p>Content 5</p></k-tab-content>
+      <k-tab-content name="tab6"><p>Content 6</p></k-tab-content>
+      <k-tab-content name="tab7"><p>Content 7</p></k-tab-content>
+      <k-tab-content name="tab8"><p>Content 8</p></k-tab-content>
+      <k-tab-content name="tab9"><p>Content 9</p></k-tab-content>
+      <k-tab-content name="tab10"><p>Content 10</p></k-tab-content>
+    </k-tabs>
 
+    <h2 id="jsRef">JavaScript Reference</h2>
     <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
     <h6>Extends <a href="./component.html">Component</a></h6>
-    <h5>
-      <code>new Tabs()</code>
-    </h5>
-
+    <h5><code>new Tabs()</code></h5>
     <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
     <ul>
       <li><a href="./component.html">Component</a></li>
     </ul>
-
     <h3 id="attributes"><a href="#attributes" class="no-link">Attributes</a></h3>
     <h5><code>active<i>: string</i></code></h5>
     <p>The name of the active tab.</p>
-
     <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
-    <h5><code>getTab(id)<i>: Tab</i></code></h5>
-    <p>Returns the tab with the specified id.</p>
     <h5><code>getActiveTab()<i>: Tab</i></code></h5>
     <p>Returns the currently active tab.</p>
-    <h5><code>getContent(id)<i>: TabContent</i></code></h5>
-    <p>Returns the tab content with the specified id.</p>
+    <h5><code>getTab(id)<i>: Tab</i></code></h5>
+    <p>Returns the tab with the specified id.</p>
     <h5><code>getActiveContent()<i>: TabContent</i></code></h5>
     <p>Returns the currently active tab content.</p>
-
+    <h5><code>getContent(id)<i>: TabContent</i></code></h5>
+    <p>Returns the tab content with the specified id.</p>
   </main>
   <div style="height:33vh"></div>
-  <script type="module" src="../kempo/components/Import.js"></script> 
-  <script type="module" src="../kempo/components/Tabs.js"></script> 
+  <script type="module" src="../kempo/components/Tabs.js"></script>
+  <script type="module" src="../kempo/components/Import.js"></script>
 </body>
 </html>

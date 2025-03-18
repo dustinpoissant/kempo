@@ -53,6 +53,7 @@ export class Tab extends Component {
     return /*css*/`
       :host {
         margin-bottom: -1px;
+        flex: 0 0 auto;  /* Important: prevent shrinking and growing */
       }
       #button {
         padding: var(--spacer_h);
@@ -61,6 +62,7 @@ export class Tab extends Component {
         cursor: inherit;
         box-shadow: none;
         color: inherit;
+        white-space: nowrap;  /* Prevent text wrapping */
       }
       :host(:not([active])) #button {
         cursor: pointer;
@@ -134,6 +136,7 @@ export class Tabs extends Component {
       this.active = `${this.querySelectorAll('k-tab-content')[0].name}`;
     }
   }
+
   attributeChangedCallback(n, oV, nV){
     if(n === 'active'){
       const $activeTab = this.getActiveTab();
@@ -197,7 +200,6 @@ export class Tabs extends Component {
           ${super.shadowTemplate}
         </div>
       </div>
-      
     `;
   }
   get shadowStyles(){
@@ -205,28 +207,22 @@ export class Tabs extends Component {
       ${super.shadowStyles}
       :host {
         display: block;
-        overflow: hidden;
+        width: 100%;
       }
       #wrapper {
         display: flex;
         flex-direction: column;
-        max-height: 100%;
-        height: 100%;
-        overflow: hidden;
+        width: 100%;
+        min-width: 0;
       }
       #tabs {
         display: flex;
         border-bottom: 1px solid var(--c_border);
-        padding: 0;
-        margin-top: calc(0 - var(--spacer));
-        align-items: flex-start;
+        overflow-x: scroll;
+        overflow-y: hidden;
       }
-      #contents {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-        max-height: 100%;
-        overflow: hidden
+      #tabs ::slotted(*) {
+        flex: 0 0 auto;
       }
     `;
   }
