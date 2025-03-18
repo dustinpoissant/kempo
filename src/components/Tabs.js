@@ -135,6 +135,36 @@ export class Tabs extends Component {
     if(!this.active){
       this.active = `${this.querySelectorAll('k-tab-content')[0].name}`;
     }
+
+    // Add scroll listeners for indicators
+    const tabsContainer = this.shadowRoot.getElementById('tabs');
+    tabsContainer.addEventListener('scroll', this.updateScrollIndicators.bind(this));
+    this.updateScrollIndicators();
+
+    // Update indicators on resize
+    new ResizeObserver(() => this.updateScrollIndicators()).observe(tabsContainer);
+
+    const leftButton = this.shadowRoot.getElementById('scroll-left');
+    const rightButton = this.shadowRoot.getElementById('scroll-right');
+
+    leftButton.addEventListener('click', () => {
+      tabsContainer.scrollBy({ left: -200, behavior: 'smooth' });
+    });
+    rightButton.addEventListener('click', () => {
+      tabsContainer.scrollBy({ left: 200, behavior: 'smooth' });
+    });
+  }
+
+  updateScrollIndicators() {
+    const tabsContainer = this.shadowRoot.getElementById('tabs');
+    const leftIndicator = this.shadowRoot.getElementById('scroll-left');
+    const rightIndicator = this.shadowRoot.getElementById('scroll-right');
+    
+    const hasLeftScroll = tabsContainer.scrollLeft > 0;
+    const hasRightScroll = tabsContainer.scrollLeft < (tabsContainer.scrollWidth - tabsContainer.clientWidth);
+    
+    leftIndicator.classList.toggle('visible', hasLeftScroll);
+    rightIndicator.classList.toggle('visible', hasRightScroll);
   }
 
   attributeChangedCallback(n, oV, nV){
@@ -193,8 +223,20 @@ export class Tabs extends Component {
   get shadowTemplate(){
     return /*html*/`
       <div id="wrapper">
-        <div id="tabs">
-          <slot name="tabs"></slot>
+        <div id="tabs-container">
+          <div id="scroll-left" class="scroll-indicator">
+            <svg class="arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M12 15L7 10L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div id="tabs">
+            <slot name="tabs"></slot>
+          </div>
+          <div id="scroll-right" class="scroll-indicator">
+            <svg class="arrow" width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M8 15L13 10L8 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
         </div>
         <div id="contents">
           ${super.shadowTemplate}
@@ -215,14 +257,54 @@ export class Tabs extends Component {
         width: 100%;
         min-width: 0;
       }
+      #tabs-container {
+        position: relative;
+        border-bottom: 1px solid var(--c_border);
+      }
       #tabs {
         display: flex;
-        border-bottom: 1px solid var(--c_border);
-        overflow-x: scroll;
+        overflow-x: auto;
         overflow-y: hidden;
       }
       #tabs ::slotted(*) {
         flex: 0 0 auto;
+      }
+      .scroll-indicator {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 72px;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding-bottom: 2px;
+      }
+      .scroll-indicator .arrow {
+        color: var(--tc_base);
+        z-index: 1;
+      }
+      .scroll-indicator.visible {
+        opacity: 1;
+      }
+      #scroll-left {
+        left: 0;
+        background: linear-gradient(90deg, 
+          var(--c_bg) 0%,
+          var(--c_bg) 30%,
+          transparent 100%
+        );
+      }
+      #scroll-right {
+        right: 0;
+        justify-content: flex-end;
+        background: linear-gradient(-90deg, 
+          var(--c_bg) 0%,
+          var(--c_bg) 30%,
+          transparent 100%
+        );
       }
     `;
   }
