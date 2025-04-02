@@ -26,6 +26,7 @@
         <a href="#basicUsage">Basic Usage</a><br />
         <a href="#tabSpacers">Tab Spacers</a><br />
         <a href="#scrollingTabs">Scrolling Tabs</a><br />
+        <a href="#fixedHeight">Fixed Height</a><br />
         
         <h6 class="mt">JavaScript Reference</h6>
         <a href="#constructor">Constructor</a><br />
@@ -113,6 +114,27 @@
       <k-tab-content name="tab10"><p>Content 10</p></k-tab-content>
     </k-tabs>
 
+    <h3 id="fixedHeight"><a href="#fixedHeight" class="no-link">Fixed Height</a></h3>
+    <p>Use the <code>fixed-height</code> attribute to make the tabs component fill its container height and enable content scrolling.</p>
+    <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-tabs</span> <span class="hljs-attr">fixed-height</span>=<span class="hljs-string">"true"</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 200px"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"fixed1"</span>&gt;</span>Tab 1<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"fixed2"</span>&gt;</span>Tab 2<span class="hljs-tag">&lt;/<span class="hljs-name">k-tab</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"fixed1"</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>This content will scroll if it's too long.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />  <span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">k-tab-content</span> <span class="hljs-attr">name</span>=<span class="hljs-string">"fixed2"</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Another tab that is not tall enough.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />    <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><br />  <span class="hljs-tag">&lt;/<span class="hljs-name">k-tab-content</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-tabs</span>&gt;</span></code></pre>
+    <k-tabs fixed-height="true" style="height: 200px">
+      <k-tab for="fixed1">Tab 1</k-tab>
+      <k-tab for="fixed2">Tab 2</k-tab>
+      <k-tab-content name="fixed1">
+        <p>This content will scroll if it's too long.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+      </k-tab-content>
+      <k-tab-content name="fixed2">
+        <p>Another tab that is not tall enough.</p>
+        <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+      </k-tab-content>
+    </k-tabs>
+
     <h2 id="jsRef">JavaScript Reference</h2>
     <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
     <h6>Extends <a href="./component.html">Component</a></h6>
@@ -124,6 +146,8 @@
     <h3 id="attributes"><a href="#attributes" class="no-link">Attributes</a></h3>
     <h5><code>active<i>: string</i></code></h5>
     <p>The name of the active tab.</p>
+    <h5><code>fixed-height<i>: boolean</i></code></h5>
+    <p>When true, the tabs component will fill its container height and enable content scrolling.</p>
     <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
     <h5><code>getActiveTab()<i>: Tab</i></code></h5>
     <p>Returns the currently active tab.</p>
