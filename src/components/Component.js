@@ -107,3 +107,4 @@ export default class Component extends HTMLElement {
   static observedAttributes = ['rendered'];
   static pathToKempo = import.meta.url.substring(0, import.meta.url.indexOf('/components/Component.js') );
 }
+window.customElements.define('k-component', Component);

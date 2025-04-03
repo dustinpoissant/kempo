@@ -2,14 +2,12 @@ import Component from './Component.js';
 import { isInView } from '../utils/element.js';
 import raf from '../utils/raf.js';
 
-const inViewIntervalTimeout = Symbol(),
-      inViewIntervalId = Symbol();
+const inViewIntervalId = Symbol();
 export default class LazyComponent extends Component {
   constructor(shadowDetails){
     super(shadowDetails);
 
     /* Private Members */
-    this[inViewIntervalTimeout] = 2000;
     this[inViewIntervalId] = null;
     
     (new IntersectionObserver(([comp]) => {
@@ -20,7 +18,10 @@ export default class LazyComponent extends Component {
       }
     })).observe(this);
     
-    this.registerAttribute('unrender', false);
+    this.registerAttributes({
+      unrender: false,
+      inViewInterval: 0
+    });
   }
   connectedCallback(){
     // Do not do super.connectedCallback() because it will render the component prematurely
@@ -43,7 +44,7 @@ export default class LazyComponent extends Component {
       if(await isInView(this)){
         this.inViewCallback();
       }
-    }, this[inViewIntervalTimeout]);
+    }, this.inViewInterval || LazyComponent.inViewIntervalTimeout);
     if(this.unrender){
       await this.renderSkelton();
       return true;
@@ -58,4 +59,7 @@ export default class LazyComponent extends Component {
   get skeletonTemplate(){
     return /*html*/`<div style="height: var(--skeleton_height, 1rem)"></div>`;
   }
+
+  /* Static Members */
+  static inViewIntervalTimeout = 1000;
 }
