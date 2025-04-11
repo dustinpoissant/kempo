@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Template - Utils - Kempo Docs - A Web Components Solution</title>
+  <link rel="stylesheet" href="../kempo/kempo-vars.css" /><link rel="stylesheet" href="../kempo/kempo-styles.css" />
+  <link rel="stylesheet" href="../kempo/kempo-hljs.css" />
+  <script type="module">
+    import Import from '../kempo/components/Import.js';
+    import Icon from '../kempo/components/Icon.js';
+    import Search from '../kempo/components/Search.js';
+    Import.addReplacement('root', '../');
+    Icon.pathToIcons = ['../icons'];
+    Search.searchDataUrl = '../search.json';
+  </script>
+</head>
+<body>
+  <k-import src="../nav.inc.html"></k-import>
+  <h1 class="ta-center">Server</h1>
+  <main>
+    <details class="b r mb">
+      <summary class="p">Table of Contents</summary>
+      <div class="m mt0 pl">
+        <h6>Examples</h6>
+        <a href="#basicUsage">Basic Usage</a><br />
+        <a href="#staticServing">Static File Serving</a><br />
+        <a href="#routePatterns">Route Patterns</a><br />
+
+        <h6 class="mt">JavaScript Reference</h6>
+        <a href="#constructor">Constructor</a><br />
+        <a href="#requirements">Requirements</a><br />
+        <a href="#methods">Methods</a><br />
+        <a href="#staticMembers">Static Members</a><br />
+      </div>
+    </details>
+
+    <h3>Description</h3>
+    <p>A lightweight HTTP server utility for serving static files and handling route patterns with wildcard support.</p>
+
+    <h3 id="basicUsage"><a href="#basicUsage" class="no-link">Basic Usage</a></h3>
+    <pre><code class="language-javascript">import { Server } from '../utils/Server.js';
+
+const server = new Server();
+server
+  .static('/assets', './public')
+  .route('/api/*.json', async (req, res) => {
+    // Handle JSON requests
+  });
+
+await server.listen(8080);</code></pre>
+
+    <h3 id="staticServing"><a href="#staticServing" class="no-link">Static File Serving</a></h3>
+    <pre><code class="language-javascript">// Serve entire directories
+server.static('/assets', './public');
+server.static('/docs', './documentation');
+
+// Serve single files with custom headers
+server.route('/style.css', async (req, res) => {
+  await server.serveFile('./styles/main.css', res, {
+    'Cache-Control': 'no-cache'
+  });
+});</code></pre>
+
+    <h3 id="routePatterns"><a href="#routePatterns" class="no-link">Route Patterns</a></h3>
+    <p>Routes support wildcard patterns for flexible path matching:</p>
+    <ul>
+      <li><code>*</li>
+      <li><code>**</code> - Matches any characters including /</li>
+    </ul>
+    <pre><code class="language-javascript">// Match specific file types
+server.route('/api/*.json', handler);
+
+// Match files in subdirectories
+server.route('/docs/**/*.html', handler);
+
+// Match everything under a path
+server.route('/assets/**/*', handler);</code></pre>
+
+    <h2 id="jsRef">JavaScript Reference</h2>
+
+    <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
+    <h5><code>new Server()</code></h5>
+    <p>Creates a new server instance.</p>
+
+    <h3 id="requirements"><a href="#requirements" class="no-link">Requirements</a></h3>
+    <ul>
+      <li>Node.js built-in modules only (http, fs/promises, path)</li>
+      <li>No external dependencies</li>
+    </ul>
+
+    <h3 id="methods"><a href="#methods" class="no-link">Methods</a></h3>
+    
+    <h5><code>route(path: string, handler: Function, methods?: string[]): Server</code></h5>
+    <p>Registers a route handler with optional HTTP method restrictions. Returns this for chaining.</p>
+
+    <h5><code>static(urlPath: string, dirPath: string): Server</code></h5>
+    <p>Serves an entire directory of static files. Returns this for chaining.</p>
+
+    <h5><code>serveFile(filePath: string, res: Response, headers?: object): Promise&lt;void&gt;</code></h5>
+    <p>Serves a single file with appropriate MIME type and optional headers.</p>
+
+    <h5><code>listen(port?: number): Promise&lt;http.Server&gt;</code></h5>
+    <p>Starts the server on the specified port. Returns a Promise that resolves to the server instance.</p>
+
+    <h3 id="staticMembers"><a href="#staticMembers" class="no-link">Static Members</a></h3>
+    
+    <h5><code>static mimeTypes: Record&lt;string, string&gt;</code></h5>
+    <p>MIME type mappings for file extensions.</p>
+
+    <h5><code>static textExtensions: string[]</code></h5>
+    <p>List of file extensions that should be served as text.</p>
+
+    <h5><code>static getMimeType(filePath: string): string</code></h5>
+    <p>Returns the appropriate MIME type for a file based on its extension.</p>
+  </main>
+  <script type="module" src="../kempo/components/Import.js"></script> 
+</body>
+</html>

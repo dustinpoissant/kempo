@@ -1,0 +1,1 @@
+export function minifyCss(e){return e.replace(/\s*\{\s*/g,"{").replace(/\s*\}\s*/g,"}").replace(/\n/g,"").replace(/\r/g,"").replace(/\s+/g," ").replace(/\s*\:\s*/g,":").replace(/\s*\;\s*/g,";").replace(/;\}/g,"}")}

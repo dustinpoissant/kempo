@@ -1,10 +1,7 @@
-import express from 'express';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import {
-  getArgs,
-  runChildNodeProcess
-} from '../src/utils/cli.js';
+import { Server } from '../src/utils/Server.js';
+import { getArgs, runChildNodeProcess } from '../src/utils/cli.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -25,23 +22,26 @@ if(build){
   runChildNodeProcess(join(__dirname, 'build.js'));
 }
 
-const app = express();
+const server = new Server();
 
-if(src){
-  app.use('/kempo', express.static('src'));
-  app.use('/icons', express.static('icons'));
-  app.get('/kempo/kempo-styles.css', (req, res) => {
-    res.set('Cache-Control', 'no-cache');
-    res.sendFile(join(__dirname, '../src/kempo-styles.css'));
-  })
+if (src) {
+  server
+    .get('/', join(__dirname, '../docs/'))
+    .get('/kempo/kempo-styles.css', join(__dirname, '../src/kempo-styles.css'))
+    .get('/kempo/*', join(__dirname, '../src/*'))
+    .get('/icons/*', join(__dirname, '../icons/*'))
+    .get('/*', join(__dirname, '../docs/*'));
 } else {
-  app.get('/kempo/kempo-styles.css', (req, res) => {
-    res.set('Cache-Control', 'private');
-    res.sendFile(join(__dirname, '../docs/kempo/kempo-styles.css'));
-  });
+  server
+    .get('/', join(__dirname, '../docs/'))
+    .get('/kempo/kempo-styles.css', join(__dirname, '../docs/kempo/kempo-styles.css'))
+    .get('/*', join(__dirname, '../docs/*'));
 }
-app.use(express.static('docs'));
 
-app.listen(port, () => {
+try {
+  await server.listen(port);
   console.log(`Docs Running on: http://localhost:${port}`);
-});
+} catch (err) {
+  console.error('Failed to start server:', err.message);
+  process.exit(1);
+}

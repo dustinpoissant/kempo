@@ -1,8 +1,8 @@
 import fs from 'fs/promises';
-import fse from 'fs-extra';
 import { minify } from 'terser';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { ensureDir, copyDir, emptyDir } from '../src/utils/fs-utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,7 +57,7 @@ process.stdout.write(`0/${components.length} = 0%`);
 await Promise.all(components.map(async component => {
   const relativePath = path.relative(componentsDir, component);
   const destPath = path.join('./dist/components', relativePath);
-  await fse.ensureDir(path.dirname(destPath));
+  await ensureDir(path.dirname(destPath));
   await fs.writeFile(destPath, minifiedComponents[component], 'utf-8');
   process.stdout.write("\r");
   complete++;
@@ -95,7 +95,7 @@ process.stdout.write("\n");
 complete = 0;
 console.log('Saving Minified Utils to dist/');
 process.stdout.write(`0/${utils.length} = 0%`);
-await fse.ensureDir('./dist/utils');
+await ensureDir('./dist/utils');
 await Promise.all(utils.map(async util => {
   await fs.writeFile(`./dist/utils/${util}.js`, minifiedUtils[util], 'utf-8');
   process.stdout.write("\r");
@@ -139,16 +139,16 @@ console.log('Saving kempo-hljs.css');
 await fs.writeFile('./dist/kempo-hljs.css', minifiedKempoHljsCSS, 'utf-8');
 
 console.log('Copying dist/ to docs/');
-await fse.ensureDir('./docs/'); // will also ensure docs/kempo
-await fse.copy('./dist', './docs/kempo')
+await ensureDir('./docs/'); // will also ensure docs/kempo
+await copyDir('./dist', './docs/kempo')
 
 const iconsSrcDir = path.join(__dirname, '../icons');
 const iconsDestDir = path.join(__dirname, '../docs/icons');
 
 console.log('Deleting svg icons currently in docs/icons');
-await fse.ensureDir(iconsDestDir);
-await fse.emptyDir(iconsDestDir);
+await ensureDir(iconsDestDir);
+await emptyDir(iconsDestDir);
 console.log('Copying all files from icons to docs/icons');
-await fse.copy(iconsSrcDir, iconsDestDir);
+await copyDir(iconsSrcDir, iconsDestDir);
 
 console.log('Build Complete');
