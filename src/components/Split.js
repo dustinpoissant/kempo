@@ -150,8 +150,14 @@ export default class Split extends Component {
         display: block;
       }
       :host([stacked="true"]) #divider-handle {
-          display: none;
-        } 
+        display: none;
+      }
+      :host([stacked="true"]) .pane {
+        min-width: 0;
+        max-width: 100%;
+        max-height: auto;
+        overflow: auto;
+      }
     `;
   }
 }
