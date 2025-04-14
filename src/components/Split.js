@@ -155,7 +155,7 @@ export default class Split extends Component {
       :host([stacked="true"]) .pane {
         min-width: 0;
         max-width: 100%;
-        max-height: auto;
+        max-height: none;
         overflow: auto;
       }
     `;
