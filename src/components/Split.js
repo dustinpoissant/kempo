@@ -3,14 +3,21 @@ import drag from '../utils/drag.js';
 import {
   dispatchEvent
 } from '../utils/element.js';
+import {
+  watchWindowSize,
+  unwatchWindowSize
+} from '../utils/watchWindowSize.js'
 
 const dragStartWidth = Symbol(),
       dragStartCallback = Symbol(),
       dragEndCallback = Symbol(),
       dragCallback = Symbol(),
-      dragCleanup = Symbol();
+      dragCleanup = Symbol(),
+      windowResizeHandler = Symbol();
 export default class Split extends Component {
-  constructor(_saveWidth, _loadWidth){
+  constructor({
+    stackWidth = 0
+  } = {}){
     super();
 
     /* Private Members */
@@ -37,23 +44,34 @@ export default class Split extends Component {
       dispatchEvent(this, 'resizeend', { size } );
     }
     this[dragCleanup] = () => {}
+    this[windowResizeHandler] = (width) => {
+      this.stacked = width <= this.stackWidth;
+    }
 
     /* Init */
-    this.registerAttribute('resizing', false);
-  }
-
-  async connectedCallback(){
-    super.connectedCallback();
-    this[dragCleanup] = drag({
-      element: this.shadowRoot.getElementById('divider-handle'),
-      callback: this[dragCallback],
-      startCallback: this[dragStartCallback],
-      endCallback: this[dragEndCallback]
+    this.registerAttributes({
+      resizing: false,
+      stacked: false,
+      stackWidth
     });
   }
+
   disconnectedCallback(){
     super.disconnectedCallback();
     this[dragCleanup]();
+  }
+  async render(force){
+    if(await super.render(force)){
+      this[dragCleanup] = drag({
+        element: this.shadowRoot.getElementById('divider-handle'),
+        callback: this[dragCallback],
+        startCallback: this[dragStartCallback],
+        endCallback: this[dragEndCallback]
+      });
+      this.stacked = watchWindowSize(this[windowResizeHandler]) <= this.stackWidth;
+      return true;
+    }
+    return false;
   }
 
   setSize(size){
@@ -126,7 +144,14 @@ export default class Split extends Component {
       #right {
         flex: 1 1;
       }
-      
+      :host([stacked="true"]),
+      :host([stacked="true"]) #left,
+      :host([stacked="true"]) #right {
+        display: block;
+      }
+      :host([stacked="true"]) #divider-handle {
+          display: none;
+        } 
     `;
   }
 }

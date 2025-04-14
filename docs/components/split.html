@@ -79,6 +79,25 @@
       </div>
     </div>
 
+    <h3 id="stacking"><a href="#stacking" class="no-link">Stacking</a></h3>
+    <p>When the screen size is small (mobile) a split panel may not make sense, rather than changing the markup set the <code>stack-width</code> attribute to stack the contents (disable split view) when the window size is less than the provided size.</p>
+    <div class="row -mx">
+      <div class="col m-span-12 px">
+        <k-card label="HTML">
+          <pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">k-split</span> <span class="hljs-attr">style</span>=<span class="hljs-string">"height: 10rem"</span> <span class="hljs-attr">stack-width</span>=<span class="hljs-string">"1080"</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span>&gt;</span>Left Pane Content<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br />  <span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">slot</span>=<span class="hljs-string">"right"</span>&gt;</span>Right Pane Content<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span><br /><span class="hljs-tag">&lt;/<span class="hljs-name">k-split</span>&gt;</span></code></pre>
+        </k-card>
+      </div>
+      <div class="col m-span-12 px">
+        <k-card label="Output">
+          <k-split style="height: 10rem" stack-width="1080">
+            <div>Left Pane Content</div>
+            <div slot="right">Right Pane Content</div>
+          </k-split>
+        </k-card>
+      </div>
+    </div>
+
+
     <h2 id="jsRef">JavaScript Reference</h2>
 
     <h3 id="constructor"><a href="#constructor" class="no-link">Constructor</a></h3>
