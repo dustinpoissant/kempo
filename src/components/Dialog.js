@@ -244,9 +244,19 @@ export default class Dialog extends Component {
 
   static create(contents = '', options = {}){
     if(options.closeExisting!==false)document.querySelectorAll('k-dialog').forEach(d=>d.close());
+    const {
+      removeOnClose = true,
+      closeCallback = () => {}
+    } = options;
     const $dialog = new Dialog({
       opened: true,
-      ...options 
+      ...options,
+      closeCallback: (...args) => {
+        if(removeOnClose){
+          $dialog.remove();
+        }
+        closeCallback(...args);
+      }
     });
     onEvent($dialog, 'close',  $dialog.remove);
     if(contents instanceof HTMLElement || contents instanceof DocumentFragment){
