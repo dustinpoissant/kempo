@@ -3,28 +3,25 @@
   "version": "4.2.4",
   "type": "module",
   "description": "A web component library",
-  "exports": {
-    ".": "./dist/index.js",
-    "./utils/": "./dist/utils/",
-    "./utils/*": "./dist/utils/*.js",
-    "./components/": "./dist/components/",
-    "./components/*": "./dist/components/*.js"
-  },
   "scripts": {
-    "test": "node ./test/index.js",
-    "build": "node ./scripts/build.js",
-    "docs": "node ./scripts/docs.js",
-    "docs-src": "node ./scripts/docs.js -s"
+    "start": "kempo-server --root public",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "set-role": "node scripts/setUserRole.js"
   },
   "author": "Dustin Poissant",
   "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {
-    "terser": "^5.29.2"
-  },
-  "directories": {
-    "doc": "docs",
-    "test": "test"
+  "dependencies": {
+    "better-auth": "^1.4.5",
+    "dotenv": "^17.2.3",
+    "drizzle-orm": "^0.44.7",
+    "kempo-server": "^1.9.1",
+    "kempo-testing-framework": "^1.4.0",
+    "nodemailer": "^7.0.11",
+    "nodemailer-file-transport": "^1.2.1",
+    "postgres": "^3.4.7"
   },
   "repository": {
     "type": "git",
@@ -33,5 +30,8 @@
   "bugs": {
     "url": "https://github.com/dustinpoissant/kempo/issues"
   },
-  "homepage": "https://github.com/dustinpoissant/kempo#readme"
+  "homepage": "https://github.com/dustinpoissant/kempo#readme",
+  "devDependencies": {
+    "drizzle-kit": "^0.31.7"
+  }
 }

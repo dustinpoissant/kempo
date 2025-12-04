@@ -1,1 +1,0 @@
-import LazyComponent from"./LazyComponent.js";export default class ReactiveComponent extends LazyComponent{attributeChangedCallback(e,t,n){super.attributeChangedCallback(e,t,n),this.constructor.renderOnChange.includes(e)&&this.render(!0)}static renderOnChange=[]}

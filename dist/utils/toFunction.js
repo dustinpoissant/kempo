@@ -1,1 +1,0 @@
-export default t=>{if("function"==typeof t)return t;if("string"==typeof t){const n=t.split(".");let o=window;for(const t of n)if(o=o[t],void 0===o)break;if("function"==typeof o)return o;try{return new Function(t)}catch(t){console.error("Failed to create function from string:",t)}}return()=>t};
