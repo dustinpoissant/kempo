@@ -18,6 +18,7 @@ COPY drizzle.config.js ./
 COPY scripts ./scripts
 COPY server ./server
 COPY public ./public
+COPY templates ./templates
 
 # Expose port
 EXPOSE 3000
