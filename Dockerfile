@@ -14,6 +14,8 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 # Copy application code
+COPY drizzle.config.js ./
+COPY scripts ./scripts
 COPY server ./server
 COPY public ./public
 
