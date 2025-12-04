@@ -16,6 +16,7 @@
   "dependencies": {
     "better-auth": "^1.4.5",
     "dotenv": "^17.2.3",
+    "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
     "kempo-server": "^1.9.1",
     "kempo-testing-framework": "^1.4.0",
@@ -30,8 +31,5 @@
   "bugs": {
     "url": "https://github.com/dustinpoissant/kempo/issues"
   },
-  "homepage": "https://github.com/dustinpoissant/kempo#readme",
-  "devDependencies": {
-    "drizzle-kit": "^0.31.7"
-  }
+  "homepage": "https://github.com/dustinpoissant/kempo#readme"
 }
