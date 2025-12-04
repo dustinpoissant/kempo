@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import db from '../server/db/index.js';
 import { permission, rolePermission } from '../server/db/schema.js';
 import { eq, and } from 'drizzle-orm';
