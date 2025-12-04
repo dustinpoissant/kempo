@@ -1,0 +1,6 @@
+{
+  "customRoutes": {
+    "/kempo-css/**": "../node_modules/kempo-css/dist/**",
+		"/kempo-ui/**": "../node_modules/kempo-ui/dist/**"
+  }
+}

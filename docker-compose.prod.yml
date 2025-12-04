@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  kempo-app:
+    build: .
+    container_name: kempo-production
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
+      EMAIL_MODE: production
+      SMTP_FROM: ${SMTP_FROM}
+    volumes:
+      - ./server:/app/server
+      - ./public:/app/public
+    depends_on:
+      - postgres
+    networks:
+      - kempo-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: kempo-postgres-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kempo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-kempo}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - kempo-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kempo}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+networks:
+  kempo-network:
+    driver: bridge

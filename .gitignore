@@ -1,2 +1,10 @@
 node_modules
 .vscode
+emails
+.env
+.env.production
+*.log
+test-smtp*.js
+vps-*.js
+vps-*.sh
+vps-*.ps1
