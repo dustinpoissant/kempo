@@ -2,11 +2,11 @@ import { join } from 'path';
 import { pathToFileURL } from 'url';
 
 export default async (request, response) => {
-  try {
-    const authModule = await import(pathToFileURL(join(process.cwd(), 'server', 'auth.js')).href);
-    const { auth } = authModule;
-    const cmsUtils = await import(pathToFileURL(join(process.cwd(), 'server', 'cms-utils.js')).href);
+  const authModule = await import(pathToFileURL(join(process.cwd(), 'server', 'auth.js')).href);
+  const { auth } = authModule;
+  const cmsUtils = await import(pathToFileURL(join(process.cwd(), 'server', 'cms-utils.js')).href);
 
+  try {
     const body = await request.json();
     const authRequest = new Request(`${auth.options.baseURL}/api/auth/sign-in/email`, {
       method: 'POST',
@@ -32,13 +32,19 @@ export default async (request, response) => {
       }
     }
     
+    // Set status and headers from auth response
     response.status(authResponse.status);
     authResponse.headers.forEach((value, key) => {
       response.set(key, value);
     });
     response.send(text);
   } catch(error) {
-    console.error('Login error:', error);
-    response.status(500).json({ error: error.message });
+    // Only log actual errors, not auth failures
+    if(error.statusCode !== 401) {
+      console.error('Login error:', error);
+    }
+    // Return the actual status code if available, otherwise 500
+    const statusCode = error.statusCode || 500;
+    response.status(statusCode).json({ error: error.message || 'Internal server error' });
   }
 };
