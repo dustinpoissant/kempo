@@ -29,17 +29,13 @@ export default async (request, response) => {
       return response.send(text);
     }
     
-    // Login successful, set up organization
+    // Login successful, set up organization (do this asynchronously, don't block login)
     const data = JSON.parse(text);
     if(data.user?.id) {
-      await cmsUtils.ensureUserHasOrganization(data.user.id);
-      
-      const org = await cmsUtils.getOrCreateDefaultOrganization();
-      await auth.api.setActiveOrganization({
-        body: {
-          organizationId: org.id
-        },
-        headers: authResponse.headers
+      // Ensure user has organization but don't wait for it or set active org here
+      // The organization will be set when they access their account page
+      cmsUtils.ensureUserHasOrganization(data.user.id).catch(err => {
+        console.error('[LOGIN] Failed to ensure user organization:', err);
       });
     }
     
