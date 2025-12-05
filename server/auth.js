@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { organization } from 'better-auth/plugins';
@@ -5,6 +6,11 @@ import db from './db/index.js';
 import * as schema from './db/schema.js';
 import { ac, superAdmin, admin, editor, contributor, subscriber } from './permissions.js';
 import 'dotenv/config';
+
+// Ensure crypto is available globally for Better Auth
+if(!globalThis.crypto){
+  globalThis.crypto = crypto.webcrypto;
+}
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
