@@ -90,6 +90,7 @@ export const auth = betterAuth({
     },
   },
   emailVerification: {
+    enabled: false,
     sendVerificationEmail: async ({ user, url }) => {
       const nodemailer = await import('nodemailer');
       
