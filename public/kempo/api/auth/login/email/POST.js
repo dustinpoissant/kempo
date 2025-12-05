@@ -17,19 +17,27 @@ export default async (request, response) => {
     const authResponse = await auth.handler(authRequest);
     const text = await authResponse.text();
     
-    if(authResponse.ok) {
-      const data = JSON.parse(text);
-      if(data.user?.id) {
-        await cmsUtils.ensureUserHasOrganization(data.user.id);
-        
-        const org = await cmsUtils.getOrCreateDefaultOrganization();
-        await auth.api.setActiveOrganization({
-          body: {
-            organizationId: org.id
-          },
-          headers: authResponse.headers
-        });
-      }
+    // If login failed, return the error immediately without processing
+    if(!authResponse.ok){
+      response.status(authResponse.status);
+      authResponse.headers.forEach((value, key) => {
+        response.set(key, value);
+      });
+      return response.send(text);
+    }
+    
+    // Login successful, set up organization
+    const data = JSON.parse(text);
+    if(data.user?.id) {
+      await cmsUtils.ensureUserHasOrganization(data.user.id);
+      
+      const org = await cmsUtils.getOrCreateDefaultOrganization();
+      await auth.api.setActiveOrganization({
+        body: {
+          organizationId: org.id
+        },
+        headers: authResponse.headers
+      });
     }
     
     // Set status and headers from auth response
