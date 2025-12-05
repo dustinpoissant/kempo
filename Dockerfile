@@ -1,9 +1,6 @@
 # Production Dockerfile for Kempo
 FROM node:18-alpine
 
-# Install sendmail for email functionality
-RUN apk add --no-cache postfix
-
 # Create app directory
 WORKDIR /app
 
@@ -23,5 +20,5 @@ COPY templates ./templates
 # Expose port
 EXPOSE 3000
 
-# Start postfix and the application
-CMD postfix start && node server/index.js || npm start
+# Start the application
+CMD npm start
