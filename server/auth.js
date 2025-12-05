@@ -30,15 +30,45 @@ export const auth = betterAuth({
       
       try {
         console.log(`[EMAIL] Sending password reset via Resend to ${user.email}...`);
+        
+        const urlObj = new URL(url);
+        const token = urlObj.pathname.split('/').pop();
+        const callbackURL = urlObj.searchParams.get('callbackURL') || '';
+        const resetURL = `${process.env.BETTER_AUTH_URL || 'http://localhost:3000'}/account/reset-password/${token}${callbackURL ? `?callbackURL=${encodeURIComponent(callbackURL)}` : ''}`;
+        
         const { data, error } = await resend.emails.send({
           from: process.env.SMTP_FROM || 'noreply@dustin3dprint.com',
           to: user.email,
           subject: 'Reset Your Password',
           html: `
-            <h2>Reset Your Password</h2>
-            <p>Click the link below to reset your password:</p>
-            <a href="${url}">${url}</a>
-            <p>This link will expire in 1 hour.</p>
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+                .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 40px; }
+                h2 { color: #333; margin-top: 0; }
+                .button { display: inline-block; padding: 12px 24px; background-color: #007bff; color: #ffffff; text-decoration: none; border-radius: 4px; margin: 20px 0; }
+                .button:hover { background-color: #0056b3; }
+                .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666; }
+                .url-fallback { word-break: break-all; font-size: 12px; color: #666; margin-top: 10px; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <h2>Reset Your Password</h2>
+                <p>You requested to reset your password. Click the button below to set a new password:</p>
+                <a href="${resetURL}" class="button">Reset Password</a>
+                <p class="url-fallback">Or copy and paste this link into your browser:<br>${resetURL}</p>
+                <div class="footer">
+                  <p>This link will expire in 1 hour.</p>
+                  <p>If you didn't request this password reset, you can safely ignore this email.</p>
+                </div>
+              </div>
+            </body>
+            </html>
           `,
         });
         
