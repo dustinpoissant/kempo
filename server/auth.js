@@ -1,4 +1,6 @@
 import crypto from 'crypto';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { organization } from 'better-auth/plugins';
@@ -36,44 +38,17 @@ export const auth = betterAuth({
         const callbackURL = urlObj.searchParams.get('callbackURL') || '';
         const resetURL = `${process.env.BETTER_AUTH_URL || 'http://localhost:3000'}/account/reset-password/${token}${callbackURL ? `?callbackURL=${encodeURIComponent(callbackURL)}` : ''}`;
         
+        const template = await readFile(
+          join(process.cwd(), 'templates', 'emails', 'reset-password.html'),
+          'utf-8'
+        );
+        const emailHtml = template.replace(/\{\{RESET_URL\}\}/g, resetURL);
+        
         const { data, error } = await resend.emails.send({
           from: process.env.SMTP_FROM || 'noreply@dustin3dprint.com',
           to: user.email,
           subject: 'Reset Your Password',
-          html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
-                .container { max-width: 600px; margin: 20px auto; background-color: #ffffff; padding: 40px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-                h2 { color: #333; margin-top: 0; margin-bottom: 20px; }
-                p { margin: 16px 0; }
-                .button { display: inline-block; padding: 14px 28px; background-color: #007bff; color: #ffffff !important; text-decoration: none; border-radius: 6px; margin: 24px 0; font-weight: 600; }
-                .button:hover { background-color: #0056b3; }
-                .url-fallback { word-break: break-all; font-size: 13px; color: #666; margin-top: 16px; padding: 12px; background-color: #f8f9fa; border-radius: 4px; }
-                .footer { margin-top: 32px; padding-top: 24px; border-top: 1px solid #e0e0e0; font-size: 13px; color: #666; }
-                .footer p { margin: 8px 0; }
-              </style>
-            </head>
-            <body>
-              <div class="container">
-                <h2>Reset Your Password</h2>
-                <p>You requested to reset your password. Click the button below to set a new password:</p>
-                <div style="text-align: center;">
-                  <a href="${resetURL}" class="button">Reset Password</a>
-                </div>
-                <p class="url-fallback">Or copy and paste this link into your browser:<br><strong>${resetURL}</strong></p>
-                <div class="footer">
-                  <p>This link will expire in 1 hour.</p>
-                  <p>If you didn't request this password reset, you can safely ignore this email.</p>
-                </div>
-              </div>
-            </body>
-            </html>
-          `,
+          html: emailHtml,
         });
         
         if(error){
@@ -101,15 +76,18 @@ export const auth = betterAuth({
       
       try {
         console.log(`[EMAIL] Sending email verification via Resend to ${user.email}...`);
+        
+        const template = await readFile(
+          join(process.cwd(), 'templates', 'emails', 'verify-email.html'),
+          'utf-8'
+        );
+        const emailHtml = template.replace(/\{\{VERIFY_URL\}\}/g, url);
+        
         const { data, error } = await resend.emails.send({
           from: process.env.SMTP_FROM || 'noreply@dustin3dprint.com',
           to: user.email,
           subject: 'Verify Your Email',
-          html: `
-            <h2>Verify Your Email</h2>
-            <p>Click the link below to verify your email address:</p>
-            <a href="${url}">${url}</a>
-          `,
+          html: emailHtml,
         });
         
         if(error){
