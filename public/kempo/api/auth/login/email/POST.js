@@ -14,8 +14,11 @@ export default async (request, response) => {
       body: JSON.stringify(body),
     });
 
+    console.log('[LOGIN] Attempting login for:', body.email);
     const authResponse = await auth.handler(authRequest);
+    console.log('[LOGIN] Auth response status:', authResponse.status);
     const text = await authResponse.text();
+    console.log('[LOGIN] Auth response body:', text);
     
     // If login failed, return the error immediately without processing
     if(!authResponse.ok){
@@ -47,10 +50,12 @@ export default async (request, response) => {
     });
     response.send(text);
   } catch(error) {
-    // Only log actual errors, not auth failures
-    if(error.statusCode !== 401) {
-      console.error('Login error:', error);
-    }
+    console.error('[LOGIN] Exception caught:', error);
+    console.error('[LOGIN] Error details:', {
+      message: error.message,
+      statusCode: error.statusCode,
+      stack: error.stack
+    });
     // Return the actual status code if available, otherwise 500
     const statusCode = error.statusCode || 500;
     response.status(statusCode).json({ error: error.message || 'Internal server error' });
