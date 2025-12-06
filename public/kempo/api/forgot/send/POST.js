@@ -18,8 +18,8 @@ export default async (request, response) => {
       });
     }
 
-    // Check if result indicates success
-    if(!result || result.status !== 200) {
+    // Better Auth returns status: true on success
+    if(!result || !result.status) {
       console.error('Unexpected password reset response:', result);
       return response.status(500).json({ 
         error: 'Failed to send password reset email' 
