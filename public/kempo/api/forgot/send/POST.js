@@ -11,6 +11,7 @@ export default async (request, response) => {
       body
     });
 
+    // Check for explicit error response
     if(result.error) {
       console.error('Password reset request error:', result.error);
       return response.status(400).json({ 
@@ -18,9 +19,9 @@ export default async (request, response) => {
       });
     }
 
-    // Better Auth returns status: true on success
-    if(!result || !result.status) {
-      console.error('Unexpected password reset response:', result);
+    // Better Auth returns status: true on success, false on failure
+    if(!result || result.status === false) {
+      console.error('Password reset failed:', result);
       return response.status(500).json({ 
         error: 'Failed to send password reset email' 
       });
