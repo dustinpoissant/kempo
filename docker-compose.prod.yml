@@ -6,7 +6,7 @@ services:
     container_name: kempo-production
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "80:3000"
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL}
