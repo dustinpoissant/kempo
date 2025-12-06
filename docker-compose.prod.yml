@@ -1,12 +1,26 @@
 version: '3.8'
 
 services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: kempo-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - kempo-network
+    depends_on:
+      - kempo-app
+
   kempo-app:
     build: .
     container_name: kempo-production
     restart: unless-stopped
-    ports:
-      - "80:3000"
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL}
@@ -44,6 +58,8 @@ services:
 
 volumes:
   postgres_data:
+  caddy_data:
+  caddy_config:
 
 networks:
   kempo-network:
