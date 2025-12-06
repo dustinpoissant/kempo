@@ -19,7 +19,7 @@
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
     "kempo-css": "^1.3.2",
-    "kempo-server": "^1.9.2",
+    "kempo-server": "^1.9.3",
     "kempo-testing-framework": "^1.4.0",
     "kempo-ui": "^0.0.42",
     "postgres": "^3.4.7",
