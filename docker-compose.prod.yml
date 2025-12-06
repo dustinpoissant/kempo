@@ -18,6 +18,7 @@ services:
     volumes:
       - ./server:/app/server
       - ./public:/app/public
+      - ./templates:/app/templates
     depends_on:
       - postgres
     networks:

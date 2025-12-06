@@ -12,12 +12,25 @@ export default async (request, response) => {
     });
 
     if(result.error) {
-      return response.status(400).json({ error: result.error.message });
+      console.error('Password reset request error:', result.error);
+      return response.status(400).json({ 
+        error: result.error.message || 'Failed to send password reset email'
+      });
+    }
+
+    // Check if result indicates success
+    if(!result || result.status !== 200) {
+      console.error('Unexpected password reset response:', result);
+      return response.status(500).json({ 
+        error: 'Failed to send password reset email' 
+      });
     }
 
     response.json({ success: true, message: 'Password reset email sent' });
   } catch(error) {
     console.error('Forgot password error:', error);
-    response.status(500).json({ error: error.message });
+    response.status(500).json({ 
+      error: error.message || 'Failed to send password reset email'
+    });
   }
 };
