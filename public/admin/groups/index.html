@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="image/png" sizes="48x48" href="../../media/icon48.png">
+	<title>Groups - Admin</title>
+	<link rel="stylesheet" href="/kempo-css/kempo.min.css">
+	<script>window.litDisableBundleWarning = true;</script>
+	<script type="module" src="/kempo-ui/components/Import.js"></script>
+	<script type="module" src="/kempo-ui/components/Main.js"></script>
+</head>
+<body>
+	<k-import src="/nav"></k-import>
+	<k-main class="p">
+		<h2>Groups Management</h2>
+		
+		<p class="text-muted">Manage user groups and their permissions. Note: All users are automatically in the "system:Users" group.</p>
+
+		<div id="groupsList" class="mt-lg"></div>
+	</k-main>
+
+	<script type="module">
+		const groupsListEl = document.getElementById('groupsList');
+
+		const loadGroups = async () => {
+			// For now, we'll just show the groups from the permissions API
+			// In the future, we'll create dedicated group endpoints
+			const res = await fetch('/kempo/api/permissions/list');
+			const permissions = await res.json();
+			
+			// Mock groups data - in production, fetch from a groups API
+			const groups = [
+				{ name: 'system:Users', description: 'Default group for all users', permissionCount: 1 },
+				{ name: 'system:Administrators', description: 'Full system access', permissionCount: permissions.length }
+			];
+			
+			renderGroups(groups);
+		};
+
+		const renderGroups = (groups) => {
+			const html = groups.map(group => `
+				<div class="p br shadow mb">
+					<h3>${group.name}</h3>
+					<p class="text-muted">${group.description}</p>
+					<p class="mt-xs"><strong>${group.permissionCount}</strong> permissions</p>
+					${group.name !== 'system:Users' && group.name !== 'system:Administrators' ? 
+						'<button class="p-sm br mt">Manage</button>' : 
+						'<span class="text-muted mt d-ib">System group (protected)</span>'
+					}
+				</div>
+			`).join('');
+
+			groupsListEl.innerHTML = html;
+		};
+
+		loadGroups();
+	</script>
+</body>
+</html>

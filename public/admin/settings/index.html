@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="image/png" sizes="48x48" href="../../media/icon48.png">
+	<title>Settings - Admin</title>
+	<link rel="stylesheet" href="/kempo-css/kempo.min.css">
+	<script>window.litDisableBundleWarning = true;</script>
+	<script type="module" src="/kempo-ui/components/Import.js"></script>
+	<script type="module" src="/kempo-ui/components/Main.js"></script>
+</head>
+<body>
+	<k-import src="/nav"></k-import>
+	<k-main class="p">
+		<h2>Settings Management</h2>
+		
+		<div class="mt">
+			<button id="addCustomBtn" class="p-sm br">+ Add Custom Setting</button>
+		</div>
+
+		<div class="mt-lg">
+			<h3>System Settings</h3>
+			<div id="systemSettings" class="mt"></div>
+		</div>
+
+		<div class="mt-lg">
+			<h3>Custom Settings</h3>
+			<div id="customSettings" class="mt"></div>
+		</div>
+
+		<div id="editModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+			<div class="modal-content" style="background: white; margin: 100px auto; padding: 2rem; max-width: 600px; border-radius: 8px;">
+				<h3 id="modalTitle">Edit Setting</h3>
+				<form id="settingForm" class="mt">
+					<input type="hidden" id="settingOwner">
+					<input type="hidden" id="settingName">
+					
+					<div class="mb">
+						<label for="settingValue">Value</label>
+						<input type="text" id="settingValue" class="w-full p-sm br mt-xs">
+					</div>
+					
+					<div class="mb">
+						<label for="settingType">Type</label>
+						<select id="settingType" class="w-full p-sm br mt-xs">
+							<option value="string">String</option>
+							<option value="number">Number</option>
+							<option value="boolean">Boolean</option>
+							<option value="json">JSON</option>
+						</select>
+					</div>
+					
+					<div class="mb">
+						<label>
+							<input type="checkbox" id="settingPublic">
+							Public (accessible without authentication)
+						</label>
+					</div>
+					
+					<div class="mb">
+						<label for="settingDescription">Description</label>
+						<textarea id="settingDescription" class="w-full p-sm br mt-xs" rows="3"></textarea>
+					</div>
+					
+					<div class="mt">
+						<button type="submit" class="p-sm br">Save</button>
+						<button type="button" id="cancelBtn" class="p-sm br ml">Cancel</button>
+						<button type="button" id="deleteBtn" class="p-sm br ml" style="background: #dc3545; color: white; display: none;">Delete</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</k-main>
+
+	<script type="module">
+		const systemSettingsEl = document.getElementById('systemSettings');
+		const customSettingsEl = document.getElementById('customSettings');
+		const modal = document.getElementById('editModal');
+		const form = document.getElementById('settingForm');
+		const addCustomBtn = document.getElementById('addCustomBtn');
+		const cancelBtn = document.getElementById('cancelBtn');
+		const deleteBtn = document.getElementById('deleteBtn');
+
+		const loadSettings = async () => {
+			const res = await fetch('/kempo/api/settings/public');
+			const allSettings = await res.json();
+			
+			const systemSettings = {};
+			const customSettings = {};
+			
+			for(const [name, value] of Object.entries(allSettings)){
+				const owner = name.split(':')[0];
+				if(owner === 'system'){
+					systemSettings[name] = value;
+				} else if(owner === 'custom'){
+					customSettings[name] = value;
+				}
+			}
+			
+			renderSettings(systemSettings, systemSettingsEl, 'system');
+			renderSettings(customSettings, customSettingsEl, 'custom');
+		};
+
+		const renderSettings = (settings, container, owner) => {
+			if(Object.keys(settings).length === 0){
+				container.innerHTML = '<p class="text-muted">No settings found</p>';
+				return;
+			}
+
+			const html = Object.entries(settings).map(([name, value]) => {
+				const displayValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+				return `
+					<div class="p br shadow mb" style="cursor: pointer;" data-name="${name}">
+						<strong>${name}</strong><br>
+						<span class="text-muted">${displayValue}</span>
+					</div>
+				`;
+			}).join('');
+			
+			container.innerHTML = html;
+			
+			container.querySelectorAll('[data-name]').forEach(el => {
+				el.addEventListener('click', () => {
+					const [owner, name] = el.dataset.name.split(':');
+					editSetting(owner, name);
+				});
+			});
+		};
+
+		const editSetting = async (owner, name) => {
+			const res = await fetch(`/kempo/api/settings/${owner}/${name}`);
+			const setting = await res.json();
+			
+			document.getElementById('modalTitle').textContent = `Edit ${owner}:${name}`;
+			document.getElementById('settingOwner').value = owner;
+			document.getElementById('settingName').value = name;
+			document.getElementById('settingValue').value = typeof setting.value === 'object' ? JSON.stringify(setting.value) : setting.value;
+			document.getElementById('settingType').value = setting.type;
+			document.getElementById('settingPublic').checked = setting.isPublic;
+			document.getElementById('settingDescription').value = setting.description || '';
+			
+			if(owner === 'custom'){
+				deleteBtn.style.display = 'inline-block';
+			} else {
+				deleteBtn.style.display = 'none';
+			}
+			
+			modal.style.display = 'block';
+		};
+
+		const createSetting = () => {
+			const name = prompt('Setting name (without "custom:" prefix):');
+			if(!name) return;
+			
+			document.getElementById('modalTitle').textContent = 'Create Custom Setting';
+			document.getElementById('settingOwner').value = 'custom';
+			document.getElementById('settingName').value = name;
+			document.getElementById('settingValue').value = '';
+			document.getElementById('settingType').value = 'string';
+			document.getElementById('settingPublic').checked = false;
+			document.getElementById('settingDescription').value = '';
+			deleteBtn.style.display = 'none';
+			
+			modal.style.display = 'block';
+		};
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			
+			const owner = document.getElementById('settingOwner').value;
+			const name = document.getElementById('settingName').value;
+			let value = document.getElementById('settingValue').value;
+			const type = document.getElementById('settingType').value;
+			const isPublic = document.getElementById('settingPublic').checked;
+			const description = document.getElementById('settingDescription').value;
+			
+			if(type === 'number'){
+				value = Number(value);
+			} else if(type === 'boolean'){
+				value = value === 'true';
+			} else if(type === 'json'){
+				try {
+					value = JSON.parse(value);
+				} catch(e){
+					alert('Invalid JSON');
+					return;
+				}
+			}
+			
+			const res = await fetch(`/kempo/api/settings/${owner}/${name}`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ value, type, isPublic, description })
+			});
+			
+			if(res.ok){
+				modal.style.display = 'none';
+				loadSettings();
+			} else {
+				const error = await res.json();
+				alert(error.error);
+			}
+		});
+
+		deleteBtn.addEventListener('click', async () => {
+			if(!confirm('Delete this setting?')) return;
+			
+			const owner = document.getElementById('settingOwner').value;
+			const name = document.getElementById('settingName').value;
+			
+			const res = await fetch(`/kempo/api/settings/${owner}/${name}`, {
+				method: 'DELETE'
+			});
+			
+			if(res.ok){
+				modal.style.display = 'none';
+				loadSettings();
+			} else {
+				const error = await res.json();
+				alert(error.error);
+			}
+		});
+
+		cancelBtn.addEventListener('click', () => {
+			modal.style.display = 'none';
+		});
+
+		addCustomBtn.addEventListener('click', createSetting);
+
+		loadSettings();
+	</script>
+</body>
+</html>

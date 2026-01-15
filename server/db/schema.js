@@ -1,118 +1,144 @@
 import { pgTable, text, timestamp, boolean, integer } from 'drizzle-orm/pg-core';
 
 /*
-  Better Auth Tables
+  Auth Tables
 */
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
-  emailVerified: boolean('emailVerified').notNull(),
-  image: text('image'),
+  passwordHash: text('passwordHash').notNull(),
+  emailVerified: boolean('emailVerified').notNull().default(false),
   createdAt: timestamp('createdAt').notNull(),
   updatedAt: timestamp('updatedAt').notNull(),
 });
 
 export const session = pgTable('session', {
-  id: text('id').primaryKey(),
+  token: text('token').primaryKey(),
+  userId: text('userId')
+    .notNull()
+    .references(() => user.id),
   expiresAt: timestamp('expiresAt').notNull(),
-  token: text('token').notNull().unique(),
   createdAt: timestamp('createdAt').notNull(),
-  updatedAt: timestamp('updatedAt').notNull(),
   ipAddress: text('ipAddress'),
   userAgent: text('userAgent'),
-  userId: text('userId')
-    .notNull()
-    .references(() => user.id),
-  activeOrganizationId: text('activeOrganizationId'),
 });
 
-export const account = pgTable('account', {
-  id: text('id').primaryKey(),
-  accountId: text('accountId').notNull(),
-  providerId: text('providerId').notNull(),
+export const verificationToken = pgTable('verificationToken', {
+  token: text('token').primaryKey(),
   userId: text('userId')
     .notNull()
     .references(() => user.id),
-  accessToken: text('accessToken'),
-  refreshToken: text('refreshToken'),
-  idToken: text('idToken'),
-  accessTokenExpiresAt: timestamp('accessTokenExpiresAt'),
-  refreshTokenExpiresAt: timestamp('refreshTokenExpiresAt'),
-  scope: text('scope'),
-  password: text('password'),
+  type: text('type').notNull(),
+  expiresAt: timestamp('expiresAt').notNull(),
+  createdAt: timestamp('createdAt').notNull(),
+});
+
+/*
+  Group-Based Permission System
+*/
+
+export const group = pgTable('group', {
+  name: text('name').primaryKey(),
+  description: text('description'),
+  owner: text('owner').notNull().default('user'),
+  createdAt: timestamp('createdAt').notNull(),
+});
+
+export const userGroup = pgTable('userGroup', {
+  id: text('id').primaryKey(),
+  userId: text('userId')
+    .notNull()
+    .references(() => user.id),
+  groupName: text('groupName')
+    .notNull()
+    .references(() => group.name),
+  createdAt: timestamp('createdAt').notNull(),
+});
+
+export const permission = pgTable('permission', {
+  name: text('name').primaryKey(),
+  description: text('description'),
+  owner: text('owner').notNull().default('user'),
+  createdAt: timestamp('createdAt').notNull(),
+});
+
+export const groupPermission = pgTable('groupPermission', {
+  id: text('id').primaryKey(),
+  groupName: text('groupName')
+    .notNull()
+    .references(() => group.name),
+  permissionName: text('permissionName')
+    .notNull()
+    .references(() => permission.name),
+  createdAt: timestamp('createdAt').notNull(),
+});
+
+/*
+  Settings System
+*/
+
+export const setting = pgTable('setting', {
+  name: text('name').primaryKey(),
+  value: text('value'),
+  type: text('type').notNull().default('string'),
+  isPublic: boolean('isPublic').notNull().default(false),
+  description: text('description'),
   createdAt: timestamp('createdAt').notNull(),
   updatedAt: timestamp('updatedAt').notNull(),
 });
 
-export const verification = pgTable('verification', {
-  id: text('id').primaryKey(),
-  identifier: text('identifier').notNull(),
-  value: text('value').notNull(),
-  expiresAt: timestamp('expiresAt').notNull(),
-  createdAt: timestamp('createdAt'),
-  updatedAt: timestamp('updatedAt'),
-});
-
 /*
-  Organization Tables
+  Triggers to prevent deletion of system resources
 */
+export const createSettingProtectionTrigger = () => `
+CREATE OR REPLACE FUNCTION prevent_system_setting_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD.name LIKE 'system:%' THEN
+    RAISE EXCEPTION 'Cannot delete system settings';
+  END IF;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
 
-export const organization = pgTable('organization', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  slug: text('slug').unique(),
-  logo: text('logo'),
-  metadata: text('metadata'),
-  createdAt: timestamp('createdAt').notNull(),
-});
+CREATE TRIGGER protect_system_settings
+BEFORE DELETE ON setting
+FOR EACH ROW
+EXECUTE FUNCTION prevent_system_setting_delete();
+`;
 
-export const member = pgTable('member', {
-  id: text('id').primaryKey(),
-  organizationId: text('organizationId')
-    .notNull()
-    .references(() => organization.id),
-  userId: text('userId')
-    .notNull()
-    .references(() => user.id),
-  role: text('role').notNull(),
-  createdAt: timestamp('createdAt').notNull(),
-});
+export const createGroupProtectionTrigger = () => `
+CREATE OR REPLACE FUNCTION prevent_system_group_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD.owner = 'system' THEN
+    RAISE EXCEPTION 'Cannot delete system groups';
+  END IF;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
 
-export const invitation = pgTable('invitation', {
-  id: text('id').primaryKey(),
-  organizationId: text('organizationId')
-    .notNull()
-    .references(() => organization.id),
-  email: text('email').notNull(),
-  role: text('role').notNull(),
-  status: text('status').notNull(),
-  expiresAt: timestamp('expiresAt').notNull(),
-  inviterId: text('inviterId')
-    .notNull()
-    .references(() => user.id),
-  createdAt: timestamp('createdAt').notNull(),
-});
+CREATE TRIGGER protect_system_groups
+BEFORE DELETE ON "group"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_system_group_delete();
+`;
 
-/*
-  Custom Permission System
-*/
+export const createPermissionProtectionTrigger = () => `
+CREATE OR REPLACE FUNCTION prevent_system_permission_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD.owner = 'system' THEN
+    RAISE EXCEPTION 'Cannot delete system permissions';
+  END IF;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
 
-export const permission = pgTable('permission', {
-  id: text('id').primaryKey(),
-  name: text('name').notNull().unique(),
-  resource: text('resource').notNull(),
-  action: text('action').notNull(),
-  description: text('description'),
-  createdAt: timestamp('createdAt').notNull(),
-});
-
-export const rolePermission = pgTable('rolePermission', {
-  id: text('id').primaryKey(),
-  role: text('role').notNull(),
-  permissionId: text('permissionId')
-    .notNull()
-    .references(() => permission.id),
-  createdAt: timestamp('createdAt').notNull(),
-});
+CREATE TRIGGER protect_system_permissions
+BEFORE DELETE ON permission
+FOR EACH ROW
+EXECUTE FUNCTION prevent_system_permission_delete();
+`;

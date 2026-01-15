@@ -1,26 +1,35 @@
-import { join } from 'path';
-import { pathToFileURL } from 'url';
-const authModule = await import(pathToFileURL(join(process.cwd(), 'server', 'auth.js')).href);
-const { auth } = authModule;
+import resetPassword from '../../../../../server/utils/auth/resetPassword.js';
+import loginEmail from '../../../../../server/utils/auth/loginEmail.js';
+import db from '../../../../../server/db/index.js';
+import { user } from '../../../../../server/db/schema.js';
+import { eq } from 'drizzle-orm';
 
 export default async (request, response) => {
   try {
-    const body = await request.json();
-    const authRequest = new Request(`${auth.options.baseURL}/api/auth/reset-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-
-    const authResponse = await auth.handler(authRequest);
-    const text = await authResponse.text();
+    const { token, newPassword, logoutAll = false } = await request.json();
     
-    response.status(authResponse.status);
-    authResponse.headers.forEach((value, key) => {
-      response.set(key, value);
+    console.log('Password reset request - Token:', token);
+    
+    const result = await resetPassword({ token, password: newPassword, logoutAll });
+    
+    const userData = await db.select().from(user).where(eq(user.id, result.userId)).limit(1);
+    
+    if(userData.length === 0){
+      return response.status(500).json({ error: 'User not found after password reset' });
+    }
+
+    const loginResult = await loginEmail({ email: userData[0].email, password: newPassword });
+    
+    response.cookie('session_token', loginResult.sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: (loginResult.sessionDurationDays || 7) * 24 * 60 * 60 * 1000
     });
-    response.send(text);
+    
+    response.json({ success: true, user: loginResult.user });
   } catch(error) {
-    response.status(500).json({ error: error.message });
+    response.status(error.statusCode || 500).json({ error: error.message });
   }
 };

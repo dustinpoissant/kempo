@@ -19,33 +19,5 @@ services:
       timeout: 5s
       retries: 5
 
-  mailpit:
-    image: axllent/mailpit
-    container_name: kempo-mailpit
-    restart: unless-stopped
-    ports:
-      - "1025:1025"  # SMTP server
-      - "8025:8025"  # Web UI
-    environment:
-      MP_MAX_MESSAGES: 5000
-      MP_SMTP_AUTH_ACCEPT_ANY: 1
-      MP_SMTP_AUTH_ALLOW_INSECURE: 1
-
-  smtp-relay:
-    image: boky/postfix
-    container_name: kempo-smtp-relay
-    restart: unless-stopped
-    ports:
-      - "1026:587"  # SMTP relay port
-    environment:
-      RELAYHOST: ${SMTP_HOST}:${SMTP_PORT}
-      RELAYHOST_USERNAME: ${SMTP_USER}
-      RELAYHOST_PASSWORD: ${SMTP_PASS}
-      ALLOW_EMPTY_SENDER_DOMAINS: "true"
-      MESSAGE_SIZE_LIMIT: 10240000
-      POSTFIX_smtp_tls_security_level: "may"
-      POSTFIX_smtp_tls_CAfile: ""
-      POSTFIX_smtp_tls_verify_cert_match: "none"
-
 volumes:
   postgres_data:

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="image/png" sizes="48x48" href="../media/icon48.png">
+	<link rel="manifest" href="../manifest.json" />
+	<title>Forgot Password</title>
+	<link rel="stylesheet" href="../kempo-css/kempo.min.css">
+	<script>window.litDisableBundleWarning = true;</script>
+</head>
+<body>
+	<k-import src="/nav"></k-import>
+	<main class="p">
+		<div style="max-width: 600px; margin: 0 auto;">
+			<div id="formContainer">
+				<h2>Forgot Password</h2>
+				<p>Enter your email address and we'll send you a link to reset your password.</p>
+				<form id="forgotPasswordForm">
+					<label>Email</label>
+					<input type="email" id="email" required />
+					<button type="submit" class="p-sm br mt">Send Reset Link</button>
+				</form>
+				<p class="mt">
+					Remember your password? <a href="/login">Login</a>
+				</p>
+			</div>
+			<div id="successMessage" style="display: none;">
+				<h2>Check Your Email</h2>
+				<p>We've sent a password reset link to your email address. Please check your inbox and follow the instructions to reset your password.</p>
+				<p class="mt">The link will expire in 1 hour.</p>
+				<p class="mt">
+					Didn't receive the email? Check your spam folder or <a href="#" id="resendLink">try again</a>.
+				</p>
+				<p class="mt">
+					<a href="/login">Back to Login</a>
+				</p>
+			</div>
+		</div>
+	</main>
+	<script src="/kempo-ui/components/Import.js" type="module"></script>
+	<script type="module">
+		import { forgotPassword } from '../kempo/sdk.js';
+		import Toast from '/kempo-ui/components/Toast.js';
+
+		const form = document.getElementById('forgotPasswordForm');
+		const emailInput = document.getElementById('email');
+		const formContainer = document.getElementById('formContainer');
+		const successMessage = document.getElementById('successMessage');
+		const resendLink = document.getElementById('resendLink');
+
+		const sendResetEmail = async () => {
+			const submitBtn = form.querySelector('button[type="submit"]');
+			submitBtn.disabled = true;
+			submitBtn.textContent = 'Sending...';
+
+			try {
+				await forgotPassword({ email: emailInput.value });
+				
+				formContainer.style.display = 'none';
+				successMessage.style.display = 'block';
+			} catch(error) {
+				Toast.error(error.message);
+				submitBtn.disabled = false;
+				submitBtn.textContent = 'Send Reset Link';
+			}
+		};
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			await sendResetEmail();
+		});
+
+		resendLink.addEventListener('click', async (e) => {
+			e.preventDefault();
+			const submitBtn = form.querySelector('button[type="submit"]');
+			submitBtn.disabled = false;
+			submitBtn.textContent = 'Send Reset Link';
+			successMessage.style.display = 'none';
+			formContainer.style.display = 'block';
+		});
+	</script>
+</body>
+</html>

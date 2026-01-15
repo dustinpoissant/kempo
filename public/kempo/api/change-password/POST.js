@@ -1,13 +1,17 @@
-import { join } from 'path';
-import { pathToFileURL } from 'url';
-
-const authModule = await import(pathToFileURL(join(process.cwd(), 'server', 'auth.js')).href);
-const { auth } = authModule;
+import changePassword from '../../../../server/utils/auth/changePassword.js';
+import getSession from '../../../../server/utils/auth/getSession.js';
+import bcrypt from 'bcrypt';
 
 export default async (request, response) => {
   try {
-    const body = await request.json();
-    const { currentPassword, newPassword } = body;
+    const sessionToken = request.cookies.session_token;
+    const session = await getSession({ token: sessionToken });
+    
+    if(!session || !session.user){
+      return response.status(401).json({ error: 'Not authenticated' });
+    }
+    
+    const { currentPassword, newPassword } = await request.json();
 
     if(!currentPassword || !newPassword){
       return response.status(400).json({ error: 'Current password and new password are required' });
@@ -17,12 +21,15 @@ export default async (request, response) => {
       return response.status(400).json({ error: 'New password must be at least 8 characters' });
     }
 
-    const result = await auth.api.changePassword({
-      body: {
-        currentPassword,
-        newPassword
-      },
-      headers: request.headers
+    const isValid = await bcrypt.compare(currentPassword, session.user.passwordHash);
+    
+    if(!isValid){
+      return response.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    const result = await changePassword({
+      userId: session.user.id,
+      newPassword
     });
 
     if(result.error){

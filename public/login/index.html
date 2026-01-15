@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta
+		name="viewport"
+		content="width=device-width, initial-scale=1.0"
+	>
+	<link rel="icon" type="image/png" sizes="48x48" href="../media/icon48.png">
+	<link rel="manifest" href="../manifest.json" />
+	<title>Login</title>
+	<link rel="stylesheet" href="../kempo-css/kempo.min.css">
+	<script>window.litDisableBundleWarning = true;</script>
+</head>
+<body>
+	<k-import src="/nav"></k-import>
+	<main class="p">
+		<div style="max-width: 400px; margin: 0 auto;">
+			<h2>Login</h2>
+			<form id="loginForm">
+				<div class="mb">
+					<label for="email" class="d-b mb-sm">Email</label>
+					<input type="email" id="email" name="email" required class="w-full p-sm br">
+				</div>
+				<div class="mb">
+					<label for="password" class="d-b mb-sm">Password</label>
+					<input type="password" id="password" name="password" required class="w-full p-sm br">
+				</div>
+				<button type="submit" class="w-full p-sm br">Login</button>
+			</form>
+			<p class="mt">
+				<a href="/forgot-password">Forgot Password?</a>
+			</p>
+			<p class="mt">Don't have an account? <a href="/register">Register</a></p>
+		</div>
+	</main>
+	<script src="/kempo-ui/components/Import.js" type="module"></script>
+	<script type="module">
+		import { login } from '../kempo/sdk.js';
+		import Toast from '/kempo-ui/components/Toast.js';
+
+		const form = document.getElementById('loginForm');
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+
+			const email = document.getElementById('email').value;
+			const password = document.getElementById('password').value;
+			
+			try {
+				await login({ email, password });
+				window.location.href = '/account';
+			} catch(error) {
+				Toast.error(error.message);
+			}
+		});
+	</script>
+</body>
+</html>

@@ -24,8 +24,6 @@ services:
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL}
-      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL}
       EMAIL_MODE: production
       SMTP_FROM: ${SMTP_FROM}
       RESEND_API_KEY: ${RESEND_API_KEY}

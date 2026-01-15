@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta
+		name="viewport"
+		content="width=device-width, initial-scale=1.0"
+	>
+	<link
+		rel="icon"
+		type="image/png"
+		sizes="48x48"
+		href="/media/icon48.png"
+	>
+	<link
+		rel="manifest"
+		href="/manifest.json"
+	/>
+	<title>My Account</title>
+	<link
+		rel="stylesheet"
+		href="/kempo-css/kempo.min.css"
+	>
+	<script>window.litDisableBundleWarning = true;</script>
+	<style>
+		input.error {
+			--c_input_border: var(--c_danger, red);
+			--focus_shadow: 0 0 2px 2px var(--c_danger, red);
+		}
+	</style>
+</head>
+<body>
+	<k-import src="/nav"></k-import>
+	<main class="p">
+		<div style="max-width: 600px; margin: 0 auto;">
+			<h2>My Account</h2>
+			<div class="mb">
+				<strong>Name:</strong> <k-user-name></k-user-name>
+			</div>
+			<div class="mb">
+				<strong>Email:</strong> <k-user-email></k-user-email>
+			</div>
+			<div class="mb">
+				<strong>Email Verified:</strong> <k-user-email-verified></k-user-email-verified>
+			</div>
+			<div class="mb">
+				<strong>Member Since:</strong> <k-user-created-at></k-user-created-at>
+			</div>
+
+			<div class="mt-lg">
+				<k-permission some="system:admin:access">
+					<a
+						href="/admin"
+						class="btn primary"
+					>Admin Panel</a>
+				</k-permission>
+				<button
+					id="changePasswordBtn"
+					class="btn"
+				>Change Password</button>
+				<k-logout-btn
+					redirect="/login"
+					button-class="btn danger"
+				>Logout</k-logout-btn>
+			</div>
+		</div>
+	</main>
+	<k-dialog
+		id="changePasswordDialog"
+	>
+		<h5
+			slot="title"
+			class="pyh px m0"
+		>Change Password</h5>
+		<form
+			id="changePasswordForm"
+			class="p"
+		>
+			<div class="mb">
+				<label
+					for="currentPassword"
+					class="d-b mb-sm"
+				>Current Password</label>
+				<input
+					type="password"
+					id="currentPassword"
+					required
+					class="w-full p-sm br"
+				>
+			</div>
+			<div class="mb">
+				<label
+					for="newPassword"
+					class="d-b mb-sm"
+				>New Password</label>
+				<input
+					type="password"
+					id="newPassword"
+					required
+					minlength="8"
+					class="w-full p-sm br"
+				>
+			</div>
+			<div class="mb">
+				<label
+					for="confirmPassword"
+					class="d-b mb-sm"
+				>Confirm New Password</label>
+				<input
+					type="password"
+					id="confirmPassword"
+					required
+					minlength="8"
+					class="w-full p-sm br"
+				>
+			</div>
+			<div class="ta-right">
+				<button
+					type="submit"
+					class="primary"
+				>Change Password</button>
+			</div>
+		</form>
+	</k-dialog>
+	<script
+		src="/kempo-ui/components/Import.js"
+		type="module"
+	></script>
+	<script
+		src="/kempo-ui/components/Dialog.js"
+		type="module"
+	></script>
+	<script
+		src="/kempo/components/Permission.js"
+		type="module"
+	></script>
+	<script
+		src="/kempo/components/UserName.js"
+		type="module"
+	></script>
+	<script
+		src="/kempo/components/UserEmail.js"
+		type="module"
+	></script>
+	<script
+		src="/kempo/components/UserEmailVerified.js"
+		type="module"
+	></script>
+	<script
+		src="/kempo/components/UserCreatedAt.js"
+		type="module"
+	></script>
+	<script
+		src="/kempo/components/LogoutBtn.js"
+		type="module"
+	></script>
+	<script type="module">
+		import Toast from '../kempo-ui/components/Toast.js';
+		/* Change Password */
+		(()=>{
+			const $confirmPassword = document.getElementById('confirmPassword');
+			document.getElementById('changePasswordBtn').addEventListener('click', () => {
+				document.getElementById('changePasswordDialog').open();
+			});
+			document.getElementById('changePasswordForm').addEventListener('submit', (event) => {
+				event.preventDefault();
+				const currentPassword = document.getElementById('currentPassword').value;
+				const newPassword = document.getElementById('newPassword').value;
+				const confirmPassword =  $confirmPassword.value;
+				if(newPassword !== confirmPassword){
+					$confirmPassword.classList.add('error');
+					$confirmPassword.setCustomValidity("Your new password and confirmation password do not match");
+					return;
+				}
+				console.log(currentPassword, newPassword);
+			});
+			/* Clear the Error message when they type */
+			$confirmPassword.addEventListener('input', ()=>{
+				$confirmPassword.classList.remove('error');
+				$confirmPassword.setCustomValidity('');
+			});
+		})();
+	</script>
+</body>
+</html>

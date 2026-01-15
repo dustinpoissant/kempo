@@ -1,6 +1,6 @@
-import LightComponent from 'https://cdn.jsdelivr.net/npm/kempo-ui@0.0.42/dist/components/LightComponent.js';
-import { html } from 'https://cdn.jsdelivr.net/npm/lit@3.2.1/+esm';
-import { getActiveMemberRole } from '../auth.js';
+import LightComponent from '/kempo-ui/components/LightComponent.js';
+import { html } from '/kempo-ui/lit-all.min.js';
+import { checkRole } from '../sdk.js';
 
 export default class Role extends LightComponent {
 	static properties = {
@@ -24,39 +24,12 @@ export default class Role extends LightComponent {
 	}
 
 	async checkRole() {
-		const roleHierarchy = ['subscriber', 'contributor', 'editor', 'admin', 'superAdmin'];
-
 		try {
-			const { role } = await getActiveMemberRole();
-			const userRoleIndex = roleHierarchy.indexOf(role);
-
-			if(userRoleIndex === -1) {
-				this.hasRole = false;
-				this.loading = false;
-				return;
-			}
-
-			if(this.exclude) {
-				const excludedRoles = this.exclude.split(',').map(r => r.trim());
-				if(excludedRoles.includes(role)) {
-					this.hasRole = false;
-					this.loading = false;
-					return;
-				}
-			}
-
-			if(!this.requires) {
-				this.hasRole = true;
-				this.loading = false;
-				return;
-			}
-
-			const requiredRoles = this.requires.split(',').map(r => r.trim());
-			
-			this.hasRole = requiredRoles.some(requiredRole => {
-				const requiredIndex = roleHierarchy.indexOf(requiredRole);
-				return requiredIndex !== -1 && userRoleIndex >= requiredIndex;
+			const data = await checkRole({
+				requires: this.requires || undefined,
+				exclude: this.exclude || undefined
 			});
+			this.hasRole = data.hasRole;
 		} catch(error) {
 			console.error('Role check failed:', error);
 			this.hasRole = false;

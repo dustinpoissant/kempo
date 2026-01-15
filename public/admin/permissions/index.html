@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="image/png" sizes="48x48" href="../../media/icon48.png">
+	<title>Permissions - Admin</title>
+	<link rel="stylesheet" href="/kempo-css/kempo.min.css">
+	<script>window.litDisableBundleWarning = true;</script>
+	<script type="module" src="/kempo-ui/components/Import.js"></script>
+	<script type="module" src="/kempo-ui/components/Main.js"></script>
+</head>
+<body>
+	<k-import src="/nav"></k-import>
+	<k-main class="p">
+		<h2>Permissions Management</h2>
+		
+		<div class="mt">
+			<button id="createBtn" class="p-sm br">+ Create Permission</button>
+		</div>
+
+		<div class="mt-lg">
+			<input type="text" id="searchBox" class="p-sm br w-full" placeholder="Search permissions...">
+		</div>
+
+		<div id="permissionsList" class="mt"></div>
+
+		<div id="createModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+			<div class="modal-content" style="background: white; margin: 100px auto; padding: 2rem; max-width: 600px; border-radius: 8px;">
+				<h3>Create Permission</h3>
+				<form id="createForm" class="mt">
+					<div class="mb">
+						<label for="permOwner">Owner</label>
+						<input type="text" id="permOwner" class="w-full p-sm br mt-xs" placeholder="e.g., system, myextension" required>
+					</div>
+					
+					<div class="mb">
+						<label for="permResource">Resource</label>
+						<input type="text" id="permResource" class="w-full p-sm br mt-xs" placeholder="e.g., content, user" required>
+					</div>
+					
+					<div class="mb">
+						<label for="permAction">Action</label>
+						<input type="text" id="permAction" class="w-full p-sm br mt-xs" placeholder="e.g., create, read, update, delete" required>
+					</div>
+					
+					<div class="mb">
+						<label for="permDescription">Description</label>
+						<textarea id="permDescription" class="w-full p-sm br mt-xs" rows="3"></textarea>
+					</div>
+					
+					<div class="mt">
+						<button type="submit" class="p-sm br">Create</button>
+						<button type="button" id="cancelBtn" class="p-sm br ml">Cancel</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</k-main>
+
+	<script type="module">
+		const permissionsListEl = document.getElementById('permissionsList');
+		const searchBox = document.getElementById('searchBox');
+		const createBtn = document.getElementById('createBtn');
+		const modal = document.getElementById('createModal');
+		const form = document.getElementById('createForm');
+		const cancelBtn = document.getElementById('cancelBtn');
+
+		let allPermissions = [];
+
+		const loadPermissions = async () => {
+			const res = await fetch('/kempo/api/permissions/list');
+			allPermissions = await res.json();
+			renderPermissions(allPermissions);
+		};
+
+		const renderPermissions = (permissions) => {
+			if(permissions.length === 0){
+				permissionsListEl.innerHTML = '<p class="text-muted">No permissions found</p>';
+				return;
+			}
+
+			const grouped = {};
+			for(const perm of permissions){
+				const owner = perm.name.split(':')[0];
+				if(!grouped[owner]) grouped[owner] = [];
+				grouped[owner].push(perm);
+			}
+
+			const html = Object.entries(grouped).map(([owner, perms]) => {
+				const permsList = perms.map(p => `
+					<div class="p-sm br shadow mb-xs">
+						<strong>${p.name}</strong>
+						${p.description ? `<br><span class="text-muted">${p.description}</span>` : ''}
+					</div>
+				`).join('');
+
+				return `
+					<div class="mb-lg">
+						<h3>${owner}</h3>
+						<div class="mt">${permsList}</div>
+					</div>
+				`;
+			}).join('');
+
+			permissionsListEl.innerHTML = html;
+		};
+
+		searchBox.addEventListener('input', (e) => {
+			const query = e.target.value.toLowerCase();
+			const filtered = allPermissions.filter(p => 
+				p.name.toLowerCase().includes(query) || 
+				(p.description && p.description.toLowerCase().includes(query))
+			);
+			renderPermissions(filtered);
+		});
+
+		createBtn.addEventListener('click', () => {
+			modal.style.display = 'block';
+		});
+
+		cancelBtn.addEventListener('click', () => {
+			modal.style.display = 'none';
+			form.reset();
+		});
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			
+			const owner = document.getElementById('permOwner').value.trim();
+			const resource = document.getElementById('permResource').value.trim();
+			const action = document.getElementById('permAction').value.trim();
+			const description = document.getElementById('permDescription').value.trim();
+			
+			const name = `${owner}:${resource}:${action}`;
+			
+			const res = await fetch('/kempo/api/permissions/create', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name, description })
+			});
+			
+			if(res.ok){
+				modal.style.display = 'none';
+				form.reset();
+				loadPermissions();
+			} else {
+				const error = await res.json();
+				alert(error.error || 'Failed to create permission');
+			}
+		});
+
+		loadPermissions();
+	</script>
+</body>
+</html>

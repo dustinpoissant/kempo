@@ -1,6 +1,12 @@
 {
   "customRoutes": {
     "/kempo-css/**": "../node_modules/kempo-css/dist/**",
-		"/kempo-ui/**": "../node_modules/kempo-ui/dist/**"
+		"/kempo-ui/**": "../node_modules/kempo-ui/dist/**",
+    "/icons/**": "../node_modules/kempo-ui/icons/**"
+  },
+  "middleware": {
+    "custom": [
+      "../middleware/kempo-auth.js"
+    ]
   }
 }

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta
+		name="viewport"
+		content="width=device-width, initial-scale=1.0"
+	>
+	<link rel="icon" type="image/png" sizes="48x48" href="../../media/icon48.png">
+	<link rel="manifest" href="../../manifest.json" />
+	<title>Reset Password</title>
+	<link rel="stylesheet" href="../../kempo-css/kempo.min.css">
+	<script>window.litDisableBundleWarning = true;</script>
+</head>
+<body>
+	<k-import src="/nav"></k-import>
+	<main class="p">
+		<div style="max-width: 400px; margin: 0 auto;">
+			<h2>Reset Password</h2>
+			<form id="resetForm">
+				<input type="hidden" id="token">
+				<div class="mb">
+					<label for="password" class="d-b mb-sm">New Password</label>
+					<input type="password" id="password" name="password" required minlength="8" class="w-full p-sm br">
+				</div>
+				<div class="mb">
+					<label for="confirm-password" class="d-b mb-sm">Confirm Password</label>
+					<input type="password" id="confirm-password" name="confirm-password" required minlength="8" class="w-full p-sm br">
+				</div>
+				<div class="mb">
+					<k-toggle id="logout-all">Log out all other devices</k-toggle>
+				</div>
+				<button type="submit" class="w-full p-sm br">Reset Password</button>
+			</form>
+			<p class="mt">
+				<a href="../../login">Back to Login</a>
+			</p>
+		</div>
+	</main>
+	<script src="../../kempo-ui/components/Import.js" type="module"></script>
+	<script src="../../kempo-ui/components/Toggle.js" type="module"></script>
+	<script type="module">
+		import { resetPassword } from '../../kempo/sdk.js';
+		import Toast from '../../kempo-ui/components/Toast.js';
+
+		const tokenInput = document.getElementById('token');
+		const pathParts = window.location.pathname.split('/').filter(p => p);
+		const token = pathParts[pathParts.length - 1];
+		tokenInput.value = token;
+
+		const form = document.getElementById('resetForm');
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+
+			const password = document.getElementById('password').value;
+			const confirmPassword = document.getElementById('confirm-password').value;
+			const token = document.getElementById('token').value;
+			const logoutAll = document.getElementById('logout-all').value;
+
+			if(password !== confirmPassword){
+				Toast.error('Passwords do not match');
+				return;
+			}
+
+			if(password.length < 8){
+				Toast.error('Password must be at least 8 characters');
+				return;
+			}
+
+			try {
+				await resetPassword({ password, token, logoutAll });
+				Toast.success('Password reset successful! Redirecting...');
+				setTimeout(() => {
+					window.location.href = '../../account';
+				}, 1500);
+			} catch(error) {
+				Toast.error(error.message);
+			}
+		});
+	</script>
+</body>
+</html>

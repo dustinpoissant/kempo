@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta
+		name="viewport"
+		content="width=device-width, initial-scale=1.0"
+	>
+	<link
+		rel="icon"
+		type="image/png"
+		sizes="48x48"
+		href="/media/icon48.png"
+	>
+	<link
+		rel="manifest"
+		href="/manifest.json"
+	/>
+	<title>Verifying Email...</title>
+	<link
+		rel="stylesheet"
+		href="/kempo-css/kempo.min.css"
+	>
+	<script>window.litDisableBundleWarning = true;</script>
+</head>
+<body>
+	<k-import src="/nav"></k-import>
+	<main class="p">
+		<div style="max-width: 600px; margin: 0 auto; text-align: center;">
+			<div id="loading">
+				<h2>Verifying Your Email...</h2>
+				<p>Please wait while we verify your email address.</p>
+			</div>
+			<div id="success" style="display: none;">
+				<h2>Email Verified!</h2>
+				<p>Your email has been successfully verified. Redirecting you to your account...</p>
+			</div>
+			<div id="error" style="display: none;">
+				<h2>Verification Failed</h2>
+				<p id="errorMessage" class="c-error"></p>
+				<p class="mt">
+					<a href="/login" class="btn">Go to Login</a>
+				</p>
+			</div>
+		</div>
+	</main>
+	<script
+		src="/kempo-ui/components/Import.js"
+		type="module"
+	></script>
+	<script type="module">
+		import { verifyEmail } from '/kempo/sdk.js';
+
+		const loadingDiv = document.getElementById('loading');
+		const successDiv = document.getElementById('success');
+		const errorDiv = document.getElementById('error');
+		const errorMessage = document.getElementById('errorMessage');
+
+		const pathParts = window.location.pathname.split('/');
+		const token = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+
+		if(!token || token === 'verify-email'){
+			loadingDiv.style.display = 'none';
+			errorDiv.style.display = 'block';
+			errorMessage.textContent = 'No verification token found in URL.';
+		} else {
+			verifyEmail({ token })
+				.then(() => {
+					loadingDiv.style.display = 'none';
+					successDiv.style.display = 'block';
+					setTimeout(() => {
+						window.location.href = '/account';
+					}, 2000);
+				})
+				.catch((error) => {
+					loadingDiv.style.display = 'none';
+					errorDiv.style.display = 'block';
+					errorMessage.textContent = error.message;
+				});
+		}
+	</script>
+</body>
+</html>

@@ -1,19 +1,19 @@
-import LightComponent from 'https://cdn.jsdelivr.net/npm/kempo-ui@0.0.42/dist/components/LightComponent.js';
-import { html } from 'https://cdn.jsdelivr.net/npm/lit@3.2.1/+esm';
-import { checkPermissions } from '../auth.js';
+import LightComponent from '/kempo-ui/components/LightComponent.js';
+import { html } from '/kempo-ui/lit-all.min.js';
+import { checkPermissionsAll, checkPermissionsSome } from '../sdk.js';
 
 export default class Permission extends LightComponent {
 	static properties = {
-		requires: { type: String },
-		any: { type: Boolean },
+		all: { type: String },
+		some: { type: String },
 		loading: { type: Boolean, state: true },
 		hasPermission: { type: Boolean, state: true }
 	};
 
 	constructor() {
 		super();
-		this.requires = '';
-		this.any = false;
+		this.all = '';
+		this.some = '';
 		this.loading = true;
 		this.hasPermission = false;
 	}
@@ -24,20 +24,27 @@ export default class Permission extends LightComponent {
 	}
 
 	async checkPermissions() {
-		if(!this.requires) {
+		if(this.all && this.some) {
+			console.error('Permission: Cannot use both "all" and "some" attributes');
+			this.hasPermission = false;
+			this.loading = false;
+			return;
+		}
+
+		if(!this.all && !this.some) {
 			this.hasPermission = true;
 			this.loading = false;
 			return;
 		}
 
-		const permissions = this.requires.split(',').map(p => p.trim());
+		const permissions = (this.all || this.some).split(',').map(p => p.trim());
 
 		try {
-			const data = await checkPermissions(permissions);
-			
-			if(this.any) {
-				this.hasPermission = Object.values(data.permissions).some(v => v === true);
+			if(this.all) {
+				const data = await checkPermissionsAll(permissions);
+				this.hasPermission = data.hasPermission;
 			} else {
+				const data = await checkPermissionsSome(permissions);
 				this.hasPermission = data.hasPermission;
 			}
 		} catch(error) {
@@ -50,13 +57,16 @@ export default class Permission extends LightComponent {
 
 	renderLightDom() {
 		if(this.loading) {
+			this.style.display = 'none';
 			return html``;
 		}
 
 		if(!this.hasPermission) {
+			this.style.display = 'none';
 			return html``;
 		}
 
+		this.style.display = '';
 		return html`<slot></slot>`;
 	}
 }

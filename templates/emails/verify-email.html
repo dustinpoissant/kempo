@@ -18,11 +18,12 @@
 <body>
   <div class="container">
     <h2>Verify Your Email</h2>
+    <p>{{#if name}}Hi {{name}},{{else}}Hello,{{/if}}</p>
     <p>Thank you for signing up! Please verify your email address by clicking the button below:</p>
     <div style="text-align: center;">
-      <a href="{{VERIFY_URL}}" class="button">Verify Email</a>
+      <a href="{{verificationLink}}" class="button">Verify Email</a>
     </div>
-    <p class="url-fallback">Or copy and paste this link into your browser:<br><strong>{{VERIFY_URL}}</strong></p>
+    <p class="url-fallback">Or copy and paste this link into your browser:<br><strong>{{verificationLink}}</strong></p>
     <div class="footer">
       <p>If you didn't create an account, you can safely ignore this email.</p>
     </div>

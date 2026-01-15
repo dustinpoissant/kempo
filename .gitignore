@@ -1,4 +1,5 @@
 node_modules
+emails
 .vscode
 .env
 .env.production
@@ -7,3 +8,4 @@ test-smtp*.js
 vps-*.js
 vps-*.sh
 vps-*.ps1
+emails/
