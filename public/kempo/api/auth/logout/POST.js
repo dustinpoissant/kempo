@@ -3,10 +3,10 @@ import logout from '../../../../../server/utils/auth/logout.js';
 export default async (request, response) => {
   try {
     const token = request.cookies.session_token;
-    const result = await logout({ token });
+    const [error, result] = await logout({ token });
     
-    if(result.error){
-      return response.status(400).json({ error: result.error.message || 'Sign out failed' });
+    if(error){
+      return response.status(error.code).json({ error: error.msg });
     }
     
     response.setHeader('Set-Cookie', 'session_token=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0');

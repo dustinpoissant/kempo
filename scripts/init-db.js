@@ -13,10 +13,8 @@ const DEFAULT_PERMISSIONS = [
   { name: 'system:user:update', description: 'Edit users' },
   { name: 'system:user:delete', description: 'Delete users' },
   
-  { name: 'system:permissions:list-own', description: 'List own permissions' },
-  { name: 'system:permissions:check-others', description: 'Check other users permissions' },
-  { name: 'system:permissions:list-others', description: 'List other users permissions' },
-  { name: 'system:permissions:manage', description: 'Add or remove permissions for any user' },
+  { name: 'system:permissions:read', description: 'View permissions for all users' },
+  { name: 'system:permissions:manage', description: 'Add or remove permissions' },
   
   { name: 'system:extension:install', description: 'Install extensions' },
   { name: 'system:extension:activate', description: 'Activate extensions' },

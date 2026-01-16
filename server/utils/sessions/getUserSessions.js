@@ -3,20 +3,28 @@ import { session } from '../../db/schema.js';
 import { eq, sql } from 'drizzle-orm';
 
 export default async (userId, { limit = 50, offset = 0 } = {}) => {
-  const sessions = await db.select()
-    .from(session)
-    .where(eq(session.userId, userId))
-    .limit(limit)
-    .offset(offset);
+  if(!userId){
+    return [{ code: 400, msg: 'User ID is required' }, null];
+  }
   
-  const [{ count }] = await db.select({ count: sql`count(*)` })
-    .from(session)
-    .where(eq(session.userId, userId));
-  
-  return {
-    sessions,
-    total: Number(count),
-    limit,
-    offset
-  };
+  try {
+    const sessions = await db.select()
+      .from(session)
+      .where(eq(session.userId, userId))
+      .limit(limit)
+      .offset(offset);
+    
+    const [{ count }] = await db.select({ count: sql`count(*)` })
+      .from(session)
+      .where(eq(session.userId, userId));
+    
+    return [null, {
+      sessions,
+      total: Number(count),
+      limit,
+      offset
+    }];
+  } catch(error){
+    return [{ code: 500, msg: 'Failed to retrieve user sessions' }, null];
+  }
 };

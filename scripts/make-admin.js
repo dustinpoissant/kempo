@@ -24,10 +24,12 @@ if(!email){
 
 console.log(`Looking for user with email: ${email}`);
 
-const foundUser = await getUserByEmail(email);
+const [error, foundUser] = await getUserByEmail(email);
 
-if(!foundUser){
+if(error || !foundUser){
   console.error(`❌ User not found with email: ${email}`);
+  process.exit(1);
+}
   process.exit(1);
 }
 
@@ -47,7 +49,12 @@ if(existing){
   process.exit(0);
 }
 
-await addUserToGroup(foundUser.id, 'system:Administrators');
+const [addError] = await addUserToGroup(foundUser.id, 'system:Administrators');
+
+if(addError){
+  console.error('❌ Failed to add user to Administrators group:', addError.msg);
+  process.exit(1);
+}
 
 console.log('✅ User is now an administrator!');
 process.exit(0);

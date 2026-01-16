@@ -4,33 +4,26 @@ export default async (request, response) => {
   try {
     const { email, password, name } = await request.json();
     
-    const {
-      error,
-      statusCode,
-      requiresVerification,
-      user,
-      sessionToken,
-      expiresAt 
-    } = await registerEmail({ email, password, name });
+    const [error, result] = await registerEmail({ email, password, name });
     
     if(error){
-      return response.status(statusCode || 400).json({ error });
+      return response.status(error.code).json({ error: error.msg });
     }
 
-    if(requiresVerification){ // No sessionToken was created by the registerEmail util, return early
-      return response.json({ user, requiresVerification });
+    if(result.requiresVerification){
+      return response.json({ user: result.user, requiresVerification: result.requiresVerification });
     }
 
-    response.cookie('session_token', sessionToken, {
+    response.cookie('session_token', result.sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: expiresAt.getTime() - Date.now()
+      maxAge: result.expiresAt.getTime() - Date.now()
     });
     
-    response.json({ user });
-  } catch(error) {
+    response.json({ user: result.user });
+  } catch(error){
     console.error('Registration error:', error);
     response.status(500).json({ error: 'Internal server error' });
   }

@@ -8,6 +8,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default async ({ to, subject, template, data = {} }) => {
+  if(!to){
+    return [{ code: 400, msg: 'Recipient email is required' }, null];
+  }
+  
+  if(!subject){
+    return [{ code: 400, msg: 'Email subject is required' }, null];
+  }
+  
+  if(!template){
+    return [{ code: 400, msg: 'Template name is required' }, null];
+  }
+  
   const templatePath = join(__dirname, '../../../templates/emails', `${template}.html`);
 
   try {
@@ -16,10 +28,10 @@ export default async ({ to, subject, template, data = {} }) => {
     const html = compiledTemplate(data);
 
     return await sendEmail({ to, subject, html });
-  } catch(error) {
+  } catch(error){
     if(error.code === 'ENOENT'){
-      throw new Error(`Email template not found: ${template}`);
+      return [{ code: 404, msg: `Email template not found: ${template}` }, null];
     }
-    throw error;
+    return [{ code: 500, msg: 'Failed to send email from template' }, null];
   }
 };

@@ -1,19 +1,22 @@
 # Code Contribution Guidelines
 
-## Project Desciption
-An fullstack solution and admin panel for creating websites with user authentication using the kempo suite of tools.
+## Project Description
+A fullstack solution and admin panel for creating websites with user authentication using the kempo suite of tools.
  - kempo-server
  - kempo-css
  - kempo-ui
  - kempo-testing-framework
 
 ## Project Structure
- - All code should be in the `src/` directory, with the exception of npm scripts.
- - All utility function module files should be in the `src/utils/` directory.
+ - Frontend code is in the `public/` directory
+ - Backend utilities are in `server/utils/` directory
+ - Middleware is in `middleware/` directory
+ - Database schema and connection are in `server/db/` directory
+ - Route handlers are in `public/kempo/api/` and other `public/` subdirectories as `[METHOD].js` files
 
 ## Architecture: Four-Layer Separation
 
-This project maintains strict separation between frontend, HTTP layer, backend logic, and database. See ARCHITECTURE.md for full details.
+This project maintains strict separation between frontend, HTTP layer, backend logic, and database. See CONTRIBUTING.md for full details.
 
 ### Critical Rule: Backend Utils Must Be HTTP-Agnostic
 
@@ -45,15 +48,19 @@ export default async ({ headers }) => {
 ```javascript
 // ✅ GOOD: server/utils/auth/logout.js
 export default async ({ token }) => {
-  // Pure data in, pure data out
   await db.delete(session).where(eq(session.token, token));
-  return { success: true };
+  return [null, { success: true }];
 };
 
 // ✅ GOOD: public/kempo/api/auth/logout/POST.js (HTTP layer)
 export default async (request, response) => {
-  const token = request.cookies.session_token; // Extract here
-  const result = await logout({ token }); // Pass pure data
+  const token = request.cookies.session_token;
+  const [error, result] = await logout({ token });
+  
+  if(error){
+    return response.status(error.code).json({ error: error.msg });
+  }
+  
   response.json(result);
 };
 ```
@@ -61,8 +68,67 @@ export default async (request, response) => {
 **When writing or modifying server/utils/:**
 1. Accept only pure data as parameters
 2. Never import from `public/` or `middleware/`
-3. Return data or throw errors - no HTTP responses
+3. Return error tuples: `[null, data]` on success, `[{code, msg}, null]` on failure
 4. Test by calling directly with plain objects - no mocking needed
+
+## Error Handling Pattern
+
+**ALL backend utilities (`server/utils/`) MUST use the structured error tuple pattern:**
+
+```javascript
+// Success
+return [null, resultData];
+
+// Failure
+return [{ code: 404, msg: 'User not found' }, null];
+```
+
+### Critical Rules
+
+1. **Always return a tuple** with exactly 2 elements
+2. **First element**: 
+   - `null` on success
+   - `{ code, msg }` object on failure (code must be HTTP-compatible: 400, 401, 403, 404, 409, 500)
+3. **Second element**:
+   - Result data on success
+   - `null` on failure
+4. **Never throw errors** in server/utils/ - return error tuples instead
+5. **Error messages** must be safe to display to end users
+
+### Example
+
+```javascript
+// server/utils/users/getUser.js
+export default async ({ userId }) => {
+  if(!userId){
+    return [{ code: 400, msg: 'User ID is required' }, null];
+  }
+
+  const foundUser = await db.select().from(user).where(eq(user.id, userId)).limit(1);
+
+  if(!foundUser.length){
+    return [{ code: 404, msg: 'User not found' }, null];
+  }
+
+  return [null, foundUser[0]];
+};
+```
+
+### HTTP Layer Usage
+
+```javascript
+// public/kempo/api/user/GET.js
+export default async (request, response) => {
+  const userId = request.query.id;
+  const [error, user] = await getUser({ userId });
+  
+  if(error){
+    return response.status(error.code).json({ error: error.msg });
+  }
+  
+  response.json({ user });
+};
+```
 
 ## Coding Style Guidelines
 
@@ -137,7 +203,7 @@ export default (n) => n + 1;
 ### Code Reuse
 Create utility functions for shared logic.
   - If the shared logic is used in a single file, define a utility function in that file.
-  - If the shared logic is used in multiple files, create a utility function module file in `src/utils/`.
+  - If the shared logic is used in multiple files, create a utility function module file in `server/utils/` (for backend logic) or in the appropriate location for frontend code.
 
 ### Naming
 Do not prefix identifiers with underscores.

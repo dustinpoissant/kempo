@@ -5,12 +5,13 @@ export default (config) => async (request, response, next) => {
   const { path } = request;
   if (path.startsWith('/account') || path.startsWith('/admin')) {
     const sessionToken = request.cookies.session_token;
-    const session = await getSession({ token: sessionToken });
-    if (!session || !session.user) {
+    const [error, session] = await getSession({ token: sessionToken });
+    if (error || !session || !session.user) {
       return response.redirect('/login');
     }
     if (request.path.startsWith('/admin')) {
-      if (!await currentUserHasPermission(sessionToken, 'system:admin:access')) {
+      const [permError, hasPermission] = await currentUserHasPermission(sessionToken, 'system:admin:access');
+      if (permError || !hasPermission) {
         return response.redirect('/account');
       }
     }

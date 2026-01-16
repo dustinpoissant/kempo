@@ -3,7 +3,7 @@ import verifyEmail from '../../../../../server/utils/auth/verifyEmail.js';
 import db from '../../../../../server/db/index.js';
 import { session, user } from '../../../../../server/db/schema.js';
 import { eq } from 'drizzle-orm';
-import { getSetting } from '../../../../../server/utils/settings/settings.js';
+import getSetting from '../../../../../server/utils/settings/getSetting.js';
 
 const generateToken = () => crypto.randomBytes(32).toString('hex');
 
@@ -11,10 +11,10 @@ export default async (request, response) => {
   try {
     const { token } = await request.json();
     
-    const result = await verifyEmail({ token });
+    const [error, result] = await verifyEmail({ token });
     
-    if(result.error){
-      return response.status(result.statusCode || 400).json({ error: result.error });
+    if(error){
+      return response.status(error.code).json({ error: error.msg });
     }
 
     const userRecord = await db
@@ -28,7 +28,12 @@ export default async (request, response) => {
     }
 
     const sessionToken = generateToken();
-    const sessionDurationDays = await getSetting('system', 'session_duration_days', 7);
+    const [settingError, sessionDurationDays] = await getSetting('system', 'session_duration_days', 7);
+    
+    if(settingError){
+      return response.status(settingError.code).json({ error: settingError.msg });
+    }
+    
     const expiresAt = new Date(Date.now() + sessionDurationDays * 24 * 60 * 60 * 1000);
     const now = new Date();
 
@@ -56,7 +61,7 @@ export default async (request, response) => {
         emailVerified: userRecord[0].emailVerified,
       }
     });
-  } catch(error) {
+  } catch(error){
     console.error('Email verification error:', error);
     response.status(500).json({ error: 'Internal server error' });
   }

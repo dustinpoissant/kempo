@@ -3,9 +3,9 @@ import getSession from '../../../../../server/utils/auth/getSession.js';
 export default async (request, response) => {
   try {
     const sessionToken = request.cookies.session_token;
-    const sessionData = await getSession({ token: sessionToken });
+    const [error, sessionData] = await getSession({ token: sessionToken });
     
-    if(!sessionData || !sessionData.user){
+    if(error || !sessionData || !sessionData.user){
       return response.json({ session: null, user: null });
     }
     
@@ -15,7 +15,7 @@ export default async (request, response) => {
       session: sessionData.session,
       user: userWithoutPassword
     });
-  } catch(error) {
+  } catch(error){
     console.log('Session API error:', error);
     response.status(500).json({ error: error.message });
   }

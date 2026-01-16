@@ -5,9 +5,9 @@ import bcrypt from 'bcrypt';
 export default async (request, response) => {
   try {
     const sessionToken = request.cookies.session_token;
-    const session = await getSession({ token: sessionToken });
+    const [sessionError, session] = await getSession({ token: sessionToken });
     
-    if(!session || !session.user){
+    if(sessionError || !session || !session.user){
       return response.status(401).json({ error: 'Not authenticated' });
     }
     
@@ -27,23 +27,13 @@ export default async (request, response) => {
       return response.status(400).json({ error: 'Current password is incorrect' });
     }
 
-    const result = await changePassword({
+    const [changeError, result] = await changePassword({
       userId: session.user.id,
       newPassword
     });
 
-    if(result.error){
-      console.error('Change password error:', result.error);
-      return response.status(400).json({ 
-        error: result.error.message || 'Failed to change password'
-      });
-    }
-
-    if(!result || result.status === false){
-      console.error('Change password failed:', result);
-      return response.status(500).json({ 
-        error: 'Failed to change password' 
-      });
+    if(changeError){
+      return response.status(changeError.code).json({ error: changeError.msg });
     }
 
     response.json({ success: true, message: 'Password changed successfully' });

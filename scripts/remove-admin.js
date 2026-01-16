@@ -23,9 +23,9 @@ if(!email) {
 }
 
 try {
-  const targetUser = await getUserByEmail(email);
+  const [error, targetUser] = await getUserByEmail(email);
 
-  if(!targetUser) {
+  if(error || !targetUser) {
     console.error(`❌ User not found: ${email}`);
     process.exit(1);
   }
@@ -48,7 +48,12 @@ try {
     process.exit(0);
   }
 
-  await removeUserFromGroup(targetUser.id, 'system:Administrators');
+  const [removeError] = await removeUserFromGroup(targetUser.id, 'system:Administrators');
+  
+  if(removeError){
+    console.error('❌ Failed to remove user from Administrators group:', removeError.msg);
+    process.exit(1);
+  }
 
   console.log(`✓ Removed ${email} from Administrators group`);
   process.exit(0);

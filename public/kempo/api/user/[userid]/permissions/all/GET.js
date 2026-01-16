@@ -4,9 +4,9 @@ import getUserPermissions from '../../../../../../../server/utils/permissions/ge
 export default async (request, response) => {
   try {
     const sessionToken = request.cookies.session_token;
-    const session = await getSession({ token: sessionToken });
+    const [sessionError, session] = await getSession({ token: sessionToken });
     
-    if(!session || !session.user) {
+    if(sessionError || !session || !session.user){
       return response.status(401).json({ error: 'Unauthorized' });
     }
 
@@ -15,28 +15,25 @@ export default async (request, response) => {
 
     const permissionsParam = request.query.permissions;
 
-    if(!permissionsParam) {
+    if(!permissionsParam){
       return response.status(400).json({ error: 'permissions parameter required' });
     }
 
     const permissionsToCheck = permissionsParam.split(',').map(p => p.trim());
 
-    const userPermissions = await getUserPermissions(targetUserId, session.user.id);
+    const [permsError, userPermissions] = await getUserPermissions(targetUserId, session.user.id);
+    
+    if(permsError){
+      return response.status(permsError.code).json({ error: permsError.msg });
+    }
+    
     const permissionNames = new Set(userPermissions.map(p => p.name));
 
-    const result = {};
-    for(const perm of permissionsToCheck) {
-      result[perm] = permissionNames.has(perm);
-    }
+    const hasAll = permissionsToCheck.every(p => permissionNames.has(p));
 
-    const hasAll = permissionsToCheck.every(p => result[p]);
-
-    response.json({ 
-      hasPermission: hasAll,
-      permissions: result
-    });
-  } catch(error) {
-    console.error('Check permission error:', error);
+    response.json({ hasPermission: hasAll });
+  } catch(error){
+    console.error('Check all permissions error:', error);
     response.status(500).json({ error: error.message });
   }
 };

@@ -12,7 +12,7 @@ const testEmail = async () => {
   console.log(`Sending test email to: ${testTo}`);
 
   try {
-    const result = await sendEmailFromTemplate({
+    const [error, result] = await sendEmailFromTemplate({
       to: testTo,
       subject: 'Test Email from Kempo',
       template: 'test',
@@ -21,10 +21,15 @@ const testEmail = async () => {
         timestamp: new Date().toLocaleString()
       }
     });
+    
+    if(error){
+      console.error('✗ Failed to send email:', error.msg);
+      process.exit(1);
+    }
 
     console.log('✓ Email sent successfully!');
     console.log('Message ID:', result.messageId);
-  } catch(error) {
+  } catch(error){
     console.error('✗ Failed to send email:', error.message);
     process.exit(1);
   }

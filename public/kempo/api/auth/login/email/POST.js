@@ -4,10 +4,10 @@ export default async (request, response) => {
   try {
     const { email, password } = await request.json();
     
-    const result = await loginEmail({ email, password });
+    const [error, result] = await loginEmail({ email, password });
     
-    if(result.error){
-      return response.status(400).json({ error: result.error });
+    if(error){
+      return response.status(error.code).json({ error: error.msg });
     }
 
     response.cookie('session_token', result.sessionToken, {
@@ -19,7 +19,7 @@ export default async (request, response) => {
     });
     
     response.json({ user: result.user });
-  } catch(error) {
+  } catch(error){
     console.error('Login error:', error);
     response.status(500).json({ error: 'Internal server error' });
   }

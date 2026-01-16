@@ -10,7 +10,11 @@ export default async (request, response) => {
     
     console.log('Password reset request - Token:', token);
     
-    const result = await resetPassword({ token, password: newPassword, logoutAll });
+    const [resetError, result] = await resetPassword({ token, password: newPassword, logoutAll });
+    
+    if(resetError){
+      return response.status(resetError.code).json({ error: resetError.msg });
+    }
     
     const userData = await db.select().from(user).where(eq(user.id, result.userId)).limit(1);
     
@@ -18,7 +22,11 @@ export default async (request, response) => {
       return response.status(500).json({ error: 'User not found after password reset' });
     }
 
-    const loginResult = await loginEmail({ email: userData[0].email, password: newPassword });
+    const [loginError, loginResult] = await loginEmail({ email: userData[0].email, password: newPassword });
+    
+    if(loginError){
+      return response.status(loginError.code).json({ error: loginError.msg });
+    }
     
     response.cookie('session_token', loginResult.sessionToken, {
       httpOnly: true,
@@ -29,7 +37,8 @@ export default async (request, response) => {
     });
     
     response.json({ success: true, user: loginResult.user });
-  } catch(error) {
-    response.status(error.statusCode || 500).json({ error: error.message });
+  } catch(error){
+    console.error('Password reset error:', error);
+    response.status(500).json({ error: 'Failed to reset password' });
   }
 };
