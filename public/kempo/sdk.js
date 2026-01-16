@@ -153,8 +153,8 @@ export const resetPassword = async ({ token, password, logoutAll = false }) =>
     'Password reset failed'
   );
   
-export const changePassowrd = async ({ currentPassword, newPassword, logoutAll }) => 
-  fetchWithErrorHandler(
+export const changePassword = async ({ currentPassword, newPassword, logoutAll }) => 
+  fetchWithErrorHandling(
     `${API_BASE}/auth/change-password`,
     {
       method: 'POST',

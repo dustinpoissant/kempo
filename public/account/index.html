@@ -114,6 +114,7 @@
 					class="w-full p-sm br"
 				>
 			</div>
+			<k-toggle id="logout-all">Logout all other devices</k-toggle>
 			<div class="ta-right">
 				<button
 					type="submit"
@@ -154,15 +155,18 @@
 		src="/kempo/components/LogoutBtn.js"
 		type="module"
 	></script>
+	<script src="../../kempo-ui/components/Toggle.js" type="module"></script>
 	<script type="module">
+		import  { changePassword } from '../kempo/sdk.js';
 		import Toast from '../kempo-ui/components/Toast.js';
 		/* Change Password */
 		(()=>{
+			const $dialog = document.getElementById('changePasswordDialog');
 			const $confirmPassword = document.getElementById('confirmPassword');
 			document.getElementById('changePasswordBtn').addEventListener('click', () => {
-				document.getElementById('changePasswordDialog').open();
+				$dialog.open();
 			});
-			document.getElementById('changePasswordForm').addEventListener('submit', (event) => {
+			document.getElementById('changePasswordForm').addEventListener('submit', async (event) => {
 				event.preventDefault();
 				const currentPassword = document.getElementById('currentPassword').value;
 				const newPassword = document.getElementById('newPassword').value;
@@ -172,7 +176,18 @@
 					$confirmPassword.setCustomValidity("Your new password and confirmation password do not match");
 					return;
 				}
-				console.log(currentPassword, newPassword);
+				$dialog.close();
+				const { error } = await changePassword({
+					currentPassword,
+					newPassword,
+					logoutAll: document.getElementById('logout-all').value
+				});
+				if(error){
+					Toast.error(error);
+					return;
+				} else {
+					Toast.success('Password Updated');
+				}
 			});
 			/* Clear the Error message when they type */
 			$confirmPassword.addEventListener('input', ()=>{

@@ -11,6 +11,59 @@ An fullstack solution and admin panel for creating websites with user authentica
  - All code should be in the `src/` directory, with the exception of npm scripts.
  - All utility function module files should be in the `src/utils/` directory.
 
+## Architecture: Four-Layer Separation
+
+This project maintains strict separation between frontend, HTTP layer, backend logic, and database. See ARCHITECTURE.md for full details.
+
+### Critical Rule: Backend Utils Must Be HTTP-Agnostic
+
+**Files in `server/utils/` MUST NEVER access HTTP-specific objects or properties:**
+
+❌ **FORBIDDEN in server/utils/:**
+- `request`, `response`, `req`, `res` objects
+- `request.headers`, `request.cookies`, `request.body`, `request.query`, `request.params`
+- `response.status()`, `response.json()`, `response.setHeader()`, `response.redirect()`
+- Any HTTP-specific logic
+
+✅ **REQUIRED in server/utils/:**
+- Accept pure JavaScript data types: strings, numbers, objects, arrays
+- Return pure data or throw errors
+- Example: `export default async ({ token, userId, email }) => { ... }`
+
+**Why:** Backend utils must work with ANY HTTP layer (web cookies, mobile Bearer tokens, CLI tools, webhooks). The HTTP layer (`public/*/[METHOD].js`, `middleware/`) extracts data from requests and passes it to utils.
+
+**Example - WRONG:**
+```javascript
+// ❌ BAD: server/utils/auth/logout.js
+export default async ({ headers }) => {
+  const cookie = headers.cookie; // HTTP-specific!
+  // ...
+};
+```
+
+**Example - CORRECT:**
+```javascript
+// ✅ GOOD: server/utils/auth/logout.js
+export default async ({ token }) => {
+  // Pure data in, pure data out
+  await db.delete(session).where(eq(session.token, token));
+  return { success: true };
+};
+
+// ✅ GOOD: public/kempo/api/auth/logout/POST.js (HTTP layer)
+export default async (request, response) => {
+  const token = request.cookies.session_token; // Extract here
+  const result = await logout({ token }); // Pass pure data
+  response.json(result);
+};
+```
+
+**When writing or modifying server/utils/:**
+1. Accept only pure data as parameters
+2. Never import from `public/` or `middleware/`
+3. Return data or throw errors - no HTTP responses
+4. Test by calling directly with plain objects - no mocking needed
+
 ## Coding Style Guidelines
 
 ### Code Organization

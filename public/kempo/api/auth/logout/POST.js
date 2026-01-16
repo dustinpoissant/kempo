@@ -2,7 +2,8 @@ import logout from '../../../../../server/utils/auth/logout.js';
 
 export default async (request, response) => {
   try {
-    const result = await logout({ headers: request.headers });
+    const token = request.cookies.session_token;
+    const result = await logout({ token });
     
     if(result.error){
       return response.status(400).json({ error: result.error.message || 'Sign out failed' });

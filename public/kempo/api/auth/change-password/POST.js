@@ -1,5 +1,5 @@
-import changePassword from '../../../../server/utils/auth/changePassword.js';
-import getSession from '../../../../server/utils/auth/getSession.js';
+import changePassword from '../../../../../server/utils/auth/changePassword.js';
+import getSession from '../../../../../server/utils/auth/getSession.js';
 import bcrypt from 'bcrypt';
 
 export default async (request, response) => {
