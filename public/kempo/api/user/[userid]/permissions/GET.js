@@ -8,7 +8,8 @@ export default async (request, response) => {
     const [sessionError, session] = await getSession({ token: sessionToken });
     
     if(sessionError || !session || !session.user){
-      return response.status(401).json({ error: 'Unauthorized' });\n    }
+      return response.status(401).json({ error: 'Unauthorized' });
+    }
 
     const { userid } = request.params;
     const targetUserId = userid === 'current' ? session.user.id : userid;
