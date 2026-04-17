@@ -1,4 +1,5 @@
 import { readFile } from 'fs/promises';
+import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import Handlebars from 'handlebars';
@@ -20,7 +21,9 @@ export default async ({ to, subject, template, data = {} }) => {
     return [{ code: 400, msg: 'Template name is required' }, null];
   }
   
-  const templatePath = join(__dirname, '../../../templates/emails', `${template}.html`);
+  const projectPath = join(process.cwd(), 'templates/emails', `${template}.html`);
+  const modulePath = join(__dirname, '../../../app-templates/emails', `${template}.html`);
+  const templatePath = existsSync(projectPath) ? projectPath : modulePath;
 
   try {
     const templateContent = await readFile(templatePath, 'utf-8');

@@ -1,0 +1,51 @@
+<!--
+  owner: system
+  title: Login
+  description: User login page
+-->
+<page title="Login">
+<content>
+	<main class="p">
+		<div style="max-width: 400px; margin: 0 auto;">
+			<h2>Login</h2>
+			<form id="loginForm">
+				<div class="mb">
+					<label for="email" class="d-b mb-sm">Email</label>
+					<input type="email" id="email" name="email" required class="w-full p-sm br">
+				</div>
+				<div class="mb">
+					<label for="password" class="d-b mb-sm">Password</label>
+					<input type="password" id="password" name="password" required class="w-full p-sm br">
+				</div>
+				<button type="submit" class="w-full p-sm br">Login</button>
+			</form>
+			<p class="mt">
+				<a href="{{pathToRoot}}forgot-password">Forgot Password?</a>
+			</p>
+			<p class="mt">Don't have an account? <a href="{{pathToRoot}}register">Register</a></p>
+		</div>
+	</main>
+</content>
+<content location="scripts">
+	<script type="module">
+		import { login } from '{{pathToRoot}}kempo/sdk.js';
+		import Toast from '{{pathToRoot}}kempo-ui/components/Toast.js';
+
+		const form = document.getElementById('loginForm');
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
+
+			const email = document.getElementById('email').value;
+			const password = document.getElementById('password').value;
+
+			const [error] = await login({ email, password });
+			if(error){
+				Toast.error(error.msg);
+				return;
+			}
+			window.location.href = '{{pathToRoot}}account';
+		});
+	</script>
+</content>
+</page>

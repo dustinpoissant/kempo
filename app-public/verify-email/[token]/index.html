@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="image/png" sizes="48x48" href="../../media/icon48.png">
+	<link rel="manifest" href="../../manifest.json">
+	<title>Verifying Email...</title>
+	<link rel="stylesheet" href="../../kempo-css/kempo.min.css">
+	<link rel="stylesheet" href="../../styles.css">
+	<script src="../../init.js"></script>
+	
+</head>
+<body>
+	
+	<nav
+		id="main-nav"
+		class="d-f bb px"
+		style="align-items: center; gap: var(--spacer);"
+	>
+		<a
+			href="../../"
+			class="d-if td-n"
+			style="align-items: center; gap: var(--spacer_h);"
+		>
+			<img
+				src="../../media/icon48.png"
+				class="d-ib"
+				style="height: 2rem;"
+			/>
+			<strong>Kempo</strong>
+		</a>
+		<div style="flex: 1"></div>
+		<a
+			href="../../account/"
+			class="d-ib"
+		>
+			<k-icon name="account_circle"><svg
+					xmlns="http://www.w3.org/2000/svg"
+					viewBox="0 -960 960 960"
+				>
+					<path
+						d="M234-276q51-39 114-61.5T480-360q69 0 132 22.5T726-276q35-41 54.5-93T800-480q0-133-93.5-226.5T480-800q-133 0-226.5 93.5T160-480q0 59 19.5 111t54.5 93Zm246-164q-59 0-99.5-40.5T340-580q0-59 40.5-99.5T480-720q59 0 99.5 40.5T620-580q0 59-40.5 99.5T480-440Zm0 360q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q53 0 100-15.5t86-44.5q-39-29-86-44.5T480-280q-53 0-100 15.5T294-220q39 29 86 44.5T480-160Zm0-360q26 0 43-17t17-43q0-26-17-43t-43-17q-26 0-43 17t-17 43q0 26 17 43t43 17Zm0-60Zm0 360Z"
+					/>
+				</svg></k-icon>
+		</a>
+	</nav>
+	<script
+		src="../../kempo-ui/components/Icon.js"
+		type="module"
+	></script>
+
+	
+	<main class="p">
+		<div style="max-width: 600px; margin: 0 auto; text-align: center;">
+			<div id="loading">
+				<h2>Verifying Your Email...</h2>
+				<p>Please wait while we verify your email address.</p>
+			</div>
+			<div id="success" style="display: none;">
+				<h2>Email Verified!</h2>
+				<p>Your email has been successfully verified. Redirecting you to your account...</p>
+			</div>
+			<div id="error" style="display: none;">
+				<h2>Verification Failed</h2>
+				<p id="errorMessage" class="c-error"></p>
+				<p class="mt">
+					<a href="../../login" class="btn">Go to Login</a>
+				</p>
+			</div>
+		</div>
+	</main>
+
+	
+	
+	<script type="module">
+		import { verifyEmail } from '../../kempo/sdk.js';
+
+		const loadingDiv = document.getElementById('loading');
+		const successDiv = document.getElementById('success');
+		const errorDiv = document.getElementById('error');
+		const errorMessage = document.getElementById('errorMessage');
+
+		const pathParts = window.location.pathname.split('/');
+		const token = pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+
+		if(!token || token === 'verify-email'){
+			loadingDiv.style.display = 'none';
+			errorDiv.style.display = 'block';
+			errorMessage.textContent = 'No verification token found in URL.';
+		} else {
+			const [error] = await verifyEmail({ token });
+			loadingDiv.style.display = 'none';
+			if(error){
+				errorDiv.style.display = 'block';
+				errorMessage.textContent = error.msg;
+			} else {
+				successDiv.style.display = 'block';
+				setTimeout(() => {
+					window.location.href = '../../account';
+				}, 2000);
+			}
+		}
+	</script>
+
+</body>
+</html>

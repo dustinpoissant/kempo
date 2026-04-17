@@ -6,7 +6,7 @@ export default async (userId) => {
   if(!userId){
     return [{ code: 400, msg: 'User ID is required' }, null];
   }
-  
+
   try {
     const [usersGroup] = await db
       .select()

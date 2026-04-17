@@ -30,8 +30,6 @@ if(error || !foundUser){
   console.error(`❌ User not found with email: ${email}`);
   process.exit(1);
 }
-  process.exit(1);
-}
 
 console.log(`✓ Found user: ${foundUser.name} (${foundUser.email})`);
 

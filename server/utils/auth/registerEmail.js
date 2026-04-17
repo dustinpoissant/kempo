@@ -51,7 +51,7 @@ export default async ({ email, password, name }) => {
       createdAt: now,
       updatedAt: now,
     });
-    
+
     /* Is Email Verification Required? */
     const [verifySettingError, requiresVerification] = await getSetting('system', 'require_email_verification', false);
     if(verifySettingError){

@@ -14,6 +14,8 @@ RUN npm ci --only=production
 COPY drizzle.config.js ./
 COPY scripts ./scripts
 COPY server ./server
+COPY middleware ./middleware
+COPY dist ./dist
 COPY public ./public
 COPY templates ./templates
 

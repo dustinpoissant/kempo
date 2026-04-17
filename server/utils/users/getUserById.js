@@ -13,6 +13,7 @@ export default async (id) => {
       email: user.email,
       name: user.name,
       emailVerified: user.emailVerified,
+      createdAt: user.createdAt,
     }).from(user).where(eq(user.id, id)).limit(1);
     
     if(!result[0]){

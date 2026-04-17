@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
 
 /*
   Auth Tables
@@ -142,3 +142,7 @@ BEFORE DELETE ON permission
 FOR EACH ROW
 EXECUTE FUNCTION prevent_system_permission_delete();
 `;
+
+
+
+

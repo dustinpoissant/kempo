@@ -6,7 +6,12 @@ export default async (name) => {
   if(!name){
     return [{ code: 400, msg: 'Group name is required' }, null];
   }
-  
+
+  const owner = name.includes(':') ? name.split(':')[0] : null;
+  if(owner && owner !== 'admin'){
+    return [{ code: 403, msg: `Cannot delete ${owner}-owned groups` }, null];
+  }
+
   try {
     const [result] = await db
       .delete(group)

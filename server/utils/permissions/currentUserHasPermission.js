@@ -1,8 +1,8 @@
 import getSession from '../auth/getSession.js';
 import userHasPermission from './userHasPermission.js';
 
-export default async (sessionToken, permissionName) => {
-  if(!sessionToken){
+export default async (token, permissionName) => {
+  if(!token){
     return [{ code: 400, msg: 'Session token is required' }, null];
   }
   
@@ -10,7 +10,7 @@ export default async (sessionToken, permissionName) => {
     return [{ code: 400, msg: 'Permission name is required' }, null];
   }
   
-  const [error, sessionData] = await getSession({ token: sessionToken });
+  const [error, sessionData] = await getSession({ token });
   
   if(error){
     return [null, false];

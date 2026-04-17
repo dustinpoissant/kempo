@@ -1,0 +1,288 @@
+<!--
+	locked: true
+-->
+<page title="Settings - Admin">
+<content>
+<script type="module" src="/kempo-ui/components/Table.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/Edit.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script>
+<script type="module" src="/admin/components/TableRowLink.js"></script>
+<script type="module" src="/kempo/components/Permission.js"></script>
+
+		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+			<h1 class="flex mb0">Settings</h1>
+			<k-permission has="system:custom-settings:manage">
+				<button id="createSettingBtn" class="primary">Create Setting</button>
+			</k-permission>
+		</div>
+
+		<h2>Custom Settings</h2>
+		<k-table id="customTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No custom settings have been created yet.">
+			<admin-table-row-link slot="before" url-pattern="{_link}" field-name="_link"></admin-table-row-link>
+			<div slot="top" class="d-f full" style="align-items: center;">
+				<div>
+					<k-permission has="system:custom-settings:manage">
+						<k-tc-delete-selected></k-tc-delete-selected>
+					</k-permission>
+				</div>
+			</div>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>Extension Settings</h2>
+		<k-table id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension settings installed.">
+			<admin-table-row-link slot="before" url-pattern="{_link}" field-name="_link"></admin-table-row-link>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>System Settings</h2>
+		<k-table id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system settings found.">
+			<admin-table-row-link slot="before" url-pattern="{_link}" field-name="_link"></admin-table-row-link>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<script type="module">
+			import { listSettings, setSetting, deleteSetting, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+			import { html } from '/kempo-ui/lit-all.min.js';
+			import Toast from '/kempo-ui/components/Toast.js';
+			import Dialog from '/kempo-ui/components/Dialog.js';
+
+			await window.customElements.whenDefined('k-table');
+
+			const [, permData] = await getAllCurrentUserPermissions();
+			const myPerms = new Set(permData?.permissions ?? []);
+			const canManageSystem = myPerms.has('system:settings:update');
+			const canManageCustom = myPerms.has('system:custom-settings:manage');
+
+			const buildFields = (editable, showOwner = false) => [
+				...(showOwner ? [{ name: 'owner', label: 'Owner', size: 120, editable: false, calculator: r => r.name.split(':')[0] }] : []),
+				{ name: 'name', label: 'Name', size: 220, editable: false, calculator: r => r.name.split(':').slice(1).join(':') },
+				{ name: 'value', label: 'Value', size: 280, editable, formatter: v => {
+					if(v === null || v === undefined) return '';
+					const s = String(v);
+					return s.length > 120 ? s.slice(0, 117) + '...' : s;
+				}},
+				{ name: 'type', label: 'Type', size: 90, editable },
+				{ name: 'isPublic', label: 'Public', size: 80, editable, formatter: v => String(v) },
+				{ name: 'description', label: 'Description', size: 320, editable },
+				{ name: 'updatedAt', label: 'Updated', size: 190, editable: false, formatter: v => new Date(v).toLocaleString() }
+			];
+
+			const coerceValue = (value, type) => {
+				if(type === 'number') return Number(value);
+				if(type === 'boolean') return String(value).toLowerCase() === 'true';
+				if(type === 'json') return JSON.parse(String(value));
+				return String(value);
+			};
+
+			const setupTable = ($table, owner, canEdit, loadFn) => {
+				if(canEdit){
+					$table.setAttribute('request-edit', '');
+					const edit = document.createElement('k-tc-edit');
+					edit.setAttribute('slot', 'after');
+					$table.appendChild(edit);
+				}
+
+				if(owner === 'custom' && canEdit){
+					$table.setAttribute('request-delete', '');
+					$table.setAttribute('enable-selection', '');
+					const del = document.createElement('k-tc-delete-record');
+					del.setAttribute('slot', 'after');
+					$table.appendChild(del);
+				}
+
+				$table.addEventListener('requestSave', async ({ detail: { record, newData, approve, reject } }) => {
+					const type = newData.type ?? record.type;
+					let value = newData.value !== undefined ? newData.value : record.value;
+
+					try {
+						value = coerceValue(value, type);
+					} catch(e){
+						reject();
+						Toast.error(`Invalid ${type} value`);
+						return;
+					}
+
+					const isPublic = newData.isPublic !== undefined
+						? String(newData.isPublic).toLowerCase() === 'true'
+						: record.isPublic;
+					const [recordOwner, ...nameParts] = record.name.split(':');
+					const name = nameParts.join(':');
+					const [error] = await setSetting(recordOwner, name, {
+						value,
+						type,
+						isPublic,
+						description: newData.description ?? record.description
+					});
+
+					if(error){ reject(); Toast.error(error.msg || 'Failed to update setting'); return; }
+					approve();
+					Toast.success('Setting updated');
+				});
+
+				if(owner === 'custom' && canEdit){
+					$table.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
+						const displayName = r => r.name.split(':').slice(1).join(':');
+						const count = records.length;
+						const msg = count === 1
+							? `<div class="p"><p>Delete "${displayName(records[0])}"? This action cannot be undone.</p></div>`
+							: `<div class="p"><p>Delete ${count} settings? This action cannot be undone.</p></div>`;
+						Dialog.confirm(msg, async (confirmed) => {
+							if(!confirmed){ reject(); return; }
+							let failed = 0;
+							for(const record of records){
+								const [recOwner, ...nameParts] = record.name.split(':');
+								const [error] = await deleteSetting(recOwner, nameParts.join(':'));
+								if(error) failed++;
+							}
+							if(failed){
+								reject();
+								Toast.error(`Failed to delete ${failed} setting${failed !== 1 ? 's' : ''}`);
+								return;
+							}
+							approve();
+							Toast.success(count === 1 ? 'Setting deleted' : `${count} settings deleted`);
+							loadFn();
+						});
+					});
+				}
+			};
+
+			const addLinks = settings => {
+				settings.forEach(s => {
+					const [o, ...parts] = s.name.split(':');
+					s._link = `/admin/settings/${encodeURIComponent(o)}/${encodeURIComponent(parts.join(':'))}/`;
+				});
+			};
+
+			const loadTable = async ($table, owner, canEdit) => {
+				const [error, data] = await listSettings({ owner });
+				if(error){ Toast.error(error.msg || 'Failed to load settings'); return; }
+				addLinks(data.settings);
+				$table.setData({ records: data.settings, fields: buildFields(canEdit, owner === 'extension') });
+				$table.setupFetchRecords(data.total, async (start, count) => {
+					const [err, d] = await listSettings({ owner, limit: count, offset: start });
+					if(err) return [];
+					addLinks(d.settings);
+					return d.settings;
+				});
+			};
+
+			const $customTable = document.getElementById('customTable');
+			const $extensionTable = document.getElementById('extensionTable');
+			const $systemTable = document.getElementById('systemTable');
+
+			setupTable($customTable, 'custom', canManageCustom, () => loadTable($customTable, 'custom', canManageCustom));
+			setupTable($extensionTable, 'extension', false, () => loadTable($extensionTable, 'extension', false));
+			setupTable($systemTable, 'system', canManageSystem, () => loadTable($systemTable, 'system', canManageSystem));
+
+			await Promise.all([
+				loadTable($customTable, 'custom', canManageCustom),
+				loadTable($extensionTable, 'extension', false),
+				loadTable($systemTable, 'system', canManageSystem)
+			]);
+
+			if(canManageCustom){
+				document.getElementById('createSettingBtn').addEventListener('click', () => {
+					const $dialog = Dialog.create(html`
+						<div class="p">
+							<div class="mb">
+								<label class="d-b mb-sm">Name</label>
+								<input type="text" id="dlg-name" class="full" placeholder="e.g. my-setting" required>
+							</div>
+							<div class="mb">
+								<label class="d-b mb-sm">Value</label>
+								<input type="text" id="dlg-value" class="full">
+							</div>
+							<div class="mb">
+								<label class="d-b mb-sm">Type</label>
+								<select id="dlg-type" class="full">
+									<option value="string">String</option>
+									<option value="number">Number</option>
+									<option value="boolean">Boolean</option>
+									<option value="json">JSON</option>
+								</select>
+							</div>
+							<div class="mb d-f" style="align-items: center; gap: var(--spacer-sm);">
+								<input type="checkbox" id="dlg-isPublic">
+								<label for="dlg-isPublic">Public (accessible without authentication)</label>
+							</div>
+							<div>
+								<label class="d-b mb-sm">Description</label>
+								<input type="text" id="dlg-description" class="full">
+							</div>
+						</div>
+					`, {
+						title: 'Create Setting',
+						confirmText: 'Create',
+						confirmAction: async () => {
+							const name = $dialog.querySelector('#dlg-name').value.trim();
+							if(!name){ Toast.error('Name is required'); return; }
+							if(name.includes(':')){ Toast.error('Name cannot contain ":"'); return; }
+
+							const rawValue = $dialog.querySelector('#dlg-value').value;
+							const type = $dialog.querySelector('#dlg-type').value;
+							const isPublic = $dialog.querySelector('#dlg-isPublic').checked;
+							const description = $dialog.querySelector('#dlg-description').value.trim();
+
+							let value;
+							try {
+								value = coerceValue(rawValue, type);
+							} catch(e){
+								Toast.error(`Invalid ${type} value`);
+								return;
+							}
+
+							const [error] = await setSetting('custom', name, { value, type, isPublic, description });
+							if(error){ Toast.error(error.msg || 'Failed to create setting'); return; }
+							Toast.success('Setting created');
+							loadTable($customTable, 'custom', canManageCustom);
+						},
+						cancelText: 'Cancel'
+					});
+				});
+			}
+		</script>
+
+</content>
+</page>

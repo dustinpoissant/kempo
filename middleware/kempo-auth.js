@@ -3,16 +3,22 @@ import currentUserHasPermission from '../server/utils/permissions/currentUserHas
 
 export default (config) => async (request, response, next) => {
   const { path } = request;
-  if (path.startsWith('/account') || path.startsWith('/admin')) {
+  if(path.startsWith('/account') || path.startsWith('/admin')){
     const sessionToken = request.cookies.session_token;
     const [error, session] = await getSession({ token: sessionToken });
-    if (error || !session || !session.user) {
+    if(error || !session || !session.user){
       return response.redirect('/login');
     }
-    if (request.path.startsWith('/admin')) {
+    if(request.path.startsWith('/admin')){
       const [permError, hasPermission] = await currentUserHasPermission(sessionToken, 'system:admin:access');
-      if (permError || !hasPermission) {
+      if(permError || !hasPermission){
         return response.redirect('/account');
+      }
+      if(request.path.startsWith('/admin/pages/edit')){
+        const [editPermError, hasEditPermission] = await currentUserHasPermission(sessionToken, 'system:pages:update');
+        if(editPermError || !hasEditPermission){
+          return response.redirect('/admin/pages');
+        }
       }
     }
   }

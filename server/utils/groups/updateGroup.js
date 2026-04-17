@@ -11,6 +11,10 @@ export default async (name, updates) => {
     return [{ code: 400, msg: 'Updates are required' }, null];
   }
   
+  if (name.startsWith('system:')) {
+    return [{ code: 403, msg: 'Editing system-owned groups is not allowed' }, null];
+  }
+  
   try {
     const [result] = await db
       .update(group)

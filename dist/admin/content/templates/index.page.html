@@ -1,0 +1,306 @@
+<!--
+	locked: true
+-->
+<page title="Templates - Admin">
+	<content>
+		<script type="module" src="/kempo-ui/components/Table.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script>
+		<script type="module" src="/kempo-ui/components/Icon.js"></script>
+		<script type="module" src="/admin/components/TableRowLink.js"></script>
+		<script type="module" src="/kempo/components/Permission.js"></script>
+
+		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+			<h1 class="flex mb0">Templates</h1>
+			<k-permission has="system:pages:create">
+				<button id="createTemplateBtn" class="primary">Create Template</button>
+			</k-permission>
+		</div>
+
+		<h2>Custom Templates</h2>
+		<k-table
+			id="customTable"
+			enable-pages
+			page-size="25"
+			page-size-options="[10,25,50,100]"
+			placeholder="No custom templates have been created yet."
+		>
+			<admin-table-row-link
+				slot="before"
+				url-pattern="/admin/content/templates/edit?template={editPath}"
+				field-name="editPath"
+			></admin-table-row-link>
+			<div slot="top" class="d-f full" style="align-items: center;">
+				<div>
+					<k-permission has="system:pages:delete">
+						<k-tc-delete-selected></k-tc-delete-selected>
+					</k-permission>
+				</div>
+			</div>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>Extension Templates</h2>
+		<k-table
+			id="extensionTable"
+			enable-pages
+			page-size="25"
+			page-size-options="[10,25,50,100]"
+			placeholder="No extension templates installed."
+		>
+			<admin-table-row-link
+				slot="before"
+				url-pattern="/admin/content/templates/edit?template={editPath}"
+				field-name="editPath"
+			></admin-table-row-link>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>System Templates</h2>
+		<k-table
+			id="systemTable"
+			enable-pages
+			page-size="25"
+			page-size-options="[10,25,50,100]"
+			placeholder="No system templates found."
+		>
+			<admin-table-row-link
+				slot="before"
+				url-pattern="/admin/content/templates/edit?template={editPath}"
+				field-name="editPath"
+			></admin-table-row-link>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<script type="module">
+			import { listTemplates, listDirectories, createTemplate, deleteTemplates, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+			import { html } from '/kempo-ui/lit-all.min.js';
+			import Dialog from '/kempo-ui/components/Dialog.js';
+			import Toast from '/kempo-ui/components/Toast.js';
+
+			await window.customElements.whenDefined('k-table');
+
+			const [, permData] = await getAllCurrentUserPermissions();
+			const myPerms = new Set(permData?.permissions ?? []);
+
+			const fields = [
+				{ name: 'lockedBadge', label: '', size: 40, formatter: v => v },
+				{ name: 'name', label: 'Name', size: 150 },
+				{ name: 'directory', label: 'Directory', size: 200 },
+				{ name: 'author', label: 'Author', size: 150 },
+				{ name: 'updatedAt', label: 'Updated', size: 190, formatter: v => v ? new Date(v).toLocaleString() : '' },
+				{ name: 'createdAt', label: 'Created', size: 190, formatter: v => v ? new Date(v).toLocaleString() : '' }
+			];
+
+			const extensionFields = [
+				{ name: 'owner', label: 'Extension', size: 120 },
+				...fields
+			];
+
+			const $customTable = document.getElementById('customTable');
+			const $extensionTable = document.getElementById('extensionTable');
+			const $systemTable = document.getElementById('systemTable');
+
+			const loadTemplates = async () => {
+				const [error, data] = await listTemplates();
+				if(error){
+					Toast.error(error.msg || 'Failed to load templates');
+					return;
+				}
+				const toEditPath = t => ({
+					...t,
+					editPath: (t.directory === '.' ? t.name : `${t.directory}/${t.name}`),
+					lockedBadge: t.locked ? '<k-icon name="lock"></k-icon>' : ''
+				});
+				const custom = data.templates.filter(t => t.owner === 'custom').map(toEditPath);
+				const extension = data.templates.filter(t => t.owner !== 'custom' && t.owner !== 'system').map(toEditPath);
+				const system = data.templates.filter(t => t.owner === 'system').map(toEditPath);
+				$customTable.setData({ records: custom, fields });
+				$extensionTable.setData({ records: extension, fields: extensionFields });
+				$systemTable.setData({ records: system, fields });
+			};
+
+			if(myPerms.has('system:pages:delete')){
+				$customTable.setAttribute('request-delete', '');
+				$customTable.setAttribute('enable-selection', '');
+				const del = document.createElement('k-tc-delete-record');
+				del.setAttribute('slot', 'after');
+				$customTable.appendChild(del);
+			}
+
+			await loadTemplates();
+
+			$customTable.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
+				const locked = records.filter(r => r.locked);
+				if(locked.length){
+					Toast.error(locked.length === 1 ? `"${locked[0].name}" is locked and cannot be deleted.` : `${locked.length} selected templates are locked and cannot be deleted.`);
+					reject();
+					return;
+				}
+				const count = records.length;
+				const msg = count === 1
+					? `Delete "${records[0].name}"? This action cannot be undone.`
+					: `Delete ${count} templates? This action cannot be undone.`;
+				Dialog.confirm(msg, async (confirmed) => {
+					if(!confirmed){ reject(); return; }
+					const files = records.map(r => r.path);
+					const [error] = await deleteTemplates(files);
+					if(error){
+						reject();
+						Toast.error(error.msg || 'Failed to delete');
+						return;
+					}
+					approve();
+					Toast.success(count === 1 ? 'Template deleted' : `${count} templates deleted`);
+					await loadTemplates();
+				});
+			});
+
+			/*
+				Create Template Dialog
+			*/
+
+			const slugify = name => name
+				.toLowerCase()
+				.trim()
+				.replace(/[^\w\s-]/g, '')
+				.replace(/[\s_]+/g, '-')
+				.replace(/-+/g, '-')
+				.replace(/^-|-$/g, '');
+
+			document.getElementById('createTemplateBtn')?.addEventListener('click', async () => {
+				const [[dirError, dirData], [tplError, tplData]] = await Promise.all([
+					listDirectories(),
+					listTemplates()
+				]);
+				if(dirError){
+					Toast.error(dirError.msg || 'Failed to load directories');
+					return;
+				}
+
+				const directories = dirData.directories;
+				const allTemplates = tplError ? [] : (tplData.templates || []);
+				const templateOptions = allTemplates.map(t => {
+					const path = t.directory === '.' ? t.name : `${t.directory}/${t.name}`;
+					return { path: t.path, label: '/' + path.replace(/\.template\.html$/, '') };
+				});
+				const isValidDir = p => /^\/[a-zA-Z0-9_\-\[\]\/]*$/.test(p) && !p.includes('..') && !p.includes('//');
+				const dirToInternal = p => { const t = (p || '/').replace(/^\//, '').replace(/\/$/, ''); return t || '.'; };
+
+				const $dialog = Dialog.create(html`
+					<div class="p">
+						<div class="mb">
+							<label class="d-b mb-sm">Copy From</label>
+							<select id="dlg-copy-from" class="full">
+								<option value="">Blank template</option>
+								${templateOptions.map(t => html`<option value="${t.path}">${t.label}</option>`)}
+							</select>
+						</div>
+						<div class="mb">
+							<label class="d-b mb-sm">Location</label>
+							<input type="text" id="dlg-directory" class="full" list="dlg-dir-list" value="/" placeholder="/">
+							<datalist id="dlg-dir-list">
+								${directories.map(d => html`<option value="${d === '.' ? '/' : '/' + d}">`)}
+							</datalist>
+							<p id="dlg-dir-error" class="mt-sm tc-danger d-n"><small>Invalid path — use format: /path/to/directory</small></p>
+						</div>
+						<div>
+							<label class="d-b mb-sm">Template Name</label>
+							<input type="text" id="dlg-name" class="full" placeholder="My Template" required>
+							<p class="mt-sm muted"><small id="dlg-slug"></small></p>
+						</div>
+					</div>
+				`, {
+					title: 'Create Template',
+					confirmText: 'Create',
+					confirmAction: async () => {
+						const name = $dialog.querySelector('#dlg-name').value.trim();
+						const dirInput = $dialog.querySelector('#dlg-directory').value.trim() || '/';
+
+						if(!name){
+							Toast.error('Template name is required');
+							return;
+						}
+
+						if(!isValidDir(dirInput)){
+							Toast.error('Invalid directory path');
+							return;
+						}
+
+						const directory = dirToInternal(dirInput);
+						const copyFrom = $dialog.querySelector('#dlg-copy-from').value || undefined;
+
+						const [error, data] = await createTemplate({
+							directory: directory === '.' ? '' : directory,
+							name,
+							copyFrom
+						});
+
+						if(error){
+							Toast.error(error.msg || 'Failed to create template');
+							return;
+						}
+
+						Toast.success('Template created — redirecting to editor...');
+						setTimeout(() => {
+							const editPath = data.file.replace(/\.template\.html$/, '');
+							window.location.href = `/admin/content/templates/edit?template=${encodeURIComponent(editPath)}`;
+						}, 1500);
+					},
+					cancelText: 'Cancel'
+				});
+
+				const updateSlug = () => {
+					const slug = slugify($dialog.querySelector('#dlg-name').value);
+					const dir = dirToInternal($dialog.querySelector('#dlg-directory').value);
+					const prefix = dir === '.' ? '/' : '/' + dir + '/';
+					$dialog.querySelector('#dlg-slug').textContent = slug ? `${prefix}${slug}.template.html` : '';
+				};
+				$dialog.querySelector('#dlg-directory').addEventListener('input', e => {
+					$dialog.querySelector('#dlg-dir-error').classList.toggle('d-n', isValidDir(e.target.value || '/'));
+					updateSlug();
+				});
+				$dialog.querySelector('#dlg-name').addEventListener('input', updateSlug);
+			});
+		</script>
+	</content>
+</page>

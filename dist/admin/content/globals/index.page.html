@@ -1,0 +1,237 @@
+<!--
+	locked: true
+-->
+<page title="Global Content - Admin">
+	<content>
+		<script type="module" src="/kempo-ui/components/Table.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script>
+		<script type="module" src="/kempo-ui/components/Icon.js"></script>
+		<script type="module" src="/admin/components/TableRowLink.js"></script>
+		<script type="module" src="/kempo/components/Permission.js"></script>
+
+		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+			<h1 class="flex mb0">Global Content</h1>
+			<k-permission has="system:globals:create">
+				<button id="createGlobalBtn" class="primary">Create Global Content</button>
+			</k-permission>
+		</div>
+
+		<h2>Custom</h2>
+		<k-table id="customTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No custom global content has been created yet.">
+			<admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link>
+			<div slot="top" class="d-f full" style="align-items: center;">
+				<div>
+					<k-permission has="system:globals:delete">
+						<k-tc-delete-selected></k-tc-delete-selected>
+					</k-permission>
+				</div>
+			</div>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>Extensions</h2>
+		<k-table id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension global content installed.">
+			<admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>System</h2>
+		<k-table id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system global content found.">
+			<admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<script type="module">
+			import { listGlobalContent, listTemplates, createGlobalContent, deleteGlobalContent, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+			import { html } from '/kempo-ui/lit-all.min.js';
+			import Dialog from '/kempo-ui/components/Dialog.js';
+			import Toast from '/kempo-ui/components/Toast.js';
+
+			await window.customElements.whenDefined('k-table');
+
+			const [, permData] = await getAllCurrentUserPermissions();
+			const myPerms = new Set(permData?.permissions ?? []);
+
+			const fields = [
+				{ name: 'lockedBadge', label: '', size: 40, formatter: v => v },
+				{ name: 'name', label: 'Name', size: 200 },
+				{ name: 'location', label: 'Location', size: 150 },
+				{ name: 'priority', label: 'Priority', size: 80 },
+				{ name: 'author', label: 'Author', size: 150 },
+				{ name: 'updatedAt', label: 'Updated', size: 190, formatter: v => v ? new Date(v).toLocaleString() : '' },
+				{ name: 'createdAt', label: 'Created', size: 190, formatter: v => v ? new Date(v).toLocaleString() : '' }
+			];
+
+			const extensionFields = [
+				{ name: 'owner', label: 'Extension', size: 120 },
+				...fields
+			];
+
+			const $customTable = document.getElementById('customTable');
+			const $extensionTable = document.getElementById('extensionTable');
+			const $systemTable = document.getElementById('systemTable');
+
+			const addBadge = e => ({ ...e, lockedBadge: e.locked ? '<k-icon name="lock"></k-icon>' : '' });
+
+			const loadEntries = async () => {
+				const [error, data] = await listGlobalContent();
+				if(error){
+					Toast.error(error.msg || 'Failed to load global content');
+					return;
+				}
+				const custom = data.entries.filter(e => e.owner === 'custom').map(addBadge);
+				const extension = data.entries.filter(e => e.owner !== 'custom' && e.owner !== 'system').map(addBadge);
+				const system = data.entries.filter(e => e.owner === 'system').map(addBadge);
+				$customTable.setData({ records: custom, fields });
+				$extensionTable.setData({ records: extension, fields: extensionFields });
+				$systemTable.setData({ records: system, fields });
+			};
+
+			if(myPerms.has('system:globals:delete')){
+				$customTable.setAttribute('request-delete', '');
+				$customTable.setAttribute('enable-selection', '');
+				const del = document.createElement('k-tc-delete-record');
+				del.setAttribute('slot', 'after');
+				$customTable.appendChild(del);
+			}
+
+			await loadEntries();
+
+			$customTable.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
+				const locked = records.filter(r => r.locked);
+				if(locked.length){
+					Toast.error(locked.length === 1 ? `"${locked[0].name}" is locked and cannot be deleted.` : `${locked.length} selected items are locked and cannot be deleted.`);
+					reject();
+					return;
+				}
+				const count = records.length;
+				const msg = count === 1
+					? `Delete "${records[0].name}"? This action cannot be undone.`
+					: `Delete ${count} global content entries? This action cannot be undone.`;
+				Dialog.confirm(msg, async (confirmed) => {
+					if(!confirmed){ reject(); return; }
+					const ids = records.map(r => r.id);
+					const [error] = await deleteGlobalContent(ids);
+					if(error){
+						reject();
+						Toast.error(error.msg || 'Failed to delete');
+						return;
+					}
+					approve();
+					Toast.success(count === 1 ? 'Global content deleted' : `${count} entries deleted`);
+				});
+			});
+
+			/*
+				Create Global Content Dialog
+			*/
+
+			document.getElementById('createGlobalBtn')?.addEventListener('click', async () => {
+				const [tplError, tplData] = await listTemplates();
+				const locations = new Set();
+				if(!tplError && tplData?.templates){
+					for(const t of tplData.templates){
+						for(const loc of (t.locations || [])){
+							locations.add(typeof loc === 'string' ? loc : loc.name);
+						}
+					}
+				}
+				const locationOptions = [...locations].sort();
+
+				const $dialog = Dialog.create(html`
+					<div class="p">
+						<div class="mb">
+							<label class="d-b mb-sm">Name</label>
+							<input type="text" id="dlg-name" class="full" placeholder="Analytics Script" required>
+						</div>
+						<div class="mb">
+							<label class="d-b mb-sm">Location</label>
+							<input type="text" id="dlg-location" class="full" list="dlg-location-list" placeholder="scripts" required>
+							<datalist id="dlg-location-list">
+								${locationOptions.map(l => html`<option value="${l}">`)}
+							</datalist>
+							<p class="mt-sm muted"><small>The template location to inject this content into.</small></p>
+						</div>
+						<div>
+							<label class="d-b mb-sm">Priority</label>
+							<input type="number" id="dlg-priority" class="full" value="0">
+							<p class="mt-sm muted"><small>Higher priority content is rendered first. Default is 0.</small></p>
+						</div>
+					</div>
+				`, {
+					title: 'Create Global Content',
+					confirmText: 'Create',
+					confirmAction: async () => {
+						const name = $dialog.querySelector('#dlg-name').value.trim();
+						const location = $dialog.querySelector('#dlg-location').value.trim();
+						const priority = $dialog.querySelector('#dlg-priority').value.trim();
+
+						if(!name){
+							Toast.error('Name is required');
+							return;
+						}
+
+						if(!location){
+							Toast.error('Location is required');
+							return;
+						}
+
+						const [error, data] = await createGlobalContent({ name, location, priority });
+
+						if(error){
+							Toast.error(error.msg || 'Failed to create global content');
+							return;
+						}
+
+						Toast.success('Global content created — redirecting to editor...');
+						setTimeout(() => {
+							window.location.href = `/admin/content/globals/edit?id=${encodeURIComponent(data.id)}`;
+						}, 1500);
+					},
+					cancelText: 'Cancel'
+				});
+			});
+		</script>
+	</content>
+</page>
+

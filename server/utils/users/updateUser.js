@@ -22,12 +22,13 @@ export default async (id, updates) => {
       return [{ code: 404, msg: 'User not found' }, null];
     }
     
-    return [null, {
+    const result = {
       id: updatedUser[0].id,
       email: updatedUser[0].email,
       name: updatedUser[0].name,
       emailVerified: updatedUser[0].emailVerified,
-    }];
+    };
+    return [null, result];
   } catch(error){
     if(error.code === '23505'){
       return [{ code: 409, msg: 'Email already in use' }, null];

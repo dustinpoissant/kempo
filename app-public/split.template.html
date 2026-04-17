@@ -1,0 +1,38 @@
+<!--
+  owner: custom
+  name: Split
+  author: Copilot Admin
+  created: 2026-04-16T20:40:58.376Z
+  updated: 2026-04-16T20:46:56.455Z
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" type="image/png" sizes="48x48" href="{{pathToRoot}}media/icon48.png">
+	<link rel="manifest" href="{{pathToRoot}}manifest.json">
+	<title>{{title}}</title>
+	<link rel="stylesheet" href="{{pathToRoot}}kempo-css/kempo.min.css">
+	<link rel="stylesheet" href="{{pathToRoot}}styles.css">
+	<script src="{{pathToRoot}}init.js"></script>
+	<location name="head" />
+</head>
+
+<body>
+	<fragment name="nav" />
+	<div class="row">
+		<div class="col d-span-4 t-span-4 m-span-12 px">
+			<location name="left" label="Left Sidebar" />
+		</div>
+		<div class="col d-span-8 t-span-8 m-span-12">
+			<main>
+				<location />
+			</main>
+		</div>
+	</div>
+	<location name="scripts" />
+</body>
+
+</html>

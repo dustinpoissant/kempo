@@ -4,26 +4,42 @@ import { permission, group, groupPermission, setting, createSettingProtectionTri
 import { eq, and, sql } from 'drizzle-orm';
 
 const DEFAULT_PERMISSIONS = [
-  { name: 'system:content:create', description: 'Create new content' },
-  { name: 'system:content:update', description: 'Edit content' },
-  { name: 'system:content:delete', description: 'Delete content' },
-  
   { name: 'system:user:create', description: 'Create new users' },
   { name: 'system:user:read', description: 'View users' },
   { name: 'system:user:update', description: 'Edit users' },
   { name: 'system:user:delete', description: 'Delete users' },
   
+  { name: 'system:group:create', description: 'Create new groups' },
+  { name: 'system:group:read', description: 'View groups' },
+  { name: 'system:group:update', description: 'Edit groups and manage membership' },
+  { name: 'system:group:delete', description: 'Delete groups' },
+  
   { name: 'system:permissions:read', description: 'View permissions for all users' },
   { name: 'system:permissions:manage', description: 'Add or remove permissions' },
-  
-  { name: 'system:extension:install', description: 'Install extensions' },
-  { name: 'system:extension:activate', description: 'Activate extensions' },
-  { name: 'system:extension:configure', description: 'Configure extensions' },
-  { name: 'system:extension:delete', description: 'Delete extensions' },
   
   { name: 'system:settings:read', description: 'View private settings' },
   { name: 'system:settings:update', description: 'Update settings' },
   { name: 'system:custom-settings:manage', description: 'Create and delete custom settings' },
+  
+  { name: 'system:pages:read', description: 'View pages in admin' },
+  { name: 'system:pages:create', description: 'Create new pages' },
+  { name: 'system:pages:update', description: 'Edit pages' },
+  { name: 'system:pages:delete', description: 'Delete pages' },
+  
+  { name: 'system:menus:create', description: 'Create new menus' },
+  { name: 'system:menus:read', description: 'View menus in admin' },
+  { name: 'system:menus:update', description: 'Edit menus and menu items' },
+  { name: 'system:menus:delete', description: 'Delete menus' },
+  
+  { name: 'system:fragments:read', description: 'View fragments in admin' },
+  { name: 'system:fragments:create', description: 'Create new fragments' },
+  { name: 'system:fragments:update', description: 'Edit fragments' },
+  { name: 'system:fragments:delete', description: 'Delete fragments' },
+  
+  { name: 'system:globals:read', description: 'View global content in admin' },
+  { name: 'system:globals:create', description: 'Create new global content' },
+  { name: 'system:globals:update', description: 'Edit global content' },
+  { name: 'system:globals:delete', description: 'Delete global content' },
   
   { name: 'system:admin:access', description: 'Access admin panel' },
 ];
@@ -37,11 +53,14 @@ const DEFAULT_GROUPS = {
     description: 'Full system access',
     permissions: [
       'system:admin:access',
-      'system:content:create', 'system:content:read', 'system:content:update', 'system:content:delete',
       'system:user:create', 'system:user:read', 'system:user:update', 'system:user:delete',
+      'system:group:create', 'system:group:read', 'system:group:update', 'system:group:delete',
       'system:permissions:list-own', 'system:permissions:check-others', 'system:permissions:list-others', 'system:permissions:manage',
-      'system:extension:install', 'system:extension:activate', 'system:extension:configure', 'system:extension:delete',
-      'system:settings:read', 'system:settings:update', 'system:custom-settings:manage'
+      'system:settings:read', 'system:settings:update', 'system:custom-settings:manage',
+      'system:pages:read', 'system:pages:create', 'system:pages:update', 'system:pages:delete',
+      'system:menus:create', 'system:menus:read', 'system:menus:update', 'system:menus:delete',
+      'system:fragments:read', 'system:fragments:create', 'system:fragments:update', 'system:fragments:delete',
+      'system:globals:read', 'system:globals:create', 'system:globals:update', 'system:globals:delete'
     ]
   }
 };
@@ -136,7 +155,7 @@ const DEFAULT_SETTINGS = [
   { owner: 'system', name: 'password_reset_url', value: 'http://localhost:3000/reset-password/{{token}}', type: 'string', isPublic: false, description: 'Password reset URL template' },
 ];
 
-const { setSetting } = await import('../server/utils/settings/settings.js');
+const { default: setSetting } = await import('../server/utils/settings/setSetting.js');
 for(const s of DEFAULT_SETTINGS){
   await setSetting(s.owner, s.name, s.value, s.type, s.isPublic, s.description);
   console.log(`✓ Created setting: ${s.owner}:${s.name} = ${s.value}`);

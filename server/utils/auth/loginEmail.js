@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import getSetting from '../settings/getSetting.js';
 import createSession from '../sessions/createSession.js';
 
-export default async ({ email, password }) => {
+export default async (email, password) => {
   if(!email){
     return [{ code: 400, msg: 'Email is required' }, null];
   }

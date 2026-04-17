@@ -1,0 +1,273 @@
+<!--
+	locked: true
+-->
+<page title="Permissions - Admin">
+<content>
+<script type="module" src="/kempo-ui/components/Table.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/Edit.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script>
+<script type="module" src="/kempo-ui/components/Tags.js"></script>
+<script type="module" src="/kempo/components/Permission.js"></script>
+
+		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+			<h1 class="flex mb0">Permissions</h1>
+			<k-permission has="system:permissions:manage">
+				<button id="createPermBtn" class="primary">Create Permissions</button>
+			</k-permission>
+		</div>
+
+		<h2>Custom Permissions</h2>
+		<k-table id="customTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No custom permissions have been created yet.">
+			<div slot="top" class="d-f full" style="align-items: center;">
+				<div>
+					<k-permission has="system:permissions:manage">
+						<k-tc-delete-selected></k-tc-delete-selected>
+					</k-permission>
+				</div>
+			</div>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>Extension Permissions</h2>
+		<k-table id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension permissions installed.">
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>System Permissions</h2>
+		<k-table id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system permissions found.">
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<script type="module">
+			import { listPermissions, createPermissions, updatePermission, deletePermissions, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+			import { html } from '/kempo-ui/lit-all.min.js';
+			import Toast from '/kempo-ui/components/Toast.js';
+			import Dialog from '/kempo-ui/components/Dialog.js';
+
+			await window.customElements.whenDefined('k-table');
+
+			const [, permData] = await getAllCurrentUserPermissions();
+			const myPerms = new Set(permData?.permissions ?? []);
+			const canManage = myPerms.has('system:permissions:manage');
+
+			const fields = [
+				{
+					name: 'resource',
+					label: 'Resource',
+					size: 180,
+					editable: false,
+					calculator: r => {
+						const parts = r.name.split(':');
+						return parts.length >= 3 ? parts[1] : parts.length === 2 ? parts[1] : '';
+					}
+				},
+				{
+					name: 'action',
+					label: 'Action',
+					size: 140,
+					editable: false,
+					calculator: r => {
+						const parts = r.name.split(':');
+						return parts.length >= 3 ? parts.slice(2).join(':') : '';
+					}
+				},
+				{ name: 'description', label: 'Description', size: 360, editable: canManage },
+				{
+					name: 'createdAt',
+					label: 'Created',
+					formatter: v => new Date(v).toLocaleString(),
+					size: 208,
+					editable: false
+				}
+			];
+
+			const setupTable = ($table, owner, loadFn) => {
+				if(canManage){
+					$table.setAttribute('request-edit', '');
+					const edit = document.createElement('k-tc-edit');
+					edit.setAttribute('slot', 'after');
+					$table.appendChild(edit);
+				}
+
+				if(canManage && owner === 'custom'){
+					$table.setAttribute('request-delete', '');
+					$table.setAttribute('enable-selection', '');
+					const del = document.createElement('k-tc-delete-record');
+					del.setAttribute('slot', 'after');
+					$table.appendChild(del);
+				}
+
+				$table.addEventListener('requestSave', async ({ detail: { record, newData, approve, reject } }) => {
+					const [error] = await updatePermission({ name: record.name, ...newData });
+					if(error){
+						reject();
+						Toast.error(error.msg || 'Failed to update permission');
+						return;
+					}
+					approve();
+					Toast.success('Permission updated');
+				});
+
+				if(owner === 'custom'){
+					$table.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
+						const displayName = r => r.name.includes(':') ? r.name.split(':').slice(1).join(':') : r.name;
+						const count = records.length;
+						const msg = count === 1
+							? `<div class="p"><p>Delete "${displayName(records[0])}"? This action cannot be undone.</p></div>`
+							: `<div class="p"><p>Delete ${count} permissions? This action cannot be undone.</p></div>`;
+						Dialog.confirm(msg, async (confirmed) => {
+							if(!confirmed){ reject(); return; }
+							const [error] = await deletePermissions(records.map(r => r.name));
+							if(error){
+								reject();
+								Toast.error(error.msg || 'Failed to delete');
+								return;
+							}
+							approve();
+							Toast.success(count === 1 ? 'Permission deleted' : `${count} permissions deleted`);
+							loadFn();
+						});
+					});
+				}
+			};
+
+			const loadTable = async ($table, owner) => {
+				const [error, data] = await listPermissions({ owner });
+				if(error){
+					Toast.error(error.msg || 'Failed to load permissions');
+					return;
+				}
+				$table.setData({ records: data.permissions, fields });
+				$table.setupFetchRecords(data.total, async (start, count) => {
+					const [err, d] = await listPermissions({ limit: count, offset: start, owner });
+					if(err) return [];
+					return d.permissions;
+				});
+			};
+
+			const $customTable = document.getElementById('customTable');
+			const $extensionTable = document.getElementById('extensionTable');
+			const $systemTable = document.getElementById('systemTable');
+
+			setupTable($customTable, 'custom', () => loadTable($customTable, 'custom'));
+			setupTable($extensionTable, 'extension', () => loadTable($extensionTable, 'extension'));
+			setupTable($systemTable, 'system', () => loadTable($systemTable, 'system'));
+
+			await Promise.all([
+				loadTable($customTable, 'custom'),
+				loadTable($extensionTable, 'extension'),
+				loadTable($systemTable, 'system')
+			]);
+
+			if(canManage){
+				document.getElementById('createPermBtn').addEventListener('click', async () => {
+					await customElements.whenDefined('k-tags');
+					const $dialog = Dialog.create(html`
+						<div class="p">
+							<div class="mb">
+								<label class="d-b mb-sm">Resource Name</label>
+								<input type="text" id="dlg-resource" class="full" placeholder="e.g. posts, comments, media" required>
+							</div>
+							<div class="mb">
+								<label class="d-b mb-sm">Actions</label>
+								<k-tags id="dlg-actions" value="create,read,update,delete" @addtag=${e => {
+									if(e.detail.tag.includes(':')){
+										e.target.removeTag(e.detail.tag);
+										Toast.error('Action cannot contain ":"');
+									}
+								}}></k-tags>
+							</div>
+							<div>
+								<label class="d-b mb-sm">Description (applied to all)</label>
+								<input type="text" id="dlg-description" class="full">
+							</div>
+						</div>
+					`, {
+						title: 'Create Permissions',
+						confirmText: 'Create',
+						confirmAction: async () => {
+							const resource = $dialog.querySelector('#dlg-resource').value.trim().toLowerCase();
+							if(!resource){
+								Toast.error('Resource name is required');
+								return;
+							}
+							if(resource.includes(':')){
+								Toast.error('Resource name cannot contain ":"');
+								return;
+							}
+
+							const actions = $dialog.querySelector('#dlg-actions').value.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+							if(!actions.length){
+								Toast.error('At least one action is required');
+								return;
+							}
+
+							const description = $dialog.querySelector('#dlg-description').value.trim();
+							const permissions = actions.map(action => ({
+								resource,
+								action,
+								description: description || `${action} ${resource}`
+							}));
+
+							const [error, result] = await createPermissions(permissions);
+							if(error){
+								Toast.error(error.msg || 'Failed to create permissions');
+								return;
+							}
+							const created = result.created?.length ?? permissions.length;
+							const errs = result.errors?.length ?? 0;
+							if(errs){
+								Toast.warning(`${created} created, ${errs} failed (may already exist)`);
+							} else {
+								Toast.success(`${created} permission${created !== 1 ? 's' : ''} created`);
+							}
+							loadTable($customTable, 'custom');
+						},
+						cancelText: 'Cancel'
+					});
+				});
+			}
+		</script>
+
+</content>
+</page>

@@ -23,7 +23,9 @@ export default async (owner, name) => {
       value: convertValue(result.value, result.type),
       type: result.type,
       isPublic: result.isPublic,
-      description: result.description
+      description: result.description,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt
     }];
   } catch(error){
     return [{ code: 500, msg: 'Failed to retrieve setting' }, null];

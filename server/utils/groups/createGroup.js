@@ -1,11 +1,15 @@
 import db from '../../db/index.js';
 import { group } from '../../db/schema.js';
 
-export default async ({ name, description, owner = 'user' }) => {
+export default async ({ name, description, owner }) => {
   if(!name){
     return [{ code: 400, msg: 'Group name is required' }, null];
   }
-  
+
+  if(!owner){
+    return [{ code: 400, msg: 'Group owner is required' }, null];
+  }
+
   try {
     const [result] = await db
       .insert(group)
