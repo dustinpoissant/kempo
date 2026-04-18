@@ -10,12 +10,16 @@
   },
   "middleware": {
     "custom": [
-      "../middleware/kempo-auth.js"
+      "../middleware/kempo-auth.js",
+      "../middleware/extension-scope-router.js"
     ]
   },
   "templating": {
     "ssr": true,
     "ssrPriority": true,
     "preRender": false
-  }
+  },
+  "disallowedRegex": [
+    "-disabled\\.html$"
+  ]
 }

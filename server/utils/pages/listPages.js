@@ -9,13 +9,15 @@ export default async ({ rootDir }) => {
   }
 
   const pages = await scanDir(rootDir, rootDir, async (fullPath, entry, root) => {
-    if(entry.isDirectory() || !entry.name.endsWith('.page.html')) return null;
+    const isDisabled = entry.name.endsWith('.page-disabled.html');
+    if(entry.isDirectory() || (!entry.name.endsWith('.page.html') && !isDisabled)) return null;
     const content = await readFile(fullPath, 'utf-8');
     const meta = parseFrontmatter(content);
     const pageTitle = content.match(/<page\s[^>]*title="([^"]*)">/);
     if(!meta.title && pageTitle) meta.title = pageTitle[1];
     const relPath = relative(root, fullPath).replace(/\\/g, '/');
     const urlPath = '/' + relPath
+      .replace(/\.page-disabled\.html$/, '')
       .replace(/\.page\.html$/, '')
       .replace(/(^|\/)index$/, '$1');
     return {
@@ -25,6 +27,7 @@ export default async ({ rootDir }) => {
       title: meta.title || '',
       owner: meta.owner || 'custom',
       locked: meta.locked === 'true',
+      disabled: isDisabled,
       author: meta.author || '',
       description: meta.description || '',
       createdAt: meta.created || '',

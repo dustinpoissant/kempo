@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import Handlebars from 'handlebars';
 import db from '../../db/index.js';
 import { verificationToken } from '../../db/schema.js';
 import sendEmailFromTemplate from '../email/sendEmailFromTemplate.js';
@@ -35,8 +34,7 @@ export default async ({ userId, email, name }) => {
       return [settingError, null];
     }
     
-    const compiledUrl = Handlebars.compile(verificationUrlTemplate);
-    const verificationLink = compiledUrl({ token });
+    const verificationLink = verificationUrlTemplate.replace('{{token}}', token);
 
     const [emailError] = await sendEmailFromTemplate({
       to: email,

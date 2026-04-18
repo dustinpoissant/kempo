@@ -25,10 +25,13 @@ export default async ({ rootDir }) => {
   }
 
   const templates = await scanDir(rootDir, rootDir, async (fullPath, entry, root) => {
-    if(entry.isDirectory() || !entry.name.endsWith('.template.html')) return null;
+    const isDisabled = entry.name.endsWith('.template-disabled.html');
+    if(entry.isDirectory() || (!entry.name.endsWith('.template.html') && !isDisabled)) return null;
     const content = await readFile(fullPath, 'utf-8');
     const meta = parseFrontmatter(content);
-    const name = entry.name.replace('.template.html', '');
+    const name = entry.name
+      .replace('.template-disabled.html', '')
+      .replace('.template.html', '');
     const relDir = relative(root, dirname(fullPath)).replace(/\\/g, '/');
     return {
       name,
@@ -36,6 +39,7 @@ export default async ({ rootDir }) => {
       path: relative(root, fullPath).replace(/\\/g, '/'),
       owner: meta.owner || 'custom',
       locked: meta.locked === 'true',
+      disabled: isDisabled,
       author: meta.author || '',
       createdAt: meta.created || '',
       updatedAt: meta.updated || '',

@@ -3,6 +3,7 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 
 const GLOBAL_FILE = 'kempo-global.global.html';
+const GLOBAL_DISABLED_FILE = 'kempo-global.global-disabled.html';
 
 const parseEntries = raw => {
   const entries = [];
@@ -29,4 +30,4 @@ const parseEntries = raw => {
   return entries;
 };
 
-export { GLOBAL_FILE, parseEntries };
+export { GLOBAL_FILE, GLOBAL_DISABLED_FILE, parseEntries };

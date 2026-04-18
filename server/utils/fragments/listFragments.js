@@ -9,15 +9,19 @@ export default async ({ rootDir }) => {
   }
 
   const fragments = await scanDir(rootDir, rootDir, async (fullPath, entry, root) => {
-    if(entry.isDirectory() || !entry.name.endsWith('.fragment.html')) return null;
+    const isDisabled = entry.name.endsWith('.fragment-disabled.html');
+    if(entry.isDirectory() || (!entry.name.endsWith('.fragment.html') && !isDisabled)) return null;
     const content = await readFile(fullPath, 'utf-8');
     const meta = parseFrontmatter(content);
     const relPath = relative(root, fullPath).replace(/\\/g, '/');
     return {
       file: relPath,
-      name: meta.name || entry.name.replace('.fragment.html', ''),
+      name: meta.name || entry.name
+        .replace('.fragment-disabled.html', '')
+        .replace('.fragment.html', ''),
       owner: meta.owner || 'custom',
       locked: meta.locked === 'true',
+      disabled: isDisabled,
       author: meta.author || '',
       createdAt: meta.created || '',
       updatedAt: meta.updated || ''

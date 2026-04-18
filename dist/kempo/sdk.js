@@ -156,6 +156,12 @@ export const updatePage = async ({ file, name, title, description, author, templ
 export const deletePages = async (files) =>
   del(`${API_BASE}/pages`, { files });
 
+export const disablePage = async (file) =>
+  put(`${API_BASE}/pages/disable`, { file });
+
+export const enablePage = async (file) =>
+  put(`${API_BASE}/pages/enable`, { file });
+
 export const movePage = async ({ file, newFile }) =>
   patch(`${API_BASE}/pages/file`, { file, newFile });
 
@@ -175,41 +181,11 @@ export const updateTemplate = async ({ file, name, author, markup }) =>
 export const deleteTemplates = async (files) =>
   del(`${API_BASE}/templates`, { files });
 
-/*
-  Menus
-*/
+export const disableTemplate = async (file) =>
+  put(`${API_BASE}/templates/disable`, { file });
 
-export const listMenus = async ({ owner, limit, offset } = {}) => {
-  const params = {};
-  if(owner) params.owner = owner;
-  if(limit) params.limit = limit;
-  if(offset) params.offset = offset;
-  return get(`${API_BASE}/menus`, params);
-};
-
-export const getMenu = async (id) =>
-  get(`${API_BASE}/menus/${encodeURIComponent(id)}`);
-
-export const getMenuBySlug = async (slug) =>
-  get(`${API_BASE}/menus/by-slug`, { slug });
-
-export const createMenu = async (data) =>
-  post(`${API_BASE}/menus`, data);
-
-export const updateMenu = async (data) =>
-  patch(`${API_BASE}/menus`, data);
-
-export const deleteMenus = async (ids) =>
-  del(`${API_BASE}/menus`, { ids });
-
-export const addMenuItem = async (menuId, data) =>
-  post(`${API_BASE}/menus/${encodeURIComponent(menuId)}/items`, data);
-
-export const updateMenuItem = async (menuId, data) =>
-  patch(`${API_BASE}/menus/${encodeURIComponent(menuId)}/items`, data);
-
-export const deleteMenuItems = async (menuId, ids) =>
-  del(`${API_BASE}/menus/${encodeURIComponent(menuId)}/items`, { ids });
+export const enableTemplate = async (file) =>
+  put(`${API_BASE}/templates/enable`, { file });
 
 /*
   Fragments
@@ -230,6 +206,12 @@ export const updateFragment = async ({ file, name, author, markup }) =>
 export const deleteFragments = async (files) =>
   del(`${API_BASE}/fragments`, { files });
 
+export const disableFragment = async (file) =>
+  put(`${API_BASE}/fragments/disable`, { file });
+
+export const enableFragment = async (file) =>
+  put(`${API_BASE}/fragments/enable`, { file });
+
 /*
   Global Content
 */
@@ -248,3 +230,60 @@ export const updateGlobalContent = async ({ id, name, location, priority, markup
 
 export const deleteGlobalContent = async (ids) =>
   del(`${API_BASE}/globals`, { ids });
+
+export const disableGlobalContent = async (id) =>
+  put(`${API_BASE}/globals/disable`, { id });
+
+export const enableGlobalContent = async (id) =>
+  put(`${API_BASE}/globals/enable`, { id });
+
+/*
+  Extensions
+*/
+
+export const listExtensions = async ({ limit, offset } = {}) =>
+  get(`${API_BASE}/extensions`, { limit, offset });
+
+export const listAvailableExtensions = async () =>
+  get(`${API_BASE}/extensions/available`);
+
+export const listKnownExtensions = async () =>
+  get(`${API_BASE}/extensions/known`);
+
+export const installExtension = async (name) =>
+  post(`${API_BASE}/extensions`, { name });
+
+export const uninstallExtension = async (name) =>
+  del(`${API_BASE}/extensions`, { name });
+
+export const enableExtension = async (name) =>
+  post(`${API_BASE}/extensions/${encodeURIComponent(name)}/enable`, {});
+
+export const disableExtension = async (name) =>
+  post(`${API_BASE}/extensions/${encodeURIComponent(name)}/disable`, {});
+
+/*
+  Admin Global Content
+*/
+
+export const listAdminGlobalContent = async () =>
+  get(`${API_BASE}/admin-globals`);
+
+export const getAdminGlobalContent = async (id) =>
+  get(`${API_BASE}/admin-globals/${encodeURIComponent(id)}`);
+
+export const createAdminGlobalContent = async ({ name, location, priority, owner, markup }) =>
+  post(`${API_BASE}/admin-globals`, { name, location, priority, owner, markup });
+
+export const updateAdminGlobalContent = async (id, { name, location, priority, markup }) =>
+  put(`${API_BASE}/admin-globals/${encodeURIComponent(id)}`, { name, location, priority, markup });
+
+export const deleteAdminGlobalContent = async (ids) =>
+  del(`${API_BASE}/admin-globals`, { ids });
+
+export const enableAdminGlobalContent = async (id) =>
+  put(`${API_BASE}/admin-globals/${encodeURIComponent(id)}/enable`, {});
+
+export const disableAdminGlobalContent = async (id) =>
+  put(`${API_BASE}/admin-globals/${encodeURIComponent(id)}/disable`, {});
+

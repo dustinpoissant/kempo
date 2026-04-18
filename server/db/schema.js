@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, index, jsonb } from 'drizzle-orm/pg-core';
 
 /*
   Auth Tables
@@ -86,6 +86,30 @@ export const setting = pgTable('setting', {
   isPublic: boolean('isPublic').notNull().default(false),
   description: text('description'),
   createdAt: timestamp('createdAt').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
+});
+
+/*
+  Extension System
+*/
+
+export const hook = pgTable('hook', {
+  id: text('id').primaryKey(),
+  owner: text('owner').notNull(),
+  event: text('event').notNull(),
+  callback: text('callback').notNull(),
+  createdAt: timestamp('createdAt').notNull(),
+}, table => [
+  index('hook_event_idx').on(table.event),
+  index('hook_owner_idx').on(table.owner),
+]);
+
+export const extension = pgTable('extension', {
+  name: text('name').primaryKey(),
+  version: text('version'),
+  enabled: boolean('enabled').notNull().default(true),
+  kempo: jsonb('kempo'),
+  installedAt: timestamp('installedAt').notNull(),
   updatedAt: timestamp('updatedAt').notNull(),
 });
 

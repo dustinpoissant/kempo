@@ -40,7 +40,12 @@ const DEFAULT_PERMISSIONS = [
   { name: 'system:globals:create', description: 'Create new global content' },
   { name: 'system:globals:update', description: 'Edit global content' },
   { name: 'system:globals:delete', description: 'Delete global content' },
-  
+
+  { name: 'system:extensions:read', description: 'View installed extensions' },
+  { name: 'system:extensions:install', description: 'Install extensions' },
+  { name: 'system:extensions:uninstall', description: 'Uninstall extensions' },
+  { name: 'system:extensions:manage', description: 'Enable and disable extensions' },
+
   { name: 'system:admin:access', description: 'Access admin panel' },
 ];
 
@@ -60,7 +65,8 @@ const DEFAULT_GROUPS = {
       'system:pages:read', 'system:pages:create', 'system:pages:update', 'system:pages:delete',
       'system:menus:create', 'system:menus:read', 'system:menus:update', 'system:menus:delete',
       'system:fragments:read', 'system:fragments:create', 'system:fragments:update', 'system:fragments:delete',
-      'system:globals:read', 'system:globals:create', 'system:globals:update', 'system:globals:delete'
+      'system:globals:read', 'system:globals:create', 'system:globals:update', 'system:globals:delete',
+      'system:extensions:read', 'system:extensions:install', 'system:extensions:uninstall', 'system:extensions:manage'
     ]
   }
 };

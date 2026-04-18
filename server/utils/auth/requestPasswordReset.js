@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import Handlebars from 'handlebars';
 import { eq } from 'drizzle-orm';
 import db from '../../db/index.js';
 import { user, verificationToken } from '../../db/schema.js';
@@ -39,8 +38,7 @@ export default async ({ email }) => {
       return [settingError, null];
     }
     
-    const compiledUrl = Handlebars.compile(passwordResetUrlTemplate);
-    const resetLink = compiledUrl({ token });
+    const resetLink = passwordResetUrlTemplate.replace('{{token}}', token);
 
     const [emailError] = await sendEmailFromTemplate({
       to: email,
