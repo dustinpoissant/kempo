@@ -55,6 +55,8 @@ Templates are the outermost layer of the rendering pipeline. They define `<!DOCT
 | `createTemplate` | `({ rootDir, directory, name, author, copyFrom })` | Create new template |
 | `updateTemplate` | `({ rootDir, file, name, author, markup })` | Update template markup |
 | `deleteTemplate` | `({ rootDir, files })` | Delete template files |
+| `disableTemplate` | `({ rootDir, file })` | Rename `.template.html` → `.template-disabled.html` |
+| `enableTemplate` | `({ rootDir, file })` | Rename `.template-disabled.html` → `.template.html` |
 
 ### API Routes (`/kempo/api/templates/`)
 | Method | Path | Permission | Purpose |

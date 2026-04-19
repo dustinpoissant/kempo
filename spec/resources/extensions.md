@@ -4,20 +4,20 @@
 A plugin system that allows third-party npm packages to extend kempo with new routes, admin pages, hooks, settings, permissions, groups, and database tables. Extensions are installed/uninstalled through the admin panel and registered in the database. Most lifecycle behavior is declared in the extension's `package.json` `kempo` config and handled automatically by kempo core.
 
 ## Dependencies
-- [Database](../concepts/db.md) — `extension` and `hook` tables
-- [Hooks](hooks.md) — extensions register event callbacks
-- [Admin UI](../concepts/admin-ui.md) — extensions management page
-- [Middleware](../concepts/middleware.md) — `extension-scope-router` serves extension public files
-- [Settings](settings.md) — extensions can create their own settings
-- [Permissions](permissions.md) — extensions can create their own permissions
-- [Groups](groups.md) — extensions can create their own groups
+- [Database](../concepts/db.md) â€” `extension` and `hook` tables
+- [Hooks](hooks.md) â€” extensions register event callbacks
+- [Admin UI](../concepts/admin-ui.md) â€” extensions management page
+- [Middleware](../concepts/middleware.md) â€” `extension-scope-router` serves extension public files
+- [Settings](settings.md) â€” extensions can create their own settings
+- [Permissions](permissions.md) â€” extensions can create their own permissions
+- [Groups](groups.md) â€” extensions can create their own groups
 
 ## Context
 Extensions enable third-party developers to add features to a kempo site without modifying core code. The first extension is `kempo-blog` which adds a blog system.
 
 ### Decisions
 - **npm packages**: Extensions are standard npm packages with a `kempo` config in their `package.json`.
-- **Declarative `kempo` config**: Extensions declare all capabilities in `package.json`. Kempo core handles hooks, schema, permissions, settings, and groups automatically — `install.js`/`update.js`/`uninstall.js` are only needed for custom logic that can't be expressed declaratively.
+- **Declarative `kempo` config**: Extensions declare all capabilities in `package.json`. Kempo core handles hooks, schema, permissions, settings, and groups automatically â€” `install.js`/`update.js`/`uninstall.js` are only needed for custom logic that can't be expressed declaratively.
   ```json
   {
     "kempo": {
@@ -69,19 +69,19 @@ extension:
 ### Extension Package Structure
 ```
 my-extension/
-├── package.json         # Must have "kempo" config
-├── install.js           # Optional: custom install logic (runs after declarative config applied)
-├── update.js            # Optional: custom update logic ({ oldVersion, newVersion, oldKempo, newKempo })
-├── uninstall.js         # Optional: custom uninstall logic (runs before declarative config removed)
-├── server/
-│   └── db/
-│       └── schema.js    # Drizzle table exports (if kempo.schema is set)
-├── admin/
-│   └── index.page.html  # Admin page — served at /admin/extension/{name}/
-├── hooks/
-│   └── *.js             # Hook handlers
-└── public/
-    └── ...              # Scoped public files — served at /{public-scope}/
+â”œâ”€â”€ package.json         # Must have "kempo" config
+â”œâ”€â”€ install.js           # Optional: custom install logic (runs after declarative config applied)
+â”œâ”€â”€ update.js            # Optional: custom update logic ({ oldVersion, newVersion, oldKempo, newKempo })
+â”œâ”€â”€ uninstall.js         # Optional: custom uninstall logic (runs before declarative config removed)
+â”œâ”€â”€ server/
+â”‚   â””â”€â”€ db/
+â”‚       â””â”€â”€ schema.js    # Drizzle table exports (if kempo.schema is set)
+â”œâ”€â”€ admin/
+â”‚   â””â”€â”€ index.page.html  # Admin page â€” served at /admin/extension/{name}/
+â”œâ”€â”€ hooks/
+â”‚   â””â”€â”€ *.js             # Hook handlers
+â””â”€â”€ public/
+    â””â”€â”€ ...              # Scoped public files â€” served at /{public-scope}/
 ```
 
 ### Install Flow
@@ -153,31 +153,36 @@ When listing extensions, kempo can check for updates by:
 | GET | `/[name]/update-check` | `system:extensions:read` | Check for available update |
 
 ### Admin UI
-- **Manager**: `/admin/extensions/` — two tables: installed extensions and available extensions; installed rows show "Update available" badge when a newer version is detected
-- **Extension pages**: `/admin/extensions/{name}/` — served via `CATCH.js` which uses `renderExternalPage` to render the extension's admin pages
+- **Manager**: `/admin/extensions/` â€” two tables: installed extensions and available extensions; installed rows show "Update available" badge when a newer version is detected
+- **Extension pages**: `/admin/extensions/{name}/` â€” served via `CATCH.js` which uses `renderExternalPage` to render the extension's admin pages
 
 ### Extension Scope Router (Middleware)
-The `extension-scope-router` middleware serves static files from enabled extensions' `public/` directories based on their `public-scope` config. Currently only handles static files — does not support route handler execution or templating.
+The `extension-scope-router` middleware serves enabled extensions' `public/` directories based on their `public-scope` config. Supports:
+- **`.page.html` templates** — rendered server-side via `renderExternalPage`
+- **JS route handlers** — `GET.js`, `POST.js`, `PUT.js`, `DELETE.js`, `PATCH.js`, etc. are dynamically imported and executed with `(request, response)`
+- **Dynamic path params** — `[param]` directory segments are matched and injected into `request.params`
+- **Static files** — all other files served with correct MIME type
+- **Admin scope** — `/admin/extension/{name}/**` routes to the extension's `admin/` directory (`.page.html` templates + static files)
 
 ## Notes
 - Extensions can access the full server SDK (`kempo/server/sdk.js`) for database operations, user management, etc.
 - The admin nav item for extensions uses the `extension` icon.
 - `kempo-blog` is the reference implementation extension.
 - The scope router's static-only limitation means extension pages with `.page.html` templates and API routes need the kempo-server routing/templating integration to work fully.
-- Column-level schema migrations (adding/removing columns, changing types) are intentionally left to `update.js`. Only table-level creation/deletion is handled automatically — this keeps automatic behavior safe and predictable.
+- Column-level schema migrations (adding/removing columns, changing types) are intentionally left to `update.js`. Only table-level creation/deletion is handled automatically â€” this keeps automatic behavior safe and predictable.
 # Extensions
 
 ## Description
 A plugin system that allows third-party npm packages to extend kempo with new routes, admin pages, hooks, settings, and UI. Extensions are installed/uninstalled through the admin panel and registered in the database.
 
 ## Dependencies
-- [Database](../concepts/db.md) — `extension` and `hook` tables
-- [Hooks](hooks.md) — extensions register event callbacks
-- [Admin UI](../concepts/admin-ui.md) — extensions management page
-- [Middleware](../concepts/middleware.md) — `extension-scope-router` serves extension public files
-- [Settings](settings.md) — extensions can create their own settings
-- [Permissions](permissions.md) — extensions can create their own permissions
-- [Groups](groups.md) — extensions can create their own groups
+- [Database](../concepts/db.md) â€” `extension` and `hook` tables
+- [Hooks](hooks.md) â€” extensions register event callbacks
+- [Admin UI](../concepts/admin-ui.md) â€” extensions management page
+- [Middleware](../concepts/middleware.md) â€” `extension-scope-router` serves extension public files
+- [Settings](settings.md) â€” extensions can create their own settings
+- [Permissions](permissions.md) â€” extensions can create their own permissions
+- [Groups](groups.md) â€” extensions can create their own groups
 
 ## Context
 Extensions enable third-party developers to add features to a kempo site without modifying core code. The first extension is `kempo-blog` which adds a blog system.
@@ -217,16 +222,16 @@ extension:
 ### Extension Package Structure
 ```
 kempo-blog/
-├── package.json    # Must have "kempo" config
-├── install.js      # Runs on install
-├── uninstall.js    # Runs on uninstall
-├── sdk.js          # Extension SDK (optional)
-├── admin/
-│   └── index.page.html  # Admin page
-├── hooks/
-│   └── page-created.js  # Hook handlers
-└── public/
-    └── ...              # Scoped public files
+â”œâ”€â”€ package.json    # Must have "kempo" config
+â”œâ”€â”€ install.js      # Runs on install
+â”œâ”€â”€ uninstall.js    # Runs on uninstall
+â”œâ”€â”€ sdk.js          # Extension SDK (optional)
+â”œâ”€â”€ admin/
+â”‚   â””â”€â”€ index.page.html  # Admin page
+â”œâ”€â”€ hooks/
+â”‚   â””â”€â”€ page-created.js  # Hook handlers
+â””â”€â”€ public/
+    â””â”€â”€ ...              # Scoped public files
 ```
 
 ### Install Flow
@@ -266,14 +271,18 @@ kempo-blog/
 | POST | `/[name]/disable` | `system:extensions:manage` | Disable |
 
 ### Admin UI
-- **Manager**: `/admin/extensions/` — two tables: installed extensions and available extensions
-- **Extension pages**: `/admin/extensions/{name}/` — served via `CATCH.js` which uses `renderExternalPage` to render the extension's admin pages
+- **Manager**: `/admin/extensions/` â€” two tables: installed extensions and available extensions
+- **Extension pages**: `/admin/extensions/{name}/` â€” served via `CATCH.js` which uses `renderExternalPage` to render the extension's admin pages
 
 ### Extension Scope Router (Middleware)
-The `extension-scope-router` middleware serves static files from enabled extensions' `public/` directories based on their `public-scope` config. Currently only handles static files — does not support route handler execution or templating.
+The `extension-scope-router` middleware serves enabled extensions' `public/` directories based on their `public-scope` config. Supports:
+- **`.page.html` templates** — rendered server-side via `renderExternalPage`
+- **JS route handlers** — `GET.js`, `POST.js`, `PUT.js`, `DELETE.js`, `PATCH.js`, etc. are dynamically imported and executed with `(request, response)`
+- **Dynamic path params** — `[param]` directory segments are matched and injected into `request.params`
+- **Static files** — all other files served with correct MIME type
+- **Admin scope** — `/admin/extension/{name}/**` routes to the extension's `admin/` directory (`.page.html` templates + static files)
 
 ## Notes
 - Extensions can access the full server SDK (`kempo/server/sdk.js`) for database operations, user management, etc.
 - The admin nav item for extensions uses the `extension` icon.
 - `kempo-blog` is the reference implementation extension.
-- The scope router's static-only limitation means extension pages with `.page.html` templates and API routes need the kempo-server routing/templating integration to work fully.

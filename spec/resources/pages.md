@@ -44,14 +44,16 @@ Pages are the primary content unit of the CMS. They are file-based (not database
 ### Server Utils (`server/utils/pages/`)
 | Util | Signature | Purpose |
 |---|---|---|
-| `listPages` | `({ rootDir })` | List all pages in the public directory |
+| `listPages` | `({ rootDir })` | List all pages (includes `disabled: true/false` field) |
 | `listDirectories` | `({ rootDir })` | List all directories |
-| `listTemplates` | `({ rootDir })` | List available templates |
+| `listTemplates` | `({ rootDir })` | List available templates (includes `disabled: true/false` field) |
 | `getPage` | `({ rootDir, file })` | Read page file with parsed frontmatter |
 | `createPage` | `({ rootDir, directory, name, template, author })` | Create new page file |
 | `updatePage` | `({ rootDir, file, name, title, description, author, template, contents })` | Update page content and metadata |
 | `deletePage` | `({ rootDir, files })` | Delete page files |
 | `movePage` | `({ rootDir, file, newFile })` | Rename/move page file |
+| `disablePage` | `({ rootDir, file })` | Rename `.page.html` → `.page-disabled.html` |
+| `enablePage` | `({ rootDir, file })` | Rename `.page-disabled.html` → `.page.html` |
 
 ### API Routes (`/kempo/api/pages/`)
 | Method | Path | Permission | Purpose |
@@ -64,6 +66,10 @@ Pages are the primary content unit of the CMS. They are file-based (not database
 | GET | `/file` | `system:pages:read` | Get page file |
 | PUT | `/file` | `system:pages:update` | Update page file |
 | PATCH | `/file` | `system:pages:update` | Move page |
+| PUT | `/disable` | `system:pages:update` | Disable page |
+| PUT | `/enable` | `system:pages:update` | Enable page |
+| PUT | `/templates/disable` | `system:pages:update` | Disable template |
+| PUT | `/templates/enable` | `system:pages:update` | Enable template |
 
 ### Admin UI
 - **List**: `/admin/content/pages/` — table with create, delete, link to editor

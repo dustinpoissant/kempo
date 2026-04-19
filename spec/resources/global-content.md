@@ -45,11 +45,13 @@ There is a separate system for admin-scoped global content (`server/utils/admin-
 ### Server Utils (`server/utils/global-content/`)
 | Util | Signature | Purpose |
 |---|---|---|
-| `listGlobalContent` | `({ rootDir })` | List all entries |
+| `listGlobalContent` | `({ rootDir })` | List all entries (includes `disabled: true/false` field) |
 | `getGlobalContent` | `({ rootDir, id })` | Get entry by ID |
 | `createGlobalContent` | `({ rootDir, name, location, priority, author })` | Create entry |
 | `updateGlobalContent` | `({ rootDir, id, name, location, priority, markup })` | Update entry |
 | `deleteGlobalContent` | `({ rootDir, ids })` | Delete entries |
+| `disableGlobalContent` | `({ rootDir, id })` | Move entry to `kempo-global.global-disabled.html` |
+| `enableGlobalContent` | `({ rootDir, id })` | Move entry back to `kempo-global.global.html` |
 
 ### Admin Global Content Utils (`server/utils/admin-global-content/`)
 Same pattern but with additional `owner` field and `enable`/`disable` operations:
@@ -66,6 +68,8 @@ Same pattern but with additional `owner` field and `enable`/`disable` operations
 | DELETE | `/` | `system:globals:delete` | Delete entries |
 | GET | `/entry` | `system:globals:read` | Get entry |
 | PUT | `/entry` | `system:globals:update` | Update entry |
+| PUT | `/disable` | `system:globals:update` | Disable entry |
+| PUT | `/enable` | `system:globals:update` | Enable entry |
 
 **Admin globals** (`/kempo/api/admin-globals/`):
 | Method | Path | Permission | Purpose |

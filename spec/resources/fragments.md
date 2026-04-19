@@ -32,11 +32,13 @@ Fragments provide a way to share common HTML across multiple pages without dupli
 ### Server Utils (`server/utils/fragments/`)
 | Util | Signature | Purpose |
 |---|---|---|
-| `listFragments` | `({ rootDir })` | List all fragments |
+| `listFragments` | `({ rootDir })` | List all fragments (includes `disabled: true/false` field) |
 | `getFragment` | `({ rootDir, file })` | Read fragment with parsed frontmatter |
 | `createFragment` | `({ rootDir, directory, name, author })` | Create new fragment |
 | `updateFragment` | `({ rootDir, file, name, author, markup })` | Update fragment markup |
 | `deleteFragment` | `({ rootDir, files })` | Delete fragment files |
+| `disableFragment` | `({ rootDir, file })` | Rename `.fragment.html` → `.fragment-disabled.html` |
+| `enableFragment` | `({ rootDir, file })` | Rename `.fragment-disabled.html` → `.fragment.html` |
 
 ### API Routes (`/kempo/api/fragments/`)
 | Method | Path | Permission | Purpose |
@@ -46,6 +48,8 @@ Fragments provide a way to share common HTML across multiple pages without dupli
 | DELETE | `/` | `system:fragments:delete` | Delete fragments |
 | GET | `/file` | `system:fragments:read` | Get fragment file |
 | PUT | `/file` | `system:fragments:update` | Update fragment file |
+| PUT | `/disable` | `system:fragments:update` | Disable fragment |
+| PUT | `/enable` | `system:fragments:update` | Enable fragment |
 
 ### Admin UI
 - **List**: `/admin/content/fragments/` — table with create, delete, link to editor
