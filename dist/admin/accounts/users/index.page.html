@@ -148,8 +148,13 @@
 				{
 					name: 'emailVerified',
 					label: 'Verified',
-					type: 'boolean',
 					formatter: v => v ? 'Yes' : 'No',
+					editor: v => {
+						const $sel = document.createElement('select');
+						$sel.innerHTML = '<option value="true">Yes</option><option value="false">No</option>';
+						$sel.value = v ? 'true' : 'false';
+						return $sel;
+					},
 					size: 80,
 					editable: true
 				},
@@ -172,6 +177,7 @@
 	await loadUsers();
 
 	$table.addEventListener('requestSave', async ({ detail: { record, newData, approve, reject } }) => {
+		if('emailVerified' in newData) newData.emailVerified = newData.emailVerified === 'true';
 		const [error] = await updateUser({
 			id: record.id,
 			...newData

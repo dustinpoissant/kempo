@@ -19,7 +19,7 @@ export default async ({ rootDir, file }) => {
 
   return [null, {
     file: safePath,
-    name: meta.name || safePath.replace(/\.template\.html$/, '').split('/').pop(),
+    name: safePath.replace(/\.template\.html$/, '').split('/').pop(),
     owner: meta.owner || 'custom',
     locked: meta.locked === 'true',
     author: meta.author || '',

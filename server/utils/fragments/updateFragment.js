@@ -2,7 +2,7 @@ import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 
-export default async ({ rootDir, file, name, author, markup }) => {
+export default async ({ rootDir, file, author, markup }) => {
   if(!rootDir){
     return [{ code: 400, msg: 'Root directory is required' }, null];
   }
@@ -39,7 +39,7 @@ export default async ({ rootDir, file, name, author, markup }) => {
     ...existingMeta,
     updated: now
   };
-  if(name !== undefined) newMeta.name = name;
+  delete newMeta.name;
   if(author !== undefined) newMeta.author = author;
 
   const frontmatter = '<!--\n' +

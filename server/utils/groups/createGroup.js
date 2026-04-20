@@ -17,7 +17,8 @@ export default async ({ name, description, owner }) => {
         name,
         description,
         owner,
-        createdAt: new Date()
+        createdAt: new Date(),
+        updatedAt: new Date()
       })
       .returning();
     

@@ -9,6 +9,10 @@ export default async (request, response) => {
 		return response.status(400).json({ error: 'Permission name is required' });
 	}
 
+	if(name.startsWith('system:')){
+		return response.status(403).json({ error: 'System permissions cannot be modified' });
+	}
+
 	const [permError, hasPermission] = await currentUserHasPermission(token, 'system:permissions:manage');
 
 	if(permError){

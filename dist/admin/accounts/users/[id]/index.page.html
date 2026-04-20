@@ -18,12 +18,19 @@
 <script type="module" src="/admin/components/AddGroupControl.js"></script>
 <script type="module" src="/admin/components/ClearExpiredSessionsControl.js"></script>
 <script type="module" src="/admin/components/TableRowLink.js"></script>
-		<div class="mb">
-			<a href="/admin/accounts/users" class="no-link">
-				<button class="mbh"><k-icon name="arrow" direction="left"></k-icon> Users</button>
-			</a>
-			<h1 class="mb0" id="pageTitle">User</h1>
+		<div class="d-f">
+			<div>
+				<a href="/admin/accounts/users" class="no-link mb">
+					<button class="mbh"><k-icon name="arrow" direction="left"></k-icon> Users</button>
+				</a>
+			</div>
+			<div class="flex"></div>
+			<div>
+				<button id="deleteUserBtn" class="danger mb mrh" style="display:none;">Delete User</button>
+				<button id="saveBtn" class="primary mb" disabled style="display:none;"><k-icon name="save"></k-icon> Save</button>
+			</div>
 		</div>
+		<h1 id="pageTitle">User</h1>
 
 		<div id="loading">Loading user...</div>
 		<div id="notFound" style="display: none;">
@@ -51,7 +58,6 @@
 					<label style="min-width: 120px;"><strong>Created</strong></label>
 					<span id="userCreatedAt"></span>
 				</div>
-				<button id="deleteUserBtn" class="danger mb">Delete User</button>
 			</div>
 
 			<!-- Groups -->
@@ -166,40 +172,56 @@
 
 				if(!canDelete || isSelf){
 					$deleteBtn.style.display = 'none';
+				} else {
+					$deleteBtn.style.display = '';
 				}
 
 				/*
-					Auto-save user fields
+					Save user fields
 				*/
 
-				const saveField = async (patch) => {
-					const [error] = await updateUser({ id: userData.id, ...patch });
-					if(error){
-						Toast.error(error.msg || 'Failed to save');
-						return false;
-					}
-					return true;
-				};
-
 				if(canEdit){
-					$userName.addEventListener('change', async () => {
-						const ok = await saveField({ name: $userName.value });
-						if(ok){
-							document.getElementById('pageTitle').textContent = `User: ${$userName.value}`;
-							document.title = `${$userName.value} - Admin`;
+					const $saveBtn = document.getElementById('saveBtn');
+					$saveBtn.style.display = '';
+
+					const origName = userData.name;
+					const origEmail = userData.email;
+					const origVerified = userData.emailVerified;
+
+					const handleBeforeUnload = e => { e.preventDefault(); e.returnValue = ''; };
+
+					const checkDirty = () => {
+						const dirty = $userName.value !== origName
+							|| $userEmail.value !== origEmail
+							|| $emailVerified.value !== origVerified;
+						$saveBtn.disabled = !dirty;
+						if(dirty){
+							window.addEventListener('beforeunload', handleBeforeUnload);
 						} else {
-							$userName.value = userData.name;
+							window.removeEventListener('beforeunload', handleBeforeUnload);
 						}
-					});
+					};
 
-					$userEmail.addEventListener('change', async () => {
-						const ok = await saveField({ email: $userEmail.value });
-						if(!ok) $userEmail.value = userData.email;
-					});
+					$userName.addEventListener('input', checkDirty);
+					$userEmail.addEventListener('input', checkDirty);
+					$emailVerified.addEventListener('change', checkDirty);
 
-					$emailVerified.addEventListener('change', async () => {
-						const ok = await saveField({ emailVerified: $emailVerified.value });
-						if(!ok) $emailVerified.value = userData.emailVerified;
+					$saveBtn.addEventListener('click', async () => {
+						const [error] = await updateUser({
+							id: userData.id,
+							name: $userName.value,
+							email: $userEmail.value,
+							emailVerified: $emailVerified.value
+						});
+						if(error){
+							Toast.error(error.msg || 'Failed to save');
+							return;
+						}
+						window.removeEventListener('beforeunload', handleBeforeUnload);
+						document.getElementById('pageTitle').textContent = `User: ${$userName.value}`;
+						document.title = `${$userName.value} - Admin`;
+						$saveBtn.disabled = true;
+						Toast.success('User saved');
 					});
 				}
 

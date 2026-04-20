@@ -203,9 +203,23 @@
 					return;
 				}
 				const toEditPath = p => ({ ...p, editPath: p.file.replace(/\.page\.html$/, ''), lockedBadge: p.locked ? '<k-icon name="lock"></k-icon>' : '' });
-				const custom = data.pages.filter(p => p.owner === 'custom').map(toEditPath);
-				const extension = data.pages.filter(p => p.owner !== 'custom' && p.owner !== 'system').map(toEditPath);
-				const system = data.pages.filter(p => p.owner === 'system').map(toEditPath);
+				const sortPages = pages => pages.slice().sort((a, b) => {
+					const aPath = a.file.replace(/\.page\.html$/, '');
+					const bPath = b.file.replace(/\.page\.html$/, '');
+					const aDir = aPath.includes('/') ? aPath.split('/').slice(0, -1).join('/') : '';
+					const bDir = bPath.includes('/') ? bPath.split('/').slice(0, -1).join('/') : '';
+					if(aPath === 'index' || aPath === '') return -1;
+					if(bPath === 'index' || bPath === '') return 1;
+					if(aDir !== bDir){
+						if(!aDir) return -1;
+						if(!bDir) return 1;
+						return aDir.localeCompare(bDir);
+					}
+					return aPath.localeCompare(bPath);
+				});
+				const custom = sortPages(data.pages.filter(p => p.owner === 'custom').map(toEditPath));
+				const extension = sortPages(data.pages.filter(p => p.owner !== 'custom' && p.owner !== 'system').map(toEditPath));
+				const system = sortPages(data.pages.filter(p => p.owner === 'system').map(toEditPath));
 				$customTable.setData({ records: custom, fields });
 				$extensionTable.setData({ records: extension, fields: extensionFields });
 				$systemTable.setData({ records: system, fields });

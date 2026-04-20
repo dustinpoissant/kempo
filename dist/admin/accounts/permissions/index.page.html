@@ -121,8 +121,10 @@
 				}
 			];
 
+			const systemFields = fields.map(f => f.name === 'description' ? { ...f, editable: false } : f);
+
 			const setupTable = ($table, owner, loadFn) => {
-				if(canManage){
+				if(canManage && owner !== 'system'){
 					$table.setAttribute('request-edit', '');
 					const edit = document.createElement('k-tc-edit');
 					edit.setAttribute('slot', 'after');
@@ -177,7 +179,7 @@
 					Toast.error(error.msg || 'Failed to load permissions');
 					return;
 				}
-				$table.setData({ records: data.permissions, fields });
+				$table.setData({ records: data.permissions, fields: owner === 'system' ? systemFields : fields });
 				$table.setupFetchRecords(data.total, async (start, count) => {
 					const [err, d] = await listPermissions({ limit: count, offset: start, owner });
 					if(err) return [];

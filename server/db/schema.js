@@ -44,6 +44,7 @@ export const group = pgTable('group', {
   description: text('description'),
   owner: text('owner').notNull().default('user'),
   createdAt: timestamp('createdAt').notNull(),
+  updatedAt: timestamp('updatedAt'),
 });
 
 export const userGroup = pgTable('userGroup', {

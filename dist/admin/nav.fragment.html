@@ -22,6 +22,26 @@
 			no-expand
 		>Dashboard</k-aside-item>
 		<k-aside-menu
+			icon="manage-accounts"
+			label="Accounts"
+		>
+			<k-aside-item
+				icon="person"
+				href="/admin/accounts/users"
+				no-expand
+			>Users</k-aside-item>
+			<k-aside-item
+				icon="group"
+				href="/admin/accounts/groups"
+				no-expand
+			>Groups</k-aside-item>
+			<k-aside-item
+				icon="lock"
+				href="/admin/accounts/permissions"
+				no-expand
+			>Permissions</k-aside-item>
+		</k-aside-menu>
+		<k-aside-menu
 			icon="cards_stack"
 			label="Content"
 		>
@@ -42,27 +62,6 @@
 				href="/admin/content/globals"
 			>Global Content</k-aside-item>
 		</k-aside-menu>
-		<k-aside-menu
-			icon="manage-accounts"
-			label="Accounts"
-		>
-			<k-aside-item
-				icon="person"
-				href="/admin/accounts/users"
-				no-expand
-			>Users</k-aside-item>
-			<k-aside-item
-				icon="group"
-				href="/admin/accounts/groups"
-				no-expand
-			>Groups</k-aside-item>
-			<k-aside-item
-				icon="lock"
-				href="/admin/accounts/permissions"
-				no-expand
-			>Permissions</k-aside-item>
-		</k-aside-menu>
-		
 		<k-aside-item
 			icon="settings"
 			href="/admin/settings"
@@ -75,10 +74,13 @@
 		>Extensions</k-aside-item>
 		<hr>
 		<k-aside-spacer></k-aside-spacer>
-		<k-theme-select></k-theme-select>
+		<k-theme-switcher
+			labels
+			style="--padding:var(--spacer_h);margin:var(--spacer_h) auto"
+		></k-theme-switcher>
 	</k-aside>
 	<script type="module">
-		import '/kempo-ui/components/ThemeSelect.js';
+		import '/kempo-ui/components/ThemeSwitcher.js';
 		const items = document.querySelectorAll('k-aside-item');
 		const currentPath = window.location.pathname;
 

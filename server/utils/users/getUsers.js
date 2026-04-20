@@ -1,6 +1,6 @@
 import db from '../../db/index.js';
 import { user } from '../../db/schema.js';
-import { sql } from 'drizzle-orm';
+import { sql, asc } from 'drizzle-orm';
 
 export default async ({ limit = 50, offset = 0 } = {}) => {
   try {
@@ -10,7 +10,7 @@ export default async ({ limit = 50, offset = 0 } = {}) => {
       name: user.name,
       emailVerified: user.emailVerified,
       createdAt: user.createdAt,
-    }).from(user).limit(limit).offset(offset);
+    }).from(user).orderBy(asc(user.createdAt)).limit(limit).offset(offset);
     
     const [{ count }] = await db.select({ count: sql`count(*)` }).from(user);
     

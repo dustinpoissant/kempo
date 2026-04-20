@@ -363,13 +363,24 @@ export default class PageEditor extends ShadowComponent {
             ` : ''}
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Template</strong></label>
-              <select id="metaTemplate" class="flex" @change="${this.handleTemplateChange}" ?disabled="${isLocked}">
-                ${templates.map(t => html`
-                  <option value="${t.name}" ?selected="${t.name === page.template}">
-                    ${t.directory === '.' ? t.name : `${t.name} (${t.directory})`}
-                  </option>
-                `)}
-              </select>
+              ${(() => {
+                const pageDir = this.file.replace(/\.page\.html$/, '').split('/').slice(0, -1).join('/') || '.';
+                const reachable = templates.filter(t => {
+                  const tDir = t.directory === '.' ? '' : t.directory;
+                  const pDir = pageDir === '.' ? '' : pageDir;
+                  return tDir === '' || pDir === tDir || pDir.startsWith(tDir + '/');
+                });
+                const templateLabel = t => t.directory === '.' ? `/${t.name}` : `/${t.directory}/${t.name}`;
+                const currentFound = reachable.some(t => t.name === page.template);
+                return html`
+                  <select id="metaTemplate" class="flex" @change="${this.handleTemplateChange}" ?disabled="${isLocked}">
+                    ${!currentFound ? html`<option value="${page.template}" selected>${page.template} (Not Found, using default)</option>` : ''}
+                    ${reachable.map(t => html`
+                      <option value="${t.name}" ?selected="${t.name === page.template}">${templateLabel(t)}</option>
+                    `)}
+                  </select>
+                `;
+              })()}
             </div>
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Owner</strong></label>

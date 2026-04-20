@@ -1,0 +1,1 @@
+ALTER TABLE "group" ADD COLUMN "updatedAt" timestamp;

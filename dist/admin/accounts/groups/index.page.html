@@ -112,6 +112,20 @@
 				}
 			];
 
+			const customFields = [
+				{ name: 'groupName', label: 'Name', size: 300, editable: canEdit },
+				{ name: 'description', label: 'Description', editable: canEdit },
+				{
+					name: 'createdAt',
+					label: 'Created',
+					formatter: v => new Date(v).toLocaleString(),
+					size: 208,
+					editable: false
+				}
+			];
+
+			const addGroupName = r => ({ ...r, groupName: r.name.includes(':') ? r.name.split(':').slice(1).join(':') : r.name });
+
 			const setupTable = ($table, owner, loadFn) => {
 				if(canEdit && owner !== 'system') { // Prevent editor control for system groups
 					$table.setAttribute('request-edit', '');
@@ -129,13 +143,18 @@
 				}
 
 				$table.addEventListener('requestSave', async ({ detail: { record, newData, approve, reject } }) => {
-					const [error] = await updateGroup({ name: record.name, ...newData });
+					const patch = { name: record.name, description: newData.description };
+					if(owner === 'custom' && newData.groupName !== undefined && newData.groupName !== record.groupName){
+						patch.newName = `custom:${newData.groupName}`;
+					}
+					const [error] = await updateGroup(patch);
 					if(error){
 						reject();
 						Toast.error(error.msg || 'Failed to update group');
 						return;
 					}
 					approve();
+					if(patch.newName) loadFn();
 					Toast.success('Group updated');
 				});
 
@@ -168,11 +187,13 @@
 					Toast.error(error.msg || 'Failed to load groups');
 					return;
 				}
-				$table.setData({ records: data.groups, fields });
+				const isCustom = owner === 'custom';
+				const records = isCustom ? data.groups.map(addGroupName) : data.groups;
+				$table.setData({ records, fields: isCustom ? customFields : fields });
 				$table.setupFetchRecords(data.total, async (start, count) => {
 					const [err, d] = await listGroups({ limit: count, offset: start, owner });
 					if(err) return [];
-					return d.groups;
+					return isCustom ? d.groups.map(addGroupName) : d.groups;
 				});
 			};
 

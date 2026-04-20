@@ -25,7 +25,7 @@ export default async ({ rootDir, file }) => {
 
   return [null, {
     file: safePath,
-    name: meta.name || '',
+    name: safePath.replace(/\.fragment\.html$/, '').split('/').pop(),
     owner: meta.owner || 'custom',
     locked: meta.locked === 'true',
     author: meta.author || '',

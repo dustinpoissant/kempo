@@ -148,6 +148,7 @@
 				}
 				const toEditPath = t => ({
 					...t,
+					directory: t.directory === '.' ? '/' : t.directory,
 					editPath: (t.directory === '.' ? t.name : `${t.directory}/${t.name}`),
 					lockedBadge: t.locked ? '<k-icon name="lock"></k-icon>' : ''
 				});

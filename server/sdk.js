@@ -30,6 +30,7 @@ export { default as findUsersByName } from './utils/users/findUsersByName.js';
 export { default as getUserByEmail } from './utils/users/getUserByEmail.js';
 export { default as getUserById } from './utils/users/getUserById.js';
 export { default as getUsers } from './utils/users/getUsers.js';
+export { default as searchUsers } from './utils/users/searchUsers.js';
 export { default as updateUser } from './utils/users/updateUser.js';
 
 /*

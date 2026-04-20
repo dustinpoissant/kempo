@@ -50,6 +50,9 @@ export const getAllUserPermissions = async ({ userid }) =>
 export const getUsers = async ({ limit, offset } = {}) =>
   get(`${API_BASE}/user`, { limit, offset });
 
+export const searchUsers = async ({ q, limit, offset, inGroup, notInGroup } = {}) =>
+  get(`${API_BASE}/user/search`, { q, limit, offset, inGroup, notInGroup });
+
 export const createUser = async ({ name, email, password, emailVerified }) =>
   post(`${API_BASE}/user/create`, { name, email, password, emailVerified });
 
@@ -86,8 +89,8 @@ export const listGroups = async ({ limit, offset, owner } = {}) =>
 export const createGroup = async ({ name, description }) =>
   post(`${API_BASE}/groups`, { name, description });
 
-export const updateGroup = async ({ name, description, owner }) =>
-  patch(`${API_BASE}/groups`, { name, description, owner });
+export const updateGroup = async ({ name, newName, description }) =>
+  patch(`${API_BASE}/groups`, { name, newName, description });
 
 export const deleteGroups = async (names) =>
   del(`${API_BASE}/groups`, { names });
@@ -106,6 +109,12 @@ export const removeMemberFromGroup = async (name, userId) =>
 
 export const getGroupPermissions = async (name) =>
   get(`${API_BASE}/groups/${encodeURIComponent(name)}/permissions`);
+
+export const addPermissionToGroup = async (name, permissionName) =>
+  post(`${API_BASE}/groups/${encodeURIComponent(name)}/permissions`, { permissionName });
+
+export const removePermissionFromGroup = async (name, permissionName) =>
+  del(`${API_BASE}/groups/${encodeURIComponent(name)}/permissions`, { permissionName });
 
 export const listPermissions = async ({ limit, offset, owner } = {}) =>
   get(`${API_BASE}/permissions`, { limit, offset, owner });
@@ -187,6 +196,9 @@ export const disableTemplate = async (file) =>
 export const enableTemplate = async (file) =>
   put(`${API_BASE}/templates/enable`, { file });
 
+export const moveTemplate = async ({ file, newFile }) =>
+  patch(`${API_BASE}/templates/file`, { file, newFile });
+
 /*
   Fragments
 */
@@ -200,11 +212,14 @@ export const getFragment = async (file) =>
 export const createFragment = async ({ directory, name }) =>
   post(`${API_BASE}/fragments`, { directory, name });
 
-export const updateFragment = async ({ file, name, author, markup }) =>
-  put(`${API_BASE}/fragments/file`, { file, name, author, markup });
+export const updateFragment = async ({ file, author, markup }) =>
+  put(`${API_BASE}/fragments/file`, { file, author, markup });
 
 export const deleteFragments = async (files) =>
   del(`${API_BASE}/fragments`, { files });
+
+export const moveFragment = async ({ file, newFile }) =>
+  patch(`${API_BASE}/fragments/file`, { file, newFile });
 
 export const disableFragment = async (file) =>
   put(`${API_BASE}/fragments/disable`, { file });

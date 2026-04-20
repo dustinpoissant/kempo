@@ -1,6 +1,6 @@
 import ShadowComponent from '/kempo-ui/components/ShadowComponent.js';
 import { html } from '/kempo-ui/lit-all.min.js';
-import { getFragment, updateFragment, deleteFragments } from '/kempo/sdk.js';
+import { getFragment, updateFragment, deleteFragments, moveFragment, listDirectories } from '/kempo/sdk.js';
 import Dialog from '/kempo-ui/components/Dialog.js';
 import Toast from '/kempo-ui/components/Toast.js';
 import '/kempo-ui/components/Icon.js';
@@ -45,12 +45,24 @@ export default class FragmentEditor extends ShadowComponent {
     }
 
     this.fragment = fragment;
-    document.title = `Edit: ${fragment.name || this.file} - Admin`;
+    document.title = `Edit: ${fragment.name} - Admin`;
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     document.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  /*
+    Helpers
+  */
+
+  getFormState() {
+    const root = this.shadowRoot;
+    return {
+      name: root.querySelector('#metaName')?.value ?? this.fragment.name,
+      markup: root.querySelector('k-code-editor')?.getValue() ?? this.fragment.markup
+    };
   }
 
   /*
@@ -64,33 +76,6 @@ export default class FragmentEditor extends ShadowComponent {
     }
   };
 
-  handleSave = async () => {
-    this.saving = true;
-    const root = this.shadowRoot;
-    const name = root.querySelector('#metaName').value;
-    const editor = root.querySelector('k-code-editor');
-    const markup = editor ? editor.getValue() : this.fragment.markup;
-
-    const [saveError, saved] = await updateFragment({ file: this.file, name, markup });
-    this.saving = false;
-
-    if(saveError){
-      Toast.error(saveError.msg || 'Failed to save fragment');
-      return;
-    }
-
-    this.fragment = { ...this.fragment, name, markup, updatedAt: saved.updatedAt };
-    document.title = `Edit: ${name || this.file} - Admin`;
-    Toast.success('Fragment saved');
-  };
-
-  handleReset = () => {
-    Dialog.confirm('Reset this fragment? Any unsaved changes will be lost.', confirmed => {
-      if(!confirmed) return;
-      this.fragment = { ...this.fragment };
-    });
-  };
-
   handleDelete = () => {
     Dialog.confirm('Delete this fragment? This action cannot be undone.', async confirmed => {
       if(!confirmed) return;
@@ -102,6 +87,131 @@ export default class FragmentEditor extends ShadowComponent {
       Toast.success('Fragment deleted');
       setTimeout(() => { window.location.href = '/admin/content/fragments'; }, 1000);
     });
+  };
+
+  handleMove = async () => {
+    const [, dirData] = await listDirectories();
+    const directories = dirData?.directories || ['.'];
+
+    const parts = this.file.replace(/\.fragment\.html$/, '').split('/');
+    const currentName = parts.pop();
+    const currentDir = parts.join('/') || '.';
+
+    const isValidDir = p => /^\/[a-zA-Z0-9_\-\[\]\/]*$/.test(p) && !p.includes('..') && !p.includes('//');
+    const dirToInternal = p => { const t = (p || '/').replace(/^\//, '').replace(/\/$/, ''); return t || '.'; };
+    const currentDirDisplay = currentDir === '.' ? '/' : '/' + currentDir;
+
+    const $dialog = Dialog.create(html`
+      <div class="p">
+        <div class="mb">
+          <label class="d-b mb-sm"><strong>Location</strong></label>
+          <input type="text" id="dlg-move-dir" class="full" list="dlg-move-dir-list" .value="${currentDirDisplay}" placeholder="/">
+          <datalist id="dlg-move-dir-list">
+            ${directories.map(d => html`<option value="${d === '.' ? '/' : '/' + d}">`)}
+          </datalist>
+        </div>
+        <div>
+          <label class="d-b mb-sm"><strong>Fragment Name</strong></label>
+          <input type="text" id="dlg-move-name" class="full" .value="${currentName}">
+          <p class="mt-sm muted"><small id="dlg-move-preview"></small></p>
+        </div>
+      </div>
+    `, {
+      title: 'Move Fragment',
+      confirmText: 'Save and Move Fragment',
+      confirmAction: async () => {
+        const dirInput = $dialog.querySelector('#dlg-move-dir').value.trim() || '/';
+        const newName = $dialog.querySelector('#dlg-move-name').value.trim();
+        if(!newName){
+          Toast.error('Fragment name is required');
+          return;
+        }
+        if(!isValidDir(dirInput)){
+          Toast.error('Invalid directory path');
+          return;
+        }
+        const newDir = dirToInternal(dirInput);
+        const newFile = newDir === '.'
+          ? `${newName}.fragment.html`
+          : `${newDir}/${newName}.fragment.html`;
+
+        this.saving = true;
+        const [saveError] = await updateFragment({ file: this.file, markup: this.getFormState().markup });
+        this.saving = false;
+        if(saveError){
+          Toast.error(saveError.msg || 'Failed to save fragment');
+          return;
+        }
+
+        const [moveError, moved] = await moveFragment({ file: this.file, newFile });
+        if(moveError){
+          Toast.error(moveError.msg || 'Failed to move fragment');
+          return;
+        }
+
+        Toast.success('Fragment saved and moved');
+        const newParam = moved.file.replace(/\.fragment\.html$/, '');
+        setTimeout(() => {
+          window.location.href = `/admin/content/fragments/edit?fragment=${encodeURIComponent(newParam)}`;
+        }, 1000);
+      },
+      cancelText: 'Cancel'
+    });
+
+    const updatePreview = () => {
+      const dir = dirToInternal($dialog.querySelector('#dlg-move-dir').value || '/');
+      const name = $dialog.querySelector('#dlg-move-name').value;
+      const prefix = dir === '.' ? '/' : '/' + dir + '/';
+      $dialog.querySelector('#dlg-move-preview').textContent = name ? prefix + name : '';
+    };
+    $dialog.querySelector('#dlg-move-dir').addEventListener('input', updatePreview);
+    $dialog.querySelector('#dlg-move-name').addEventListener('input', updatePreview);
+    updatePreview();
+  };
+
+  handleReset = () => {
+    Dialog.confirm('Reset this fragment? Any unsaved changes will be lost.', confirmed => {
+      if(!confirmed) return;
+      this.fragment = { ...this.fragment };
+    });
+  };
+
+  handleSave = async () => {
+    this.saving = true;
+    const state = this.getFormState();
+    const [saveError, saved] = await updateFragment({ file: this.file, markup: state.markup });
+    this.saving = false;
+
+    if(saveError){
+      Toast.error(saveError.msg || 'Failed to save fragment');
+      return;
+    }
+
+    this.fragment = { ...this.fragment, markup: state.markup, updatedAt: saved.updatedAt };
+
+    const slugify = n => n.toLowerCase().trim().replace(/[^\w\s-]/g, '').replace(/[\s_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    const parts = this.file.replace(/\.fragment\.html$/, '').split('/');
+    const currentSlug = parts.pop();
+    const dir = parts.join('/');
+    const newSlug = slugify(state.name);
+
+    if(newSlug && newSlug !== currentSlug){
+      const newFile = dir ? `${dir}/${newSlug}.fragment.html` : `${newSlug}.fragment.html`;
+      const [moveError, moved] = await moveFragment({ file: this.file, newFile });
+      if(moveError){
+        Toast.error(moveError.msg || 'Failed to rename fragment file');
+        return;
+      }
+      Toast.success('Fragment saved and renamed');
+      const newParam = moved.file.replace(/\.fragment\.html$/, '');
+      setTimeout(() => {
+        window.location.href = `/admin/content/fragments/edit?fragment=${encodeURIComponent(newParam)}`;
+      }, 1000);
+      return;
+    }
+
+    document.title = `Edit: ${this.fragment.name} - Admin`;
+    Toast.success('Fragment saved');
   };
 
   /*
@@ -119,13 +229,13 @@ export default class FragmentEditor extends ShadowComponent {
     `;
 
     const { fragment } = this;
-    const isSystem = fragment.owner === 'system';
+    const isCustom = fragment.owner === 'custom';
     const isLocked = fragment.locked;
 
     return html`
       ${isLocked ? html`
         <div class="p r mb bc-warning tc-warning">
-          <k-icon name="lock"></k-icon> This fragment is locked and cannot be edited. It is managed by ${isSystem ? 'the system' : 'an extension'}.
+          <k-icon name="lock"></k-icon> This fragment is locked and cannot be edited. It is managed by ${isCustom ? 'an extension' : 'the system'}.
         </div>
       ` : ''}
       <div class="d-f mb">
@@ -135,9 +245,10 @@ export default class FragmentEditor extends ShadowComponent {
           </a>
         </div>
         <div class="flex"></div>
-        ${!isSystem && !isLocked ? html`
+        ${isCustom && !isLocked ? html`
           <div class="btn-grp mrh mb">
             <button class="danger" @click="${this.handleDelete}"><k-icon name="delete"></k-icon> Delete</button>
+            <button @click="${this.handleMove}"><k-icon name="drive_file_move"></k-icon> Move Fragment</button>
           </div>
         ` : ''}
         ${!isLocked ? html`
@@ -149,7 +260,8 @@ export default class FragmentEditor extends ShadowComponent {
           </div>
         ` : ''}
       </div>
-      <h1 class="mb">Fragment: ${fragment.name || this.file}</h1>
+
+      <h1 class="mb">Fragment: ${fragment.name}</h1>
 
       <k-accordion>
         <k-accordion-header for-panel="metadata">Metadata</k-accordion-header>
@@ -157,12 +269,19 @@ export default class FragmentEditor extends ShadowComponent {
           <div class="p">
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Name</strong></label>
-              <input type="text" id="metaName" class="flex" .value="${fragment.name || ''}" ?disabled="${isSystem || isLocked}">
+              <input type="text" id="metaName" class="flex" .value="${fragment.name || ''}" ?disabled="${!isCustom || isLocked}">
             </div>
-            ${!isSystem ? html`
+            <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+              <label style="min-width: 120px;"><strong>Directory</strong></label>
+              <span class="muted">${(() => { const parts = this.file.replace(/\.fragment\.html$/, '').split('/'); parts.pop(); return parts.length ? parts.join('/') : '/'; })()}</span>
+              ${isCustom && !isLocked ? html`
+                <button class="icon-btn no-btn ph" title="Move Fragment" @click="${this.handleMove}"><k-icon name="drive_file_move"></k-icon></button>
+              ` : ''}
+            </div>
+            ${fragment.author ? html`
               <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
                 <label style="min-width: 120px;"><strong>Author</strong></label>
-                <span class="muted">${fragment.author || ''}</span>
+                <span class="muted">${fragment.author}</span>
               </div>
             ` : ''}
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">

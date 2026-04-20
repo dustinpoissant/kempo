@@ -30,7 +30,6 @@ export default async ({ rootDir, directory, name, author, copyFrom }) => {
   const frontmatter = [
     '<!--',
     `  owner: custom`,
-    `  name: ${name}`,
     `  author: ${author || ''}`,
     `  created: ${now}`,
     `  updated: ${now}`,

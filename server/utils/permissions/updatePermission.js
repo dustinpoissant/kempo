@@ -7,6 +7,10 @@ export default async (name, updates) => {
     return [{ code: 400, msg: 'Permission name is required' }, null];
   }
 
+  if(name.startsWith('system:')){
+    return [{ code: 403, msg: 'System permissions cannot be modified' }, null];
+  }
+
   if(!updates || Object.keys(updates).length === 0){
     return [{ code: 400, msg: 'Updates are required' }, null];
   }
