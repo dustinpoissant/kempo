@@ -1,17 +1,2 @@
-import logout from '../../../../../server/utils/auth/logout.js';
-
-export default async (request, response) => {
-  try {
-    const token = request.cookies.session_token;
-    const [error, result] = await logout({ token });
-    
-    if(error){
-      return response.status(error.code).json({ error: error.msg });
-    }
-    
-    response.setHeader('Set-Cookie', 'session_token=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0');
-    response.json(result);
-  } catch(error) {
-    response.status(500).json({ error: error.message });
-  }
-};
+import logout from"../../../../../server/utils/auth/logout.js";export default async(t,e)=>{try{const o=t.cookies.session_token,[s,r]=await logout({token:o});if(s)return e.status(s.code).json({error:s.msg});e.setHeader("Set-Cookie","session_token=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0"),e.json(r)}catch(t){e.status(500).json({error:t.message})}};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\auth\logout\POST.js.map

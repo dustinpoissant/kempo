@@ -32,6 +32,7 @@ Architectural patterns and cross-cutting systems.
 - [Admin UI](concepts/admin-ui.md) — Admin portal with tables, editors, and navigation
 - [Email](concepts/email.md) — Transactional email via Resend with kempo-server templating
 - [CLI](concepts/cli.md) — Project scaffolding via `npx kempo init`
+- [Build](concepts/build.md) — Minification and optimization of source files for distribution
 
 ## Resources
 

@@ -1,25 +1,2 @@
-import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
-import listExtensions from '../../../../server/utils/extensions/listExtensions.js';
-
-export default async (request, response) => {
-  const token = request.cookies.session_token;
-  const [permError, hasPermission] = await currentUserHasPermission(token, 'system:extensions:read');
-
-  if(permError){
-    return response.status(permError.code).json({ error: permError.msg });
-  }
-
-  if(!hasPermission){
-    return response.status(403).json({ error: 'Insufficient permissions' });
-  }
-
-  const limit = parseInt(request.query.limit) || 50;
-  const offset = parseInt(request.query.offset) || 0;
-  const [error, data] = await listExtensions({ limit, offset });
-
-  if(error){
-    return response.status(error.code).json({ error: error.msg });
-  }
-
-  response.json(data);
-};
+import currentUserHasPermission from"../../../../server/utils/permissions/currentUserHasPermission.js";import listExtensions from"../../../../server/utils/extensions/listExtensions.js";export default async(s,e)=>{const r=s.cookies.session_token,[t,i]=await currentUserHasPermission(r,"system:extensions:read");if(t)return e.status(t.code).json({error:t.msg});if(!i)return e.status(403).json({error:"Insufficient permissions"});const n=parseInt(s.query.limit)||50,o=parseInt(s.query.offset)||0,[a,u]=await listExtensions({limit:n,offset:o});if(a)return e.status(a.code).json({error:a.msg});e.json(u)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\GET.js.map

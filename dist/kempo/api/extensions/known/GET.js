@@ -1,26 +1,2 @@
-import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
-import { readFile } from 'fs/promises';
-import { existsSync } from 'fs';
-import { join } from 'path';
-
-const knownExtensionsPath = join(import.meta.dirname, '../../../admin/known-extensions.json');
-
-export default async (request, response) => {
-  const token = request.cookies.session_token;
-  const [permError, hasPermission] = await currentUserHasPermission(token, 'system:extensions:read');
-
-  if(permError){
-    return response.status(permError.code).json({ error: permError.msg });
-  }
-
-  if(!hasPermission){
-    return response.status(403).json({ error: 'Insufficient permissions' });
-  }
-
-  if(!existsSync(knownExtensionsPath)){
-    return response.json({ items: [], total: 0 });
-  }
-
-  const items = JSON.parse(await readFile(knownExtensionsPath, 'utf-8'));
-  response.json({ items, total: items.length });
-};
+import currentUserHasPermission from"../../../../../server/utils/permissions/currentUserHasPermission.js";import{readFile}from"fs/promises";import{existsSync}from"fs";import{join}from"path";const knownExtensionsPath=join(import.meta.dirname,"../../../admin/known-extensions.json");export default async(s,n)=>{const e=s.cookies.session_token,[t,o]=await currentUserHasPermission(e,"system:extensions:read");if(t)return n.status(t.code).json({error:t.msg});if(!o)return n.status(403).json({error:"Insufficient permissions"});if(!existsSync(knownExtensionsPath))return n.json({items:[],total:0});const r=JSON.parse(await readFile(knownExtensionsPath,"utf-8"));n.json({items:r,total:r.length})};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\known\GET.js.map

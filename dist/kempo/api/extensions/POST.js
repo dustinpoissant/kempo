@@ -1,24 +1,2 @@
-import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
-import installExtension from '../../../../server/utils/extensions/installExtension.js';
-
-export default async (request, response) => {
-  const token = request.cookies.session_token;
-  const [permError, hasPermission] = await currentUserHasPermission(token, 'system:extensions:install');
-
-  if(permError){
-    return response.status(permError.code).json({ error: permError.msg });
-  }
-
-  if(!hasPermission){
-    return response.status(403).json({ error: 'Insufficient permissions' });
-  }
-
-  const { name } = request.body;
-  const [error, data] = await installExtension({ name });
-
-  if(error){
-    return response.status(error.code).json({ error: error.msg });
-  }
-
-  response.json(data);
-};
+import currentUserHasPermission from"../../../../server/utils/permissions/currentUserHasPermission.js";import installExtension from"../../../../server/utils/extensions/installExtension.js";export default async(s,e)=>{const n=s.cookies.session_token,[r,t]=await currentUserHasPermission(n,"system:extensions:install");if(r)return e.status(r.code).json({error:r.msg});if(!t)return e.status(403).json({error:"Insufficient permissions"});const{name:i}=s.body,[o,a]=await installExtension({name:i});if(o)return e.status(o.code).json({error:o.msg});e.json(a)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\POST.js.map

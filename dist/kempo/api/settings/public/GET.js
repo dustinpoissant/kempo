@@ -1,16 +1,2 @@
-import getPublicSettings from '../../../../../server/utils/settings/getPublicSettings.js';
-
-export default async (request) => {
-  const [error, settings] = await getPublicSettings();
-
-  if(error){
-    return new Response(JSON.stringify({ error: error.msg }), {
-      status: error.code,
-      headers: { 'Content-Type': 'application/json' }
-    });
-  }
-
-  return new Response(JSON.stringify(settings), {
-    headers: { 'Content-Type': 'application/json' }
-  });
-};
+import getPublicSettings from"../../../../../server/utils/settings/getPublicSettings.js";export default async e=>{const[t,s]=await getPublicSettings();return t?new Response(JSON.stringify({error:t.msg}),{status:t.code,headers:{"Content-Type":"application/json"}}):new Response(JSON.stringify(s),{headers:{"Content-Type":"application/json"}})};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\settings\public\GET.js.map

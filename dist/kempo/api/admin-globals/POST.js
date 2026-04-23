@@ -1,27 +1,2 @@
-import { resolve } from 'path';
-import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
-import createAdminGlobalContent from '../../../../server/utils/admin-global-content/createAdminGlobalContent.js';
-
-const adminDir = resolve(import.meta.dirname, '../../../../dist/admin');
-
-export default async (request, response) => {
-  const token = request.cookies.session_token;
-  const [permError, hasPermission] = await currentUserHasPermission(token, 'system:globals:create');
-
-  if(permError){
-    return response.status(permError.code).json({ error: permError.msg });
-  }
-
-  if(!hasPermission){
-    return response.status(403).json({ error: 'Insufficient permissions' });
-  }
-
-  const { name, location, priority, owner, markup } = request.body;
-  const [error, data] = await createAdminGlobalContent({ adminDir, name, location, priority, owner, markup });
-
-  if(error){
-    return response.status(error.code).json({ error: error.msg });
-  }
-
-  response.json(data);
-};
+import{resolve}from"path";import currentUserHasPermission from"../../../../server/utils/permissions/currentUserHasPermission.js";import createAdminGlobalContent from"../../../../server/utils/admin-global-content/createAdminGlobalContent.js";const adminDir=resolve(import.meta.dirname,"../../../../dist/admin");export default async(r,e)=>{const s=r.cookies.session_token,[o,t]=await currentUserHasPermission(s,"system:globals:create");if(o)return e.status(o.code).json({error:o.msg});if(!t)return e.status(403).json({error:"Insufficient permissions"});const{name:n,location:i,priority:a,owner:m,markup:c}=r.body,[l,u]=await createAdminGlobalContent({adminDir:adminDir,name:n,location:i,priority:a,owner:m,markup:c});if(l)return e.status(l.code).json({error:l.msg});e.json(u)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\admin-globals\POST.js.map

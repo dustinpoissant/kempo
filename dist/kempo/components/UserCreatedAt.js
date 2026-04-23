@@ -1,26 +1,2 @@
-import LightComponent from '/kempo-ui/components/LightComponent.js';
-import { getSession } from '../sdk.js';
-
-export default class UserCreatedAt extends LightComponent {
-  connectedCallback() {
-    super.connectedCallback();
-    this.loadCreatedAt();
-  }
-
-  async loadCreatedAt() {
-    const [error, session] = await getSession();
-    if(error){
-      console.error('Failed to load user created date:', error.msg);
-      this.textContent = '';
-      return;
-    }
-    const date = new Date(session?.user?.createdAt);
-    this.textContent = date.toLocaleDateString();
-  }
-
-  renderLightDom() {
-    return 'Loading...';
-  }
-}
-
-customElements.define('k-user-created-at', UserCreatedAt);
+import LightComponent from"/kempo-ui/components/LightComponent.js";import{getSession}from"../sdk.js";export default class UserCreatedAt extends LightComponent{connectedCallback(){super.connectedCallback(),this.loadCreatedAt()}async loadCreatedAt(){const[e,t]=await getSession();if(e)return console.error("Failed to load user created date:",e.msg),void(this.textContent="");const o=new Date(t?.user?.createdAt);this.textContent=o.toLocaleDateString()}renderLightDom(){return"Loading..."}}customElements.define("k-user-created-at",UserCreatedAt);
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\UserCreatedAt.js.map

@@ -1,24 +1,2 @@
-import currentUserHasPermission from '../../../../../../../server/utils/permissions/currentUserHasPermission.js';
-import deleteExpiredUserSessions from '../../../../../../../server/utils/sessions/deleteExpiredUserSessions.js';
-
-export default async (request, response) => {
-  const token = request.cookies.session_token;
-  const [permError, hasPermission] = await currentUserHasPermission(token, 'system:user:update');
-
-  if(permError){
-    return response.status(permError.code).json({ error: permError.msg });
-  }
-
-  if(!hasPermission){
-    return response.status(403).json({ error: 'Insufficient permissions' });
-  }
-
-  const { userid } = request.params;
-  const [error, result] = await deleteExpiredUserSessions(userid);
-
-  if(error){
-    return response.status(error.code).json({ error: error.msg });
-  }
-
-  response.json(result);
-};
+import currentUserHasPermission from"../../../../../../../server/utils/permissions/currentUserHasPermission.js";import deleteExpiredUserSessions from"../../../../../../../server/utils/sessions/deleteExpiredUserSessions.js";export default async(s,e)=>{const r=s.cookies.session_token,[i,o]=await currentUserHasPermission(r,"system:user:update");if(i)return e.status(i.code).json({error:i.msg});if(!o)return e.status(403).json({error:"Insufficient permissions"});const{userid:t}=s.params,[n,u]=await deleteExpiredUserSessions(t);if(n)return e.status(n.code).json({error:n.msg});e.json(u)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\user\[userid]\sessions\expired\DELETE.js.map

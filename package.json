@@ -5,6 +5,7 @@
   "description": "A fullstack CMS framework for creating websites with user authentication",
   "scripts": {
     "dev": "kempo-server --root app-public --port 9876",
+    "build": "node scripts/build.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -31,7 +32,6 @@
   ],
   "dependencies": {
     "@lexical/history": "^0.42.0",
-    "inquirer": "^12.6.1",
     "@lexical/html": "^0.42.0",
     "@lexical/list": "^0.42.0",
     "@lexical/rich-text": "^0.42.0",
@@ -41,6 +41,8 @@
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.44.7",
+    "html-minifier-terser": "^7.2.0",
+    "inquirer": "^12.6.1",
     "kempo": "^4.2.4",
     "kempo-server": "^3.1.0",
     "kempo-testing-framework": "^1.4.6",
@@ -48,7 +50,8 @@
     "lexical": "^0.42.0",
     "monaco-editor": "^0.55.1",
     "postgres": "^3.4.7",
-    "resend": "^6.5.2"
+    "resend": "^6.5.2",
+    "terser": "^5.46.2"
   },
   "repository": {
     "type": "git",

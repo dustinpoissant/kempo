@@ -1,26 +1,2 @@
-import loginEmail from '../../../../../../server/utils/auth/loginEmail.js';
-
-export default async (request, response) => {
-  try {
-    const { email, password } = request.body;
-    
-    const [error, result] = await loginEmail(email, password);
-    
-    if(error){
-      return response.status(error.code).json({ error: error.msg });
-    }
-
-    response.cookie('session_token', result.sessionToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: result.expiresAt.getTime() - Date.now()
-    });
-    
-    response.json({ user: result.user });
-  } catch(error){
-    console.error('Login error:', error);
-    response.status(500).json({ error: 'Internal server error' });
-  }
-};
+import loginEmail from"../../../../../../server/utils/auth/loginEmail.js";export default async(e,r)=>{try{const{email:o,password:s}=e.body,[t,n]=await loginEmail(o,s);if(t)return r.status(t.code).json({error:t.msg});r.cookie("session_token",n.sessionToken,{httpOnly:!0,secure:"production"===process.env.NODE_ENV,sameSite:"lax",path:"/",maxAge:n.expiresAt.getTime()-Date.now()}),r.json({user:n.user})}catch(e){console.error("Login error:",e),r.status(500).json({error:"Internal server error"})}};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\auth\login\email\POST.js.map

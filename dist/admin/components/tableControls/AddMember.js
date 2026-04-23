@@ -1,61 +1,6 @@
-import TableControl from '/kempo-ui/components/tableControls/TableControl.js';
-import { html } from '/kempo-ui/lit-all.min.js';
-import Dialog from '/kempo-ui/components/Dialog.js';
-import Toast from '/kempo-ui/components/Toast.js';
-import '/kempo-ui/components/Icon.js';
-import '/kempo-ui/components/Combobox.js';
-import '/kempo-ui/components/Spinner.js';
-
-export default class AddMember extends TableControl {
-  groupName = '';
-
-  addMember = () => {
-    let selectedUserId = null;
-
-    const $combobox = document.createElement('k-combobox');
-    $combobox.setAttribute('placeholder', 'Search users...');
-    $combobox.setAttribute('debounce-ms', '350');
-    $combobox.setAttribute('require-match', '');
-
-    $combobox.addEventListener('search', async e => {
-      $combobox.searching = true;
-      const { searchUsers } = await import('/kempo/sdk.js');
-      const [err, data] = await searchUsers({ q: e.detail.value, notInGroup: this.groupName, limit: 20 });
-      $combobox.searching = false;
-      if(err || !data) return;
-      $combobox.setOptions(data.users.map(u => ({ label: `${u.name} (${u.email})`, value: u.id })));
-    });
-
-    $combobox.addEventListener('select', e => {
-      selectedUserId = e.detail.value;
-    });
-
-    const $wrap = document.createElement('div');
-    $wrap.className = 'p';
-    $wrap.appendChild($combobox);
-
-    Dialog.create($wrap, {
-      title: 'Add Member',
-      confirmText: 'Add',
-      confirmAction: async () => {
-        if(!selectedUserId) return;
-        const { addMemberToGroup } = await import('/kempo/sdk.js');
-        const [err] = await addMemberToGroup(this.groupName, selectedUserId);
-        if(err){ Toast.error(err.msg || 'Failed to add member'); return; }
-        Toast.success('Member added');
-        this.dispatchEvent(new CustomEvent('memberAdded', { bubbles: true, composed: true }));
-      },
-      cancelText: 'Cancel'
-    });
-  };
-
-  render(){
-    return html`
+import TableControl from"/kempo-ui/components/tableControls/TableControl.js";import{html}from"/kempo-ui/lit-all.min.js";import Dialog from"/kempo-ui/components/Dialog.js";import Toast from"/kempo-ui/components/Toast.js";import"/kempo-ui/components/Icon.js";import"/kempo-ui/components/Combobox.js";import"/kempo-ui/components/Spinner.js";export default class AddMember extends TableControl{groupName="";addMember=()=>{let e=null;const t=document.createElement("k-combobox");t.setAttribute("placeholder","Search users..."),t.setAttribute("debounce-ms","350"),t.setAttribute("require-match",""),t.addEventListener("search",async e=>{t.searching=!0;const{searchUsers:o}=await import("/kempo/sdk.js"),[m,s]=await o({q:e.detail.value,notInGroup:this.groupName,limit:20});t.searching=!1,!m&&s&&t.setOptions(s.users.map(e=>({label:`${e.name} (${e.email})`,value:e.id})))}),t.addEventListener("select",t=>{e=t.detail.value});const o=document.createElement("div");o.className="p",o.appendChild(t),Dialog.create(o,{title:"Add Member",confirmText:"Add",confirmAction:async()=>{if(!e)return;const{addMemberToGroup:t}=await import("/kempo/sdk.js"),[o]=await t(this.groupName,e);o?Toast.error(o.msg||"Failed to add member"):(Toast.success("Member added"),this.dispatchEvent(new CustomEvent("memberAdded",{bubbles:!0,composed:!0})))},cancelText:"Cancel"})};render(){return html`
       <button class="no-btn icon-btn" title="Add Member" @click="${this.addMember}">
         <k-icon name="person_add"></k-icon>
       </button>
-    `;
-  }
-}
-
-customElements.define('admin-add-member', AddMember);
+    `}}customElements.define("admin-add-member",AddMember);
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\tableControls\AddMember.js.map

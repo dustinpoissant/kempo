@@ -1,26 +1,2 @@
-import currentUserHasPermission from '../../../../../../server/utils/permissions/currentUserHasPermission.js';
-import getUserSessions from '../../../../../../server/utils/sessions/getUserSessions.js';
-
-export default async (request, response) => {
-  const token = request.cookies.session_token;
-  const [permError, hasPermission] = await currentUserHasPermission(token, 'system:user:read');
-
-  if(permError){
-    return response.status(permError.code).json({ error: permError.msg });
-  }
-
-  if(!hasPermission){
-    return response.status(403).json({ error: 'Insufficient permissions' });
-  }
-
-  const { userid } = request.params;
-  const limit = parseInt(request.query.limit) || 50;
-  const offset = parseInt(request.query.offset) || 0;
-  const [error, data] = await getUserSessions(userid, { limit, offset });
-
-  if(error){
-    return response.status(error.code).json({ error: error.msg });
-  }
-
-  response.json(data);
-};
+import currentUserHasPermission from"../../../../../../server/utils/permissions/currentUserHasPermission.js";import getUserSessions from"../../../../../../server/utils/sessions/getUserSessions.js";export default async(s,e)=>{const r=s.cookies.session_token,[t,i]=await currentUserHasPermission(r,"system:user:read");if(t)return e.status(t.code).json({error:t.msg});if(!i)return e.status(403).json({error:"Insufficient permissions"});const{userid:o}=s.params,n=parseInt(s.query.limit)||50,a=parseInt(s.query.offset)||0,[u,m]=await getUserSessions(o,{limit:n,offset:a});if(u)return e.status(u.code).json({error:u.msg});e.json(m)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\user\[userid]\sessions\GET.js.map

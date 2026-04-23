@@ -1,27 +1,2 @@
-import { resolve } from 'path';
-import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
-import getAdminGlobalContent from '../../../../../server/utils/admin-global-content/getAdminGlobalContent.js';
-
-const adminDir = resolve(import.meta.dirname, '../../../../../dist/admin');
-
-export default async (request, response) => {
-  const token = request.cookies.session_token;
-  const [permError, hasPermission] = await currentUserHasPermission(token, 'system:globals:read');
-
-  if(permError){
-    return response.status(permError.code).json({ error: permError.msg });
-  }
-
-  if(!hasPermission){
-    return response.status(403).json({ error: 'Insufficient permissions' });
-  }
-
-  const id = request.params.id;
-  const [error, data] = await getAdminGlobalContent({ adminDir, id });
-
-  if(error){
-    return response.status(error.code).json({ error: error.msg });
-  }
-
-  response.json(data);
-};
+import{resolve}from"path";import currentUserHasPermission from"../../../../../server/utils/permissions/currentUserHasPermission.js";import getAdminGlobalContent from"../../../../../server/utils/admin-global-content/getAdminGlobalContent.js";const adminDir=resolve(import.meta.dirname,"../../../../../dist/admin");export default async(s,r)=>{const e=s.cookies.session_token,[t,i]=await currentUserHasPermission(e,"system:globals:read");if(t)return r.status(t.code).json({error:t.msg});if(!i)return r.status(403).json({error:"Insufficient permissions"});const n=s.params.id,[o,a]=await getAdminGlobalContent({adminDir:adminDir,id:n});if(o)return r.status(o.code).json({error:o.msg});r.json(a)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\admin-globals\[id]\GET.js.map

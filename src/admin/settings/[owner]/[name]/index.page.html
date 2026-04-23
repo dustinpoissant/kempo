@@ -1,0 +1,327 @@
+<!--
+	locked: true
+-->
+<page title="Setting - Admin">
+<content>
+<script type="module" src="/kempo-ui/components/Icon.js"></script>
+<script type="module" src="/kempo-ui/components/Toggle.js"></script>
+<script type="module" src="/admin/components/Monaco.js"></script>
+<script type="module" src="/kempo/components/Permission.js"></script>
+
+		<div class="mb">
+			<a href="/admin/settings/" class="no-link">
+				<button class="mbh"><k-icon name="arrow" direction="left"></k-icon> Settings</button>
+			</a>
+			<div class="d-f mb0" style="align-items: center; justify-content: space-between;">
+				<div>
+					<h1 class="mb0" id="pageTitle">Setting</h1>
+					<p class="tc-muted mb0" id="settingDescription"></p>
+				</div>
+				<div class="d-f" style="gap: var(--spacer);">
+					<button id="saveBtn" class="primary" disabled>Save</button>
+					<button id="deleteBtn" class="danger" style="display: none;">Delete</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="loading">Loading setting...</div>
+		<div id="notFound" style="display: none;">
+			<p>Setting not found.</p>
+			<a href="/admin/settings/">Back to Settings</a>
+		</div>
+		<div id="content" style="display: none;">
+
+			<div class="card">
+				<h2>Value</h2>
+				<div id="editorContainer" class="mb"></div>
+			</div>
+
+			<div class="card">
+				<h2>Metadata</h2>
+				<div class="mb">
+					<label class="d-b mbh">Type</label>
+					<select id="typeSelect" class="full">
+						<option value="string">String</option>
+						<option value="number">Number</option>
+						<option value="boolean">Boolean</option>
+						<option value="json">JSON</option>
+					</select>
+				</div>
+				<div class="mb d-f" style="align-items: center; gap: var(--spacer_h);">
+					<k-toggle id="publicToggle"></k-toggle>
+					<label>Public (accessible without authentication)</label>
+				</div>
+				<div class="mb">
+					<label class="d-b mbh">Description</label>
+					<textarea id="descriptionInput" class="full" rows="3"></textarea>
+				</div>
+				<div class="mb d-f" style="gap: var(--spacer);">
+					<div><span class="tc-muted">Created:</span> <span id="createdAt"></span></div>
+					<div><span class="tc-muted">Updated:</span> <span id="updatedAt"></span></div>
+				</div>
+			</div>
+
+		</div>
+
+		<script type="module">
+			import { getSetting, setSetting, deleteSetting, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+			import Toast from '/kempo-ui/components/Toast.js';
+			import Dialog from '/kempo-ui/components/Dialog.js';
+
+			const pathParts = window.location.pathname.split('/admin/settings/')[1]?.replace(/\/$/, '').split('/') || [];
+			const owner = decodeURIComponent(pathParts[0] || '');
+			const settingName = decodeURIComponent(pathParts[1] || '');
+
+			if(!owner || !settingName){
+				document.getElementById('loading').style.display = 'none';
+				document.getElementById('notFound').style.display = '';
+			}
+
+			/*
+				Permission checks
+			*/
+
+			const [, permResult] = await getAllCurrentUserPermissions();
+			const myPerms = new Set(permResult?.permissions ?? []);
+			const canEditValue = owner === 'system'
+				? myPerms.has('system:settings:update')
+				: owner === 'custom'
+					? myPerms.has('system:custom-settings:manage')
+					: myPerms.has('system:extension:configure');
+			const canEditMetadata = owner === 'custom' && myPerms.has('system:custom-settings:manage');
+			const canDelete = owner === 'custom' && myPerms.has('system:custom-settings:manage');
+
+			/*
+				Load setting
+			*/
+
+			const [error, settingData] = await getSetting(owner, settingName);
+
+			document.getElementById('loading').style.display = 'none';
+
+			if(error){
+				document.getElementById('notFound').style.display = '';
+			} else {
+				document.getElementById('content').style.display = '';
+				document.getElementById('pageTitle').textContent = settingName;
+				document.title = `${settingName} - Settings - Admin`;
+				document.getElementById('settingDescription').textContent = settingData.description || '';
+
+				const $typeSelect = document.getElementById('typeSelect');
+				const $publicToggle = document.getElementById('publicToggle');
+				const $descriptionInput = document.getElementById('descriptionInput');
+				const $editorContainer = document.getElementById('editorContainer');
+				const $saveBtn = document.getElementById('saveBtn');
+				const $deleteBtn = document.getElementById('deleteBtn');
+
+				$typeSelect.value = settingData.type;
+				$descriptionInput.value = settingData.description || '';
+				document.getElementById('createdAt').textContent = new Date(settingData.createdAt).toLocaleString();
+				document.getElementById('updatedAt').textContent = new Date(settingData.updatedAt).toLocaleString();
+
+				await customElements.whenDefined('k-toggle');
+				$publicToggle.value = settingData.isPublic;
+
+				/*
+					Value editors
+				*/
+
+				let currentType = settingData.type;
+
+				const getValueFromEditor = () => {
+					switch(currentType){
+						case 'string':
+							return $editorContainer.querySelector('textarea').value;
+						case 'number':
+							return Number($editorContainer.querySelector('input').value);
+						case 'boolean':
+							return $editorContainer.querySelector('k-toggle').value;
+						case 'json': {
+							const monacoEl = $editorContainer.querySelector('admin-monaco');
+							if(monacoEl) return JSON.parse(monacoEl.value);
+							return settingData.value;
+						}
+					}
+				};
+
+				const renderStringEditor = value => {
+					$editorContainer.innerHTML = '';
+					const textarea = document.createElement('textarea');
+					textarea.className = 'full ff-mono';
+					textarea.rows = 8;
+					textarea.value = value ?? '';
+					if(!canEditValue) textarea.readOnly = true;
+					$editorContainer.appendChild(textarea);
+				};
+
+				const renderNumberEditor = value => {
+					$editorContainer.innerHTML = '';
+					const input = document.createElement('input');
+					input.type = 'number';
+					input.className = 'full';
+					input.value = value ?? 0;
+					input.step = 'any';
+					if(!canEditValue) input.readOnly = true;
+					$editorContainer.appendChild(input);
+				};
+
+				const renderBooleanEditor = async value => {
+					$editorContainer.innerHTML = '';
+					const wrapper = document.createElement('div');
+					wrapper.className = 'd-f';
+					wrapper.style.alignItems = 'center';
+					wrapper.style.gap = 'var(--spacer_h)';
+					const ToggleClass = customElements.get('k-toggle');
+					const toggle = new ToggleClass();
+					const label = document.createElement('span');
+					label.textContent = value ? 'true' : 'false';
+					wrapper.appendChild(toggle);
+					wrapper.appendChild(label);
+					$editorContainer.appendChild(wrapper);
+					await toggle.updateComplete;
+					toggle.value = Boolean(value);
+					if(!canEditValue) toggle.setAttribute('disabled', '');
+					toggle.addEventListener('change', () => {
+						label.textContent = toggle.value ? 'true' : 'false';
+					});
+				};
+
+				const renderJsonEditor = value => {
+					$editorContainer.innerHTML = '';
+					const editor = document.createElement('admin-monaco');
+					editor.language = 'json';
+					editor.readOnly = !canEditValue;
+					editor.value = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+					$editorContainer.appendChild(editor);
+				};
+
+				const renderEditor = async (type, value) => {
+					currentType = type;
+					switch(type){
+						case 'string': renderStringEditor(String(value ?? '')); break;
+						case 'number': renderNumberEditor(value); break;
+						case 'boolean': await renderBooleanEditor(value); break;
+						case 'json': renderJsonEditor(value); break;
+						default: renderStringEditor(String(value ?? ''));
+					}
+				};
+
+				await renderEditor(settingData.type, settingData.value);
+
+				/*
+					Type change
+				*/
+
+				$typeSelect.addEventListener('change', async () => {
+					const newType = $typeSelect.value;
+					let converted;
+					try { converted = getValueFromEditor(); }
+					catch(e){ converted = settingData.value; }
+
+					switch(newType){
+						case 'string':
+							converted = typeof converted === 'object'
+								? JSON.stringify(converted, null, 2)
+								: String(converted ?? '');
+							break;
+						case 'number':
+							converted = Number(converted) || 0;
+							break;
+						case 'boolean':
+							converted = converted === 'true' || converted === true || converted === 1;
+							break;
+						case 'json':
+							if(typeof converted === 'string'){
+								try { converted = JSON.parse(converted); }
+								catch(e){ /* keep as string */ }
+							}
+							break;
+					}
+					await renderEditor(newType, converted);
+				});
+
+				/*
+					Enable/disable editing
+				*/
+
+				if(canEditValue){
+					$saveBtn.disabled = false;
+				} else {
+					$typeSelect.disabled = true;
+					$descriptionInput.readOnly = true;
+				}
+
+				if(!canEditMetadata){
+					$typeSelect.disabled = true;
+					$descriptionInput.readOnly = true;
+					$publicToggle.setAttribute('disabled', '');
+				}
+
+				if(canDelete){
+					$deleteBtn.style.display = '';
+				}
+
+				/*
+					Save
+				*/
+
+				const save = async () => {
+					if($saveBtn.disabled) return;
+					let value;
+					try {
+						value = getValueFromEditor();
+					} catch(e){
+						Toast.error(`Invalid ${currentType} value: ${e.message}`);
+						return;
+					}
+
+					$saveBtn.disabled = true;
+					const [saveError] = await setSetting(owner, settingName, {
+						value,
+						type: $typeSelect.value,
+						isPublic: $publicToggle.value,
+						description: $descriptionInput.value.trim()
+					});
+					$saveBtn.disabled = !canEditValue;
+
+					if(saveError){
+						Toast.error(saveError.msg || 'Failed to save setting');
+						return;
+					}
+					Toast.success('Setting saved');
+					document.getElementById('updatedAt').textContent = new Date().toLocaleString();
+				};
+
+				$saveBtn.addEventListener('click', save);
+
+				document.addEventListener('keydown', e => {
+					if((e.ctrlKey || e.metaKey) && e.key === 's'){
+						e.preventDefault();
+						save();
+					}
+				});
+
+				/*
+					Delete
+				*/
+
+				$deleteBtn.addEventListener('click', () => {
+					Dialog.confirm(
+						`<div class="p"><p>Delete "${settingName}"? This action cannot be undone.</p></div>`,
+						async confirmed => {
+							if(!confirmed) return;
+							const [deleteError] = await deleteSetting(owner, settingName);
+							if(deleteError){
+								Toast.error(deleteError.msg || 'Failed to delete setting');
+								return;
+							}
+							Toast.success('Setting deleted');
+							window.location.href = '/admin/settings/';
+						}
+					);
+				});
+			}
+		</script>
+
+</content>
+</page>

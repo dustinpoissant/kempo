@@ -1,26 +1,2 @@
-import currentUserHasPermission from '../../../../../../server/utils/permissions/currentUserHasPermission.js';
-import getGroupMembers from '../../../../../../server/utils/groups/getGroupMembers.js';
-
-export default async (request, response) => {
-	const token = request.cookies.session_token;
-	const [permError, hasPermission] = await currentUserHasPermission(token, 'system:group:read');
-
-	if(permError){
-		return response.status(permError.code).json({ error: permError.msg });
-	}
-
-	if(!hasPermission){
-		return response.status(403).json({ error: 'Insufficient permissions' });
-	}
-
-	const { name } = request.params;
-	const limit = parseInt(request.query.limit) || 50;
-	const offset = parseInt(request.query.offset) || 0;
-	const [error, data] = await getGroupMembers(decodeURIComponent(name), { limit, offset });
-
-	if(error){
-		return response.status(error.code).json({ error: error.msg });
-	}
-
-	response.json(data);
-};
+import currentUserHasPermission from"../../../../../../server/utils/permissions/currentUserHasPermission.js";import getGroupMembers from"../../../../../../server/utils/groups/getGroupMembers.js";export default async(s,r)=>{const e=s.cookies.session_token,[o,t]=await currentUserHasPermission(e,"system:group:read");if(o)return r.status(o.code).json({error:o.msg});if(!t)return r.status(403).json({error:"Insufficient permissions"});const{name:i}=s.params,n=parseInt(s.query.limit)||50,m=parseInt(s.query.offset)||0,[u,a]=await getGroupMembers(decodeURIComponent(i),{limit:n,offset:m});if(u)return r.status(u.code).json({error:u.msg});r.json(a)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\groups\[name]\members\GET.js.map

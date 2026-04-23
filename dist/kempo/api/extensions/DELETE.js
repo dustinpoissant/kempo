@@ -1,24 +1,2 @@
-import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
-import uninstallExtension from '../../../../server/utils/extensions/uninstallExtension.js';
-
-export default async (request, response) => {
-  const token = request.cookies.session_token;
-  const [permError, hasPermission] = await currentUserHasPermission(token, 'system:extensions:uninstall');
-
-  if(permError){
-    return response.status(permError.code).json({ error: permError.msg });
-  }
-
-  if(!hasPermission){
-    return response.status(403).json({ error: 'Insufficient permissions' });
-  }
-
-  const { name } = request.body;
-  const [error, data] = await uninstallExtension({ name });
-
-  if(error){
-    return response.status(error.code).json({ error: error.msg });
-  }
-
-  response.json(data);
-};
+import currentUserHasPermission from"../../../../server/utils/permissions/currentUserHasPermission.js";import uninstallExtension from"../../../../server/utils/extensions/uninstallExtension.js";export default async(s,n)=>{const e=s.cookies.session_token,[r,t]=await currentUserHasPermission(e,"system:extensions:uninstall");if(r)return n.status(r.code).json({error:r.msg});if(!t)return n.status(403).json({error:"Insufficient permissions"});const{name:i}=s.body,[o,a]=await uninstallExtension({name:i});if(o)return n.status(o.code).json({error:o.msg});n.json(a)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\DELETE.js.map

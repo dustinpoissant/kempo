@@ -1,0 +1,387 @@
+<!--
+	locked: true
+-->
+<page title="Pages - Admin">
+	<content>
+		<script
+			type="module"
+			src="/kempo-ui/components/Table.js"
+		></script>
+		<script
+			type="module"
+			src="/kempo-ui/components/tableControls/FirstPage.js"
+		></script>
+		<script
+			type="module"
+			src="/kempo-ui/components/tableControls/PrevPage.js"
+		></script>
+		<script
+			type="module"
+			src="/kempo-ui/components/tableControls/NextPage.js"
+		></script>
+		<script
+			type="module"
+			src="/kempo-ui/components/tableControls/LastPage.js"
+		></script>
+		<script
+			type="module"
+			src="/kempo-ui/components/tableControls/PageSelect.js"
+		></script>
+		<script
+			type="module"
+			src="/kempo-ui/components/tableControls/PageSize.js"
+		></script>
+		<script
+			type="module"
+			src="/kempo-ui/components/tableControls/DeleteRecord.js"
+		></script>
+		<script
+			type="module"
+			src="/kempo-ui/components/tableControls/DeleteSelected.js"
+		></script>
+		<script
+			type="module"
+			src="/kempo-ui/components/Icon.js"
+		></script>
+		<script
+			type="module"
+			src="/admin/components/TableRowLink.js"
+		></script>
+		<script
+			type="module"
+			src="/kempo/components/Permission.js"
+		></script>
+
+		<div
+			class="d-f mb"
+			style="align-items: center; gap: var(--spacer);"
+		>
+			<h1 class="flex mb0">Pages</h1>
+			<k-permission has="system:pages:create">
+				<button
+					id="createPageBtn"
+					class="primary"
+				>Create Page</button>
+			</k-permission>
+		</div>
+
+		<h2>Custom Pages</h2>
+		<k-table
+			id="customTable"
+			enable-pages
+			page-size="25"
+			page-size-options="[10,25,50,100]"
+			placeholder="No custom pages have been created yet."
+		>
+			<admin-table-row-link
+				slot="before"
+				url-pattern="/admin/content/pages/edit?path={editPath}"
+				field-name="editPath"
+			></admin-table-row-link>
+			<div
+				slot="top"
+				class="d-f full"
+				style="align-items: center;"
+			>
+				<div>
+					<k-permission has="system:pages:delete">
+						<k-tc-delete-selected></k-tc-delete-selected>
+					</k-permission>
+				</div>
+			</div>
+			<div
+				class="d-f full"
+				style="align-items: center;"
+			>
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>Extension Pages</h2>
+		<k-table
+			id="extensionTable"
+			enable-pages
+			page-size="25"
+			page-size-options="[10,25,50,100]"
+			placeholder="No extension pages installed."
+		>
+			<admin-table-row-link
+				slot="before"
+				url-pattern="/admin/pages/edit?path={editPath}"
+				field-name="editPath"
+			></admin-table-row-link>
+			<div
+				class="d-f full"
+				style="align-items: center;"
+			>
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>System Pages</h2>
+		<k-table
+			id="systemTable"
+			enable-pages
+			page-size="25"
+			page-size-options="[10,25,50,100]"
+			placeholder="No system pages found."
+		>
+			<admin-table-row-link
+				slot="before"
+				url-pattern="/admin/pages/edit?path={editPath}"
+				field-name="editPath"
+			></admin-table-row-link>
+			<div
+				class="d-f full"
+				style="align-items: center;"
+			>
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<script type="module">
+			import { listPages, listTemplates, listDirectories, createPage, deletePages, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+			import { html } from '/kempo-ui/lit-all.min.js';
+			import Dialog from '/kempo-ui/components/Dialog.js';
+			import Toast from '/kempo-ui/components/Toast.js';
+
+			await window.customElements.whenDefined('k-table');
+
+			const [, permData] = await getAllCurrentUserPermissions();
+			const myPerms = new Set(permData?.permissions ?? []);
+
+			const fields = [
+				{ name: 'lockedBadge', label: '', size: 40, formatter: v => v },
+				{ name: 'name', label: 'Name', size: 200 },
+				{ name: 'url', label: 'URL', size: 250 },
+				{ name: 'author', label: 'Author', size: 150 },
+				{ name: 'description', label: 'Description', size: 300 },
+				{ name: 'updatedAt', label: 'Updated', size: 190, formatter: v => v ? new Date(v).toLocaleString() : '' },
+				{ name: 'createdAt', label: 'Created', size: 190, formatter: v => v ? new Date(v).toLocaleString() : '' }
+			];
+
+			const extensionFields = [
+				{ name: 'owner', label: 'Extension', size: 120 },
+				...fields
+			];
+
+			const $customTable = document.getElementById('customTable');
+			const $extensionTable = document.getElementById('extensionTable');
+			const $systemTable = document.getElementById('systemTable');
+
+			const loadPages = async () => {
+				const [error, data] = await listPages();
+				if(error){
+					Toast.error(error.msg || 'Failed to load pages');
+					return;
+				}
+				const toEditPath = p => ({ ...p, editPath: p.file.replace(/\.page\.html$/, ''), lockedBadge: p.locked ? '<k-icon name="lock"></k-icon>' : '' });
+				const sortPages = pages => pages.slice().sort((a, b) => {
+					const aPath = a.file.replace(/\.page\.html$/, '');
+					const bPath = b.file.replace(/\.page\.html$/, '');
+					const aDir = aPath.includes('/') ? aPath.split('/').slice(0, -1).join('/') : '';
+					const bDir = bPath.includes('/') ? bPath.split('/').slice(0, -1).join('/') : '';
+					if(aPath === 'index' || aPath === '') return -1;
+					if(bPath === 'index' || bPath === '') return 1;
+					if(aDir !== bDir){
+						if(!aDir) return -1;
+						if(!bDir) return 1;
+						return aDir.localeCompare(bDir);
+					}
+					return aPath.localeCompare(bPath);
+				});
+				const custom = sortPages(data.pages.filter(p => p.owner === 'custom').map(toEditPath));
+				const extension = sortPages(data.pages.filter(p => p.owner !== 'custom' && p.owner !== 'system').map(toEditPath));
+				const system = sortPages(data.pages.filter(p => p.owner === 'system').map(toEditPath));
+				$customTable.setData({ records: custom, fields });
+				$extensionTable.setData({ records: extension, fields: extensionFields });
+				$systemTable.setData({ records: system, fields });
+			};
+
+			if(myPerms.has('system:pages:delete')){
+				$customTable.setAttribute('request-delete', '');
+				$customTable.setAttribute('enable-selection', '');
+				const del = document.createElement('k-tc-delete-record');
+				del.setAttribute('slot', 'after');
+				$customTable.appendChild(del);
+			}
+
+			await loadPages();
+
+			$customTable.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
+				const locked = records.filter(r => r.locked);
+				if(locked.length){
+					Toast.error(locked.length === 1 ? `"${locked[0].title || locked[0].file}" is locked and cannot be deleted.` : `${locked.length} selected pages are locked and cannot be deleted.`);
+					reject();
+					return;
+				}
+				const count = records.length;
+				const msg = count === 1
+					? `Delete "${records[0].title || records[0].file}"? This action cannot be undone.`
+					: `Delete ${count} pages? This action cannot be undone.`;
+				Dialog.confirm(msg, async (confirmed) => {
+					if(!confirmed){ reject(); return; }
+					const files = records.map(r => r.file);
+					const [error] = await deletePages(files);
+					if(error){
+						reject();
+						Toast.error(error.msg || 'Failed to delete');
+						return;
+					}
+					approve();
+					Toast.success(count === 1 ? 'Page deleted' : `${count} pages deleted`);
+				});
+			});
+
+			/*
+				Create Page Dialog
+			*/
+
+			const slugify = name => name
+				.toLowerCase()
+				.trim()
+				.replace(/[^\w\s-]/g, '')
+				.replace(/[\s_]+/g, '-')
+				.replace(/-+/g, '-')
+				.replace(/^-|-$/g, '');
+
+			document.getElementById('createPageBtn')?.addEventListener('click', async () => {
+				const [[tplError, tplData], [dirError, dirData]] = await Promise.all([
+					listTemplates(),
+					listDirectories()
+				]);
+				if(tplError){
+					Toast.error(tplError.msg || 'Failed to load templates');
+					return;
+				}
+				if(dirError){
+					Toast.error(dirError.msg || 'Failed to load directories');
+					return;
+				}
+
+				const directories = dirData.directories;
+
+				const templateOptions = tplData.templates
+					.map(t => html`<option value="${t.name}" ?selected=${t.name === 'default'}>${t.name} (${t.directory || '/'})</option>`);
+
+				const isValidDir = p => /^\/[a-zA-Z0-9_\-\[\]\/]*$/.test(p) && !p.includes('..') && !p.includes('//');
+				const dirToInternal = p => { const t = (p || '/').replace(/^\//, '').replace(/\/$/, ''); return t || '.'; };
+
+				const openLearnMore = () => Dialog.alert(html`
+					<div class="p">
+						<p>Directory paths define where a page lives in the URL structure.</p>
+						<p><strong>Examples:</strong></p>
+						<ul>
+							<li><code>/</code> — root, e.g. <code>/about</code></li>
+							<li><code>/blog</code> — e.g. <code>/blog/my-post</code></li>
+							<li><code>/blog/[slug]</code> — dynamic segment; <code>[slug]</code> matches any value</li>
+						</ul>
+						<p>Dynamic segments like <code>[token]</code> allow a single page to handle many URLs. The segment name is available to the page as a URL parameter.</p>
+						<p>You can nest segments: <code>/store/[category]/[id]</code></p>
+					</div>
+				`, null, { title: 'About Directory Paths' });
+
+				const $dialog = Dialog.create(html`
+					<div class="p">
+						<div class="mb">
+							<label class="d-b mb-sm">Location</label>
+							<input type="text" id="dlg-directory" class="full" list="dlg-dir-list" value="/" placeholder="/">
+							<datalist id="dlg-dir-list">
+								${directories.map(d => html`<option value="${d === '.' ? '/' : '/' + d}">`)} 
+							</datalist>
+							<p id="dlg-dir-error" class="mt-sm tc-danger d-n"><small>Invalid path — use format: /path/to/directory</small></p>
+							<p class="mt-sm muted"><small>Supports dynamic segments e.g. <code>/blog/[slug]</code>. <button class="link" @click="${openLearnMore}">Learn more</button></small></p>
+						</div>
+						<div class="mb">
+							<label class="d-b mb-sm">Page Name</label>
+							<input type="text" id="dlg-name" class="full" placeholder="My New Page" required>
+							<p class="mt-sm muted"><small id="dlg-slug"></small></p>
+						</div>
+						<div>
+							<label class="d-b mb-sm">Template</label>
+							<select id="dlg-template" class="full">
+								${templateOptions}
+							</select>
+						</div>
+					</div>
+				`, {
+					title: 'Create Page',
+					confirmText: 'Create',
+					confirmAction: async () => {
+						const name = $dialog.querySelector('#dlg-name').value.trim();
+						const dirInput = $dialog.querySelector('#dlg-directory').value.trim() || '/';
+						const template = $dialog.querySelector('#dlg-template').value;
+
+						if(!name){
+							Toast.error('Page name is required');
+							return;
+						}
+
+						if(!isValidDir(dirInput)){
+							Toast.error('Invalid directory path');
+							return;
+						}
+
+						const directory = dirToInternal(dirInput);
+
+						const [error, data] = await createPage({
+							directory: directory === '.' ? '' : directory,
+							name,
+							template
+						});
+
+						if(error){
+							Toast.error(error.msg || 'Failed to create page');
+							return;
+						}
+
+						Toast.success('Page created — redirecting to editor...');
+						setTimeout(() => {
+						window.location.href = `/admin/pages/edit?path=${encodeURIComponent(data.file.replace(/\.page\.html$/, ''))}`;
+						}, 1500);
+					},
+					cancelText: 'Cancel'
+				});
+
+				const updateSlug = () => {
+					const slug = slugify($dialog.querySelector('#dlg-name').value);
+					const dir = dirToInternal($dialog.querySelector('#dlg-directory').value);
+					const prefix = dir === '.' ? '/' : '/' + dir + '/';
+					$dialog.querySelector('#dlg-slug').textContent = slug ? prefix + slug : '';
+				};
+				$dialog.querySelector('#dlg-directory').addEventListener('input', e => {
+					$dialog.querySelector('#dlg-dir-error').classList.toggle('d-n', isValidDir(e.target.value || '/'));
+					updateSlug();
+				});
+				$dialog.querySelector('#dlg-name').addEventListener('input', updateSlug);
+			});
+		</script>
+	</content>
+</page>

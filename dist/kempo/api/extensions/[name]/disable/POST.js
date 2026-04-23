@@ -1,24 +1,2 @@
-import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
-import disableExtension from '../../../../../server/utils/extensions/disableExtension.js';
-
-export default async (request, response) => {
-  const token = request.cookies.session_token;
-  const [permError, hasPermission] = await currentUserHasPermission(token, 'system:extensions:manage');
-
-  if(permError){
-    return response.status(permError.code).json({ error: permError.msg });
-  }
-
-  if(!hasPermission){
-    return response.status(403).json({ error: 'Insufficient permissions' });
-  }
-
-  const name = request.params.name;
-  const [error, data] = await disableExtension({ name });
-
-  if(error){
-    return response.status(error.code).json({ error: error.msg });
-  }
-
-  response.json(data);
-};
+import currentUserHasPermission from"../../../../../server/utils/permissions/currentUserHasPermission.js";import disableExtension from"../../../../../server/utils/extensions/disableExtension.js";export default async(s,e)=>{const r=s.cookies.session_token,[n,i]=await currentUserHasPermission(r,"system:extensions:manage");if(n)return e.status(n.code).json({error:n.msg});if(!i)return e.status(403).json({error:"Insufficient permissions"});const o=s.params.name,[t,a]=await disableExtension({name:o});if(t)return e.status(t.code).json({error:t.msg});e.json(a)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\[name]\disable\POST.js.map

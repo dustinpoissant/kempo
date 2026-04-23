@@ -1,36 +1,6 @@
-import TableControl from '/kempo-ui/components/tableControls/TableControl.js';
-import { html } from '/kempo-ui/lit-all.min.js';
-import Dialog from '/kempo-ui/components/Dialog.js';
-import Toast from '/kempo-ui/components/Toast.js';
-import '/kempo-ui/components/Icon.js';
-
-export default class UninstallExtension extends TableControl {
-  uninstall = async () => {
-    if(!this.record) return;
-
-    Dialog.confirm(`Uninstall "${this.record.name}"? This may delete extension data.`, async confirmed => {
-      if(!confirmed) return;
-
-      const { uninstallExtension } = await import('../../kempo/sdk.js');
-      const [error] = await uninstallExtension(this.record.name);
-
-      if(error){
-        Toast.error(error.error || 'Failed to uninstall extension');
-        return;
-      }
-
-      Toast.success(`"${this.record.name}" uninstalled successfully`);
-      this.table.deleteRecord(this.record);
-    });
-  };
-
-  render(){
-    return html`
+import TableControl from"/kempo-ui/components/tableControls/TableControl.js";import{html}from"/kempo-ui/lit-all.min.js";import Dialog from"/kempo-ui/components/Dialog.js";import Toast from"/kempo-ui/components/Toast.js";import"/kempo-ui/components/Icon.js";export default class UninstallExtension extends TableControl{uninstall=async()=>{this.record&&Dialog.confirm(`Uninstall "${this.record.name}"? This may delete extension data.`,async n=>{if(!n)return;const{uninstallExtension:t}=await import("../../kempo/sdk.js"),[o]=await t(this.record.name);o?Toast.error(o.error||"Failed to uninstall extension"):(Toast.success(`"${this.record.name}" uninstalled successfully`),this.table.deleteRecord(this.record))})};render(){return html`
       <button class="no-btn icon-btn" title="Uninstall Extension" @click="${this.uninstall}">
         <k-icon name="delete"></k-icon>
       </button>
-    `;
-  }
-}
-
-customElements.define('admin-uninstall-extension', UninstallExtension);
+    `}}customElements.define("admin-uninstall-extension",UninstallExtension);
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\tableControls\UninstallExtension.js.map

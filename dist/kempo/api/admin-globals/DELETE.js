@@ -1,27 +1,2 @@
-import { resolve } from 'path';
-import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
-import deleteAdminGlobalContent from '../../../../server/utils/admin-global-content/deleteAdminGlobalContent.js';
-
-const adminDir = resolve(import.meta.dirname, '../../../../dist/admin');
-
-export default async (request, response) => {
-  const token = request.cookies.session_token;
-  const [permError, hasPermission] = await currentUserHasPermission(token, 'system:globals:delete');
-
-  if(permError){
-    return response.status(permError.code).json({ error: permError.msg });
-  }
-
-  if(!hasPermission){
-    return response.status(403).json({ error: 'Insufficient permissions' });
-  }
-
-  const { ids } = request.body;
-  const [error, data] = await deleteAdminGlobalContent({ adminDir, ids });
-
-  if(error){
-    return response.status(error.code).json({ error: error.msg });
-  }
-
-  response.json(data);
-};
+import{resolve}from"path";import currentUserHasPermission from"../../../../server/utils/permissions/currentUserHasPermission.js";import deleteAdminGlobalContent from"../../../../server/utils/admin-global-content/deleteAdminGlobalContent.js";const adminDir=resolve(import.meta.dirname,"../../../../dist/admin");export default async(s,e)=>{const r=s.cookies.session_token,[t,o]=await currentUserHasPermission(r,"system:globals:delete");if(t)return e.status(t.code).json({error:t.msg});if(!o)return e.status(403).json({error:"Insufficient permissions"});const{ids:i}=s.body,[n,a]=await deleteAdminGlobalContent({adminDir:adminDir,ids:i});if(n)return e.status(n.code).json({error:n.msg});e.json(a)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\admin-globals\DELETE.js.map

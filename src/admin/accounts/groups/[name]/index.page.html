@@ -1,0 +1,396 @@
+<!--
+	locked: true
+-->
+<page title="Group - Admin">
+<content>
+<script type="module" src="/kempo-ui/components/Icon.js"></script>
+<script type="module" src="/kempo-ui/components/Table.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script>
+<script type="module" src="/admin/components/tableControls/AddMember.js"></script>
+<script type="module" src="/admin/components/tableControls/AddPermission.js"></script>
+<script type="module" src="/admin/components/TableRowLink.js"></script>
+
+		<div class="mb d-f" style="align-items: flex-start; justify-content: space-between;">
+			<div>
+				<a href="/admin/accounts/groups" class="no-link">
+					<button class="mbh"><k-icon name="arrow" direction="left"></k-icon> Groups</button>
+				</a>
+				<h1 class="mb0" id="pageTitle">Group</h1>
+			</div>
+			<button id="saveBtn" class="primary" disabled style="display:none;"><k-icon name="save"></k-icon> Save</button>
+		</div>
+
+		<div id="loading">Loading group...</div>
+		<div id="notFound" style="display: none;">
+			<p>Group not found.</p>
+			<a href="/admin/accounts/groups">Back to Groups</a>
+		</div>
+		<div id="content" style="display: none;">
+
+			<!-- Group Information -->
+			<div class="card">
+				<h2>Information</h2>
+				<div class="d-f mb">
+					<label style="min-width: 120px;"><strong>Owner</strong></label>
+					<span id="groupOwner"></span>
+				</div>
+				<div class="d-f mb">
+					<label for="groupNameInput" style="min-width: 120px;"><strong>Name</strong></label>
+					<input type="text" id="groupNameInput" style="max-width: 400px;">
+				</div>
+				<div class="d-f mb">
+					<label for="groupDescription" style="min-width: 120px;"><strong>Description</strong></label>
+					<input type="text" id="groupDescription" style="max-width: 400px;">
+				</div>
+				<div class="d-f mb">
+					<label style="min-width: 120px;"><strong>Created</strong></label>
+					<span id="groupCreatedAt"></span>
+				</div>
+				<div class="d-f mb">
+					<label style="min-width: 120px;"><strong>Updated</strong></label>
+					<span id="groupUpdatedAt"></span>
+				</div>
+			</div>
+
+			<!-- Members -->
+			<div class="card">
+				<h2>Members</h2>
+				<p id="usersMembersMsg" style="display:none">All users are automatically members of this group.</p>
+				<k-table id="membersTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="This group has no members.">
+					<admin-table-row-link slot="before" url-pattern="/admin/accounts/users/{id}" field-name="id"></admin-table-row-link>
+					<k-tc-delete-selected id="tcDeleteSelected" slot="top" style="display:none;"></k-tc-delete-selected>
+					<admin-add-member id="tcAddMember" slot="top" style="display:none;"></admin-add-member>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<k-tc-first-page></k-tc-first-page>
+							<k-tc-prev-page></k-tc-prev-page>
+							<k-tc-next-page></k-tc-next-page>
+							<k-tc-last-page></k-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><k-tc-page-select></k-tc-page-select></div>
+						<div class="flex"></div>
+						<div><k-tc-page-size></k-tc-page-size></div>
+					</div>
+				</k-table>
+			</div>
+
+			<!-- Permissions -->
+			<div class="card">
+				<h2>Permissions</h2>
+				<p id="adminPermsMsg" style="display:none">Members of this group automatically have all permissions.</p>
+				<k-table id="permissionsTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No permissions assigned to this group.">
+					<k-tc-delete-selected id="tcDeleteSelectedPerm" slot="top" style="display:none;"></k-tc-delete-selected>
+					<admin-add-permission id="tcAddPermission" slot="top" style="display:none;"></admin-add-permission>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<k-tc-first-page></k-tc-first-page>
+							<k-tc-prev-page></k-tc-prev-page>
+							<k-tc-next-page></k-tc-next-page>
+							<k-tc-last-page></k-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><k-tc-page-select></k-tc-page-select></div>
+						<div class="flex"></div>
+						<div><k-tc-page-size></k-tc-page-size></div>
+					</div>
+				</k-table>
+			</div>
+
+		</div>
+
+		<script type="module">
+			import {
+				getGroup, updateGroup, deleteGroups, getGroupMembers,
+					removeMemberFromGroup, getGroupPermissions, removePermissionFromGroup,
+				getAllCurrentUserPermissions
+			} from '/kempo/sdk.js';
+			import Toast from '/kempo-ui/components/Toast.js';
+			import Dialog from '/kempo-ui/components/Dialog.js';
+
+			const groupName = decodeURIComponent(
+				window.location.pathname.split('/admin/accounts/groups/')[1]?.replace(/\/$/, '') || ''
+			);
+
+			if(!groupName){
+				document.getElementById('loading').style.display = 'none';
+				document.getElementById('notFound').style.display = '';
+			}
+
+			/*
+				Permission checks
+			*/
+
+			const [, permResult] = await getAllCurrentUserPermissions();
+			const myPerms = new Set(permResult?.permissions ?? []);
+			const canEdit = myPerms.has('system:group:update');
+			const canDelete = myPerms.has('system:group:delete');
+			const canReadPerms = myPerms.has('system:permissions:read');
+
+			/*
+				Load group
+			*/
+
+			const [groupError, groupData] = await getGroup(groupName);
+
+			document.getElementById('loading').style.display = 'none';
+
+			if(groupError){
+				document.getElementById('notFound').style.display = '';
+			} else {
+				document.getElementById('content').style.display = '';
+				const displayName = groupName.includes(':') ? groupName.split(':').slice(1).join(':') : groupName;
+				document.getElementById('pageTitle').textContent = `Group: ${displayName}`;
+				document.title = `${displayName} - Admin`;
+
+				const owner = groupName.includes(':') ? groupName.split(':')[0] : '';
+				const isAdmin = owner === 'admin' || !owner;
+
+				await customElements.whenDefined('k-table');
+
+				/*
+					Group Information
+				*/
+
+				const isCustom = owner === 'custom';
+				const $saveBtn = document.getElementById('saveBtn');
+				const $groupOwner = document.getElementById('groupOwner');
+				const $groupNameInput = document.getElementById('groupNameInput');
+				const $groupDescription = document.getElementById('groupDescription');
+
+					$groupOwner.textContent = owner || '(none)';
+				$groupNameInput.value = displayName;
+				$groupDescription.value = groupData.description || '';
+				document.getElementById('groupCreatedAt').textContent = new Date(groupData.createdAt).toLocaleString();
+					document.getElementById('groupUpdatedAt').textContent = groupData.updatedAt ? new Date(groupData.updatedAt).toLocaleString() : 'Never';
+				if(!canEdit || !isCustom){
+					$groupNameInput.readOnly = true;
+					$groupDescription.readOnly = true;
+				} else {
+					$saveBtn.style.display = '';
+
+					const origName = displayName;
+					const origDescription = groupData.description || '';
+
+					const handleBeforeUnload = e => { e.preventDefault(); e.returnValue = ''; };
+
+					const checkDirty = () => {
+						const dirty = $groupNameInput.value !== origName || $groupDescription.value !== origDescription;
+						$saveBtn.disabled = !dirty;
+						if(dirty){
+							window.addEventListener('beforeunload', handleBeforeUnload);
+						} else {
+							window.removeEventListener('beforeunload', handleBeforeUnload);
+						}
+					};
+
+					$groupNameInput.addEventListener('input', checkDirty);
+					$groupDescription.addEventListener('input', checkDirty);
+
+					$saveBtn.addEventListener('click', async () => {
+						const newDisplayName = $groupNameInput.value.trim();
+						if(!newDisplayName){
+							Toast.error('Name is required');
+							return;
+						}
+						const newFullName = `${owner}:${newDisplayName}`;
+						const patch = { name: groupName, description: $groupDescription.value };
+						if(newFullName !== groupName) patch.newName = newFullName;
+						const [error] = await updateGroup(patch);
+						if(error){
+							Toast.error(error.msg || 'Failed to save group');
+							return;
+						}
+						window.removeEventListener('beforeunload', handleBeforeUnload);
+						Toast.success('Group saved');
+						if(newFullName !== groupName){
+							window.location.href = `/admin/accounts/groups/${encodeURIComponent(newFullName)}`;
+						} else {
+							$saveBtn.disabled = true;
+							document.getElementById('groupUpdatedAt').textContent = new Date().toLocaleString();
+						}
+					});
+				}
+
+				/*
+					Members
+				*/
+
+				const $membersTable = document.getElementById('membersTable');
+
+				if(groupName === 'system:Users'){
+					document.getElementById('usersMembersMsg').style.display = '';
+					$membersTable.style.display = 'none';
+				} else {
+					const $tcDeleteSelected = document.getElementById('tcDeleteSelected');
+					const $tcAddMember = document.getElementById('tcAddMember');
+					$tcAddMember.groupName = groupName;
+
+					if(canEdit){
+						$membersTable.setAttribute('request-delete', '');
+						$membersTable.setAttribute('enable-selection', '');
+						$tcDeleteSelected.style.display = '';
+						$tcAddMember.style.display = '';
+
+						const del = document.createElement('k-tc-delete-record');
+						del.setAttribute('slot', 'after');
+						$membersTable.appendChild(del);
+					}
+
+					$membersTable.addEventListener('memberAdded', e => loadMembers());
+
+					$membersTable.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
+						const count = records.length;
+						const msg = count === 1
+							? `<div class="p"><p>Remove "${records[0].name}" from this group?</p></div>`
+							: `<div class="p"><p>Remove ${count} members from this group?</p></div>`;
+						Dialog.confirm(msg, async (confirmed) => {
+							if(!confirmed){ reject(); return; }
+							const errors = [];
+							for(const record of records){
+								const [error] = await removeMemberFromGroup(groupName, record.id);
+								if(error) errors.push(error.msg);
+							}
+							if(errors.length){
+								reject();
+								Toast.error(errors[0] || 'Failed to remove member');
+								return;
+							}
+							approve();
+							Toast.success(count === 1 ? 'Member removed' : `${count} members removed`);
+							loadMembers();
+						});
+					});
+
+					const loadMembers = async () => {
+						const [error, data] = await getGroupMembers(groupName);
+						if(error){
+							Toast.error(error.msg || 'Failed to load members');
+							return;
+						}
+						$membersTable.setData({
+							records: data.members,
+							fields: [
+								{ name: 'name', label: 'Name' },
+								{ name: 'email', label: 'Email' },
+								{
+									name: 'createdAt',
+									label: 'Joined',
+									formatter: v => new Date(v).toLocaleString()
+								}
+							]
+						});
+						$membersTable.setupFetchRecords(data.total, async (start, count) => {
+							const [err, d] = await getGroupMembers(groupName, { limit: count, offset: start });
+							if(err) return [];
+							return d.members;
+						});
+					};
+
+					loadMembers();
+				}
+
+				/*
+					Permissions
+				*/
+
+				const $permissionsTable = document.getElementById('permissionsTable');
+
+				if(groupName === 'system:Administrators'){
+					document.getElementById('adminPermsMsg').style.display = '';
+					$permissionsTable.style.display = 'none';
+				} else if(canReadPerms){
+					if(canEdit){
+						$permissionsTable.setAttribute('request-delete', '');
+						$permissionsTable.setAttribute('enable-selection', '');
+
+						const $tcDeleteSelectedPerm = document.getElementById('tcDeleteSelectedPerm');
+						$tcDeleteSelectedPerm.style.display = '';
+
+						const $tcAddPermission = document.getElementById('tcAddPermission');
+						$tcAddPermission.groupName = groupName;
+						$tcAddPermission.style.display = '';
+
+						const delPerm = document.createElement('k-tc-delete-record');
+						delPerm.setAttribute('slot', 'after');
+						$permissionsTable.appendChild(delPerm);
+
+						$permissionsTable.addEventListener('permissionAdded', e => loadPermissions());
+
+						$permissionsTable.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
+							const count = records.length;
+							const msg = count === 1
+								? `<div class="p"><p>Remove permission "${records[0].name}" from this group?</p></div>`
+								: `<div class="p"><p>Remove ${count} permissions from this group?</p></div>`;
+							Dialog.confirm(msg, async (confirmed) => {
+								if(!confirmed){ reject(); return; }
+								const errors = [];
+								for(const record of records){
+									const [error] = await removePermissionFromGroup(groupName, record.name);
+									if(error) errors.push(error.msg);
+								}
+								if(errors.length){
+									reject();
+									Toast.error(errors[0] || 'Failed to remove permission');
+									return;
+								}
+								approve();
+								Toast.success(count === 1 ? 'Permission removed' : `${count} permissions removed`);
+								loadPermissions();
+							});
+						});
+					}
+
+					const loadPermissions = async () => {
+						const [error, data] = await getGroupPermissions(groupName);
+						if(error){
+							Toast.error(error.msg || 'Failed to load permissions');
+							return;
+						}
+						$permissionsTable.setData({
+							records: data.permissions.map(name => ({ name })),
+							fields: [
+								{
+									name: 'owner',
+									label: 'Owner',
+									size: 120,
+									calculator: r => r.name.includes(':') ? r.name.split(':')[0] : ''
+								},
+								{
+									name: 'resource',
+									label: 'Resource',
+									size: 180,
+									calculator: r => {
+										const parts = r.name.split(':');
+										return parts.length >= 3 ? parts[1] : parts.length === 2 ? parts[1] : '';
+									}
+								},
+								{
+									name: 'action',
+									label: 'Action',
+									size: 140,
+									calculator: r => {
+										const parts = r.name.split(':');
+										return parts.length >= 3 ? parts.slice(2).join(':') : '';
+									}
+								}
+							]
+						});
+					};
+
+					loadPermissions();
+				} else {
+					$permissionsTable.closest('.card').style.display = 'none';
+				}
+			}
+		</script>
+
+</content>
+</page>
