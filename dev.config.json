@@ -1,0 +1,25 @@
+{
+  "customRoutes": {
+    "/kempo-css/**": "./node_modules/kempo-css/dist/**",
+    "/kempo-ui/icons/**": "./node_modules/kempo-ui/icons/**",
+    "/kempo-ui/**": "./node_modules/kempo-ui/dist/**",
+    "/monaco-editor/**": "./node_modules/monaco-editor/min/**",
+    "/kempo/**": "./dist/kempo/**",
+    "/admin": "./dist/admin/",
+    "/admin/**": "./dist/admin/**"
+  },
+  "middleware": {
+    "custom": [
+      "./middleware/kempo-auth.js",
+      "./middleware/extension-scope-router.js"
+    ]
+  },
+  "templating": {
+    "ssr": true,
+    "ssrPriority": true,
+    "preRender": false
+  },
+  "disallowedRegex": [
+    "-disabled\\.html$"
+  ]
+}

@@ -276,8 +276,8 @@ if(!existsSync(pkgPath)){
     type: 'module',
     private: true,
     scripts: {
-      dev: 'kempo-server --root public',
-      start: 'kempo-server --root public'
+      dev: 'kempo-server --root public --port 9876',
+      start: 'kempo-server --root public --port 9876'
     }
   }, null, 2) + '\n');
   console.log('Created package.json');
