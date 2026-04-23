@@ -2,6 +2,8 @@ import { dirname, join, extname } from 'path';
 import { readFile, stat, readdir } from 'fs/promises';
 import { pathToFileURL, fileURLToPath } from 'url';
 import { renderExternalPage } from 'kempo-server/templating';
+import getSession from '../server/utils/auth/getSession.js';
+import currentUserHasPermission from '../server/utils/permissions/currentUserHasPermission.js';
 import { getEnabledExtensions } from '../server/utils/extensions/scopeCache.js';
 
 const MIME_TYPES = {
@@ -22,7 +24,9 @@ const MIME_TYPES = {
 const ROUTE_FILES = ['GET.js','POST.js','PUT.js','DELETE.js','PATCH.js','HEAD.js','OPTIONS.js','index.js','CATCH.js'];
 
 const NODE_MODULES = join(process.cwd(), 'node_modules');
-const ADMIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist', 'admin');
+
+// Points to src/admin so live edits are reflected without rebuilding
+const ADMIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'admin');
 
 const buildResolveDir = (base, url) => {
   const parts = url.replace(/\/+$/, '').split('/').filter(Boolean);
@@ -65,13 +69,13 @@ const executeRouteFile = async (filePath, request, response, params = {}) => {
   return true;
 };
 
-const serveDir = async (dirPath, method, request, response, resolveDir, projectPublic, params = {}) => {
+const serveDir = async (dirPath, method, request, response, resolveDir, rootDir, params = {}) => {
   const candidates = [`${method}.js`, 'index.page.html', 'index.js', 'index.html', 'CATCH.js'];
   for(const candidate of candidates){
     const candidatePath = join(dirPath, candidate);
     try { await stat(candidatePath); } catch { continue; }
     if(candidate.endsWith('.page.html')){
-      const html = await renderExternalPage(candidatePath, projectPublic, resolveDir);
+      const html = await renderExternalPage(candidatePath, rootDir, resolveDir);
       response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       response.end(html);
       return true;
@@ -91,20 +95,35 @@ export default config => {
   const PROJECT_PUBLIC = config.rootPath || join(process.cwd(), 'public');
 
   return async (request, response, next) => {
+    const { path } = request;
     const url = request.url.split('?')[0];
 
     /*
-      Core admin routing: /admin/** -> dist/admin/
-      Renders .page.html files with ADMIN_ROOT so the admin template and fragments are resolved correctly.
-      Must run before kempo-server's custom route handler, which would incorrectly use app-public as rootDir.
+      Auth: protect /account and /admin routes
+    */
+    if(path.startsWith('/account') || path.startsWith('/admin')){
+      const [error, session] = await getSession({ token: request.cookies.session_token });
+      if(error || !session?.user) return response.redirect('/login');
+
+      if(path.startsWith('/admin')){
+        const [permError, hasPermission] = await currentUserHasPermission(request.cookies.session_token, 'system:admin:access');
+        if(permError || !hasPermission) return response.redirect('/account');
+
+        if(path.startsWith('/admin/pages/edit')){
+          const [editErr, canEdit] = await currentUserHasPermission(request.cookies.session_token, 'system:pages:update');
+          if(editErr || !canEdit) return response.redirect('/admin/pages');
+        }
+      }
+    }
+
+    /*
+      Admin routing: /admin/** -> ADMIN_ROOT (src/admin for dev)
     */
     if(url === '/admin' || url.startsWith('/admin/')){
-      const subPath = url.slice('/admin'.length) || '/';
-      const segments = subPath.replace(/^\//, '').split('/').filter(Boolean);
       const method = request.method?.toUpperCase() || 'GET';
 
-      // Don't intercept extension admin pages here — they're handled below
       if(!url.startsWith('/admin/extension/')){
+        const segments = url.slice('/admin'.length).replace(/^\//, '').split('/').filter(Boolean);
         const resolveDir = buildResolveDir(ADMIN_ROOT, url);
 
         if(segments.length === 0){
@@ -139,21 +158,18 @@ export default config => {
             }
           }
         }
-        // Not found in dist/admin — fall through to next()
         return next();
       }
     }
 
     /*
-      Admin extension routing: /admin/extension/{name}/** -> extension's admin/ directory
-      Protected by kempo-auth; no enabled check needed here.
+      Extension admin routing: /admin/extension/{name}/** -> extension's admin/ directory
     */
     const adminMatch = url.match(/^\/admin\/extension\/((?:@[^/]+\/)?[^/]+)(\/.*)?$/);
     if(adminMatch){
       const extName = adminMatch[1];
       const subPath = adminMatch[2] || '/';
-      const extRoot = join(NODE_MODULES, extName);
-      const adminDir = join(extRoot, 'admin');
+      const adminDir = join(NODE_MODULES, extName, 'admin');
       const pageCandidates = subPath.endsWith('/')
         ? [join(adminDir, subPath, 'index.page.html')]
         : [
@@ -169,26 +185,25 @@ export default config => {
           response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
           response.end(html);
           return;
-        } catch { /* try next candidate */ }
+        } catch { /* try next */ }
       }
 
       const filePath = join(adminDir, subPath === '/' ? 'index.html' : subPath);
       try {
-        const stats = await stat(filePath);
-        if(stats.isFile()){
+        const fileStat = await stat(filePath);
+        if(fileStat.isFile()){
           const mime = MIME_TYPES[extname(filePath)] || 'application/octet-stream';
           response.writeHead(200, { 'Content-Type': mime });
           response.end(await readFile(filePath));
           return;
         }
-      } catch { /* fall through to next() */ }
+      } catch { /* fall through */ }
 
       return next();
     }
 
     /*
-      Public scope routing: /{scope}/** -> enabled extension's public/ directory
-      Supports: .page.html templates, JS route handlers (GET.js etc.), dynamic [param] dirs, static files.
+      Extension public scope routing: /{scope}/** -> extension's public/ directory
     */
     const extensions = await getEnabledExtensions();
 
@@ -197,9 +212,7 @@ export default config => {
       try {
         pkgPath = join(NODE_MODULES, ext.name, 'package.json');
         pkg = JSON.parse(await readFile(pkgPath, 'utf-8'));
-      } catch {
-        continue;
-      }
+      } catch { continue; }
 
       const scope = pkg.kempo?.['public-scope'];
       if(!scope) continue;

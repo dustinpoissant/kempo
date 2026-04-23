@@ -117,13 +117,13 @@ if(existsSync(join(projectDir, 'public'))){
   const { confirm } = await inquirer.prompt([{
     type: 'confirm',
     name: 'confirm',
-    message: 'This will delete public/, server/, templates/, extensions/, .env, drizzle.config.js, and docker-compose.yml. Are you sure?',
+    message: 'This will delete public/, server/, templates/, .env, drizzle.config.js, and docker-compose.yml. Are you sure?',
     default: false
   }]);
 
   if(!confirm) process.exit(0);
 
-  for(const item of ['public', 'server', 'templates', 'extensions', '.env', 'docker-compose.yml', 'drizzle.config.js']){
+  for(const item of ['public', 'server', 'templates', '.env', 'docker-compose.yml', 'drizzle.config.js']){
     const p = join(projectDir, item);
     if(existsSync(p)) rmSync(p, { recursive: true, force: true });
   }
@@ -310,12 +310,6 @@ const templatesSource = join(moduleRoot, 'app-templates');
 if(!existsSync(templatesDir) && existsSync(templatesSource)){
   cpSync(templatesSource, templatesDir, { recursive: true });
   console.log('Scaffolded templates/');
-}
-
-const extensionsDir = join(projectDir, 'extensions');
-if(!existsSync(extensionsDir)){
-  mkdirSync(extensionsDir);
-  console.log('Created extensions/');
 }
 
 const drizzleConfigPath = join(projectDir, 'drizzle.config.js');

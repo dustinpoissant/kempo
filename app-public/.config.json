@@ -4,14 +4,11 @@
     "/kempo-ui/icons/**": "../node_modules/kempo-ui/icons/**",
     "/kempo-ui/**": "../node_modules/kempo-ui/dist/**",
     "/monaco-editor/**": "../node_modules/monaco-editor/min/**",
-    "/kempo/**": "../node_modules/kempo/dist/kempo/**",
-    "/admin": "../node_modules/kempo/dist/admin/",
-    "/admin/**": "../node_modules/kempo/dist/admin/**"
+    "/kempo/**": "../node_modules/kempo/dist/kempo/**"
   },
   "middleware": {
     "custom": [
-      "../middleware/kempo-auth.js",
-      "../middleware/extension-scope-router.js"
+      "../node_modules/kempo/middleware/kempo.js"
     ]
   },
   "templating": {

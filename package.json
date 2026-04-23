@@ -4,7 +4,7 @@
   "type": "module",
   "description": "A fullstack CMS framework for creating websites with user authentication",
   "scripts": {
-    "dev": "kempo-server --root app-public --port 9876 --config ./dev.config.json",
+    "dev": "node dev.mjs",
     "build": "node scripts/build.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -29,7 +29,7 @@
     "server/db/index.js",
     "server/db/schema.js",
     "server/sdk.js",
-    "middleware",
+    "middleware/kempo.js",
     "app-templates",
     "scripts/init-db.js"
   ],
