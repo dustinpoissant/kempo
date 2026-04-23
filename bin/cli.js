@@ -407,6 +407,13 @@ if(containerMode === 'new'){
 */
 
 console.log('\n--- Initializing database ---\n');
+
+// On a fresh install, clear migration history so drizzle-kit push doesn't prompt about schema diffs
+const migrationDir = join(projectDir, 'drizzle', 'migrations');
+if(existsSync(migrationDir)){
+  rmSync(migrationDir, { recursive: true, force: true });
+}
+
 execSync('npx drizzle-kit push', { cwd: projectDir, stdio: 'inherit' });
 execSync('node node_modules/kempo/scripts/init-db.js', { cwd: projectDir, stdio: 'inherit' });
 
