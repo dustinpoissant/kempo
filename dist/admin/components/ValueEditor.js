@@ -37,4 +37,4 @@ import ShadowComponent from"/kempo-ui/components/ShadowComponent.js";import{html
 			@change="${this.#l}"
 			.value="${String(this.#t)}"
 		></textarea>`}}customElements.define("admin-value-editor",ValueEditor);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\ValueEditor.js.map
+//# sourceMappingURL=ValueEditor.js.map

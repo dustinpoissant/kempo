@@ -1,2 +1,2 @@
 import{resolve}from"path";import currentUserHasPermission from"../../../../../server/utils/permissions/currentUserHasPermission.js";import listTemplates from"../../../../../server/utils/pages/listTemplates.js";const rootDir=resolve(import.meta.dirname,"../../../../../app-public");export default async(s,r)=>{const e=s.cookies.session_token,[t,o]=await currentUserHasPermission(e,"system:pages:read");if(t)return r.status(t.code).json({error:t.msg});if(!o)return r.status(403).json({error:"Insufficient permissions"});const[i,n]=await listTemplates({rootDir:rootDir});if(i)return r.status(i.code).json({error:i.msg});r.json(n)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\pages\templates\GET.js.map
+//# sourceMappingURL=GET.js.map

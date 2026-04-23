@@ -1,2 +1,2 @@
 import currentUserHasPermission from"../../../../../../server/utils/permissions/currentUserHasPermission.js";import deleteSession from"../../../../../../server/utils/sessions/deleteSession.js";export default async(s,e)=>{const r=s.cookies.session_token,[o,t]=await currentUserHasPermission(r,"system:user:update");if(o)return e.status(o.code).json({error:o.msg});if(!t)return e.status(403).json({error:"Insufficient permissions"});const{sessionToken:n}=s.body;if(!n)return e.status(400).json({error:"Session token is required"});const[i,u]=await deleteSession(n);if(i)return e.status(i.code).json({error:i.msg});e.json(u)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\user\[userid]\sessions\DELETE.js.map
+//# sourceMappingURL=DELETE.js.map

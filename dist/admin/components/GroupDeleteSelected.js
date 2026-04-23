@@ -3,4 +3,4 @@ import TableControl from"/kempo-ui/components/tableControls/TableControl.js";imp
         <k-icon name="delete"></k-icon>
       </button>
     `}}customElements.define("admin-group-delete-selected",GroupDeleteSelected);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\GroupDeleteSelected.js.map
+//# sourceMappingURL=GroupDeleteSelected.js.map

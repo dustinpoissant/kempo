@@ -1,2 +1,2 @@
 import currentUserHasPermission from"../../../../../server/utils/permissions/currentUserHasPermission.js";import listSettings from"../../../../../server/utils/settings/listSettings.js";export default async(s,r)=>{const e=s.cookies.session_token,[t,i]=await currentUserHasPermission(e,"system:settings:read");if(t)return r.status(t.code).json({error:t.msg});if(!i)return r.status(403).json({error:"Insufficient permissions"});const{owner:n}=s.params,o=parseInt(s.query.limit)||50,a=parseInt(s.query.offset)||0,[m,u]=await listSettings({owner:n,limit:o,offset:a});if(m)return r.status(m.code).json({error:m.msg});r.json(u)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\settings\[owner]\GET.js.map
+//# sourceMappingURL=GET.js.map

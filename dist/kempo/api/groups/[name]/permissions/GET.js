@@ -1,2 +1,2 @@
 import currentUserHasPermission from"../../../../../../server/utils/permissions/currentUserHasPermission.js";import getPermissionsForGroups from"../../../../../../server/utils/permissions/getPermissionsForGroups.js";export default async(s,r)=>{const e=s.cookies.session_token,[o,i]=await currentUserHasPermission(e,"system:permissions:read");if(o)return r.status(o.code).json({error:o.msg});if(!i)return r.status(403).json({error:"Insufficient permissions"});const{name:n}=s.params,t=decodeURIComponent(n),[m,a]=await getPermissionsForGroups([{name:t}]);if(m)return r.status(m.code).json({error:m.msg});r.json({permissions:a})};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\groups\[name]\permissions\GET.js.map
+//# sourceMappingURL=GET.js.map

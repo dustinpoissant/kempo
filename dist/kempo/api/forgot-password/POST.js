@@ -1,2 +1,2 @@
 import requestPasswordReset from"../../../../server/utils/auth/requestPasswordReset.js";export default async(s,e)=>{try{const{email:r}=s.body,[t,o]=await requestPasswordReset({email:r});if(t)return e.status(t.code).json({error:t.msg});e.json({success:!0,message:"Password reset email sent"})}catch(s){console.error("Forgot password error:",s),e.status(500).json({error:"Failed to send password reset email"})}};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\forgot-password\POST.js.map
+//# sourceMappingURL=POST.js.map

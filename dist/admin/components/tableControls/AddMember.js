@@ -3,4 +3,4 @@ import TableControl from"/kempo-ui/components/tableControls/TableControl.js";imp
         <k-icon name="person_add"></k-icon>
       </button>
     `}}customElements.define("admin-add-member",AddMember);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\tableControls\AddMember.js.map
+//# sourceMappingURL=AddMember.js.map

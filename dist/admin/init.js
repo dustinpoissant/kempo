@@ -1,2 +1,2 @@
 window.kempo={pathsToIcons:["/admin/icons","/kempo/icons","/kempo-ui/icons"],monacoUrl:"/monaco-editor"},window.litDisableBundleWarning=!0,import("/kempo-ui/components/Import.js"),import("/kempo-ui/components/Aside.js"),import("/kempo-ui/components/Main.js");
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\init.js.map
+//# sourceMappingURL=init.js.map

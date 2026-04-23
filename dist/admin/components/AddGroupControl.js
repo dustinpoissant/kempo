@@ -3,4 +3,4 @@ import TableControl from"/kempo-ui/components/tableControls/TableControl.js";imp
         <k-icon name="add"></k-icon>
       </button>
     `}}customElements.define("admin-add-group-control",AddGroupControl);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\AddGroupControl.js.map
+//# sourceMappingURL=AddGroupControl.js.map

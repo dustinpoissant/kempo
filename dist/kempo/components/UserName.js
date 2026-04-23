@@ -1,2 +1,2 @@
 import LightComponent from"/kempo-ui/components/LightComponent.js";import{getSession}from"../sdk.js";export default class UserName extends LightComponent{connectedCallback(){super.connectedCallback(),this.loadUserName()}async loadUserName(){const[e,t]=await getSession();if(e)return console.error("Failed to load user name:",e.msg),void(this.textContent="");this.textContent=t?.user?.name||""}renderLightDom(){return"Loading..."}}customElements.define("k-user-name",UserName);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\UserName.js.map
+//# sourceMappingURL=UserName.js.map

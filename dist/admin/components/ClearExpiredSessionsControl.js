@@ -3,4 +3,4 @@ import TableControl from"/kempo-ui/components/tableControls/TableControl.js";imp
         <k-icon name="timer_off"></k-icon>
       </button>
     `}}customElements.define("admin-clear-expired-sessions",ClearExpiredSessionsControl);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\ClearExpiredSessionsControl.js.map
+//# sourceMappingURL=ClearExpiredSessionsControl.js.map

@@ -3,4 +3,4 @@ import TableControl from"/kempo-ui/components/tableControls/TableControl.js";imp
         <k-icon name="download"></k-icon>
       </button>
     `}}customElements.define("admin-install-extension",InstallExtension);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\tableControls\InstallExtension.js.map
+//# sourceMappingURL=InstallExtension.js.map

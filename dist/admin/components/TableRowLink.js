@@ -5,4 +5,4 @@ import TableControl from"/kempo-ui/components/tableControls/TableControl.js";imp
         </slot>
       </button>
     `}}customElements.define("admin-table-row-link",TableRowLink);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\TableRowLink.js.map
+//# sourceMappingURL=TableRowLink.js.map

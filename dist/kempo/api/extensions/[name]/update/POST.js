@@ -1,2 +1,2 @@
 import currentUserHasPermission from"../../../../../server/utils/permissions/currentUserHasPermission.js";import updateExtension from"../../../../../server/utils/extensions/updateExtension.js";export default async(s,e)=>{const r=s.cookies.session_token,[n,t]=await currentUserHasPermission(r,"system:extensions:manage");if(n)return e.status(n.code).json({error:n.msg});if(!t)return e.status(403).json({error:"Insufficient permissions"});const o=s.params.name,i=s.body?.version||"latest",[a,m]=await updateExtension({name:o,version:i});if(a)return e.status(a.code).json({error:a.msg});e.json(m)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\[name]\update\POST.js.map
+//# sourceMappingURL=POST.js.map

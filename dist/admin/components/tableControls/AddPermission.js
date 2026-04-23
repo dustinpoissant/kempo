@@ -3,4 +3,4 @@ import TableControl from"/kempo-ui/components/tableControls/TableControl.js";imp
         <k-icon name="lock_add"></k-icon>
       </button>
     `}}customElements.define("admin-add-permission",AddPermission);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\tableControls\AddPermission.js.map
+//# sourceMappingURL=AddPermission.js.map

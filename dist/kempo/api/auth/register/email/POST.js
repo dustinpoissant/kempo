@@ -1,2 +1,2 @@
 import registerEmail from"../../../../../../server/utils/auth/registerEmail.js";export default async(e,r)=>{try{const{email:s,password:i,name:o}=e.body,[t,a]=await registerEmail({email:s,password:i,name:o});if(t)return r.status(t.code).json({error:t.msg});if(a.requiresVerification)return r.json({user:a.user,requiresVerification:a.requiresVerification});r.cookie("session_token",a.sessionToken,{httpOnly:!0,secure:"production"===process.env.NODE_ENV,sameSite:"lax",path:"/",maxAge:a.expiresAt.getTime()-Date.now()}),r.json({user:a.user})}catch(e){console.error("Registration error:",e),r.status(500).json({error:"Internal server error"})}};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\auth\register\email\POST.js.map
+//# sourceMappingURL=POST.js.map

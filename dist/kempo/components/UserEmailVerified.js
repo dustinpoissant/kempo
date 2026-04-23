@@ -1,2 +1,2 @@
 import LightComponent from"/kempo-ui/components/LightComponent.js";import{getSession}from"../sdk.js";export default class UserEmailVerified extends LightComponent{connectedCallback(){super.connectedCallback(),this.loadEmailVerified()}async loadEmailVerified(){const[e,i]=await getSession();if(e)return console.error("Failed to load email verified status:",e.msg),void(this.textContent="");this.textContent=i?.user?.emailVerified?"Yes":"No"}renderLightDom(){return"Loading..."}}customElements.define("k-user-email-verified",UserEmailVerified);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\UserEmailVerified.js.map
+//# sourceMappingURL=UserEmailVerified.js.map

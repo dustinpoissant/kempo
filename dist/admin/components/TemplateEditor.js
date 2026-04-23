@@ -122,4 +122,4 @@ import ShadowComponent from"/kempo-ui/components/ShadowComponent.js";import{html
         </k-accordion-panel>
       </k-accordion>
     `}}customElements.define("admin-template-editor",TemplateEditor);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\TemplateEditor.js.map
+//# sourceMappingURL=TemplateEditor.js.map

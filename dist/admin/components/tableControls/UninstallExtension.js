@@ -3,4 +3,4 @@ import TableControl from"/kempo-ui/components/tableControls/TableControl.js";imp
         <k-icon name="delete"></k-icon>
       </button>
     `}}customElements.define("admin-uninstall-extension",UninstallExtension);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\tableControls\UninstallExtension.js.map
+//# sourceMappingURL=UninstallExtension.js.map
