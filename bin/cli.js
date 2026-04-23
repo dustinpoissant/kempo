@@ -373,7 +373,7 @@ volumes:
     );
     console.log('Created docker-compose.yml');
   }
-
+}
 
 writeFileSync(join(projectDir, '.env'),
 `# Database
