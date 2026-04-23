@@ -25,7 +25,10 @@
     "app-public",
     "app-server",
     "app-drizzle.config.js",
-    "server",
+    "server/utils",
+    "server/db/index.js",
+    "server/db/schema.js",
+    "server/sdk.js",
     "middleware",
     "app-templates",
     "scripts/init-db.js"
