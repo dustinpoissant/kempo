@@ -62,11 +62,11 @@ const getPostgresContainers = () => {
   }
 };
 
-const waitForPostgres = async (containerName) => {
+const waitForPostgres = async (containerName, dbName = 'postgres') => {
   process.stdout.write('Waiting for Postgres to be ready');
   for(let i = 0; i < 30; i++){
     try {
-      execSync(`docker exec ${containerName} pg_isready -U kempo -d kempo`, { stdio: 'ignore' });
+      execSync(`docker exec ${containerName} pg_isready -U kempo -d ${dbName}`, { stdio: 'ignore' });
       process.stdout.write(' ready!\n');
       return;
     } catch {
@@ -414,12 +414,12 @@ if(containerMode === 'new'){
     printManualSteps(databaseUrl);
     process.exit(1);
   }
-  await waitForPostgres(containerName);
+  await waitForPostgres(containerName, 'postgres');
 } else {
   const container = existingContainers.find(c => c.name === containerName);
   if(container && !container.running){
     execSync(`docker start ${containerName}`, { stdio: 'inherit' });
-    await waitForPostgres(containerName);
+    await waitForPostgres(containerName, 'postgres');
   }
 }
 
@@ -428,6 +428,9 @@ if(containerMode === 'new'){
 */
 
 console.log('\n--- Initializing database ---\n');
+
+// Give database a moment to initialize
+await new Promise(r => setTimeout(r, 2000));
 
 // Clear migration snapshots so drizzle-kit push compares against the live DB only
 const migrationDir = join(projectDir, 'server', 'db', 'migrations');
