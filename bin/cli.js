@@ -180,17 +180,44 @@ if(existingContainers.length > 0 && !useDefaults){
   }
 }
 
+let dbName = 'kempo';
+let dbPassword = generatePassword();
+
 if(containerMode === 'new' && !useDefaults){
   const { name } = await inquirer.prompt([{
     type: 'input',
     name: 'name',
-    message: 'Container name:',
-    default: 'kempo-postgres'
+    message: 'Database name (used for container and database):',
+    default: projectName
   }]);
+  dbName = name;
   containerName = name;
+
+  const { passwordChoice } = await inquirer.prompt([{
+    type: 'list',
+    name: 'passwordChoice',
+    message: 'Database password:',
+    choices: [
+      { name: 'Generate a random password', value: 'generate' },
+      { name: 'Enter a password manually', value: 'manual' }
+    ]
+  }]);
+
+  if(passwordChoice === 'manual'){
+    const { manualPassword } = await inquirer.prompt([{
+      type: 'password',
+      name: 'manualPassword',
+      message: 'Enter database password:',
+      mask: '*'
+    }]);
+    dbPassword = manualPassword;
+  }
+} else if(containerMode === 'new' && useDefaults){
+  dbName = projectName;
+  containerName = projectName;
 }
 
-const databaseUrl = customDatabaseUrl || `postgresql://kempo:kempo_dev_password@localhost:5433/kempo`;
+const databaseUrl = customDatabaseUrl || `postgresql://kempo:${dbPassword}@localhost:5433/${dbName}`;
 
 const generatedAdminPassword = generatePassword();
 let adminName, adminEmail, adminPassword;
@@ -334,8 +361,8 @@ if(containerMode === 'new'){
     restart: unless-stopped
     environment:
       POSTGRES_USER: kempo
-      POSTGRES_PASSWORD: kempo_dev_password
-      POSTGRES_DB: kempo
+      POSTGRES_PASSWORD: ${dbPassword}
+      POSTGRES_DB: ${dbName}
     ports:
       - "5433:5432"
     volumes:
@@ -346,7 +373,7 @@ volumes:
     );
     console.log('Created docker-compose.yml');
   }
-}
+
 
 writeFileSync(join(projectDir, '.env'),
 `# Database
