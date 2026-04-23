@@ -5,8 +5,6 @@ on:
     branches:
       - main
       - master
-    paths-ignore:
-      - '.github/workflows/**'
   workflow_dispatch:
     inputs:
       version-type:
@@ -21,6 +19,7 @@ on:
 
 jobs:
   publish:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -54,10 +53,12 @@ jobs:
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          git pull origin $CURRENT_BRANCH || true
           npm version ${{ steps.version.outputs.type }} --no-git-tag-version
           git add package.json package-lock.json
-          git commit -m "ci: bump ${{ steps.version.outputs.type }} version [skip ci]"
-          git push origin HEAD:main
+          git commit -m "ci: bump ${{ steps.version.outputs.type }} version [skip ci]" || true
+          git push origin $CURRENT_BRANCH
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
