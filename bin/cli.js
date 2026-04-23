@@ -50,13 +50,13 @@ const isDockerRunning = () => {
 const getPostgresContainers = () => {
   try {
     const output = execSync(
-      'docker ps -a --filter "ancestor=postgres" --format "{{.Names}}\\t{{.Status}}"',
+      'docker ps -a --format "{{.Names}}\\t{{.Status}}\\t{{.Image}}"',
       { encoding: 'utf8' }
     );
     return output.trim().split('\n').filter(Boolean).map(line => {
-      const [name, ...statusParts] = line.split('\t');
-      return { name, running: statusParts.join('').startsWith('Up') };
-    });
+      const [name, status, image] = line.split('\t');
+      return { name, running: status.startsWith('Up'), image };
+    }).filter(c => c.image && c.image.includes('postgres'));
   } catch {
     return [];
   }
