@@ -31,7 +31,7 @@ const projectName = basename(projectDir);
 */
 
 const generatePassword = () => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%&*';
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789-_';
   return Array.from(
     { length: 16 },
     () => chars[crypto.randomInt(chars.length)]
@@ -404,6 +404,21 @@ execSync('npm install kempo', { cwd: projectDir, stdio: 'inherit' });
 console.log('\n--- Starting database ---\n');
 
 if(containerMode === 'new'){
+  const volumeName = `${dbName}_postgres_data`;
+  
+  try {
+    execSync(`docker stop ${containerName}`, { stdio: 'ignore' });
+    execSync(`docker rm ${containerName}`, { stdio: 'ignore' });
+  } catch {
+    // Container doesn't exist, that's fine
+  }
+  
+  try {
+    execSync(`docker volume rm ${volumeName}`, { stdio: 'ignore' });
+  } catch {
+    // Volume doesn't exist, that's fine
+  }
+  
   const compose = spawnSync('docker', ['compose', 'up', '-d'], {
     cwd: projectDir,
     stdio: 'inherit',
@@ -429,8 +444,8 @@ if(containerMode === 'new'){
 
 console.log('\n--- Initializing database ---\n');
 
-// Give database a moment to initialize
-await new Promise(r => setTimeout(r, 2000));
+// Give database plenty of time to fully initialize
+await new Promise(r => setTimeout(r, 30000));
 
 // Clear migration snapshots so drizzle-kit push compares against the live DB only
 const migrationDir = join(projectDir, 'server', 'db', 'migrations');
@@ -438,8 +453,15 @@ if(existsSync(migrationDir)){
   rmSync(migrationDir, { recursive: true, force: true });
 }
 
-execSync('npx drizzle-kit push --force', { cwd: projectDir, stdio: 'inherit' });
-execSync('node node_modules/kempo/scripts/init-db.js', { cwd: projectDir, stdio: 'inherit' });
+const drizzleResult = spawnSync('npx', ['drizzle-kit', 'push', '--force'], { cwd: projectDir, stdio: 'inherit', env: { ...process.env, DATABASE_URL: databaseUrl }, shell: true });
+if(drizzleResult.status !== 0){
+  console.error('\n❌ Drizzle push failed. DATABASE_URL: ' + databaseUrl);
+  console.error('Container: ' + containerName);
+  console.error('Check: docker logs ' + containerName + '\n');
+  process.exit(1);
+}
+
+execSync('node node_modules/kempo/scripts/init-db.js', { cwd: projectDir, stdio: 'inherit', env: { ...process.env, DATABASE_URL: databaseUrl } });
 
 /*
   Step 8: Create admin user
