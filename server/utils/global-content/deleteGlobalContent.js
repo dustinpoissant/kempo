@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { GLOBAL_FILE, parseEntries } from './helpers.js';
+import triggerHook from '../hooks/triggerHook.js';
 
 const serializeEntries = entries => entries.map(e => {
   const attrs = [
@@ -37,9 +38,6 @@ export default async ({ rootDir, ids }) => {
 
   for(const entry of entries){
     if(!idSet.has(entry.id)) continue;
-    if(entry.locked){
-      return [{ code: 403, msg: `Cannot delete locked global content: ${entry.name}` }, null];
-    }
     if(entry.owner && entry.owner !== 'custom'){
       return [{ code: 403, msg: `Cannot delete global content: ${entry.name}` }, null];
     }
@@ -47,6 +45,8 @@ export default async ({ rootDir, ids }) => {
 
   const remaining = entries.filter(e => !idSet.has(e.id));
   await writeFile(filePath, remaining.length ? serializeEntries(remaining) + '\n' : '', 'utf-8');
+
+  for(const id of ids) await triggerHook('globalContent:deleted', { id });
 
   return [null, { deleted: ids.length }];
 };

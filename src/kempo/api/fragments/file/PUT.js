@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
+import getFragmentMetadata from '../../../../../server/utils/fragments/getFragmentMetadata.js';
 import updateFragment from '../../../../../server/utils/fragments/updateFragment.js';
 
 const rootDir = resolve(import.meta.dirname, '../../../../../app-public');
@@ -20,6 +21,11 @@ export default async (request, response) => {
 
 	if(!file){
 		return response.status(400).json({ error: 'File path is required' });
+	}
+
+	const [metaError, metadata] = await getFragmentMetadata({ rootDir, file });
+	if(!metaError && metadata.locked){
+		return response.status(403).json({ error: 'This fragment is locked and cannot be edited' });
 	}
 
 	const [error, data] = await updateFragment({ rootDir, file, name, author, markup });

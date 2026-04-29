@@ -127,6 +127,7 @@ export default class PageEditor extends ShadowComponent {
   };
 
   handleTemplateChange = e => {
+    if(this.page?.locked) return;
     const newTemplate = e.target.value;
     const editorMap = new Map(
       [...this.shadowRoot.querySelectorAll('k-html-editor[data-location]')].map(ed => [ed.dataset.location, ed.getValue()])
@@ -306,7 +307,7 @@ export default class PageEditor extends ShadowComponent {
     return html`
       ${isLocked ? html`
         <div class="p r mb bc-warning tc-warning">
-          <k-icon name="lock"></k-icon> This page is locked and cannot be edited. It is managed by an extension.
+          <k-icon name="lock"></k-icon> This page is locked and cannot be edited. ${page.owner === 'custom' ? 'Locked by developer' : `Managed by: ${page.owner || 'external system'}`}
         </div>
       ` : ''}
       <div class="d-f mb">
@@ -396,6 +397,20 @@ export default class PageEditor extends ShadowComponent {
             </div>
           </div>
         </k-accordion-panel>
+        ${Object.keys(page.extraMetadata || {}).length ? html`
+          <k-accordion-header for-panel="extra-metadata">Extra Metadata</k-accordion-header>
+          <k-accordion-panel name="extra-metadata">
+            <div class="p">
+              ${Object.entries(page.extraMetadata).map(([key, value]) => html`
+                <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+                  <label style="min-width: 120px;" class="muted"><strong>${key}</strong></label>
+                  <span>${value}</span>
+                </div>
+              `)}
+              <p class="muted mt0"><small>Extra metadata is managed by extensions and cannot be edited here.</small></p>
+            </div>
+          </k-accordion-panel>
+        ` : ''}
         ${repeat(contents, c => c.location, ({ location, label, content, orphaned }) => {
       const isDefault = location === 'default';
       const headerTitle = label || (isDefault ? 'Content' : location.slice(0, 1).toUpperCase() + location.slice(1));

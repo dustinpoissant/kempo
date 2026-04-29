@@ -17,7 +17,7 @@ export default async (request, response) => {
 		return response.status(403).json({ error: 'Insufficient permissions' });
 	}
 
-	const { directory, name, template } = request.body;
+	const { directory, name, template, extraMetadata, locked } = request.body;
 
 	if(!name){
 		return response.status(400).json({ error: 'Page name is required' });
@@ -26,7 +26,7 @@ export default async (request, response) => {
 	const [, sessionData] = await getSession({ token });
 	const author = sessionData?.user?.name || '';
 
-	const [error, data] = await createPage({ rootDir, directory, name, template, author });
+	const [error, data] = await createPage({ rootDir, directory, name, template, author, extraMetadata, locked });
 
 	if(error){
 		return response.status(error.code).json({ error: error.msg });

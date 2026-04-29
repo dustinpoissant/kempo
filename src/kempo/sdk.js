@@ -159,8 +159,8 @@ export const getPage = async (file) =>
 export const createPage = async ({ directory, name, template }) =>
   post(`${API_BASE}/pages`, { directory, name, template });
 
-export const updatePage = async ({ file, name, title, description, author, template, contents }) =>
-  put(`${API_BASE}/pages/file`, { file, name, title, description, author, template, contents });
+export const updatePage = async ({ file, name, title, description, author, template, contents, extraMetadata }) =>
+  put(`${API_BASE}/pages/file`, { file, name, title, description, author, template, contents, extraMetadata });
 
 export const deletePages = async (files) =>
   del(`${API_BASE}/pages`, { files });
@@ -173,6 +173,12 @@ export const enablePage = async (file) =>
 
 export const movePage = async ({ file, newFile }) =>
   patch(`${API_BASE}/pages/file`, { file, newFile });
+
+export const searchPagesByMetadata = async (query) =>
+  get(`${API_BASE}/pages/search`, { query: JSON.stringify(query) });
+
+export const setPageLocked = async ({ file, locked }) =>
+  put(`${API_BASE}/pages/lock`, { file, locked });
 
 /*
   Templates
@@ -198,6 +204,9 @@ export const enableTemplate = async (file) =>
 
 export const moveTemplate = async ({ file, newFile }) =>
   patch(`${API_BASE}/templates/file`, { file, newFile });
+
+export const setTemplateLocked = async ({ file, locked }) =>
+  put(`${API_BASE}/templates/lock`, { file, locked });
 
 /*
   Fragments
@@ -227,6 +236,9 @@ export const disableFragment = async (file) =>
 export const enableFragment = async (file) =>
   put(`${API_BASE}/fragments/enable`, { file });
 
+export const setFragmentLocked = async ({ file, locked }) =>
+  put(`${API_BASE}/fragments/lock`, { file, locked });
+
 /*
   Global Content
 */
@@ -251,6 +263,9 @@ export const disableGlobalContent = async (id) =>
 
 export const enableGlobalContent = async (id) =>
   put(`${API_BASE}/globals/enable`, { id });
+
+export const setGlobalContentLocked = async ({ id, locked }) =>
+  put(`${API_BASE}/globals/lock`, { id, locked });
 
 /*
   Extensions

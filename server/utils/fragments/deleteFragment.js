@@ -1,6 +1,7 @@
 import { readFile, unlink } from 'fs/promises';
 import { join, normalize, sep } from 'path';
 import parseFrontmatter from '../fs/parseFrontmatter.js';
+import triggerHook from '../hooks/triggerHook.js';
 
 export default async ({ rootDir, files }) => {
   if(!rootDir) return [{ code: 400, msg: 'Root directory is required' }, null];
@@ -21,14 +22,12 @@ export default async ({ rootDir, files }) => {
     }
 
     const meta = parseFrontmatter(content);
-    if(meta.locked === 'true'){
-      return [{ code: 403, msg: `Cannot delete locked fragment: ${file}` }, null];
-    }
     if(meta.owner && meta.owner !== 'custom'){
       return [{ code: 403, msg: `Cannot delete fragment: ${file}` }, null];
     }
 
     await unlink(fullPath);
+    await triggerHook('fragment:deleted', { file });
   }
 
   return [null, { deleted: files.length }];

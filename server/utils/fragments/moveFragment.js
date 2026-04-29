@@ -28,9 +28,6 @@ export default async ({ rootDir, file, newFile }) => {
   }
 
   const meta = parseFrontmatter(content);
-  if(meta.locked === 'true'){
-    return [{ code: 403, msg: 'Cannot move a locked fragment' }, null];
-  }
   if(meta.owner && meta.owner !== 'custom'){
     return [{ code: 403, msg: 'Cannot move system fragments' }, null];
   }

@@ -235,7 +235,7 @@ export default class FragmentEditor extends ShadowComponent {
     return html`
       ${isLocked ? html`
         <div class="p r mb bc-warning tc-warning">
-          <k-icon name="lock"></k-icon> This fragment is locked and cannot be edited. It is managed by ${isCustom ? 'an extension' : 'the system'}.
+          <k-icon name="lock"></k-icon> This fragment is locked and cannot be edited. ${fragment.owner === 'custom' ? 'Locked by developer' : `Managed by: ${fragment.owner || 'external system'}`}
         </div>
       ` : ''}
       <div class="d-f mb">

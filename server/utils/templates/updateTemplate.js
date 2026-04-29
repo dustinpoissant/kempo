@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import triggerHook from '../hooks/triggerHook.js';
 
 export default async ({ rootDir, file, author, markup }) => {
   if(!rootDir) return [{ code: 400, msg: 'Root directory is required' }, null];
@@ -12,9 +13,6 @@ export default async ({ rootDir, file, author, markup }) => {
   if(!existsSync(fullPath)) return [{ code: 404, msg: 'Template not found' }, null];
 
   const raw = await readFile(fullPath, 'utf-8');
-
-  const lockedMatch = raw.match(/^<!--[\s\S]*?locked:\s*true[\s\S]*?-->/);
-  if(lockedMatch) return [{ code: 403, msg: 'This template is locked and cannot be edited' }, null];
 
   const frontmatterMatch = raw.match(/^<!--\s*\n([\s\S]*?)\n\s*-->/);
   const existingMeta = {};
@@ -41,6 +39,8 @@ export default async ({ rootDir, file, author, markup }) => {
   const newContent = `${frontmatter}\n${resolvedMarkup}`;
 
   await writeFile(fullPath, newContent, 'utf-8');
+
+  await triggerHook('template:updated', { file: safePath, updatedAt: now });
 
   return [null, { file: safePath, updatedAt: now }];
 };

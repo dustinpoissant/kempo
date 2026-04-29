@@ -1,13 +1,12 @@
 import { resolve } from 'path';
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
-import getPageMetadata from '../../../../../server/utils/pages/getPageMetadata.js';
-import updatePage from '../../../../../server/utils/pages/updatePage.js';
+import setFragmentLocked from '../../../../../server/utils/fragments/setFragmentLocked.js';
 
 const rootDir = resolve(import.meta.dirname, '../../../../../app-public');
 
 export default async (request, response) => {
 	const token = request.cookies.session_token;
-	const [permError, hasPermission] = await currentUserHasPermission(token, 'system:pages:update');
+	const [permError, hasPermission] = await currentUserHasPermission(token, 'system:fragments:update');
 
 	if(permError){
 		return response.status(permError.code).json({ error: permError.msg });
@@ -17,18 +16,17 @@ export default async (request, response) => {
 		return response.status(403).json({ error: 'Insufficient permissions' });
 	}
 
-	const { file, name, title, description, author, template, contents, extraMetadata } = request.body;
+	const { file, locked } = request.body;
 
 	if(!file){
 		return response.status(400).json({ error: 'File path is required' });
 	}
 
-	const [metaError, metadata] = await getPageMetadata({ rootDir, file });
-	if(!metaError && metadata.locked){
-		return response.status(403).json({ error: 'This page is locked and cannot be edited' });
+	if(typeof locked !== 'boolean'){
+		return response.status(400).json({ error: 'locked must be a boolean' });
 	}
 
-	const [error, data] = await updatePage({ rootDir, file, name, title, description, author, template, contents, extraMetadata });
+	const [error, data] = await setFragmentLocked({ rootDir, file, locked });
 
 	if(error){
 		return response.status(error.code).json({ error: error.msg });

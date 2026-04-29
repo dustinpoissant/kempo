@@ -1,8 +1,11 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import triggerHook from '../hooks/triggerHook.js';
 
-export default async ({ rootDir, file, name, title, description, author, template, contents }) => {
+const RESERVED_KEYS = new Set(['owner', 'name', 'author', 'created', 'updated', 'locked', 'title', 'description']);
+
+export default async ({ rootDir, file, name, title, description, author, template, contents, extraMetadata, force = false }) => {
   if(!rootDir){
     return [{ code: 400, msg: 'Root directory is required' }, null];
   }
@@ -20,8 +23,7 @@ export default async ({ rootDir, file, name, title, description, author, templat
   const raw = await readFile(fullPath, 'utf-8');
 
   const frontmatterMatch = raw.match(/^<!--\s*\n([\s\S]*?)\n\s*-->/);
-  const lockedMatch = raw.match(/^<!--[\s\S]*?locked:\s*true[\s\S]*?-->/);
-  if(lockedMatch) return [{ code: 403, msg: 'This page is locked and cannot be edited' }, null];
+
   const existingMeta = {};
   if(frontmatterMatch){
     for(const line of frontmatterMatch[1].split('\n')){
@@ -30,6 +32,13 @@ export default async ({ rootDir, file, name, title, description, author, templat
       const key = line.slice(0, idx).trim();
       const value = line.slice(idx + 1).trim();
       if(key) existingMeta[key] = value;
+    }
+  }
+
+  if(extraMetadata !== undefined){
+    const conflictingKeys = Object.keys(extraMetadata).filter(k => RESERVED_KEYS.has(k));
+    if(conflictingKeys.length){
+      return [{ code: 400, msg: `Cannot use reserved metadata keys: ${conflictingKeys.join(', ')}` }, null];
     }
   }
 
@@ -42,6 +51,11 @@ export default async ({ rootDir, file, name, title, description, author, templat
   if(title !== undefined) newMeta.title = title;
   if(description !== undefined) newMeta.description = description;
   if(author !== undefined) newMeta.author = author;
+  if(extraMetadata !== undefined){
+    for(const [k, v] of Object.entries(extraMetadata)){
+      newMeta[k] = v;
+    }
+  }
 
   const templateMatch = raw.match(/<page\s[^>]*template="([^"]*)"/)
   const resolvedTemplate = template !== undefined ? template : (templateMatch ? templateMatch[1] : 'default');
@@ -69,6 +83,8 @@ export default async ({ rootDir, file, name, title, description, author, templat
   const newPageContent = `${frontmatter}\n<page template="${resolvedTemplate}" title="${newTitle}">\n${contentBlocks}\n</page>\n`;
 
   await writeFile(fullPath, newPageContent, 'utf-8');
+
+  await triggerHook('page:updated', { file: safePath, updatedAt: now });
 
   return [null, { file: safePath, updatedAt: now }];
 };

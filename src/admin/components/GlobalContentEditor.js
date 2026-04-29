@@ -128,7 +128,7 @@ export default class GlobalContentEditor extends ShadowComponent {
     return html`
       ${isLocked ? html`
         <div class="p r mb bc-warning tc-warning">
-          <k-icon name="lock"></k-icon> This entry is locked and cannot be edited. It is managed by ${isSystem ? 'the system' : 'an extension'}.
+          <k-icon name="lock"></k-icon> This entry is locked and cannot be edited. ${entry.owner === 'custom' ? 'Locked by developer' : `Managed by: ${entry.owner || 'external system'}`}
         </div>
       ` : ''}
       <div class="d-f mb">

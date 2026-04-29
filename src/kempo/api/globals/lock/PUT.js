@@ -1,7 +1,6 @@
 import { resolve } from 'path';
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
-import getGlobalContentMetadata from '../../../../../server/utils/global-content/getGlobalContentMetadata.js';
-import updateGlobalContent from '../../../../../server/utils/global-content/updateGlobalContent.js';
+import setGlobalContentLocked from '../../../../../server/utils/global-content/setGlobalContentLocked.js';
 
 const rootDir = resolve(import.meta.dirname, '../../../../../app-public');
 
@@ -17,18 +16,17 @@ export default async (request, response) => {
 		return response.status(403).json({ error: 'Insufficient permissions' });
 	}
 
-	const { id, name, location, priority, markup } = request.body;
+	const { id, locked } = request.body;
 
 	if(!id){
 		return response.status(400).json({ error: 'Global content ID is required' });
 	}
 
-	const [metaError, metadata] = await getGlobalContentMetadata({ rootDir, id });
-	if(!metaError && metadata.locked){
-		return response.status(403).json({ error: 'This global content is locked and cannot be edited' });
+	if(typeof locked !== 'boolean'){
+		return response.status(400).json({ error: 'locked must be a boolean' });
 	}
 
-	const [error, data] = await updateGlobalContent({ rootDir, id, name, location, priority, markup });
+	const [error, data] = await setGlobalContentLocked({ rootDir, id, locked });
 
 	if(error){
 		return response.status(error.code).json({ error: error.msg });

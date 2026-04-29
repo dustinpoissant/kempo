@@ -2,7 +2,6 @@ import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import { GLOBAL_FILE, parseEntries } from './helpers.js';
-import triggerHook from '../hooks/triggerHook.js';
 
 const serializeEntries = entries => entries.map(e => {
   const attrs = [
@@ -19,13 +18,10 @@ const serializeEntries = entries => entries.map(e => {
   return `<content ${attrs}>\n${e.markup}\n</content>`;
 }).join('\n');
 
-export default async ({ rootDir, id, name, location, priority, markup }) => {
-  if(!rootDir){
-    return [{ code: 400, msg: 'Root directory is required' }, null];
-  }
-  if(!id){
-    return [{ code: 400, msg: 'Global content ID is required' }, null];
-  }
+export default async ({ rootDir, id, locked }) => {
+  if(!rootDir) return [{ code: 400, msg: 'Root directory is required' }, null];
+  if(!id) return [{ code: 400, msg: 'Global content ID is required' }, null];
+  if(typeof locked !== 'boolean') return [{ code: 400, msg: 'locked must be a boolean' }, null];
 
   const filePath = join(rootDir, GLOBAL_FILE);
   if(!existsSync(filePath)){
@@ -40,16 +36,9 @@ export default async ({ rootDir, id, name, location, priority, markup }) => {
     return [{ code: 404, msg: 'Global content not found' }, null];
   }
 
-  const now = new Date().toISOString();
-  if(name !== undefined) entries[idx].name = name;
-  if(location !== undefined) entries[idx].location = location;
-  if(priority !== undefined) entries[idx].priority = parseInt(priority, 10);
-  if(markup !== undefined) entries[idx].markup = markup;
-  entries[idx].updatedAt = now;
+  entries[idx].locked = locked;
 
   await writeFile(filePath, serializeEntries(entries) + '\n', 'utf-8');
 
-  await triggerHook('globalContent:updated', { id, updatedAt: now });
-
-  return [null, { id, updatedAt: now }];
+  return [null, { id, locked }];
 };

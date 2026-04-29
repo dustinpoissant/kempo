@@ -3,6 +3,7 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import crypto from 'crypto';
 import { GLOBAL_FILE, parseEntries } from './helpers.js';
+import triggerHook from '../hooks/triggerHook.js';
 
 const serializeEntries = entries => entries.map(e => {
   const attrs = [
@@ -53,6 +54,8 @@ export default async ({ rootDir, name, location, priority, author }) => {
 
   entries.push(entry);
   await writeFile(filePath, serializeEntries(entries) + '\n', 'utf-8');
+
+  await triggerHook('globalContent:created', { id: entry.id, name, location });
 
   return [null, entry];
 };

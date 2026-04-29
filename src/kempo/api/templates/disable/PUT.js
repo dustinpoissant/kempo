@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
+import getTemplateMetadata from '../../../../../server/utils/templates/getTemplateMetadata.js';
 import disableTemplate from '../../../../../server/utils/templates/disableTemplate.js';
 
 const rootDir = resolve(import.meta.dirname, '../../../../../app-public');
@@ -20,6 +21,11 @@ export default async (request, response) => {
 
 	if(!file){
 		return response.status(400).json({ error: 'File path is required' });
+	}
+
+	const [metaError, metadata] = await getTemplateMetadata({ rootDir, file });
+	if(!metaError && metadata.locked){
+		return response.status(403).json({ error: 'Cannot disable a locked template' });
 	}
 
 	const [error, result] = await disableTemplate({ rootDir, file });

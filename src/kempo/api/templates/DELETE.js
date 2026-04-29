@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
+import getTemplateMetadata from '../../../../server/utils/templates/getTemplateMetadata.js';
 import deleteTemplate from '../../../../server/utils/templates/deleteTemplate.js';
 
 const rootDir = resolve(import.meta.dirname, '../../../../app-public');
@@ -20,6 +21,13 @@ export default async (request, response) => {
 
 	if(!files?.length){
 		return response.status(400).json({ error: 'No files specified' });
+	}
+
+	for(const file of files){
+		const [metaError, metadata] = await getTemplateMetadata({ rootDir, file });
+		if(!metaError && metadata.locked){
+			return response.status(403).json({ error: `Cannot delete locked template: ${file}` });
+		}
 	}
 
 	const [error, data] = await deleteTemplate({ rootDir, files });

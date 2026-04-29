@@ -103,6 +103,8 @@ export { default as listDirectories } from './utils/pages/listDirectories.js';
 export { default as listPages } from './utils/pages/listPages.js';
 export { default as listTemplates } from './utils/pages/listTemplates.js';
 export { default as movePage } from './utils/pages/movePage.js';
+export { default as searchByMetadata } from './utils/pages/searchByMetadata.js';
+export { default as setPageLocked } from './utils/pages/setPageLocked.js';
 export { default as updatePage } from './utils/pages/updatePage.js';
 
 /*
@@ -114,6 +116,7 @@ export { default as deleteTemplate } from './utils/templates/deleteTemplate.js';
 export { default as disableTemplate } from './utils/templates/disableTemplate.js';
 export { default as enableTemplate } from './utils/templates/enableTemplate.js';
 export { default as getTemplate } from './utils/templates/getTemplate.js';
+export { default as setTemplateLocked } from './utils/templates/setTemplateLocked.js';
 export { default as updateTemplate } from './utils/templates/updateTemplate.js';
 
 /*
@@ -126,6 +129,7 @@ export { default as disableFragment } from './utils/fragments/disableFragment.js
 export { default as enableFragment } from './utils/fragments/enableFragment.js';
 export { default as getFragment } from './utils/fragments/getFragment.js';
 export { default as listFragments } from './utils/fragments/listFragments.js';
+export { default as setFragmentLocked } from './utils/fragments/setFragmentLocked.js';
 export { default as updateFragment } from './utils/fragments/updateFragment.js';
 
 /*
@@ -138,6 +142,7 @@ export { default as disableGlobalContent } from './utils/global-content/disableG
 export { default as enableGlobalContent } from './utils/global-content/enableGlobalContent.js';
 export { default as getGlobalContent } from './utils/global-content/getGlobalContent.js';
 export { default as listGlobalContent } from './utils/global-content/listGlobalContent.js';
+export { default as setGlobalContentLocked } from './utils/global-content/setGlobalContentLocked.js';
 export { default as updateGlobalContent } from './utils/global-content/updateGlobalContent.js';
 
 /*

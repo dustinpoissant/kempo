@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
+import getTemplateMetadata from '../../../../../server/utils/templates/getTemplateMetadata.js';
 import updateTemplate from '../../../../../server/utils/templates/updateTemplate.js';
 
 const rootDir = resolve(import.meta.dirname, '../../../../../app-public');
@@ -20,6 +21,11 @@ export default async (request, response) => {
 
 	if(!file){
 		return response.status(400).json({ error: 'File path is required' });
+	}
+
+	const [metaError, metadata] = await getTemplateMetadata({ rootDir, file });
+	if(!metaError && metadata.locked){
+		return response.status(403).json({ error: 'This template is locked and cannot be edited' });
 	}
 
 	const [error, data] = await updateTemplate({ rootDir, file, name, author, markup });

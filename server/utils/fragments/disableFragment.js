@@ -23,9 +23,6 @@ export default async ({ rootDir, file }) => {
 
   const content = await readFile(fullPath, 'utf-8');
   const meta = parseFrontmatter(content);
-  if(meta.locked === 'true'){
-    return [{ code: 403, msg: 'Cannot disable a locked fragment' }, null];
-  }
 
   const disabledPath = fullPath.replace(/\.fragment\.html$/, '.fragment-disabled.html');
   if(existsSync(disabledPath)){

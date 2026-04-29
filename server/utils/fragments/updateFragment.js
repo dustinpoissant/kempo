@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import triggerHook from '../hooks/triggerHook.js';
 
 export default async ({ rootDir, file, author, markup }) => {
   if(!rootDir){
@@ -18,9 +19,6 @@ export default async ({ rootDir, file, author, markup }) => {
   }
 
   const raw = await readFile(fullPath, 'utf-8');
-
-  const lockedMatch = raw.match(/^<!--[\s\S]*?locked:\s*true[\s\S]*?-->/);
-  if(lockedMatch) return [{ code: 403, msg: 'This fragment is locked and cannot be edited' }, null];
 
   const frontmatterMatch = raw.match(/^<!--\s*\n([\s\S]*?)\n\s*-->/);
   const existingMeta = {};
@@ -53,6 +51,8 @@ export default async ({ rootDir, file, author, markup }) => {
   const newContent = `${frontmatter}\n${resolvedMarkup}\n`;
 
   await writeFile(fullPath, newContent, 'utf-8');
+
+  await triggerHook('fragment:updated', { file: safePath, updatedAt: now });
 
   return [null, { file: safePath, updatedAt: now }];
 };

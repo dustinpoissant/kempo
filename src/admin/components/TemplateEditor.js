@@ -305,7 +305,7 @@ export default class TemplateEditor extends ShadowComponent {
     return html`
       ${isLocked ? html`
         <div class="p r mb bc-warning tc-warning">
-          <k-icon name="lock"></k-icon> This template is locked and cannot be edited. It is managed by an extension.
+          <k-icon name="lock"></k-icon> This template is locked and cannot be edited. ${template.owner === 'custom' ? 'Locked by developer' : `Managed by: ${template.owner || 'external system'}`}
         </div>
       ` : ''}
       <div class="d-f mb">

@@ -23,9 +23,6 @@ export default async ({ rootDir, file }) => {
 
   const content = await readFile(fullPath, 'utf-8');
   const meta = parseFrontmatter(content);
-  if(meta.locked === 'true'){
-    return [{ code: 403, msg: 'Cannot disable a locked template' }, null];
-  }
 
   const disabledPath = fullPath.replace(/\.template\.html$/, '.template-disabled.html');
   if(existsSync(disabledPath)){

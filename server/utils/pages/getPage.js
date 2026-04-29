@@ -3,6 +3,8 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import parseFrontmatter from '../fs/parseFrontmatter.js';
 
+const RESERVED_KEYS = new Set(['owner', 'name', 'author', 'created', 'updated', 'locked', 'title', 'description']);
+
 const parseContents = content => {
   const blocks = [];
   const regex = /<content(?:\s+location="([^"]*)")?\s*>([\s\S]*?)<\/content>/g;
@@ -37,6 +39,10 @@ export default async ({ rootDir, file }) => {
   const templateMatch = raw.match(/<page\s[^>]*template="([^"]*)"/);
   const contents = parseContents(raw);
 
+  const extraMetadata = Object.fromEntries(
+    Object.entries(meta).filter(([k]) => !RESERVED_KEYS.has(k))
+  );
+
   return [null, {
     file: safePath,
     name: meta.name || '',
@@ -48,6 +54,7 @@ export default async ({ rootDir, file }) => {
     description: meta.description || '',
     createdAt: meta.created || '',
     updatedAt: meta.updated || '',
+    extraMetadata,
     contents
   }];
 };

@@ -1,6 +1,7 @@
 import { writeFile, mkdir } from 'fs/promises';
 import { join, dirname } from 'path';
 import { existsSync } from 'fs';
+import triggerHook from '../hooks/triggerHook.js';
 
 const slugify = name => name
   .toLowerCase()
@@ -10,7 +11,7 @@ const slugify = name => name
   .replace(/-+/g, '-')
   .replace(/^-|-$/g, '');
 
-export default async ({ rootDir, directory, name, author }) => {
+export default async ({ rootDir, directory, name, author, locked = false }) => {
   if(!rootDir){
     return [{ code: 400, msg: 'Root directory is required' }, null];
   }
@@ -42,6 +43,7 @@ export default async ({ rootDir, directory, name, author }) => {
     `  author: ${author || ''}`,
     `  created: ${now}`,
     `  updated: ${now}`,
+    ...(locked ? ['  locked: true'] : []),
     '-->'
   ].join('\n');
 
@@ -52,6 +54,8 @@ export default async ({ rootDir, directory, name, author }) => {
   await writeFile(filePath, content, 'utf-8');
 
   const relPath = dir ? `${dir}/${slug}` : slug;
+
+  await triggerHook('fragment:created', { file: `${relPath}.fragment.html`, name, slug });
 
   return [null, { file: `${relPath}.fragment.html`, name, slug }];
 };

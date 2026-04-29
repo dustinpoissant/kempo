@@ -277,21 +277,23 @@ export default async ({ oldVersion, newVersion, oldKempo, newKempo }) => {
 
 ## Using the Server SDK
 
-Your extension's server-side code (hooks, route handlers, lifecycle scripts) can import from kempo's server SDK:
+Your extension's server-side code (hooks, route handlers, lifecycle scripts) can import utilities from kempo's server SDK. See the [**Server SDK Guide**](sdk.md) for complete documentation of all available utilities.
+
+Quick example:
 
 ```javascript
 import {
-  getUser,
+  getUserById,
   getSetting,
   createHook,
   triggerHook,
+  currentUserHasPermission,
 } from 'kempo/server/sdk.js';
 ```
 
-Or import individual utils directly:
+You can also import the database directly, but this should be a last resort, try and use the extensions `server/db/schema.js` file to create and manage updating the schema of db tables. And try and use the other sdk functions to interact with system tables, and if you need to interact with another extension it should provide its own sdk.
 
 ```javascript
-import getSetting from 'kempo/server/utils/settings/getSetting.js';
 import db from 'kempo/server/db/index.js';
 import { user } from 'kempo/server/db/schema.js';
 ```

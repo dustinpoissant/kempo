@@ -1,5 +1,6 @@
 import { resolve } from 'path';
 import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
+import getGlobalContentMetadata from '../../../../server/utils/global-content/getGlobalContentMetadata.js';
 import deleteGlobalContent from '../../../../server/utils/global-content/deleteGlobalContent.js';
 
 const rootDir = resolve(import.meta.dirname, '../../../../app-public');
@@ -20,6 +21,13 @@ export default async (request, response) => {
 
 	if(!ids?.length){
 		return response.status(400).json({ error: 'No IDs specified' });
+	}
+
+	for(const id of ids){
+		const [metaError, metadata] = await getGlobalContentMetadata({ rootDir, id });
+		if(!metaError && metadata.locked){
+			return response.status(403).json({ error: `Cannot delete locked global content: ${metadata.name}` });
+		}
 	}
 
 	const [error, result] = await deleteGlobalContent({ rootDir, ids });
