@@ -25,8 +25,13 @@ export default async (request, response) => {
 
 	for(const file of files){
 		const [metaError, metadata] = await getPageMetadata({ rootDir, file });
-		if(!metaError && metadata.locked){
-			return response.status(403).json({ error: `Cannot delete locked page: ${file}` });
+		if(!metaError){
+			if(metadata.locked){
+				return response.status(403).json({ error: `Cannot delete locked page: ${file}` });
+			}
+			if(metadata.owner && metadata.owner !== 'custom'){
+				return response.status(403).json({ error: `Cannot delete system-owned page: ${file}` });
+			}
 		}
 	}
 

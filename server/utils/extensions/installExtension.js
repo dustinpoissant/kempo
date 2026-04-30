@@ -1,8 +1,9 @@
 import db from '../../db/index.js';
 import { extension, hook, permission, group, groupPermission } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
-import { createRequire } from 'module';
-import { dirname, join } from 'path';
+import { join } from 'path';
+import { pathToFileURL } from 'url';
+import { existsSync } from 'fs';
 import { readFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import triggerHook, { clearHandlerCache } from '../hooks/triggerHook.js';
@@ -10,8 +11,6 @@ import createHook from '../hooks/createHook.js';
 import setSetting from '../settings/setSetting.js';
 import createTablesFromSchema from './createTablesFromSchema.js';
 import { invalidateScopeCache } from './scopeCache.js';
-
-const requireFromProject = createRequire(join(process.cwd(), 'package.json'));
 
 export default async ({ name }) => {
   if(!name){
@@ -27,23 +26,30 @@ export default async ({ name }) => {
     return [{ code: 500, msg: 'Failed to check existing extensions' }, null];
   }
 
-  let pkgPath, extRoot, pkg;
-  try {
-    pkgPath = requireFromProject.resolve(`${name}/package.json`);
-    extRoot = dirname(pkgPath);
-    pkg = JSON.parse(await readFile(pkgPath, 'utf-8'));
-  } catch {
+  const extRoot = join(process.cwd(), 'node_modules', name);
+  const extPkgPath = join(extRoot, 'package.json');
+  const kempoConfigPath = join(extRoot, 'kempo-config.json');
+
+  if(!existsSync(extPkgPath)){
     return [{ code: 404, msg: `Extension package "${name}" not found` }, null];
   }
 
-  const kempoConfig = pkg.kempo || {};
+  let pkg, kempoConfig;
+  try {
+    pkg = JSON.parse(await readFile(extPkgPath, 'utf-8'));
+    kempoConfig = existsSync(kempoConfigPath)
+      ? JSON.parse(await readFile(kempoConfigPath, 'utf-8'))
+      : {};
+  } catch {
+    return [{ code: 500, msg: `Failed to read extension package files` }, null];
+  }
 
   /*
     Create tables from declarative schema
   */
   if(kempoConfig.schema){
     try {
-      const schemaModule = await import(join(extRoot, kempoConfig.schema));
+      const schemaModule = await import(pathToFileURL(join(extRoot, kempoConfig.schema)).href);
       const [err] = await createTablesFromSchema(schemaModule);
       if(err) return [err, null];
     } catch(error){
@@ -55,7 +61,7 @@ export default async ({ name }) => {
     Run install script
   */
   try {
-    const installModule = await import(join(extRoot, 'install.js')).catch(() => null);
+    const installModule = await import(pathToFileURL(join(extRoot, 'install.js')).href + `?t=${Date.now()}`).catch(() => null);
     if(installModule?.default){
       await installModule.default();
     }

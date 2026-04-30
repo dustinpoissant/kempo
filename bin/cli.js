@@ -289,6 +289,18 @@ if(!useDefaults){
   }
 }
 
+let wantsDrizzleStudio = false;
+
+if(!useDefaults){
+  const { drizzleStudio } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'drizzleStudio',
+    message: 'Would you like to install drizzle-studio? It is used for interacting with the database during development, not recommended for production.',
+    default: true
+  }]);
+  wantsDrizzleStudio = drizzleStudio;
+}
+
 /*
   Step 3: Scaffold project files
 */
@@ -297,15 +309,19 @@ console.log('\n--- Scaffolding project files ---\n');
 
 const pkgPath = join(projectDir, 'package.json');
 if(!existsSync(pkgPath)){
+  const scripts = {
+    dev: 'kempo-server --root public --port 9876',
+    start: 'kempo-server --root public --port 9876'
+  };
+  if(wantsDrizzleStudio){
+    scripts['db:studio'] = 'drizzle-kit studio';
+  }
   writeFileSync(pkgPath, JSON.stringify({
     name: projectName,
     version: '1.0.0',
     type: 'module',
     private: true,
-    scripts: {
-      dev: 'kempo-server --root public --port 9876',
-      start: 'kempo-server --root public --port 9876'
-    }
+    scripts
   }, null, 2) + '\n');
   console.log('Created package.json');
 }
@@ -511,4 +527,5 @@ Next steps:
 Then open:
   http://localhost:9876        (your site)
   http://localhost:9876/admin  (admin panel)
+${wantsDrizzleStudio ? '\nTo view your database:\n  npm run db:studio\n' : ''}
 `);

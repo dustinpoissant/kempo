@@ -11,11 +11,11 @@ export default class UninstallExtension extends TableControl {
     Dialog.confirm(`Uninstall "${this.record.name}"? This may delete extension data.`, async confirmed => {
       if(!confirmed) return;
 
-      const { uninstallExtension } = await import('../../kempo/sdk.js');
+      const { uninstallExtension } = await import('/kempo/sdk.js');
       const [error] = await uninstallExtension(this.record.name);
 
       if(error){
-        Toast.error(error.error || 'Failed to uninstall extension');
+        Toast.error(error.msg || 'Failed to uninstall extension');
         return;
       }
 

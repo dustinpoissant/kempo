@@ -60,6 +60,7 @@ const processJs = async (src, dest) => {
       includeSources: true
     },
     format: { comments: false },
+    module: true,
     compress: true,
     mangle: true
   });
@@ -99,6 +100,7 @@ const processHtml = async (src, dest) => {
     removeComments: true,
     removeRedundantAttributes: true,
     removeEmptyAttributes: false,
+    removeEmptyElements: false,
     minifyJS: false,
     minifyCSS: false,
     keepClosingSlash: true

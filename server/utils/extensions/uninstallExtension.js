@@ -1,13 +1,11 @@
 import db from '../../db/index.js';
 import { extension, hook, permission, setting, group } from '../../db/schema.js';
 import { eq, inArray } from 'drizzle-orm';
-import { createRequire } from 'module';
-import { dirname, join } from 'path';
+import { join } from 'path';
+import { pathToFileURL } from 'url';
 import { sql } from 'drizzle-orm';
 import triggerHook, { clearHandlerCache } from '../hooks/triggerHook.js';
 import { invalidateScopeCache } from './scopeCache.js';
-
-const requireFromProject = createRequire(join(process.cwd(), 'package.json'));
 
 export default async ({ name }) => {
   if(!name){
@@ -26,9 +24,8 @@ export default async ({ name }) => {
   }
 
   try {
-    const pkgPath = requireFromProject.resolve(`${name}/package.json`);
-    const extRoot = dirname(pkgPath);
-    const uninstallModule = await import(join(extRoot, 'uninstall.js')).catch(() => null);
+    const extRoot = join(process.cwd(), 'node_modules', name);
+    const uninstallModule = await import(pathToFileURL(join(extRoot, 'uninstall.js')).href + `?t=${Date.now()}`).catch(() => null);
     if(uninstallModule?.default){
       await uninstallModule.default();
     }
@@ -39,9 +36,8 @@ export default async ({ name }) => {
   */
   if(kempoConfig.schema){
     try {
-      const pkgPath = requireFromProject.resolve(`${name}/package.json`);
-      const extRoot = dirname(pkgPath);
-      const schemaModule = await import(join(extRoot, kempoConfig.schema));
+      const extRoot = join(process.cwd(), 'node_modules', name);
+      const schemaModule = await import(pathToFileURL(join(extRoot, kempoConfig.schema)).href);
       const { getTableConfig } = await import('drizzle-orm/pg-core');
       for(const exported of Object.values(schemaModule)){
         if(typeof exported !== 'object' || !exported?.[Symbol.for('drizzle:Name')]) continue;

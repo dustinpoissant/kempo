@@ -20,13 +20,7 @@
 
 	<h2>Installed Extensions</h2>
 	<k-table id="installedTable" enable-pages page-size="25" placeholder="No extensions are currently installed.">
-		<div slot="top" class="d-f full" style="align-items: center;">
-			<div>
-				<k-permission has="system:extensions:uninstall">
-					<admin-uninstall-extension></admin-uninstall-extension>
-				</k-permission>
-			</div>
-		</div>
+		<admin-uninstall-extension slot="after"></admin-uninstall-extension>
 		<div class="d-f full" style="align-items: center;">
 			<div>
 				<k-tc-first-page></k-tc-first-page>
@@ -43,13 +37,7 @@
 
 	<h2>Available Extensions</h2>
 	<k-table id="availableTable" enable-pages page-size="25" placeholder="No extensions are available to install. Install a kempo extension package via npm first.">
-		<div slot="top" class="d-f full" style="align-items: center;">
-			<div>
-				<k-permission has="system:extensions:install">
-					<admin-install-extension></admin-install-extension>
-				</k-permission>
-			</div>
-		</div>
+		<admin-install-extension slot="after"></admin-install-extension>
 		<div class="d-f full" style="align-items: center;">
 			<div>
 				<k-tc-first-page></k-tc-first-page>
@@ -67,35 +55,69 @@
 </content>
 <content location="scripts">
 <script type="module">
-	import sdk from '/kempo/sdk.js';
+	import { listExtensions, listAvailableExtensions } from '/kempo/sdk.js';
 
 	const installedTable = document.getElementById('installedTable');
 	const availableTable = document.getElementById('availableTable');
 
-	const [installedErr, installedData] = await sdk.listExtensions();
+	const [installedErr, installedData] = await listExtensions();
 	if(!installedErr){
-		installedTable.setData(installedData.items, {
-			columns: [
-				{ key: 'name', label: 'Name' },
-				{ key: 'version', label: 'Version' },
-				{ key: 'description', label: 'Description' },
-				{ key: 'enabled', label: 'Enabled' },
+		installedTable.setData({
+			records: installedData.items,
+			fields: [
+				{ name: 'name', label: 'Name' },
+				{ name: 'version', label: 'Version' },
+				{ name: 'description', label: 'Description' },
+				{ name: 'enabled', label: 'Enabled' },
 			]
 		});
 	}
 
-	const [availableErr, availableData] = await sdk.listAvailableExtensions();
+	const [availableErr, availableData] = await listAvailableExtensions();
 	if(!availableErr){
 		const installedNames = new Set((installedData?.items || []).map(e => e.name));
 		const notInstalled = availableData.items.filter(e => !installedNames.has(e.name));
-		availableTable.setData(notInstalled, {
-			columns: [
-				{ key: 'name', label: 'Name' },
-				{ key: 'version', label: 'Version' },
-				{ key: 'description', label: 'Description' },
+		availableTable.setData({
+			records: notInstalled,
+			fields: [
+				{ name: 'name', label: 'Name' },
+				{ name: 'version', label: 'Version' },
+				{ name: 'description', label: 'Description' },
 			]
 		});
 	}
+
+	const refreshInstalledTable = async () => {
+		const [err, data] = await listExtensions();
+		if(!err) installedTable.setData({
+			records: data.items,
+			fields: [
+				{ name: 'name', label: 'Name' },
+				{ name: 'version', label: 'Version' },
+				{ name: 'description', label: 'Description' },
+				{ name: 'enabled', label: 'Enabled' },
+			]
+		});
+	};
+
+	const refreshAvailableTable = async () => {
+		const [instErr, instData] = await listExtensions();
+		const [availErr, availData] = await listAvailableExtensions();
+		if(!instErr && !availErr){
+			const installedNames = new Set((instData?.items || []).map(e => e.name));
+			availableTable.setData({
+				records: availData.items.filter(e => !installedNames.has(e.name)),
+				fields: [
+					{ name: 'name', label: 'Name' },
+					{ name: 'version', label: 'Version' },
+					{ name: 'description', label: 'Description' },
+				]
+			});
+		}
+	};
+
+	availableTable.addEventListener('recordDeleted', refreshInstalledTable);
+	installedTable.addEventListener('recordDeleted', refreshAvailableTable);
 </script>
 </content>
 </page>

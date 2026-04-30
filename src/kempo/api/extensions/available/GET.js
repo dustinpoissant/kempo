@@ -1,10 +1,8 @@
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
 import { readFile } from 'fs/promises';
 import { existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { createRequire } from 'module';
+import { join } from 'path';
 
-const requireFromProject = createRequire(join(process.cwd(), 'package.json'));
 const knownExtensionsPath = join(import.meta.dirname, '../../../admin/known-extensions.json');
 
 export default async (request, response) => {
@@ -31,20 +29,22 @@ export default async (request, response) => {
     ...projectPkg.devDependencies,
   };
 
+  const nodeModulesPath = join(process.cwd(), 'node_modules');
   const available = [];
+
   for(const [depName] of Object.entries(allDeps)){
     try {
-      const depPkgPath = requireFromProject.resolve(`${depName}/package.json`);
+      const kempoConfigPath = join(nodeModulesPath, depName, 'kempo-config.json');
+      if(!existsSync(kempoConfigPath)) continue;
+      const depPkgPath = join(nodeModulesPath, depName, 'package.json');
       const depPkg = JSON.parse(await readFile(depPkgPath, 'utf-8'));
-      if(depPkg.kempo){
-        const known = knownExtensions.find(k => k.name === depName);
-        available.push({
-          name: depName,
-          version: depPkg.version,
-          description: depPkg.description || known?.description || '',
-          author: depPkg.author || known?.author || '',
-        });
-      }
+      const known = knownExtensions.find(k => k.name === depName);
+      available.push({
+        name: depName,
+        version: depPkg.version,
+        description: depPkg.description || known?.description || '',
+        author: depPkg.author || known?.author || '',
+      });
     } catch {}
   }
 

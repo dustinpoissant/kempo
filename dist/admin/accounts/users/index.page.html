@@ -1,0 +1,160 @@
+<!--
+	locked: true
+-->
+<page title="Users - Admin"><content><script type="module" src="/kempo-ui/components/Table.js"></script><script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script><script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script><script type="module" src="/kempo-ui/components/tableControls/Edit.js"></script><script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script><script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script><script type="module" src="/kempo-ui/components/Toggle.js"></script><script type="module" src="/admin/components/TableRowLink.js"></script><script type="module" src="/kempo/components/Permission.js"></script><div class="d-f mb" style="align-items: center;"><h1 class="flex mb0">Users</h1><k-permission has="system:user:create"><button id="createUserBtn" class="primary">Create User</button></k-permission></div><k-table id="usersTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No users found." filtered-placeholder="No users match your search."><admin-table-row-link slot="before" url-pattern="/admin/accounts/users/{id}" field-name="id"></admin-table-row-link><div slot="top" class="d-f full" style="align-items: center;"><div><k-permission has="system:user:delete"><k-tc-delete-selected></k-tc-delete-selected></k-permission></div></div><div class="d-f full" style="align-items: center;"><div><k-tc-first-page></k-tc-first-page><k-tc-prev-page></k-tc-prev-page><k-tc-next-page></k-tc-next-page><k-tc-last-page></k-tc-last-page></div><div class="flex"></div><div><k-tc-page-select></k-tc-page-select></div><div class="flex"></div><div><k-tc-page-size></k-tc-page-size></div></div></k-table><script type="module">import { getUsers, createUser, updateUser, deleteUsers, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+	import { html } from '/kempo-ui/lit-all.min.js';
+	import Toast from '/kempo-ui/components/Toast.js';
+	import Dialog from '/kempo-ui/components/Dialog.js';
+	await window.customElements.whenDefined('k-table');
+	const $table = document.getElementById('usersTable');
+
+	const [, permData] = await getAllCurrentUserPermissions();
+	const myPerms = new Set(permData?.permissions ?? []);
+
+	if (myPerms.has('system:user:update')) {
+		$table.setAttribute('request-edit', '');
+		const edit = document.createElement('k-tc-edit');
+		edit.setAttribute('slot', 'after');
+		$table.appendChild(edit);
+	}
+
+	if (myPerms.has('system:user:delete')) {
+		$table.setAttribute('request-delete', '');
+		$table.setAttribute('enable-selection', '');
+		const del = document.createElement('k-tc-delete-record');
+		del.setAttribute('slot', 'after');
+		$table.appendChild(del);
+	}
+
+	const loadUsers = async () => {
+		const [error, data] = await getUsers({ limit: 10, offset: 0 });
+		if (error) return;
+		$table.setData({
+			records: data.users,
+			fields: [
+				{ name: 'name', label: 'Name', size: 352, editable: true },
+				{ name: 'email', label: 'Email', size: 352, editable: true },
+				{
+					name: 'emailVerified',
+					label: 'Verified',
+					formatter: v => v ? 'Yes' : 'No',
+					editor: v => {
+						const $sel = document.createElement('select');
+						$sel.innerHTML = '<option value="true">Yes</option><option value="false">No</option>';
+						$sel.value = v ? 'true' : 'false';
+						return $sel;
+					},
+					size: 80,
+					editable: true
+				},
+				{
+					name: 'createdAt',
+					label: 'Created',
+					formatter: v => new Date(v).toLocaleString(),
+					size: 208,
+					editable: false
+				}
+			]
+		});
+		$table.setupFetchRecords(data.total, async (start, count) => {
+			const [err, d] = await getUsers({ limit: count, offset: start });
+			if (err) return [];
+			return d.users;
+		});
+	};
+
+	await loadUsers();
+
+	$table.addEventListener('requestSave', async ({ detail: { record, newData, approve, reject } }) => {
+		if('emailVerified' in newData) newData.emailVerified = newData.emailVerified === 'true';
+		const [error] = await updateUser({
+			id: record.id,
+			...newData
+		});
+		if (error) {
+			reject();
+			Toast.error(error.msg || 'Failed to update user');
+			return;
+		}
+		approve();
+		Toast.success('User updated');
+	});
+
+	$table.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
+		const count = records.length;
+		const msg = count === 1
+			? `Delete "${records[0].name}"? This action cannot be undone.`
+			: `Delete ${count} users? This action cannot be undone.`;
+		Dialog.confirm(msg, async (confirmed) => {
+			if (!confirmed) { reject(); return; }
+			const ids = records.map(r => r.id);
+			const [error] = await deleteUsers(ids);
+			if (error) {
+				reject();
+				Toast.error(error.msg || 'Failed to delete');
+				return;
+			}
+			approve();
+			Toast.success(count === 1 ? 'User deleted' : `${count} users deleted`);
+		});
+	});
+
+	if (myPerms.has('system:user:create')) {
+		document.getElementById('createUserBtn').addEventListener('click', async () => {
+			await customElements.whenDefined('k-toggle');
+			let autoPw = true;
+			const $dialog = Dialog.create(html`
+						<div class="p">
+							<div class="mb">
+								<label class="d-b mb-sm">Name</label>
+								<input type="text" id="dlg-name" class="full" required>
+							</div>
+							<div class="mb">
+								<label class="d-b mb-sm">Email</label>
+								<input type="email" id="dlg-email" class="full" required>
+							</div>
+							<div class="mb">
+								<k-toggle id="dlg-autopw" value="true" @change=${e => {
+					autoPw = e.target.value;
+					const $pwField = $dialog.querySelector('#dlg-pwfield');
+					const $pwInput = $dialog.querySelector('#dlg-password');
+					$pwField.style.display = autoPw ? 'none' : '';
+					$pwInput.required = !autoPw;
+				}}>Auto-generate password</k-toggle>
+							</div>
+							<div id="dlg-pwfield" class="mb" style="display:none">
+								<label class="d-b mb-sm">Password</label>
+								<input type="password" id="dlg-password" class="full">
+							</div>
+							<div>
+								<k-toggle id="dlg-verified" value="true">Mark email as verified</k-toggle>
+							</div>
+						</div>
+					`, {
+				title: 'Create User',
+				confirmText: 'Create',
+				confirmAction: async () => {
+					const name = $dialog.querySelector('#dlg-name').value.trim();
+					const email = $dialog.querySelector('#dlg-email').value.trim();
+					if (!name || !email) {
+						Toast.error('Name and email are required');
+						return;
+					}
+					const password = autoPw ? undefined : $dialog.querySelector('#dlg-password').value;
+					const emailVerified = $dialog.querySelector('#dlg-verified').value;
+					const [error, result] = await createUser({ name, email, password, emailVerified });
+					if (error) {
+						Toast.error(error.msg || 'Failed to create user');
+						return;
+					}
+					if (result.generatedPassword) {
+						Toast.success(`User created. Generated password: ${result.generatedPassword}`, { duration: 10000 });
+					} else {
+						Toast.success('User created');
+					}
+					loadUsers();
+				},
+				cancelText: 'Cancel'
+			});
+		});
+	}</script></content></page>

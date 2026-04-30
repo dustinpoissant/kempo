@@ -154,6 +154,9 @@ export default config => {
       const subPath = adminMatch[2] || '/';
       const extRoot = join(NODE_MODULES, extName);
       const adminDir = join(extRoot, 'admin');
+      const resolveDir = buildResolveDir(ADMIN_ROOT, url);
+      const method = request.method?.toUpperCase() || 'GET';
+
       const pageCandidates = subPath.endsWith('/')
         ? [join(adminDir, subPath, 'index.page.html')]
         : [
@@ -161,7 +164,6 @@ export default config => {
             join(adminDir, subPath, 'index.page.html'),
           ];
 
-      const resolveDir = buildResolveDir(ADMIN_ROOT, url);
       for(const pagePath of pageCandidates){
         try {
           await stat(pagePath);
@@ -172,16 +174,44 @@ export default config => {
         } catch { /* try next candidate */ }
       }
 
-      const filePath = join(adminDir, subPath === '/' ? 'index.html' : subPath);
+      const staticPath = join(adminDir, subPath === '/' ? 'index.html' : subPath);
       try {
-        const stats = await stat(filePath);
+        const stats = await stat(staticPath);
         if(stats.isFile()){
-          const mime = MIME_TYPES[extname(filePath)] || 'application/octet-stream';
+          const mime = MIME_TYPES[extname(staticPath)] || 'application/octet-stream';
           response.writeHead(200, { 'Content-Type': mime });
-          response.end(await readFile(filePath));
+          response.end(await readFile(staticPath));
           return;
         }
-      } catch { /* fall through to next() */ }
+      } catch { /* try dynamic */ }
+
+      const segments = subPath.replace(/^\//, '').split('/').filter(Boolean);
+      const walked = await walkDynamic(adminDir, segments);
+      if(walked){
+        const { filePath: walkedPath, params } = walked;
+        let walkedStat;
+        try { walkedStat = await stat(walkedPath); } catch { /* not found */ }
+        if(walkedStat?.isDirectory()){
+          const served = await serveDir(walkedPath, method, request, response, resolveDir, ADMIN_ROOT, params);
+          if(served) return;
+        } else if(walkedStat?.isFile()){
+          const name = walkedPath.split(/[/\\]/).pop();
+          if(name.endsWith('.page.html')){
+            const html = await renderExternalPage(walkedPath, ADMIN_ROOT, resolveDir);
+            response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+            response.end(html);
+            return;
+          }
+          if(ROUTE_FILES.includes(name)){
+            await executeRouteFile(walkedPath, request, response, params);
+            return;
+          }
+          const mime = MIME_TYPES[extname(walkedPath)] || 'application/octet-stream';
+          response.writeHead(200, { 'Content-Type': mime });
+          response.end(await readFile(walkedPath));
+          return;
+        }
+      }
 
       return next();
     }

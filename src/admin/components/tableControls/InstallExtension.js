@@ -11,11 +11,11 @@ export default class InstallExtension extends TableControl {
     Dialog.confirm(`Install "${this.record.name}"?`, async confirmed => {
       if(!confirmed) return;
 
-      const { installExtension } = await import('../../kempo/sdk.js');
+      const { installExtension } = await import('/kempo/sdk.js');
       const [error] = await installExtension(this.record.name);
 
       if(error){
-        Toast.error(error.error || 'Failed to install extension');
+        Toast.error(error.msg || 'Failed to install extension');
         return;
       }
 

@@ -1,6 +1,5 @@
-import { readFile, unlink } from 'fs/promises';
+import { unlink } from 'fs/promises';
 import { join, normalize, sep } from 'path';
-import parseFrontmatter from '../fs/parseFrontmatter.js';
 import triggerHook from '../hooks/triggerHook.js';
 
 export default async ({ rootDir, files }) => {
@@ -14,19 +13,12 @@ export default async ({ rootDir, files }) => {
     }
 
     const fullPath = join(rootDir, normalized);
-    let content;
     try {
-      content = await readFile(fullPath, 'utf-8');
+      await unlink(fullPath);
     } catch {
       continue;
     }
 
-    const meta = parseFrontmatter(content);
-    if(meta.owner && meta.owner !== 'custom'){
-      return [{ code: 403, msg: `Cannot delete page: ${file}` }, null];
-    }
-
-    await unlink(fullPath);
     await triggerHook('page:deleted', { file });
   }
 
