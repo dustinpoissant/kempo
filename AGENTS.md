@@ -13,7 +13,7 @@ An init script ran with `npm kempo init` will be used to help setup their projec
 ## Project Structure
  - Frontend code is in the `app-public/` directory
   - This code is copied to the the consumers `public/` directory as a starting point for their project.
-  - Internally we do `npm run dev` that runs this a server in this directory for development.
+  - Internally we run `npm run dev` that runs this a server in this directory for development.
  - Backend utilities are in `server/utils/` directory
  - Middleware is in `middleware/` directory
  - Database schema and connection are in `server/db/` directory
