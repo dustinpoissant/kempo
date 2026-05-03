@@ -27,7 +27,7 @@ export default class InstallExtension extends TableControl {
   render(){
     return html`
       <button class="no-btn icon-btn" title="Install Extension" @click="${this.install}">
-        <k-icon name="download"></k-icon>
+        <k-icon name="deployed_code_update"></k-icon>
       </button>
     `;
   }
