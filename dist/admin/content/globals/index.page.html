@@ -1,7 +1,89 @@
 <!--
 	locked: true
 -->
-<page title="Global Content - Admin"><content><script type="module" src="/kempo-ui/components/Table.js"></script><script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script><script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script><script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script><script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script><script type="module" src="/kempo-ui/components/Icon.js"></script><script type="module" src="/admin/components/TableRowLink.js"></script><script type="module" src="/kempo/components/Permission.js"></script><div class="d-f mb" style="align-items: center; gap: var(--spacer);"><h1 class="flex mb0">Global Content</h1><k-permission has="system:globals:create"><button id="createGlobalBtn" class="primary">Create Global Content</button></k-permission></div><h2>Custom</h2><k-table id="customTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No custom global content has been created yet."><admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link><div slot="top" class="d-f full" style="align-items: center;"><div><k-permission has="system:globals:delete"><k-tc-delete-selected></k-tc-delete-selected></k-permission></div></div><div class="d-f full" style="align-items: center;"><div><k-tc-first-page></k-tc-first-page><k-tc-prev-page></k-tc-prev-page><k-tc-next-page></k-tc-next-page><k-tc-last-page></k-tc-last-page></div><div class="flex"></div><div><k-tc-page-select></k-tc-page-select></div><div class="flex"></div><div><k-tc-page-size></k-tc-page-size></div></div></k-table><h2>Extensions</h2><k-table id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension global content installed."><admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link><div class="d-f full" style="align-items: center;"><div><k-tc-first-page></k-tc-first-page><k-tc-prev-page></k-tc-prev-page><k-tc-next-page></k-tc-next-page><k-tc-last-page></k-tc-last-page></div><div class="flex"></div><div><k-tc-page-select></k-tc-page-select></div><div class="flex"></div><div><k-tc-page-size></k-tc-page-size></div></div></k-table><h2>System</h2><k-table id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system global content found."><admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link><div class="d-f full" style="align-items: center;"><div><k-tc-first-page></k-tc-first-page><k-tc-prev-page></k-tc-prev-page><k-tc-next-page></k-tc-next-page><k-tc-last-page></k-tc-last-page></div><div class="flex"></div><div><k-tc-page-select></k-tc-page-select></div><div class="flex"></div><div><k-tc-page-size></k-tc-page-size></div></div></k-table><script type="module">import { listGlobalContent, listTemplates, createGlobalContent, deleteGlobalContent, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+<page title="Global Content - Admin">
+	<content>
+		<script type="module" src="/kempo-ui/components/Table.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script>
+		<script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script>
+		<script type="module" src="/kempo-ui/components/Icon.js"></script>
+		<script type="module" src="/kempo-ui/components/Combobox.js"></script>
+		<script type="module" src="/admin/components/TableRowLink.js"></script>
+		<script type="module" src="/kempo/components/Permission.js"></script>
+
+		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+			<h1 class="flex mb0">Global Content</h1>
+			<k-permission has="system:globals:create">
+				<button id="createGlobalBtn" class="primary">Create Global Content</button>
+			</k-permission>
+		</div>
+
+		<h2>Custom</h2>
+		<k-table id="customTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No custom global content has been created yet.">
+			<admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link>
+			<div slot="top" class="d-f full" style="align-items: center;">
+				<div>
+					<k-permission has="system:globals:delete">
+						<k-tc-delete-selected></k-tc-delete-selected>
+					</k-permission>
+				</div>
+			</div>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>Extensions</h2>
+		<k-table id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension global content installed.">
+			<admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<h2>System</h2>
+		<k-table id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system global content found.">
+			<admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<k-tc-first-page></k-tc-first-page>
+					<k-tc-prev-page></k-tc-prev-page>
+					<k-tc-next-page></k-tc-next-page>
+					<k-tc-last-page></k-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><k-tc-page-select></k-tc-page-select></div>
+				<div class="flex"></div>
+				<div><k-tc-page-size></k-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<script type="module">
+			import { listGlobalContent, listTemplates, listFragments, createGlobalContent, deleteGlobalContent, getAllCurrentUserPermissions } from '/kempo/sdk.js';
 			import { html } from '/kempo-ui/lit-all.min.js';
 			import Dialog from '/kempo-ui/components/Dialog.js';
 			import Toast from '/kempo-ui/components/Toast.js';
@@ -86,13 +168,18 @@
 			*/
 
 			document.getElementById('createGlobalBtn')?.addEventListener('click', async () => {
-				const [tplError, tplData] = await listTemplates();
+				const [[tplError, tplData], [fragError, fragData]] = await Promise.all([listTemplates(), listFragments()]);
 				const locations = new Set();
 				if(!tplError && tplData?.templates){
 					for(const t of tplData.templates){
 						for(const loc of (t.locations || [])){
 							locations.add(typeof loc === 'string' ? loc : loc.name);
 						}
+					}
+				}
+				if(!fragError && fragData?.fragments){
+					for(const f of fragData.fragments){
+						for(const loc of (f.locations || [])) locations.add(loc);
 					}
 				}
 				const locationOptions = [...locations].sort();
@@ -105,10 +192,7 @@
 						</div>
 						<div class="mb">
 							<label class="d-b mb-sm">Location</label>
-							<input type="text" id="dlg-location" class="full" list="dlg-location-list" placeholder="scripts" required>
-							<datalist id="dlg-location-list">
-								${locationOptions.map(l => html`<option value="${l}">`)}
-							</datalist>
+							<div id="dlg-location-wrap"></div>
 							<p class="mt-sm muted"><small>The template location to inject this content into.</small></p>
 						</div>
 						<div>
@@ -149,4 +233,15 @@
 					},
 					cancelText: 'Cancel'
 				});
-			});</script></content></page>
+
+				const $combobox = document.createElement('k-combobox');
+				$combobox.id = 'dlg-location';
+				$combobox.className = 'full';
+				$combobox.setAttribute('placeholder', 'scripts');
+				$combobox.setOptions(locationOptions);
+				$dialog.querySelector('#dlg-location-wrap').appendChild($combobox);
+			});
+		</script>
+	</content>
+</page>
+

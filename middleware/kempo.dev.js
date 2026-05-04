@@ -5,6 +5,7 @@ import { renderExternalPage } from 'kempo-server/templating';
 import getSession from '../server/utils/auth/getSession.js';
 import currentUserHasPermission from '../server/utils/permissions/currentUserHasPermission.js';
 import { getEnabledExtensions } from '../server/utils/extensions/scopeCache.js';
+import triggerHook from '../server/utils/hooks/triggerHook.js';
 
 const MIME_TYPES = {
   '.js': 'application/javascript',
@@ -274,6 +275,15 @@ export default config => {
         } else if(fileStat?.isFile()){
           const name = filePath.split(/[/\\]/).pop();
           if(name.endsWith('.page.html')){
+            try {
+              await triggerHook('middleware:before_page', { url, query: request.query || {}, params, cookies: request.cookies || {} }, { bail: true });
+            } catch(e) {
+              if(e?.redirect) return response.redirect(e.redirect);
+              const code = e?.code || 404;
+              response.writeHead(code, { 'Content-Type': 'text/html; charset=utf-8' });
+              response.end('');
+              return;
+            }
             const html = await renderExternalPage(filePath, PROJECT_PUBLIC, resolveDir);
             response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
             response.end(html);

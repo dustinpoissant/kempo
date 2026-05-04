@@ -1,7 +1,70 @@
 <!--
 	locked: true
 -->
-<page title="Setting - Admin"><content><script type="module" src="/kempo-ui/components/Icon.js"></script><script type="module" src="/kempo-ui/components/Toggle.js"></script><script type="module" src="/admin/components/Monaco.js"></script><script type="module" src="/kempo/components/Permission.js"></script><div class="mb"><a href="/admin/settings/" class="no-link"><button class="mbh"><k-icon name="arrow" direction="left"></k-icon>Settings</button></a><div class="d-f mb0" style="align-items: center; justify-content: space-between;"><div><h1 class="mb0" id="pageTitle">Setting</h1><p class="tc-muted mb0" id="settingDescription"></p></div><div class="d-f" style="gap: var(--spacer);"><button id="saveBtn" class="primary" disabled="disabled">Save</button> <button id="deleteBtn" class="danger" style="display: none;">Delete</button></div></div></div><div id="loading">Loading setting...</div><div id="notFound" style="display: none;"><p>Setting not found.</p><a href="/admin/settings/">Back to Settings</a></div><div id="content" style="display: none;"><div class="card"><h2>Value</h2><div id="editorContainer" class="mb"></div></div><div class="card"><h2>Metadata</h2><div class="mb"><label class="d-b mbh">Type</label> <select id="typeSelect" class="full"><option value="string">String</option><option value="number">Number</option><option value="boolean">Boolean</option><option value="json">JSON</option></select></div><div class="mb d-f" style="align-items: center; gap: var(--spacer_h);"><k-toggle id="publicToggle"></k-toggle><label>Public (accessible without authentication)</label></div><div class="mb"><label class="d-b mbh">Description</label> <textarea id="descriptionInput" class="full" rows="3"></textarea></div><div class="mb d-f" style="gap: var(--spacer);"><div><span class="tc-muted">Created:</span> <span id="createdAt"></span></div><div><span class="tc-muted">Updated:</span> <span id="updatedAt"></span></div></div></div></div><script type="module">import { getSetting, setSetting, deleteSetting, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+<page title="Setting - Admin">
+<content>
+<script type="module" src="/kempo-ui/components/Icon.js"></script>
+<script type="module" src="/kempo-ui/components/Toggle.js"></script>
+<script type="module" src="/admin/components/Monaco.js"></script>
+<script type="module" src="/kempo/components/Permission.js"></script>
+
+		<div class="mb">
+			<a href="/admin/settings/" class="no-link">
+				<button class="mbh"><k-icon name="arrow" direction="left"></k-icon> Settings</button>
+			</a>
+			<div class="d-f mb0" style="align-items: center; justify-content: space-between;">
+				<div>
+					<h1 class="mb0" id="pageTitle">Setting</h1>
+					<p class="tc-muted mb0" id="settingDescription"></p>
+				</div>
+				<div class="d-f" style="gap: var(--spacer);">
+					<button id="saveBtn" class="primary" disabled>Save</button>
+					<button id="deleteBtn" class="danger" style="display: none;">Delete</button>
+				</div>
+			</div>
+		</div>
+
+		<div id="loading">Loading setting...</div>
+		<div id="notFound" style="display: none;">
+			<p>Setting not found.</p>
+			<a href="/admin/settings/">Back to Settings</a>
+		</div>
+		<div id="content" style="display: none;">
+
+			<div class="card">
+				<h2>Value</h2>
+				<div id="editorContainer" class="mb"></div>
+			</div>
+
+			<div class="card">
+				<h2>Metadata</h2>
+				<div class="mb">
+					<label class="d-b mbh">Type</label>
+					<select id="typeSelect" class="full">
+						<option value="string">String</option>
+						<option value="number">Number</option>
+						<option value="boolean">Boolean</option>
+						<option value="json">JSON</option>
+					</select>
+				</div>
+				<div class="mb d-f" style="align-items: center; gap: var(--spacer_h);">
+					<k-toggle id="publicToggle"></k-toggle>
+					<label>Public (accessible without authentication)</label>
+				</div>
+				<div class="mb">
+					<label class="d-b mbh">Description</label>
+					<textarea id="descriptionInput" class="full" rows="3"></textarea>
+				</div>
+				<div class="mb d-f" style="gap: var(--spacer);">
+					<div><span class="tc-muted">Created:</span> <span id="createdAt"></span></div>
+					<div><span class="tc-muted">Updated:</span> <span id="updatedAt"></span></div>
+				</div>
+			</div>
+
+		</div>
+
+		<script type="module">
+			import { getSetting, setSetting, deleteSetting, getAllCurrentUserPermissions } from '/kempo/sdk.js';
 			import Toast from '/kempo-ui/components/Toast.js';
 			import Dialog from '/kempo-ui/components/Dialog.js';
 
@@ -174,7 +237,9 @@
 							}
 							break;
 					}
+					currentType = newType;
 					await renderEditor(newType, converted);
+					setTimeout(checkDirty, 0);
 				});
 
 				/*
@@ -182,7 +247,7 @@
 				*/
 
 				if(canEditValue){
-					$saveBtn.disabled = false;
+					$saveBtn.disabled = true;
 				} else {
 					$typeSelect.disabled = true;
 					$descriptionInput.readOnly = true;
@@ -197,6 +262,36 @@
 				if(canDelete){
 					$deleteBtn.style.display = '';
 				}
+
+				/*
+					Change detection
+				*/
+
+				const checkDirty = () => {
+					if(!canEditValue){
+						$saveBtn.disabled = true;
+						return;
+					}
+
+					let currentValue;
+					try { currentValue = getValueFromEditor(); }
+					catch(e){ currentValue = undefined; }
+
+					const dirty = currentValue !== settingData.value
+						|| $typeSelect.value !== settingData.type
+						|| $publicToggle.value !== settingData.isPublic
+						|| $descriptionInput.value.trim() !== (settingData.description || '');
+
+					$saveBtn.disabled = !dirty;
+				};
+
+				$typeSelect.addEventListener('change', () => {
+					setTimeout(checkDirty, 0);
+				});
+				$publicToggle.addEventListener('change', checkDirty);
+				$descriptionInput.addEventListener('input', checkDirty);
+				$editorContainer.addEventListener('input', checkDirty, true);
+				$editorContainer.addEventListener('change', checkDirty, true);
 
 				/*
 					Save
@@ -219,14 +314,21 @@
 						isPublic: $publicToggle.value,
 						description: $descriptionInput.value.trim()
 					});
-					$saveBtn.disabled = !canEditValue;
 
 					if(saveError){
 						Toast.error(saveError.msg || 'Failed to save setting');
+						checkDirty();
 						return;
 					}
+
+					settingData.value = value;
+					settingData.type = $typeSelect.value;
+					settingData.isPublic = $publicToggle.value;
+					settingData.description = $descriptionInput.value.trim();
+
 					Toast.success('Setting saved');
 					document.getElementById('updatedAt').textContent = new Date().toLocaleString();
+					checkDirty();
 				};
 
 				$saveBtn.addEventListener('click', save);
@@ -257,4 +359,8 @@
 						}
 					);
 				});
-			}</script></content></page>
+			}
+		</script>
+
+</content>
+</page>

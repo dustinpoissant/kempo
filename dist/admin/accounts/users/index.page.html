@@ -1,7 +1,118 @@
 <!--
 	locked: true
 -->
-<page title="Users - Admin"><content><script type="module" src="/kempo-ui/components/Table.js"></script><script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script><script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script><script type="module" src="/kempo-ui/components/tableControls/Edit.js"></script><script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script><script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script><script type="module" src="/kempo-ui/components/Toggle.js"></script><script type="module" src="/admin/components/TableRowLink.js"></script><script type="module" src="/kempo/components/Permission.js"></script><div class="d-f mb" style="align-items: center;"><h1 class="flex mb0">Users</h1><k-permission has="system:user:create"><button id="createUserBtn" class="primary">Create User</button></k-permission></div><k-table id="usersTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No users found." filtered-placeholder="No users match your search."><admin-table-row-link slot="before" url-pattern="/admin/accounts/users/{id}" field-name="id"></admin-table-row-link><div slot="top" class="d-f full" style="align-items: center;"><div><k-permission has="system:user:delete"><k-tc-delete-selected></k-tc-delete-selected></k-permission></div></div><div class="d-f full" style="align-items: center;"><div><k-tc-first-page></k-tc-first-page><k-tc-prev-page></k-tc-prev-page><k-tc-next-page></k-tc-next-page><k-tc-last-page></k-tc-last-page></div><div class="flex"></div><div><k-tc-page-select></k-tc-page-select></div><div class="flex"></div><div><k-tc-page-size></k-tc-page-size></div></div></k-table><script type="module">import { getUsers, createUser, updateUser, deleteUsers, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+<page title="Users - Admin">
+<content>
+<script
+	type="module"
+	src="/kempo-ui/components/Table.js"
+></script>
+<script
+	type="module"
+	src="/kempo-ui/components/tableControls/FirstPage.js"
+></script>
+<script
+	type="module"
+	src="/kempo-ui/components/tableControls/PrevPage.js"
+></script>
+<script
+	type="module"
+	src="/kempo-ui/components/tableControls/NextPage.js"
+></script>
+<script
+	type="module"
+	src="/kempo-ui/components/tableControls/LastPage.js"
+></script>
+<script
+	type="module"
+	src="/kempo-ui/components/tableControls/PageSelect.js"
+></script>
+<script
+	type="module"
+	src="/kempo-ui/components/tableControls/PageSize.js"
+></script>
+<script
+	type="module"
+	src="/kempo-ui/components/tableControls/Edit.js"
+></script>
+<script
+	type="module"
+	src="/kempo-ui/components/tableControls/DeleteRecord.js"
+></script>
+<script
+	type="module"
+	src="/kempo-ui/components/tableControls/DeleteSelected.js"
+></script>
+<script
+	type="module"
+	src="/kempo-ui/components/Toggle.js"
+></script>
+<script
+	type="module"
+	src="/admin/components/TableRowLink.js"
+></script>
+<script
+	type="module"
+	src="/kempo/components/Permission.js"
+></script>
+<div
+	class="d-f mb"
+	style="align-items: center;"
+>
+	<h1 class="flex mb0">Users</h1>
+	<k-permission has="system:user:create">
+		<button
+			id="createUserBtn"
+			class="primary"
+		>Create User</button>
+	</k-permission>
+</div>
+<k-table
+	id="usersTable"
+	enable-pages
+	page-size="10"
+	page-size-options="[10,25,50]"
+	placeholder="No users found."
+	filtered-placeholder="No users match your search."
+>
+	<admin-table-row-link
+		slot="before"
+		url-pattern="/admin/accounts/users/{id}"
+		field-name="id"
+	></admin-table-row-link>
+	<div
+		slot="top"
+		class="d-f full"
+		style="align-items: center;"
+	>
+		<div>
+			<k-permission has="system:user:delete">
+				<k-tc-delete-selected></k-tc-delete-selected>
+			</k-permission>
+		</div>
+	</div>
+	<div
+		class="d-f full"
+		style="align-items: center;"
+	>
+		<div>
+			<k-tc-first-page></k-tc-first-page>
+			<k-tc-prev-page></k-tc-prev-page>
+			<k-tc-next-page></k-tc-next-page>
+			<k-tc-last-page></k-tc-last-page>
+		</div>
+		<div class="flex"></div>
+		<div>
+			<k-tc-page-select></k-tc-page-select>
+		</div>
+		<div class="flex"></div>
+		<div>
+			<k-tc-page-size></k-tc-page-size>
+		</div>
+	</div>
+</k-table>
+<script type="module">
+	import { getUsers, createUser, updateUser, deleteUsers, getAllCurrentUserPermissions } from '/kempo/sdk.js';
 	import { html } from '/kempo-ui/lit-all.min.js';
 	import Toast from '/kempo-ui/components/Toast.js';
 	import Dialog from '/kempo-ui/components/Dialog.js';
@@ -157,4 +268,7 @@
 				cancelText: 'Cancel'
 			});
 		});
-	}</script></content></page>
+	}
+</script>
+</content>
+</page>

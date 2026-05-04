@@ -5,6 +5,7 @@ import { renderExternalPage } from 'kempo-server/templating';
 import getSession from '../server/utils/auth/getSession.js';
 import currentUserHasPermission from '../server/utils/permissions/currentUserHasPermission.js';
 import { getEnabledExtensions } from '../server/utils/extensions/scopeCache.js';
+import triggerHook from '../server/utils/hooks/triggerHook.js';
 
 const MIME_TYPES = {
   '.js': 'application/javascript',
@@ -49,6 +50,13 @@ const walkDynamic = async (base, segments) => {
       if(result) return result;
     } else if(entry.isFile() && rest.length === 0){
       return { filePath: join(base, head), params: {} };
+    }
+  }
+  if(rest.length === 0){
+    for(const entry of entries){
+      if(entry.isFile() && entry.name === `${head}.page.html`){
+        return { filePath: join(base, entry.name), params: {} };
+      }
     }
   }
   for(const entry of entries){
@@ -276,6 +284,15 @@ export default config => {
         } else if(fileStat?.isFile()){
           const name = filePath.split(/[/\\]/).pop();
           if(name.endsWith('.page.html')){
+            try {
+              await triggerHook('middleware:before_page', { url, query: request.query || {}, params, cookies: request.cookies || {} }, { bail: true });
+            } catch(e) {
+              if(e?.redirect) return response.redirect(e.redirect);
+              const code = e?.code || 404;
+              response.writeHead(code, { 'Content-Type': 'text/html; charset=utf-8' });
+              response.end('');
+              return;
+            }
             const html = await renderExternalPage(filePath, PROJECT_PUBLIC, resolveDir);
             response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
             response.end(html);
@@ -292,7 +309,39 @@ export default config => {
         }
       }
 
-      return next();
+      // File not found in extension's public dir — fall through to consumer page routing
+      break;
+    }
+
+    /*
+      Consumer public page routing: intercept .page.html before kempo-server SSR handles them
+    */
+    {
+      const resolveDir = buildResolveDir(PROJECT_PUBLIC, url);
+      const urlPath = url.replace(/\/+$/, '');
+
+      // Mirror kempo-server's SSR probe: url.page.html and url/index.page.html
+      const candidates = [
+        join(PROJECT_PUBLIC, urlPath + '.page.html'),
+        join(PROJECT_PUBLIC, urlPath, 'index.page.html'),
+      ];
+
+      for(const pageFilePath of candidates){
+        try { await stat(pageFilePath); } catch { continue; }
+        try {
+          await triggerHook('middleware:before_page', { url, query: request.query || {}, params: {}, cookies: request.cookies || {} }, { bail: true });
+        } catch(e) {
+          if(e?.redirect) return response.redirect(e.redirect);
+          const code = e?.code || 404;
+          response.writeHead(code, { 'Content-Type': 'text/html; charset=utf-8' });
+          response.end('');
+          return;
+        }
+        const html = await renderExternalPage(pageFilePath, PROJECT_PUBLIC, resolveDir);
+        response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+        response.end(html);
+        return;
+      }
     }
 
     next();

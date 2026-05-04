@@ -1,28 +1,21 @@
 import db from '../../db/index.js';
 import { hook } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
-import { createRequire } from 'module';
-import { dirname, join } from 'path';
+import { join } from 'path';
+import { pathToFileURL } from 'url';
 
 const handlerCache = new Map();
 
 export const clearHandlerCache = () => handlerCache.clear();
 
-const requireFromProject = createRequire(join(process.cwd(), 'package.json'));
-
 const resolveHandler = (owner, callback) => {
   if(callback.startsWith('./') || callback.startsWith('../')){
-    try {
-      const pkgPath = requireFromProject.resolve(`${owner}/package.json`);
-      return join(dirname(pkgPath), callback);
-    } catch {
-      return null;
-    }
+    return join(process.cwd(), 'node_modules', owner, callback);
   }
   return callback;
 };
 
-export default async (event, data = {}) => {
+export default async (event, data = {}, { bail = false } = {}) => {
   if(!event){
     return [{ code: 400, msg: 'Event is required' }, null];
   }
@@ -38,7 +31,7 @@ export default async (event, data = {}) => {
       let handler = handlerCache.get(handlerPath);
       if(!handler){
         try {
-          const mod = await import(handlerPath);
+          const mod = await import(pathToFileURL(handlerPath).href);
           handler = mod.default || mod;
           handlerCache.set(handlerPath, handler);
         } catch {
@@ -50,12 +43,14 @@ export default async (event, data = {}) => {
         const result = await handler(data);
         results.push({ hookId: h.id, owner: h.owner, result });
       } catch(err) {
+        if(bail) throw err;
         results.push({ hookId: h.id, owner: h.owner, error: err.message });
       }
     }
 
     return [null, { results }];
   } catch(error) {
+    if(bail) throw error;
     return [{ code: 500, msg: 'Failed to trigger hooks' }, null];
   }
 };

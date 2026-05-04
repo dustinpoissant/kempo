@@ -144,8 +144,11 @@ export const deleteSetting = async (owner, name) =>
   Pages
 */
 
-export const listPages = async () =>
-  get(`${API_BASE}/pages`);
+export const listPages = async ({ owner, showHidden, offset, limit } = {}) =>
+  get(`${API_BASE}/pages`, { owner, showHidden, offset, limit });
+
+export const rescanPages = async () =>
+  post(`${API_BASE}/pages/rescan`, {});
 
 export const listTemplates = async () =>
   get(`${API_BASE}/templates`);

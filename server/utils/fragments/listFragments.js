@@ -3,6 +3,14 @@ import { relative } from 'path';
 import scanDir from '../fs/scanDir.js';
 import parseFrontmatter from '../fs/parseFrontmatter.js';
 
+const parseLocations = content => {
+  const locations = [];
+  const regex = /<location\s[^/]*?name="([^"]+)"[^/]*?\/>/g;
+  let match;
+  while((match = regex.exec(content)) !== null) locations.push(match[1]);
+  return locations;
+};
+
 export default async ({ rootDir }) => {
   if(!rootDir){
     return [{ code: 400, msg: 'Root directory is required' }, null];
@@ -24,7 +32,8 @@ export default async ({ rootDir }) => {
       disabled: isDisabled,
       author: meta.author || '',
       createdAt: meta.created || '',
-      updatedAt: meta.updated || ''
+      updatedAt: meta.updated || '',
+      locations: parseLocations(content)
     };
   });
 

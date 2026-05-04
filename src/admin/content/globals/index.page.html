@@ -13,6 +13,7 @@
 		<script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script>
 		<script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script>
 		<script type="module" src="/kempo-ui/components/Icon.js"></script>
+		<script type="module" src="/kempo-ui/components/Combobox.js"></script>
 		<script type="module" src="/admin/components/TableRowLink.js"></script>
 		<script type="module" src="/kempo/components/Permission.js"></script>
 
@@ -82,7 +83,7 @@
 		</k-table>
 
 		<script type="module">
-			import { listGlobalContent, listTemplates, createGlobalContent, deleteGlobalContent, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+			import { listGlobalContent, listTemplates, listFragments, createGlobalContent, deleteGlobalContent, getAllCurrentUserPermissions } from '/kempo/sdk.js';
 			import { html } from '/kempo-ui/lit-all.min.js';
 			import Dialog from '/kempo-ui/components/Dialog.js';
 			import Toast from '/kempo-ui/components/Toast.js';
@@ -167,13 +168,18 @@
 			*/
 
 			document.getElementById('createGlobalBtn')?.addEventListener('click', async () => {
-				const [tplError, tplData] = await listTemplates();
+				const [[tplError, tplData], [fragError, fragData]] = await Promise.all([listTemplates(), listFragments()]);
 				const locations = new Set();
 				if(!tplError && tplData?.templates){
 					for(const t of tplData.templates){
 						for(const loc of (t.locations || [])){
 							locations.add(typeof loc === 'string' ? loc : loc.name);
 						}
+					}
+				}
+				if(!fragError && fragData?.fragments){
+					for(const f of fragData.fragments){
+						for(const loc of (f.locations || [])) locations.add(loc);
 					}
 				}
 				const locationOptions = [...locations].sort();
@@ -186,10 +192,7 @@
 						</div>
 						<div class="mb">
 							<label class="d-b mb-sm">Location</label>
-							<input type="text" id="dlg-location" class="full" list="dlg-location-list" placeholder="scripts" required>
-							<datalist id="dlg-location-list">
-								${locationOptions.map(l => html`<option value="${l}">`)}
-							</datalist>
+							<div id="dlg-location-wrap"></div>
 							<p class="mt-sm muted"><small>The template location to inject this content into.</small></p>
 						</div>
 						<div>
@@ -230,6 +233,13 @@
 					},
 					cancelText: 'Cancel'
 				});
+
+				const $combobox = document.createElement('k-combobox');
+				$combobox.id = 'dlg-location';
+				$combobox.className = 'full';
+				$combobox.setAttribute('placeholder', 'scripts');
+				$combobox.setOptions(locationOptions);
+				$dialog.querySelector('#dlg-location-wrap').appendChild($combobox);
 			});
 		</script>
 	</content>

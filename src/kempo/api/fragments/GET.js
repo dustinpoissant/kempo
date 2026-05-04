@@ -1,8 +1,8 @@
-import { resolve } from 'path';
+import { resolve, join } from 'path';
 import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
 import listFragments from '../../../../server/utils/fragments/listFragments.js';
 
-const rootDir = resolve(import.meta.dirname, '../../../../app-public');
+const rootDir = import.meta.dirname.includes('node_modules') ? join(process.cwd(), 'public') : resolve(import.meta.dirname, '../../../../app-public');
 
 export default async (request, response) => {
 	const token = request.cookies.session_token;

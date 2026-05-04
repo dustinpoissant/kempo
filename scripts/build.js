@@ -171,7 +171,7 @@ for(const srcFile of files){
   try {
     if(ext === '.js'){
       await processJs(srcFile, destFile);
-    } else if(ext === '.html'){
+    } else if(ext === '.html' && !relPath.startsWith('admin')){
       await processHtml(srcFile, destFile);
     } else if(ext === '.json'){
       processJson(srcFile, destFile);

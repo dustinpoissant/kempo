@@ -51,18 +51,19 @@
 			type="module"
 			src="/kempo/components/Permission.js"
 		></script>
-
-		<div
-			class="d-f mb"
-			style="align-items: center; gap: var(--spacer);"
-		>
+		<div class="d-f mb">
 			<h1 class="flex mb0">Pages</h1>
-			<k-permission has="system:pages:create">
-				<button
-					id="createPageBtn"
-					class="primary"
-				>Create Page</button>
-			</k-permission>
+			<div class="flex"></div>
+			<div>
+				<span id="scanInfo" class="muted"></span>
+				<button id="rescanBtn">Rescan</button>
+				<k-permission has="system:pages:create">
+					<button
+						id="createPageBtn"
+						class="primary"
+					>Create Page</button>
+				</k-permission>
+			</div>
 		</div>
 
 		<h2>Custom Pages</h2>
@@ -167,7 +168,7 @@
 		</k-table>
 
 		<script type="module">
-			import { listPages, listTemplates, listDirectories, createPage, deletePages, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+			import { listPages, rescanPages, listTemplates, listDirectories, createPage, deletePages, getAllCurrentUserPermissions } from '/kempo/sdk.js';
 			import { html } from '/kempo-ui/lit-all.min.js';
 			import Dialog from '/kempo-ui/components/Dialog.js';
 			import Toast from '/kempo-ui/components/Toast.js';
@@ -178,7 +179,7 @@
 			const myPerms = new Set(permData?.permissions ?? []);
 
 			const fields = [
-				{ name: 'lockedBadge', label: '', size: 40, formatter: v => v },
+				{ name: 'locked', label: '', size: 40, calculator: r => r.locked ? html`<k-icon name="lock"></k-icon>` : html`` },
 				{ name: 'name', label: 'Name', size: 200 },
 				{ name: 'url', label: 'URL', size: 250 },
 				{ name: 'author', label: 'Author', size: 150 },
@@ -196,34 +197,61 @@
 			const $extensionTable = document.getElementById('extensionTable');
 			const $systemTable = document.getElementById('systemTable');
 
-			const loadPages = async () => {
-				const [error, data] = await listPages();
+			const $scanInfo = document.getElementById('scanInfo');
+			const $rescanBtn = document.getElementById('rescanBtn');
+			let scannedAt = null;
+
+			const formatAge = ts => {
+				const s = Math.floor((Date.now() - ts) / 1000);
+				if(s < 60) return `${s}s ago`;
+				if(s < 3600) return `${Math.floor(s / 60)}m ago`;
+				return `${Math.floor(s / 3600)}h ago`;
+			};
+
+			const updateScanInfo = () => {
+				$scanInfo.textContent = scannedAt ? `Scanned ${formatAge(scannedAt)}` : '';
+			};
+
+			setInterval(updateScanInfo, 1000);
+
+			const toEditPath = p => ({ ...p, editPath: p.file.replace(/\.page\.html$/, '') });
+
+			const initTable = async ($table, tableFields, owner) => {
+				const [error, data] = await listPages({ owner, showHidden: false, offset: 0, limit: 25 });
 				if(error){
 					Toast.error(error.msg || 'Failed to load pages');
+					return null;
+				}
+				$table.setData({ records: data.pages.map(toEditPath), fields: tableFields });
+				if(data.total > data.pages.length){
+					$table.setupFetchRecords(data.total, async (start, count) => {
+						const [, d] = await listPages({ owner, showHidden: false, offset: start, limit: count });
+						return (d?.pages || []).map(toEditPath);
+					});
+				}
+				return data.scannedAt;
+			};
+
+			const loadPages = async () => {
+				const results = await Promise.all([
+					initTable($customTable, fields, 'custom'),
+					initTable($extensionTable, extensionFields, 'extension'),
+					initTable($systemTable, fields, 'system')
+				]);
+				scannedAt = results.find(r => r != null) ?? null;
+				updateScanInfo();
+			};
+
+			$rescanBtn.addEventListener('click', async () => {
+				$rescanBtn.disabled = true;
+				const [error] = await rescanPages();
+				if(error){
+					$rescanBtn.disabled = false;
+					Toast.error(error.msg || 'Rescan failed');
 					return;
 				}
-				const toEditPath = p => ({ ...p, editPath: p.file.replace(/\.page\.html$/, ''), lockedBadge: p.locked ? '<k-icon name="lock"></k-icon>' : '' });
-				const sortPages = pages => pages.slice().sort((a, b) => {
-					const aPath = a.file.replace(/\.page\.html$/, '');
-					const bPath = b.file.replace(/\.page\.html$/, '');
-					const aDir = aPath.includes('/') ? aPath.split('/').slice(0, -1).join('/') : '';
-					const bDir = bPath.includes('/') ? bPath.split('/').slice(0, -1).join('/') : '';
-					if(aPath === 'index' || aPath === '') return -1;
-					if(bPath === 'index' || bPath === '') return 1;
-					if(aDir !== bDir){
-						if(!aDir) return -1;
-						if(!bDir) return 1;
-						return aDir.localeCompare(bDir);
-					}
-					return aPath.localeCompare(bPath);
-				});
-				const custom = sortPages(data.pages.filter(p => p.owner === 'custom').map(toEditPath));
-				const extension = sortPages(data.pages.filter(p => p.owner !== 'custom' && p.owner !== 'system').map(toEditPath));
-				const system = sortPages(data.pages.filter(p => p.owner === 'system').map(toEditPath));
-				$customTable.setData({ records: custom, fields });
-				$extensionTable.setData({ records: extension, fields: extensionFields });
-				$systemTable.setData({ records: system, fields });
-			};
+				window.location.reload();
+			});
 
 			if(myPerms.has('system:pages:delete')){
 				$customTable.setAttribute('request-delete', '');

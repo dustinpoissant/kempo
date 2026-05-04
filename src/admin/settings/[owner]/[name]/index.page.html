@@ -237,7 +237,9 @@
 							}
 							break;
 					}
+					currentType = newType;
 					await renderEditor(newType, converted);
+					setTimeout(checkDirty, 0);
 				});
 
 				/*
@@ -245,7 +247,7 @@
 				*/
 
 				if(canEditValue){
-					$saveBtn.disabled = false;
+					$saveBtn.disabled = true;
 				} else {
 					$typeSelect.disabled = true;
 					$descriptionInput.readOnly = true;
@@ -260,6 +262,36 @@
 				if(canDelete){
 					$deleteBtn.style.display = '';
 				}
+
+				/*
+					Change detection
+				*/
+
+				const checkDirty = () => {
+					if(!canEditValue){
+						$saveBtn.disabled = true;
+						return;
+					}
+
+					let currentValue;
+					try { currentValue = getValueFromEditor(); }
+					catch(e){ currentValue = undefined; }
+
+					const dirty = currentValue !== settingData.value
+						|| $typeSelect.value !== settingData.type
+						|| $publicToggle.value !== settingData.isPublic
+						|| $descriptionInput.value.trim() !== (settingData.description || '');
+
+					$saveBtn.disabled = !dirty;
+				};
+
+				$typeSelect.addEventListener('change', () => {
+					setTimeout(checkDirty, 0);
+				});
+				$publicToggle.addEventListener('change', checkDirty);
+				$descriptionInput.addEventListener('input', checkDirty);
+				$editorContainer.addEventListener('input', checkDirty, true);
+				$editorContainer.addEventListener('change', checkDirty, true);
 
 				/*
 					Save
@@ -282,14 +314,21 @@
 						isPublic: $publicToggle.value,
 						description: $descriptionInput.value.trim()
 					});
-					$saveBtn.disabled = !canEditValue;
 
 					if(saveError){
 						Toast.error(saveError.msg || 'Failed to save setting');
+						checkDirty();
 						return;
 					}
+
+					settingData.value = value;
+					settingData.type = $typeSelect.value;
+					settingData.isPublic = $publicToggle.value;
+					settingData.description = $descriptionInput.value.trim();
+
 					Toast.success('Setting saved');
 					document.getElementById('updatedAt').textContent = new Date().toLocaleString();
+					checkDirty();
 				};
 
 				$saveBtn.addEventListener('click', save);

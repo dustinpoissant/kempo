@@ -1,7 +1,108 @@
 <!--
 	locked: true
 -->
-<page title="User - Admin"><content><script type="module" src="/kempo-ui/components/Toggle.js"></script><script type="module" src="/kempo-ui/components/Icon.js"></script><script type="module" src="/kempo-ui/components/Table.js"></script><script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script><script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script><script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script><script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script><script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script><script type="module" src="/admin/components/GroupDeleteSelected.js"></script><script type="module" src="/admin/components/AddGroupControl.js"></script><script type="module" src="/admin/components/ClearExpiredSessionsControl.js"></script><script type="module" src="/admin/components/TableRowLink.js"></script><div class="d-f"><div><a href="/admin/accounts/users" class="no-link mb"><button class="mbh"><k-icon name="arrow" direction="left"></k-icon>Users</button></a></div><div class="flex"></div><div><button id="deleteUserBtn" class="danger mb mrh" style="display:none;">Delete User</button> <button id="saveBtn" class="primary mb" disabled="disabled" style="display:none;"><k-icon name="save"></k-icon>Save</button></div></div><h1 id="pageTitle">User</h1><div id="loading">Loading user...</div><div id="notFound" style="display: none;"><p>User not found.</p><a href="/admin/accounts/users">Back to Users</a></div><div id="content" style="display: none;"><div class="card"><h2>Information</h2><div class="d-f mb" style="align-items: center; gap: var(--spacer);"><label for="userName" style="min-width: 120px;"><strong>Name</strong></label> <input id="userName" style="max-width: 400px;"></div><div class="d-f mb" style="align-items: center; gap: var(--spacer);"><label for="userEmail" style="min-width: 120px;"><strong>Email</strong></label> <input type="email" id="userEmail" style="max-width: 400px;"></div><div class="d-f mb" style="align-items: center; gap: var(--spacer);"><label style="min-width: 120px;"><strong>Verified</strong></label><k-toggle id="emailVerified"></k-toggle></div><div class="d-f mb" style="align-items: center; gap: var(--spacer);"><label style="min-width: 120px;"><strong>Created</strong></label> <span id="userCreatedAt"></span></div></div><div class="card"><h2>Groups</h2><k-table id="groupsTable" request-delete placeholder="Not a member of any groups."><admin-table-row-link slot="before" url-pattern="/admin/accounts/groups/{name}" field-name="name"></admin-table-row-link><k-tc-delete-record slot="after"></k-tc-delete-record><div slot="top" id="groupsTableTop" class="d-f full" style="display:none; align-items: center;"><div><admin-group-delete-selected></admin-group-delete-selected></div><div class="flex"></div><div><admin-add-group-control id="addGroupBtn"></admin-add-group-control></div></div></k-table></div><div class="card"><h2>Sessions</h2><k-table id="sessionsTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No active sessions."><k-tc-delete-record slot="after"></k-tc-delete-record><div slot="top" class="d-f full" style="align-items: center;"><div><k-tc-delete-selected></k-tc-delete-selected></div><div class="flex"></div><div><admin-clear-expired-sessions id="clearExpiredBtn" style="display:none;"></admin-clear-expired-sessions></div></div><div class="d-f full" style="align-items: center;"><div><k-tc-first-page></k-tc-first-page><k-tc-prev-page></k-tc-prev-page><k-tc-next-page></k-tc-next-page><k-tc-last-page></k-tc-last-page></div><div class="flex"></div><div><k-tc-page-select></k-tc-page-select></div><div class="flex"></div><div><k-tc-page-size></k-tc-page-size></div></div></k-table></div></div><script type="module">import {
+<page title="User - Admin">
+<content>
+<script type="module" src="/kempo-ui/components/Toggle.js"></script>
+<script type="module" src="/kempo-ui/components/Icon.js"></script>
+<script type="module" src="/kempo-ui/components/Table.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script>
+<script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script>
+<script type="module" src="/admin/components/GroupDeleteSelected.js"></script>
+<script type="module" src="/admin/components/AddGroupControl.js"></script>
+<script type="module" src="/admin/components/ClearExpiredSessionsControl.js"></script>
+<script type="module" src="/admin/components/TableRowLink.js"></script>
+		<div class="d-f">
+			<div>
+				<a href="/admin/accounts/users" class="no-link mb">
+					<button class="mbh"><k-icon name="arrow" direction="left"></k-icon> Users</button>
+				</a>
+			</div>
+			<div class="flex"></div>
+			<div>
+				<button id="deleteUserBtn" class="danger mb mrh" style="display:none;">Delete User</button>
+				<button id="saveBtn" class="primary mb" disabled style="display:none;"><k-icon name="save"></k-icon> Save</button>
+			</div>
+		</div>
+		<h1 id="pageTitle">User</h1>
+
+		<div id="loading">Loading user...</div>
+		<div id="notFound" style="display: none;">
+			<p>User not found.</p>
+			<a href="/admin/accounts/users">Back to Users</a>
+		</div>
+		<div id="content" style="display: none;">
+
+			<!-- User Information -->
+			<div class="card">
+				<h2>Information</h2>
+				<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+					<label for="userName" style="min-width: 120px;"><strong>Name</strong></label>
+					<input type="text" id="userName" style="max-width: 400px;">
+				</div>
+				<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+					<label for="userEmail" style="min-width: 120px;"><strong>Email</strong></label>
+					<input type="email" id="userEmail" style="max-width: 400px;">
+				</div>
+				<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+					<label style="min-width: 120px;"><strong>Verified</strong></label>
+					<k-toggle id="emailVerified"></k-toggle>
+				</div>
+				<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+					<label style="min-width: 120px;"><strong>Created</strong></label>
+					<span id="userCreatedAt"></span>
+				</div>
+			</div>
+
+			<!-- Groups -->
+			<div class="card">
+				<h2>Groups</h2>
+				<k-table id="groupsTable" request-delete placeholder="Not a member of any groups.">
+					<admin-table-row-link slot="before" url-pattern="/admin/accounts/groups/{name}" field-name="name"></admin-table-row-link>
+					<k-tc-delete-record slot="after"></k-tc-delete-record>
+					<div slot="top" id="groupsTableTop" class="d-f full" style="display:none; align-items: center;">
+						<div><admin-group-delete-selected></admin-group-delete-selected></div>
+						<div class="flex"></div>
+						<div><admin-add-group-control id="addGroupBtn"></admin-add-group-control></div>
+					</div>
+				</k-table>
+			</div>
+
+			<!-- Sessions -->
+			<div class="card">
+				<h2>Sessions</h2>
+				<k-table id="sessionsTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No active sessions.">
+					<k-tc-delete-record slot="after"></k-tc-delete-record>
+					<div slot="top" class="d-f full" style="align-items: center;">
+						<div><k-tc-delete-selected></k-tc-delete-selected></div>
+						<div class="flex"></div>
+						<div><admin-clear-expired-sessions id="clearExpiredBtn" style="display:none;"></admin-clear-expired-sessions></div>
+					</div>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<k-tc-first-page></k-tc-first-page>
+							<k-tc-prev-page></k-tc-prev-page>
+							<k-tc-next-page></k-tc-next-page>
+							<k-tc-last-page></k-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><k-tc-page-select></k-tc-page-select></div>
+						<div class="flex"></div>
+						<div><k-tc-page-size></k-tc-page-size></div>
+					</div>
+				</k-table>
+			</div>
+
+		</div>
+
+		<script type="module">
+			import {
 				getSession, getUser, updateUser, deleteUsers,
 				getUserSessions, deleteUserSession, deleteExpiredUserSessions,
 				getUserGroups, addUserToGroup, removeUserFromGroup,
@@ -105,7 +206,7 @@
 					$userEmail.addEventListener('input', checkDirty);
 					$emailVerified.addEventListener('change', checkDirty);
 
-					$saveBtn.addEventListener('click', async () => {
+					const handleSave = async () => {
 						const [error] = await updateUser({
 							id: userData.id,
 							name: $userName.value,
@@ -121,6 +222,15 @@
 						document.title = `${$userName.value} - Admin`;
 						$saveBtn.disabled = true;
 						Toast.success('User saved');
+					};
+
+					$saveBtn.addEventListener('click', handleSave);
+					
+					document.addEventListener('keydown', e => {
+						if((e.ctrlKey || e.metaKey) && e.key === 's'){
+							e.preventDefault();
+							if(!$saveBtn.disabled) handleSave();
+						}
 					});
 				}
 
@@ -311,4 +421,8 @@
 				};
 
 				loadSessions();
-			}</script></content></page>
+			}
+		</script>
+
+</content>
+</page>

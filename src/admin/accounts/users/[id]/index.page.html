@@ -206,7 +206,7 @@
 					$userEmail.addEventListener('input', checkDirty);
 					$emailVerified.addEventListener('change', checkDirty);
 
-					$saveBtn.addEventListener('click', async () => {
+					const handleSave = async () => {
 						const [error] = await updateUser({
 							id: userData.id,
 							name: $userName.value,
@@ -222,6 +222,15 @@
 						document.title = `${$userName.value} - Admin`;
 						$saveBtn.disabled = true;
 						Toast.success('User saved');
+					};
+
+					$saveBtn.addEventListener('click', handleSave);
+					
+					document.addEventListener('keydown', e => {
+						if((e.ctrlKey || e.metaKey) && e.key === 's'){
+							e.preventDefault();
+							if(!$saveBtn.disabled) handleSave();
+						}
 					});
 				}
 

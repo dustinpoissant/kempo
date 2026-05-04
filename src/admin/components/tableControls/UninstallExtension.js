@@ -27,7 +27,7 @@ export default class UninstallExtension extends TableControl {
   render(){
     return html`
       <button class="no-btn icon-btn" title="Uninstall Extension" @click="${this.uninstall}">
-        <k-icon name="delete"></k-icon>
+        <k-icon name="extension_remove"></k-icon>
       </button>
     `;
   }

@@ -4,7 +4,7 @@
   "type": "module",
   "description": "A fullstack CMS framework for creating websites with user authentication",
   "scripts": {
-    "dev": "node dev.mjs",
+    "dev": "node scripts/dev.js",
     "build": "node scripts/build.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -49,7 +49,7 @@
     "kempo": "^4.2.16",
     "kempo-server": "^3.1.0",
     "kempo-testing-framework": "^1.4.6",
-    "kempo-ui": "^0.4.6",
+    "kempo-ui": "^0.4.17",
     "lexical": "^0.42.0",
     "monaco-editor": "^0.55.1",
     "postgres": "^3.4.7",
