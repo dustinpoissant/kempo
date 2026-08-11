@@ -1,0 +1,55 @@
+name: Run Unit Tests
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  test:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    steps:
+      # kempo-server and kempo-ui are declared as `file:../<name>` devDependencies so local
+      # development resolves them from sibling checkouts. npm happily creates a dangling symlink
+      # when that path is absent and still exits 0, so without checking the siblings out here the
+      # install would appear to succeed and then fail later with MODULE_NOT_FOUND. Checking them
+      # out also means CI tests the combination that is actually being developed, rather than the
+      # last published release — most of the breakage in this suite is cross-repo.
+      - uses: actions/checkout@v4
+        with:
+          path: kempo
+
+      - uses: actions/checkout@v4
+        with:
+          repository: dustinpoissant/kempo-server
+          path: kempo-server
+
+      - uses: actions/checkout@v4
+        with:
+          repository: dustinpoissant/kempo-ui
+          path: kempo-ui
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      # `npm ci` requires the lockfile to match, and the lockfile records the file: links by path.
+      - name: Install
+        run: npm install --no-audit --no-fund
+        working-directory: kempo
+
+      - name: Build
+        run: npm run build
+        working-directory: kempo
+
+      # No database or RESEND_API_KEY: the postgres client connects lazily and the Resend client is
+      # constructed on first send, so the whole module graph loads without either configured.
+      - name: Run Unit Tests
+        run: npm test
+        working-directory: kempo
