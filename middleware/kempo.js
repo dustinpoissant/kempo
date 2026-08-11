@@ -124,7 +124,7 @@ const renderGuardedPage = async (pageFilePath, request, response, rootDir, resol
   Admin globals authored through the admin UI live in the consumer's project instead, since those
   are genuinely mutable and cannot live inside a package.
 */
-const adminGlobalDirs = async () => [
+export const adminGlobalDirs = async () => [
   ADMIN_GLOBALS_DIR,
   ...(await getEnabledExtensions()).map(ext => join(NODE_MODULES, ext.name, 'admin')),
 ];

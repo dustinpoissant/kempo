@@ -1,0 +1,31 @@
+{
+  "schema": "./server/db/schema.js",
+  "hooks": {
+    "lifecycle-fixture:ping": "./hooks/ping.js"
+  },
+  "permissions": [
+    {
+      "name": "lifecycle-fixture:read",
+      "description": "Fixture read permission"
+    },
+    {
+      "name": "lifecycle-fixture:write",
+      "description": "Fixture write permission"
+    }
+  ],
+  "settings": [
+    {
+      "name": "fixture_setting",
+      "value": "42",
+      "type": "number",
+      "description": "Fixture setting"
+    }
+  ],
+  "groups": [
+    {
+      "name": "lifecycle-fixture:members",
+      "description": "Fixture group",
+      "permissions": ["lifecycle-fixture:read"]
+    }
+  ]
+}

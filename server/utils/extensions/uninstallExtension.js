@@ -1,6 +1,6 @@
 import db from '../../db/index.js';
-import { extension, hook, permission, setting, group } from '../../db/schema.js';
-import { eq, inArray } from 'drizzle-orm';
+import { extension, hook, permission, setting, group, groupPermission, userGroup } from '../../db/schema.js';
+import { eq, inArray, like } from 'drizzle-orm';
 import { join } from 'path';
 import { pathToFileURL } from 'url';
 import { sql } from 'drizzle-orm';
@@ -48,25 +48,39 @@ export default async ({ name }) => {
   }
 
   /*
-    Remove declarative groups
+    Remove declarative groups and permissions.
+
+    userGroup and groupPermission both reference group.name, and groupPermission also references
+    permission.name, none of them cascading. The membership and grant rows therefore have to go
+    first or these deletes fail the foreign key — which they used to do silently, leaving every
+    uninstalled extension's groups and permissions behind forever.
   */
   const groupNames = (kempoConfig.groups || []).map(g => g.name);
-  if(groupNames.length){
-    await db.delete(group).where(inArray(group.name, groupNames)).catch(() => {});
-  }
-
-  /*
-    Remove declarative permissions
-  */
   const permNames = (kempoConfig.permissions || []).map(p => p.name);
-  if(permNames.length){
-    await db.delete(permission).where(inArray(permission.name, permNames)).catch(() => {});
+
+  try {
+    if(groupNames.length){
+      await db.delete(userGroup).where(inArray(userGroup.groupName, groupNames));
+      await db.delete(groupPermission).where(inArray(groupPermission.groupName, groupNames));
+    }
+    if(permNames.length){
+      await db.delete(groupPermission).where(inArray(groupPermission.permissionName, permNames));
+    }
+    if(groupNames.length){
+      await db.delete(group).where(inArray(group.name, groupNames));
+    }
+    if(permNames.length){
+      await db.delete(permission).where(inArray(permission.name, permNames));
+    }
+  } catch(error) {
+    return [{ code: 500, msg: `Failed to remove extension groups and permissions: ${error.message}` }, null];
   }
 
   /*
-    Remove declarative settings (owner-namespaced: "extname:settingname")
+    Remove declarative settings. Ownership is encoded in the name as "extname:settingname" — the
+    setting table has no owner column, so these have to be matched by prefix.
   */
-  await db.delete(setting).where(eq(setting.owner, name)).catch(() => {});
+  await db.delete(setting).where(like(setting.name, `${name}:%`));
 
   try {
     await db.delete(hook).where(eq(hook.owner, name));
