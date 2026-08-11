@@ -1,0 +1,2 @@
+import s from"../../../../../../server/utils/users/getUserById.js";export default async(r,e)=>{const{userid:t}=r.params,[a,o]=await s(t);if(a)return e.status(a.code).json({error:a.msg});e.json({name:o.name})};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\user\[userid]\name\GET.js.map

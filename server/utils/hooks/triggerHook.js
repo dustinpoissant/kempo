@@ -34,7 +34,14 @@ export default async (event, data = {}, { bail = false } = {}) => {
           const mod = await import(pathToFileURL(handlerPath).href);
           handler = mod.default || mod;
           handlerCache.set(handlerPath, handler);
-        } catch {
+        } catch(err) {
+          /*
+            Never fail silently: a hook that cannot load is indistinguishable from one that
+            allowed the request. For bailing events (guards) that would fail open, so rethrow.
+          */
+          console.error(`[kempo] Hook handler failed to load for "${event}" (${h.owner}): ${err.message}`);
+          if(bail) throw err;
+          results.push({ hookId: h.id, owner: h.owner, error: err.message });
           continue;
         }
       }

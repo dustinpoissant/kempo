@@ -50,7 +50,7 @@ This project maintains strict boundaries between the frontend, HTTP layer, busin
 - Access environment variables or secrets
 - Execute server-side code
 
-#### HTTP Layer (`public/kempo/api/**/[METHOD].js`, `middleware/`)
+#### HTTP Layer (`src/kempo/api/**/[METHOD].js`, `middleware/`)
 **Can:**
 - Access `request.headers`, `request.cookies`, `request.body`
 - Extract authentication tokens from cookies or Authorization headers
@@ -125,7 +125,7 @@ const response = await fetch('/kempo/api/auth/login', {
 });
 ```
 
-**HTTP Layer** (`public/kempo/api/auth/login/POST.js`):
+**HTTP Layer** (`src/kempo/api/auth/login/POST.js`):
 ```javascript
 import loginEmail from '../../../../../server/utils/auth/loginEmail.js';
 
@@ -277,7 +277,7 @@ export default async ({ userId }) => {
 };
 ```
 
-**HTTP layer** (`public/kempo/api/user/GET.js`):
+**HTTP layer** (`src/kempo/api/user/GET.js`):
 ```javascript
 import getUser from '../../../../server/utils/users/getUser.js';
 

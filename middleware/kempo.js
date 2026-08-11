@@ -77,15 +77,39 @@ const executeRouteFile = async (filePath, request, response, params = {}) => {
   return true;
 };
 
+/*
+  Every .page.html render must go through here. The `middleware:before_page` hook lets extensions
+  veto a render (throw `{code}` to send that status, or `{redirect}` to redirect), which is how
+  extensions guard their own private pages. Rendering a page anywhere without this helper silently
+  bypasses those guards.
+*/
+const renderGuardedPage = async (pageFilePath, request, response, rootDir, resolveDir, params = {}) => {
+  try {
+    await triggerHook('middleware:before_page', {
+      url: request.url.split('?')[0],
+      query: request.query || {},
+      params,
+      cookies: request.cookies || {},
+    }, { bail: true });
+  } catch(e) {
+    if(e?.redirect) return response.redirect(e.redirect);
+    response.writeHead(e?.code || 404, { 'Content-Type': 'text/html; charset=utf-8' });
+    response.end('');
+    return;
+  }
+
+  const html = await renderExternalPage(pageFilePath, rootDir, resolveDir);
+  response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  response.end(html);
+};
+
 const serveDir = async (dirPath, method, request, response, resolveDir, rootDir, params = {}) => {
   const candidates = [`${method}.js`, 'index.page.html', 'index.js', 'index.html', 'CATCH.js'];
   for(const candidate of candidates){
     const candidatePath = join(dirPath, candidate);
     try { await stat(candidatePath); } catch { continue; }
     if(candidate.endsWith('.page.html')){
-      const html = await renderExternalPage(candidatePath, rootDir, resolveDir);
-      response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      response.end(html);
+      await renderGuardedPage(candidatePath, request, response, rootDir, resolveDir, params);
       return true;
     }
     if(ROUTE_FILES.includes(candidate)){
@@ -152,9 +176,7 @@ export default config => {
             } else if(fileStat?.isFile()){
               const name = filePath.split(/[/\\]/).pop();
               if(name.endsWith('.page.html')){
-                const html = await renderExternalPage(filePath, ADMIN_ROOT, resolveDir);
-                response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-                response.end(html);
+                await renderGuardedPage(filePath, request, response, ADMIN_ROOT, resolveDir, params);
                 return;
               }
               if(ROUTE_FILES.includes(name)){
@@ -193,11 +215,9 @@ export default config => {
       for(const pagePath of pageCandidates){
         try {
           await stat(pagePath);
-          const html = await renderExternalPage(pagePath, ADMIN_ROOT, resolveDir);
-          response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-          response.end(html);
-          return;
-        } catch { /* try next */ }
+        } catch { continue; }
+        await renderGuardedPage(pagePath, request, response, ADMIN_ROOT, resolveDir);
+        return;
       }
 
       const staticPath = join(adminDir, subPath === '/' ? 'index.html' : subPath);
@@ -223,9 +243,7 @@ export default config => {
         } else if(walkedStat?.isFile()){
           const name = walkedPath.split(/[/\\]/).pop();
           if(name.endsWith('.page.html')){
-            const html = await renderExternalPage(walkedPath, ADMIN_ROOT, resolveDir);
-            response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-            response.end(html);
+            await renderGuardedPage(walkedPath, request, response, ADMIN_ROOT, resolveDir, params);
             return;
           }
           if(ROUTE_FILES.includes(name)){
@@ -284,18 +302,7 @@ export default config => {
         } else if(fileStat?.isFile()){
           const name = filePath.split(/[/\\]/).pop();
           if(name.endsWith('.page.html')){
-            try {
-              await triggerHook('middleware:before_page', { url, query: request.query || {}, params, cookies: request.cookies || {} }, { bail: true });
-            } catch(e) {
-              if(e?.redirect) return response.redirect(e.redirect);
-              const code = e?.code || 404;
-              response.writeHead(code, { 'Content-Type': 'text/html; charset=utf-8' });
-              response.end('');
-              return;
-            }
-            const html = await renderExternalPage(filePath, PROJECT_PUBLIC, resolveDir);
-            response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-            response.end(html);
+            await renderGuardedPage(filePath, request, response, PROJECT_PUBLIC, resolveDir, params);
             return;
           }
           if(ROUTE_FILES.includes(name)){
@@ -328,18 +335,7 @@ export default config => {
 
       for(const pageFilePath of candidates){
         try { await stat(pageFilePath); } catch { continue; }
-        try {
-          await triggerHook('middleware:before_page', { url, query: request.query || {}, params: {}, cookies: request.cookies || {} }, { bail: true });
-        } catch(e) {
-          if(e?.redirect) return response.redirect(e.redirect);
-          const code = e?.code || 404;
-          response.writeHead(code, { 'Content-Type': 'text/html; charset=utf-8' });
-          response.end('');
-          return;
-        }
-        const html = await renderExternalPage(pageFilePath, PROJECT_PUBLIC, resolveDir);
-        response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        response.end(html);
+        await renderGuardedPage(pageFilePath, request, response, PROJECT_PUBLIC, resolveDir);
         return;
       }
     }

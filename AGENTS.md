@@ -17,8 +17,10 @@ An init script ran with `npm kempo init` will be used to help setup their projec
  - Backend utilities are in `server/utils/` directory
  - Middleware is in `middleware/` directory
  - Database schema and connection are in `server/db/` directory
- - API Route handlers are in `dist/kempo/api/**` as `[METHOD].js` files
- - The admin portal is in `/dist/admin/**` as `*.page.html` files.
+ - API Route handlers are in `src/kempo/api/**` as `[METHOD].js` files
+ - The admin portal is in `src/admin/**` as `*.page.html` files.
+
+**Always edit `src/`, never `dist/`.** `npm run build` deletes `dist/` entirely and regenerates it from `src/`, so any edit made directly in `dist/` is lost on the next build. The `dist/` paths are what consumers load at runtime, which is why they appear in URLs and config, but they are build output only.
 
 ## Architecture: Four-Layer Separation
 
@@ -39,7 +41,7 @@ This project maintains strict separation between frontend, HTTP layer, backend l
 - Return pure data or throw errors
 - Example: `export default async ({ token, userId, email }) => { ... }`
 
-**Why:** Backend utils must work with ANY HTTP layer (web cookies, mobile Bearer tokens, CLI tools, webhooks). The HTTP layer (`public/*/[METHOD].js`, `middleware/`) extracts data from requests and passes it to utils.
+**Why:** Backend utils must work with ANY HTTP layer (web cookies, mobile Bearer tokens, CLI tools, webhooks). The HTTP layer (`src/kempo/api/**/[METHOD].js`, `middleware/`) extracts data from requests and passes it to utils.
 
 **Example - WRONG:**
 ```javascript
@@ -58,7 +60,7 @@ export default async ({ token }) => {
   return [null, { success: true }];
 };
 
-// ✅ GOOD: public/kempo/api/auth/logout/POST.js (HTTP layer)
+// ✅ GOOD: src/kempo/api/auth/logout/POST.js (HTTP layer)
 export default async (request, response) => {
   const token = request.cookies.session_token;
   const [error, result] = await logout({ token });
@@ -134,7 +136,7 @@ const token = request.cookies.session_token;
 ```
 
 ```javascript
-// public/kempo/api/user/GET.js
+// src/kempo/api/user/GET.js
 export default async (request, response) => {
   const userId = request.query.id;
   const [error, user] = await getUser({ userId });
@@ -308,6 +310,21 @@ Before working on any UI, read the full kempo-css reference to understand what's
 Read the full kempo-ui reference to see all available components and icons: https://raw.githubusercontent.com/dustinpoissant/kempo-ui/refs/heads/main/llm.txt
 
 ## Development Workflow
+
+### Local Package Linking
+
+The sibling repos (`kempo`, `kempo-blog`, `kempo-server`, `kempo-ui`, `kempo-css`) are wired together with
+`file:` specifiers, so `node_modules` entries are symlinks to the local checkouts. Edits are picked up with
+no copying — there is no longer a script that copies files into `node_modules`.
+
+- `kempo-demo` declares every local package as a `file:../<name>` dependency.
+- `kempo` gets its local `kempo-server` / `kempo-ui` through `devDependencies` (`file:../…`); those two are
+  declared as `peerDependencies` for consumers, so published installs still resolve normal semver ranges.
+- **Never put a `file:` specifier in the `dependencies` of a published package** — it is published verbatim
+  and breaks every consumer install. `file:` belongs only in `devDependencies` or in the private demo.
+
+Because `dist/` is what actually gets served, run `npm run build:deps` from `kempo-demo` after editing `src/`
+in any dependency. That builds kempo, kempo-server, kempo-ui and kempo-css in one step.
 
 ### Local Development Server
 - **DO NOT** start a development server - one is already running
