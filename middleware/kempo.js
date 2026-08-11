@@ -1,4 +1,4 @@
-import { dirname, join, extname } from 'path';
+import { dirname, join, extname, isAbsolute, resolve } from 'path';
 import { readFile, stat, readdir } from 'fs/promises';
 import { pathToFileURL, fileURLToPath } from 'url';
 import { renderExternalPage } from 'kempo-server/templating';
@@ -26,8 +26,17 @@ const ROUTE_FILES = ['GET.js','POST.js','PUT.js','DELETE.js','PATCH.js','HEAD.js
 
 const NODE_MODULES = join(process.cwd(), 'node_modules');
 
-// Resolves to dist/admin relative to this file — works both in this repo and as a consumer dependency
-const ADMIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist', 'admin');
+/*
+  Admin portal source. Defaults to dist/admin relative to this file, which works both in this repo
+  and as a consumer dependency. Set `middleware.adminRoot` in the server config (resolved from cwd)
+  to point at src/admin instead, so admin pages can be edited without rebuilding.
+*/
+const DEFAULT_ADMIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist', 'admin');
+
+const resolveAdminRoot = adminRoot => {
+  if(!adminRoot) return DEFAULT_ADMIN_ROOT;
+  return isAbsolute(adminRoot) ? adminRoot : resolve(process.cwd(), adminRoot);
+};
 
 const buildResolveDir = (base, url) => {
   const parts = url.replace(/\/+$/, '').split('/').filter(Boolean);
@@ -125,6 +134,7 @@ const serveDir = async (dirPath, method, request, response, resolveDir, rootDir,
 
 export default config => {
   const PROJECT_PUBLIC = config.rootPath || join(process.cwd(), 'public');
+  const ADMIN_ROOT = resolveAdminRoot(config.adminRoot);
 
   return async (request, response, next) => {
     const { path } = request;

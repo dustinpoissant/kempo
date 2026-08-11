@@ -8,8 +8,9 @@
   },
   "middleware": {
     "custom": [
-      "../middleware/kempo.dev.js"
-    ]
+      "../middleware/kempo.js"
+    ],
+    "adminRoot": "src/admin"
   },
   "templating": {
     "ssr": true,
