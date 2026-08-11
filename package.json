@@ -14,7 +14,8 @@
     "removeAdmin": "node ./scripts/removeAdmin.js",
     "test:email": "node ./scripts/test-email.js",
     "test": "kempo-test -n",
-    "test:node": "kempo-test -n"
+    "test:node": "kempo-test -n",
+    "link:local": "npm install ../kempo-server ../kempo-ui --no-save"
   },
   "author": "Dustin Poissant",
   "license": "MIT",
@@ -58,9 +59,7 @@
   },
   "devDependencies": {
     "html-minifier-terser": "^7.2.0",
-    "kempo-server": "file:../kempo-server",
     "kempo-testing-framework": "^1.4.6",
-    "kempo-ui": "file:../kempo-ui",
     "terser": "^5.46.2"
   },
   "repository": {

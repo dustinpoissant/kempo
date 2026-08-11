@@ -313,18 +313,26 @@ Read the full kempo-ui reference to see all available components and icons: http
 
 ### Local Package Linking
 
-The sibling repos (`kempo`, `kempo-blog`, `kempo-server`, `kempo-ui`, `kempo-css`) are wired together with
-`file:` specifiers, so `node_modules` entries are symlinks to the local checkouts. Edits are picked up with
-no copying — there is no longer a script that copies files into `node_modules`.
+Every committed `package.json` declares normal semver ranges, so a fresh clone installs from the registry
+and works. Local cross-repo development is layered on top afterwards and is never committed:
 
-- `kempo-demo` declares every local package as a `file:../<name>` dependency.
-- `kempo` gets its local `kempo-server` / `kempo-ui` through `devDependencies` (`file:../…`); those two are
-  declared as `peerDependencies` for consumers, so published installs still resolve normal semver ranges.
-- **Never put a `file:` specifier in the `dependencies` of a published package** — it is published verbatim
-  and breaks every consumer install. `file:` belongs only in `devDependencies` or in the private demo.
+```bash
+npm run link:local     # symlinks the sibling checkouts into node_modules
+```
 
-Because `dist/` is what actually gets served, run `npm run build:deps` from `kempo-demo` after editing `src/`
-in any dependency. That builds kempo, kempo-server, kempo-ui and kempo-css in one step.
+That runs `npm install ../<sibling> --no-save`, which symlinks the local checkout without touching
+`package.json` or `package-lock.json`. From `kempo-demo` it links the whole chain in one command —
+kempo's own siblings, kempo-blog's host, and the demo's five packages.
+
+**Never commit a `file:` specifier.** It encodes one machine's directory layout into a shared artifact,
+and `devDependencies` are installed by everyone who clones the repo. npm does not even error on a missing
+`file:` path — it creates a dangling symlink and exits 0, so the break surfaces much later as
+`MODULE_NOT_FOUND`. In `dependencies` of a published package it is worse still: the specifier is published
+verbatim and breaks every consumer install.
+
+A plain `npm install` replaces the symlinks with the registry copies again, so re-run `npm run link:local`
+after one. Because `dist/` is what actually gets served, also run `npm run build:deps` from `kempo-demo`
+after editing `src/` in any dependency; that builds kempo, kempo-server, kempo-ui and kempo-css in one step.
 
 ### Local Development Server
 - **DO NOT** start a development server - one is already running

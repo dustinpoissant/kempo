@@ -35,14 +35,7 @@ jobs:
           node-version: '22.x'
           registry-url: 'https://registry.npmjs.org'
 
-      # kempo-server and kempo-ui are `file:../<name>` devDependencies for local development. Here
-      # they are resolved from the registry instead, so the gate below runs against the versions a
-      # consumer installing this package would actually get. This edits package.json, which is safe
-      # because the bump step below hard-resets to origin before committing anything.
-      - name: Resolve sibling packages from the registry
-        run: npm pkg set devDependencies.kempo-server=latest devDependencies.kempo-ui=latest
-
-      - run: npm install --no-audit --no-fund
+      - run: npm ci
 
       - name: Build
         run: npm run build

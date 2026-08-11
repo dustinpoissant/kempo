@@ -11,16 +11,36 @@ on:
       - master
 
 jobs:
-  test:
+  # kempo-server and kempo-ui resolve from the registry, which is what a consumer installing this
+  # package gets. This is the gate that has to stay green.
+  published:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     steps:
-      # kempo-server and kempo-ui are declared as `file:../<name>` devDependencies so local
-      # development resolves them from sibling checkouts. npm happily creates a dangling symlink
-      # when that path is absent and still exits 0, so without checking the siblings out here the
-      # install would appear to succeed and then fail later with MODULE_NOT_FOUND. Checking them
-      # out also means CI tests the combination that is actually being developed, rather than the
-      # last published release — most of the breakage in this suite is cross-repo.
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # No database or RESEND_API_KEY: the postgres client connects lazily and the Resend client is
+      # constructed on first send, so the whole module graph loads without either configured.
+      - name: Run Unit Tests
+        run: npm test
+
+  # Same suite against the sibling checkouts rather than the last release, which is where the two
+  # packages break each other. Advisory: a red run here means kempo and kempo-server have diverged
+  # and one of them needs to ship, not that this commit is bad.
+  siblings:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
       - uses: actions/checkout@v4
         with:
           path: kempo
@@ -39,17 +59,19 @@ jobs:
         with:
           node-version: '22.x'
 
-      # `npm ci` requires the lockfile to match, and the lockfile records the file: links by path.
-      - name: Install
-        run: npm install --no-audit --no-fund
+      - run: npm ci
+        working-directory: kempo
+
+      # Swaps the registry copies for the sibling checkouts. --no-save, so package.json and the
+      # lockfile stay exactly as committed.
+      - name: Link sibling checkouts
+        run: npm run link:local
         working-directory: kempo
 
       - name: Build
         run: npm run build
         working-directory: kempo
 
-      # No database or RESEND_API_KEY: the postgres client connects lazily and the Resend client is
-      # constructed on first send, so the whole module graph loads without either configured.
       - name: Run Unit Tests
         run: npm test
         working-directory: kempo
