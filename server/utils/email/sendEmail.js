@@ -1,12 +1,18 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+/*
+  Constructed on first send, not at import. The Resend constructor throws when the key is missing,
+  and this module is reachable from the server SDK, so building it at module scope made an unset
+  RESEND_API_KEY fail every route that transitively imports it rather than just disabling email.
+*/
+let resend = null;
+const client = () => (resend ??= new Resend(process.env.RESEND_API_KEY));
 
 export default async ({ to, subject, html }) => {
   if(!process.env.RESEND_API_KEY){
     return [{ code: 500, msg: 'RESEND_API_KEY not configured' }, null];
   }
-  
+
   if(!to){
     return [{ code: 400, msg: 'Recipient email is required' }, null];
   }
@@ -22,7 +28,7 @@ export default async ({ to, subject, html }) => {
   const from = process.env.SMTP_FROM || 'onboarding@resend.dev';
 
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await client().emails.send({
       from,
       to,
       subject,
