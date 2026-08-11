@@ -12,7 +12,9 @@
     "db:studio": "drizzle-kit studio",
     "makeAdmin": "node ./scripts/make-admin.js",
     "removeAdmin": "node ./scripts/removeAdmin.js",
-    "test:email": "node ./scripts/test-email.js"
+    "test:email": "node ./scripts/test-email.js",
+    "test": "kempo-test -n",
+    "test:node": "kempo-test -n"
   },
   "author": "Dustin Poissant",
   "license": "MIT",
