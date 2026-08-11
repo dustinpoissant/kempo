@@ -286,8 +286,8 @@ export const listKnownExtensions = async () =>
 export const installExtension = async (name) =>
   post(`${API_BASE}/extensions`, { name });
 
-export const uninstallExtension = async (name) =>
-  del(`${API_BASE}/extensions`, { name });
+export const uninstallExtension = async (name, purgeData = false) =>
+  del(`${API_BASE}/extensions`, { name, purgeData });
 
 export const enableExtension = async (name) =>
   post(`${API_BASE}/extensions/${encodeURIComponent(name)}/enable`, {});

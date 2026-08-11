@@ -153,11 +153,36 @@ const buildTests = () => {
       pass();
     },
 
-    'uninstall removes every trace': async ({ pass, fail }) => {
+    'uninstall keeps the extension data by default': async ({ pass, fail }) => {
       if(!state.installed) return fail('install step did not complete');
 
       const [err] = await uninstallExtension({ name: FIXTURE });
       if(err) return fail(`uninstall returned an error: ${err.msg}`);
+
+      // Deregistered, and its hooks are gone — a hook whose module is absent would abort renders
+      if((await db.select().from(extension).where(eq(extension.name, FIXTURE))).length) return fail('extension row survived uninstall');
+      if((await db.select().from(hook).where(eq(hook.owner, FIXTURE))).length) return fail('hooks survived uninstall');
+
+      // Everything a reinstall would need to restore the site is still here
+      const kept = [];
+      if(!(await db.select().from(permission).where(eq(permission.owner, FIXTURE))).length) kept.push('permissions');
+      if(!(await db.select().from(group).where(eq(group.owner, FIXTURE))).length) kept.push('groups');
+      if(!(await db.select().from(setting).where(like(setting.name, `${FIXTURE}:%`))).length) kept.push('settings');
+      if(!await tableExists('lifecycleFixtureItem')) kept.push('schema table');
+
+      if(kept.length) return fail(`a non-purging uninstall destroyed: ${kept.join(', ')}`);
+      pass();
+    },
+
+    'uninstall with purgeData removes every trace': async ({ pass, fail }) => {
+      if(!state.installed) return fail('install step did not complete');
+
+      // Reinstall over the kept data, then purge
+      const [installErr] = await installExtension({ name: FIXTURE });
+      if(installErr) return fail(`reinstall over kept data failed: ${installErr.msg}`);
+
+      const [err] = await uninstallExtension({ name: FIXTURE, purgeData: true });
+      if(err) return fail(`purging uninstall returned an error: ${err.msg}`);
 
       const leftovers = [];
       if((await db.select().from(extension).where(eq(extension.name, FIXTURE))).length) leftovers.push('extension row');
@@ -170,7 +195,7 @@ const buildTests = () => {
       await purgeFixture();
       await rm(fixtureLink, { recursive: true, force: true }).catch(() => {});
 
-      if(leftovers.length) return fail(`uninstall left behind: ${leftovers.join(', ')}`);
+      if(leftovers.length) return fail(`purging uninstall left behind: ${leftovers.join(', ')}`);
       pass();
     },
   };

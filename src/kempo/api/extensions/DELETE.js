@@ -13,8 +13,8 @@ export default async (request, response) => {
     return response.status(403).json({ error: 'Insufficient permissions' });
   }
 
-  const { name } = request.body;
-  const [error, data] = await uninstallExtension({ name });
+  const { name, purgeData } = request.body;
+  const [error, data] = await uninstallExtension({ name, purgeData: purgeData === true });
 
   if(error){
     return response.status(error.code).json({ error: error.msg });
