@@ -1,8 +1,6 @@
-import { resolve } from 'path';
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
 import updateAdminGlobalContent from '../../../../../server/utils/admin-global-content/updateAdminGlobalContent.js';
 
-const adminDir = resolve(import.meta.dirname, '../../../../../dist/admin');
 
 export default async (request, response) => {
   const token = request.cookies.session_token;
@@ -18,7 +16,7 @@ export default async (request, response) => {
 
   const id = request.params.id;
   const { name, location, priority, markup } = request.body;
-  const [error, data] = await updateAdminGlobalContent({ adminDir, id, name, location, priority, markup });
+  const [error, data] = await updateAdminGlobalContent({ id, name, location, priority, markup });
 
   if(error){
     return response.status(error.code).json({ error: error.msg });

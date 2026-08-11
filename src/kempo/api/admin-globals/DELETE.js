@@ -1,8 +1,6 @@
-import { resolve } from 'path';
 import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
 import deleteAdminGlobalContent from '../../../../server/utils/admin-global-content/deleteAdminGlobalContent.js';
 
-const adminDir = resolve(import.meta.dirname, '../../../../dist/admin');
 
 export default async (request, response) => {
   const token = request.cookies.session_token;
@@ -17,7 +15,7 @@ export default async (request, response) => {
   }
 
   const { ids } = request.body;
-  const [error, data] = await deleteAdminGlobalContent({ adminDir, ids });
+  const [error, data] = await deleteAdminGlobalContent({ ids });
 
   if(error){
     return response.status(error.code).json({ error: error.msg });

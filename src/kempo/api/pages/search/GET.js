@@ -1,6 +1,6 @@
 import { resolve, join } from 'path';
-import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
-import searchByMetadata from '../../../../server/utils/pages/searchByMetadata.js';
+import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
+import searchByMetadata from '../../../../../server/utils/pages/searchByMetadata.js';
 
 const rootDir = import.meta.dirname.includes('node_modules') ? join(process.cwd(), 'public') : resolve(import.meta.dirname, '../../../../app-public');
 

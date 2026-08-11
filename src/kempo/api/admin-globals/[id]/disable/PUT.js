@@ -1,8 +1,6 @@
-import { resolve } from 'path';
 import currentUserHasPermission from '../../../../../../server/utils/permissions/currentUserHasPermission.js';
 import disableAdminGlobalContent from '../../../../../../server/utils/admin-global-content/disableAdminGlobalContent.js';
 
-const adminDir = resolve(import.meta.dirname, '../../../../../../dist/admin');
 
 export default async (request, response) => {
   const token = request.cookies.session_token;
@@ -17,7 +15,7 @@ export default async (request, response) => {
   }
 
   const id = request.params.id;
-  const [error, data] = await disableAdminGlobalContent({ adminDir, id });
+  const [error, data] = await disableAdminGlobalContent({ id });
 
   if(error){
     return response.status(error.code).json({ error: error.msg });

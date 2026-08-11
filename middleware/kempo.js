@@ -6,6 +6,7 @@ import getSession from '../server/utils/auth/getSession.js';
 import currentUserHasPermission from '../server/utils/permissions/currentUserHasPermission.js';
 import { getEnabledExtensions } from '../server/utils/extensions/scopeCache.js';
 import triggerHook from '../server/utils/hooks/triggerHook.js';
+import { ADMIN_GLOBALS_DIR } from '../server/utils/admin-global-content/helpers.js';
 
 const MIME_TYPES = {
   '.js': 'application/javascript',
@@ -92,7 +93,7 @@ const executeRouteFile = async (filePath, request, response, params = {}) => {
   extensions guard their own private pages. Rendering a page anywhere without this helper silently
   bypasses those guards.
 */
-const renderGuardedPage = async (pageFilePath, request, response, rootDir, resolveDir, params = {}) => {
+const renderGuardedPage = async (pageFilePath, request, response, rootDir, resolveDir, params = {}, extraGlobalDirs = []) => {
   try {
     await triggerHook('middleware:before_page', {
       url: request.url.split('?')[0],
@@ -107,18 +108,34 @@ const renderGuardedPage = async (pageFilePath, request, response, rootDir, resol
     return;
   }
 
-  const html = await renderExternalPage(pageFilePath, rootDir, resolveDir);
+  const html = await renderExternalPage(pageFilePath, rootDir, resolveDir, {}, {}, 10, extraGlobalDirs);
   response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   response.end(html);
 };
 
-const serveDir = async (dirPath, method, request, response, resolveDir, rootDir, params = {}) => {
+/*
+  Directories that contribute *.global.html to an admin render, on top of ADMIN_ROOT itself.
+
+  Each enabled extension's admin/ directory is read straight from its package at render time — the
+  same way its admin pages and public pages are resolved — so nothing is copied into kempo's
+  dist/admin on install. Enabling, disabling, upgrading or removing an extension takes effect
+  immediately, and a rebuild of kempo cannot discard it.
+
+  Admin globals authored through the admin UI live in the consumer's project instead, since those
+  are genuinely mutable and cannot live inside a package.
+*/
+const adminGlobalDirs = async () => [
+  ADMIN_GLOBALS_DIR,
+  ...(await getEnabledExtensions()).map(ext => join(NODE_MODULES, ext.name, 'admin')),
+];
+
+const serveDir = async (dirPath, method, request, response, resolveDir, rootDir, params = {}, extraGlobalDirs = []) => {
   const candidates = [`${method}.js`, 'index.page.html', 'index.js', 'index.html', 'CATCH.js'];
   for(const candidate of candidates){
     const candidatePath = join(dirPath, candidate);
     try { await stat(candidatePath); } catch { continue; }
     if(candidate.endsWith('.page.html')){
-      await renderGuardedPage(candidatePath, request, response, rootDir, resolveDir, params);
+      await renderGuardedPage(candidatePath, request, response, rootDir, resolveDir, params, extraGlobalDirs);
       return true;
     }
     if(ROUTE_FILES.includes(candidate)){
@@ -169,9 +186,10 @@ export default config => {
       if(!url.startsWith('/admin/extension/')){
         const segments = url.slice('/admin'.length).replace(/^\//, '').split('/').filter(Boolean);
         const resolveDir = buildResolveDir(ADMIN_ROOT, url);
+        const globalDirs = await adminGlobalDirs();
 
         if(segments.length === 0){
-          const served = await serveDir(ADMIN_ROOT, method, request, response, resolveDir, ADMIN_ROOT);
+          const served = await serveDir(ADMIN_ROOT, method, request, response, resolveDir, ADMIN_ROOT, {}, globalDirs);
           if(served) return;
         } else {
           const walked = await walkDynamic(ADMIN_ROOT, segments);
@@ -181,12 +199,12 @@ export default config => {
             try { fileStat = await stat(filePath); } catch { /* not found */ }
 
             if(fileStat?.isDirectory()){
-              const served = await serveDir(filePath, method, request, response, resolveDir, ADMIN_ROOT, params);
+              const served = await serveDir(filePath, method, request, response, resolveDir, ADMIN_ROOT, params, globalDirs);
               if(served) return;
             } else if(fileStat?.isFile()){
               const name = filePath.split(/[/\\]/).pop();
               if(name.endsWith('.page.html')){
-                await renderGuardedPage(filePath, request, response, ADMIN_ROOT, resolveDir, params);
+                await renderGuardedPage(filePath, request, response, ADMIN_ROOT, resolveDir, params, globalDirs);
                 return;
               }
               if(ROUTE_FILES.includes(name)){
@@ -214,6 +232,7 @@ export default config => {
       const adminDir = join(NODE_MODULES, extName, 'admin');
       const resolveDir = buildResolveDir(ADMIN_ROOT, url);
       const method = request.method?.toUpperCase() || 'GET';
+      const globalDirs = await adminGlobalDirs();
 
       const pageCandidates = subPath.endsWith('/')
         ? [join(adminDir, subPath, 'index.page.html')]
@@ -226,7 +245,7 @@ export default config => {
         try {
           await stat(pagePath);
         } catch { continue; }
-        await renderGuardedPage(pagePath, request, response, ADMIN_ROOT, resolveDir);
+        await renderGuardedPage(pagePath, request, response, ADMIN_ROOT, resolveDir, {}, globalDirs);
         return;
       }
 
@@ -248,12 +267,12 @@ export default config => {
         let walkedStat;
         try { walkedStat = await stat(walkedPath); } catch { /* not found */ }
         if(walkedStat?.isDirectory()){
-          const served = await serveDir(walkedPath, method, request, response, resolveDir, ADMIN_ROOT, params);
+          const served = await serveDir(walkedPath, method, request, response, resolveDir, ADMIN_ROOT, params, globalDirs);
           if(served) return;
         } else if(walkedStat?.isFile()){
           const name = walkedPath.split(/[/\\]/).pop();
           if(name.endsWith('.page.html')){
-            await renderGuardedPage(walkedPath, request, response, ADMIN_ROOT, resolveDir, params);
+            await renderGuardedPage(walkedPath, request, response, ADMIN_ROOT, resolveDir, params, globalDirs);
             return;
           }
           if(ROUTE_FILES.includes(name)){

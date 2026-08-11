@@ -1,5 +1,5 @@
-import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
-import disableExtension from '../../../../../server/utils/extensions/disableExtension.js';
+import currentUserHasPermission from '../../../../../../server/utils/permissions/currentUserHasPermission.js';
+import disableExtension from '../../../../../../server/utils/extensions/disableExtension.js';
 
 export default async (request, response) => {
   const token = request.cookies.session_token;

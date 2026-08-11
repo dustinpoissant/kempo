@@ -4,6 +4,17 @@ import { existsSync } from 'fs';
 
 const ADMIN_GLOBAL_FILE = 'kempo-global.global.html';
 
+/*
+  Admin global content created through the admin UI is per-installation state, so it lives in the
+  consumer's project rather than in kempo's dist/admin — `npm run build` deletes dist/ wholesale and
+  reinstalling or upgrading kempo replaces it, either of which would silently discard it.
+
+  Extension-owned admin globals are NOT stored here. Each extension ships its own *.global.html
+  inside its package and the middleware scans it at render time, the same way extension pages are
+  resolved, so there is nothing to write on install or clean up on uninstall.
+*/
+const ADMIN_GLOBALS_DIR = join(process.cwd(), '.kempo', 'admin-globals');
+
 const parseEntries = raw => {
   const entries = [];
   const regex = /<content\s([^>]*)>([\s\S]*?)<\/content>/g;
@@ -44,4 +55,4 @@ const serializeEntries = entries => entries.map(e => {
   return `<content ${attrs}>\n${e.markup}\n</content>`;
 }).join('\n');
 
-export { ADMIN_GLOBAL_FILE, parseEntries, serializeEntries };
+export { ADMIN_GLOBAL_FILE, ADMIN_GLOBALS_DIR, parseEntries, serializeEntries };

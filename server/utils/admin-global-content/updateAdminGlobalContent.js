@@ -1,9 +1,9 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { ADMIN_GLOBAL_FILE, parseEntries, serializeEntries } from './helpers.js';
+import { ADMIN_GLOBAL_FILE, parseEntries, serializeEntries, ADMIN_GLOBALS_DIR } from './helpers.js';
 
-export default async ({ adminDir, id, name, location, priority, markup }) => {
+export default async ({ adminDir = ADMIN_GLOBALS_DIR, id, name, location, priority, markup }) => {
   if(!adminDir){
     return [{ code: 400, msg: 'Admin directory is required' }, null];
   }

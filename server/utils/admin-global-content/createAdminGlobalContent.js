@@ -1,10 +1,10 @@
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import crypto from 'crypto';
-import { ADMIN_GLOBAL_FILE, parseEntries, serializeEntries } from './helpers.js';
+import { ADMIN_GLOBAL_FILE, parseEntries, serializeEntries, ADMIN_GLOBALS_DIR } from './helpers.js';
 
-export default async ({ adminDir, name, location, priority, owner, markup }) => {
+export default async ({ adminDir = ADMIN_GLOBALS_DIR, name, location, priority, owner, markup }) => {
   if(!adminDir){
     return [{ code: 400, msg: 'Admin directory is required' }, null];
   }
@@ -37,6 +37,7 @@ export default async ({ adminDir, name, location, priority, owner, markup }) => 
   };
 
   entries.push(entry);
+  await mkdir(adminDir, { recursive: true });
   await writeFile(filePath, serializeEntries(entries) + '\n', 'utf-8');
 
   return [null, entry];
