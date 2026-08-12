@@ -97,7 +97,7 @@ if(existsSync(join(projectDir, 'public'))){
   }
 
   const { action } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'action',
     message: 'An existing Kempo project was detected. What would you like to do?',
     choices: [
@@ -155,7 +155,7 @@ let customDatabaseUrl = null;
 
 if(existingContainers.length > 0 && !useDefaults){
   const { containerChoice } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'containerChoice',
     message: 'Found existing PostgreSQL containers. Select one or create new:',
     choices: [
@@ -194,7 +194,7 @@ if(containerMode === 'new' && !useDefaults){
   containerName = name;
 
   const { passwordChoice } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'passwordChoice',
     message: 'Database password:',
     choices: [
@@ -259,7 +259,7 @@ let emailServiceSkipped = false;
 
 if(!useDefaults){
   const { emailService } = await inquirer.prompt([{
-    type: 'list',
+    type: 'select',
     name: 'emailService',
     message: 'Email service:',
     choices: [
@@ -512,3 +512,9 @@ Then open:
   http://localhost:9876        (your site)
   http://localhost:9876/admin  (admin panel)
 `);
+
+/*
+  createUser/addUserToGroup hold open the postgres client's connection (no idle_timeout is
+  configured), so without this the process never exits on its own once setup finishes.
+*/
+process.exit(0);
