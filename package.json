@@ -37,18 +37,11 @@
     "scripts/init-db.js"
   ],
   "dependencies": {
-    "@lexical/history": "^0.42.0",
-    "@lexical/html": "^0.42.0",
-    "@lexical/list": "^0.42.0",
-    "@lexical/rich-text": "^0.42.0",
-    "@lexical/selection": "^0.42.0",
-    "@lexical/utils": "^0.42.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.45.2",
     "inquirer": "^12.6.1",
-    "lexical": "^0.42.0",
     "monaco-editor": "^0.56.0",
     "postgres": "^3.4.7",
     "resend": "^6.5.2"
