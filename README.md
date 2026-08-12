@@ -360,6 +360,20 @@ Kempo uses [kempo-css](https://github.com/dustinpoissant/kempo-css) for styling 
 
 Refer to the [kempo-css docs](https://github.com/dustinpoissant/kempo-css) and [kempo-ui docs](https://github.com/dustinpoissant/kempo-ui) for available utility classes and components.
 
+## The Rich Text Editor
+
+The admin's WYSIWYG is kempo-ui's `<k-html-editor>`, which is built on [Lexical](https://lexical.dev). Kempo ships Lexical itself rather than letting the editor fetch it from a CDN, so the editor keeps working offline, behind a strict Content-Security-Policy, on an air-gapped install, and during a CDN outage — and no third party sees a request every time an administrator opens a page.
+
+Nothing is required to set this up. `npm run build` bundles Lexical into `dist/kempo/vendor/lexical/`, kempo's middleware serves it, and `window.kempo.lexicalUrl` points the editor at it:
+
+```js
+window.kempo = { ..., lexicalUrl: '/kempo/vendor/lexical' };
+```
+
+To use a CDN instead — or a copy you host elsewhere — change that value, or set `lexical-src` on an individual editor. Removing it falls back to `https://esm.sh`.
+
+Lexical cannot be served straight from `node_modules`: its published entry reads `process.env.NODE_ENV`, which does not exist in a browser, and its builds import bare specifiers that a browser cannot resolve. The build therefore bundles each package with esbuild, with code splitting so all nine share a single copy of Lexical's core — Lexical relies on class identity, and duplicate copies produce an editor that loads but stays empty.
+
 ## Development
 
 ### Running the framework

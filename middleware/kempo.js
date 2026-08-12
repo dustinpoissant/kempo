@@ -4,6 +4,7 @@ import { pathToFileURL, fileURLToPath } from 'url';
 import { renderExternalPage } from 'kempo-server/templating';
 import getSession from '../server/utils/auth/getSession.js';
 import currentUserHasPermission from '../server/utils/permissions/currentUserHasPermission.js';
+import { LEXICAL_BASE, bundleFileName as lexicalBundleFileName } from '../server/utils/lexical/packages.js';
 import { getEnabledExtensions } from '../server/utils/extensions/scopeCache.js';
 import triggerHook from '../server/utils/hooks/triggerHook.js';
 import { ADMIN_GLOBALS_DIR } from '../server/utils/admin-global-content/helpers.js';
@@ -33,6 +34,24 @@ const NODE_MODULES = join(process.cwd(), 'node_modules');
   to point at src/admin instead, so admin pages can be edited without rebuilding.
 */
 const DEFAULT_ADMIN_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist', 'admin');
+
+/*
+  Where the lexical bundles live and the URL they are served at. Must stay in step with
+  window.kempo.lexicalUrl in src/admin/init.js, which is what kempo-ui reads.
+*/
+const LEXICAL_DIR = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist', 'kempo', 'vendor', 'lexical');
+
+let lexicalVersionCache = null;
+const lexicalVersion = async () => {
+  if(lexicalVersionCache) return lexicalVersionCache;
+  try {
+    const manifest = JSON.parse(await readFile(join(LEXICAL_DIR, 'manifest.json'), 'utf8'));
+    lexicalVersionCache = manifest.version;
+  } catch {
+    lexicalVersionCache = 'unknown';
+  }
+  return lexicalVersionCache;
+};
 
 const resolveAdminRoot = adminRoot => {
   if(!adminRoot) return DEFAULT_ADMIN_ROOT;
@@ -156,6 +175,64 @@ export default config => {
   return async (request, response, next) => {
     const { path } = request;
     const url = request.url.split('?')[0];
+
+    /*
+      Locally hosted lexical for the admin's WYSIWYG.
+
+      kempo-ui's HtmlEditor requests `${window.kempo.lexicalUrl}/${pkg}@${version}`, an esm.sh-shaped
+      URL with no file extension, so it cannot be served by a static route: the package name
+      contains a slash and the response needs a JavaScript content type to be accepted as a module.
+      This maps that shape onto the bundles the build produced.
+
+      Served before the auth gate on purpose. These are public third-party assets, and requiring a
+      session would make the editor fail for exactly the reader who is allowed to see it.
+    */
+    if(url.startsWith(`${LEXICAL_BASE}/`)){
+      const requested = decodeURIComponent(url.slice(LEXICAL_BASE.length + 1));
+      const match = requested.match(/^(.+)@([^@]+)$/);
+
+      /*
+        Shared chunks. Splitting puts lexical's core in a chunk that the package entries import by
+        relative path, so those requests arrive here as ordinary filenames with no version suffix.
+      */
+      let file = null;
+      if(match){
+        file = join(LEXICAL_DIR, lexicalBundleFileName(match[1]));
+        if(match[2] !== await lexicalVersion()){
+          console.warn(`[kempo] lexical ${match[2]} requested but ${await lexicalVersion()} is bundled — rebuild kempo, or kempo-ui's LEXICAL_VERSION has moved`);
+        }
+      } else if(/^[\w./-]+\.js$/.test(requested) && !requested.includes('..')){
+        file = join(LEXICAL_DIR, requested);
+      }
+
+      if(file){
+        try {
+          const info = await stat(file);
+          /*
+            Revalidated rather than immutable. The URL carries lexical's version but not kempo's, so
+            rebuilding kempo changes what lives at the same URL, and caching that for a year would
+            strand every client on a stale bundle. A 304 costs almost nothing.
+          */
+          const etag = `"${info.size}-${Math.floor(info.mtimeMs)}"`;
+          if(request.headers['if-none-match'] === etag){
+            response.writeHead(304, { ETag: etag, 'Cache-Control': 'public, must-revalidate' });
+            response.end();
+            return;
+          }
+          response.writeHead(200, {
+            'Content-Type': 'application/javascript; charset=utf-8',
+            'Cache-Control': 'public, must-revalidate',
+            ETag: etag,
+          });
+          response.end(await readFile(file));
+          return;
+        } catch {
+          response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+          response.end(`No bundled lexical asset "${requested}". Run \`npm run build\` in kempo.`);
+          return;
+        }
+      }
+    }
 
     /*
       Auth: protect /account and /admin routes

@@ -133,6 +133,16 @@ const CONTRACT = [
   ['GET', '/kempo/api/auth/session', null, 200],
   ['GET', '/kempo/api/settings/public', null, 200],
 
+  /*
+    The locally hosted lexical bundles that back the admin's WYSIWYG. Anonymous on purpose: they
+    are public third-party assets, and gating them would break the editor for the very user allowed
+    to open it.
+  */
+  ['GET', '/kempo/vendor/lexical/lexical@0.43.0', null, 200],
+  ['GET', '/kempo/vendor/lexical/@lexical/rich-text@0.43.0', null, 200],
+  ['GET', '/kempo/vendor/lexical/@lexical/code@0.43.0', null, 200],
+  ['GET', '/kempo/vendor/lexical/nope@0.43.0', null, 404],
+
   ['GET', '/does-not-exist', null, 404],
 ];
 
@@ -209,6 +219,35 @@ const buildTests = () => ({
       return fail(`routes answering the wrong status:\n    ${failures.join('\n    ')}`);
     }
     pass(`${CONTRACT.length} route/audience combinations`);
+  },
+
+  'the lexical bundles are real modules with named exports': async ({ pass, fail }) => {
+    if(!state.port) return fail('server did not start');
+
+    const res = await fetch(`http://127.0.0.1:${state.port}/kempo/vendor/lexical/@lexical/rich-text@0.43.0`);
+    if(!res.headers.get('content-type')?.includes('javascript')){
+      return fail(`served as ${res.headers.get('content-type')}; a browser will refuse to run that as a module`);
+    }
+
+    const body = await res.text();
+
+    /*
+      Bundling the CommonJS entry instead of the ESM one produces a module whose only export is
+      `default`. It loads without error and the editor comes up empty, so assert the named exports
+      the editor actually destructures are present.
+    */
+    for(const name of ['HeadingNode', 'QuoteNode', '$createHeadingNode']){
+      if(!body.includes(name)) return fail(`bundle is missing the named export ${name} — it was probably built from the CommonJS entry`);
+    }
+
+    /*
+      Chunk references must be absolute. Scoped packages are served one path segment deeper than
+      unscoped ones, so a relative "./chunks/..." resolves to the wrong directory and 404s.
+    */
+    if(body.includes('"./chunks/') || body.includes("'./chunks/")){
+      return fail('chunk imports are relative; they will 404 for every scoped package');
+    }
+    pass();
   },
 
   'a signed-out session is rejected once its cookie is revoked': async ({ pass, fail }) => {

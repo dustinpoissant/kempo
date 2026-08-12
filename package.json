@@ -37,11 +37,20 @@
     "scripts/init-db.js"
   ],
   "dependencies": {
+    "@lexical/code": "0.43.0",
+    "@lexical/history": "0.43.0",
+    "@lexical/html": "0.43.0",
+    "@lexical/link": "0.43.0",
+    "@lexical/list": "0.43.0",
+    "@lexical/rich-text": "0.43.0",
+    "@lexical/selection": "0.43.0",
+    "@lexical/table": "0.43.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.7",
     "drizzle-orm": "^0.45.2",
     "inquirer": "^12.6.1",
+    "lexical": "0.43.0",
     "monaco-editor": "^0.56.0",
     "postgres": "^3.4.7",
     "resend": "^6.5.2"
@@ -52,6 +61,7 @@
     "kempo-ui": ">=0.4.39"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "html-minifier-terser": "^7.2.0",
     "kempo-testing-framework": "^1.4.6",
     "terser": "^5.46.2"

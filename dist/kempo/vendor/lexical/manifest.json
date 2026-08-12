@@ -1,0 +1,14 @@
+{
+  "version": "0.43.0",
+  "packages": [
+    "lexical",
+    "@lexical/rich-text",
+    "@lexical/html",
+    "@lexical/history",
+    "@lexical/list",
+    "@lexical/link",
+    "@lexical/selection",
+    "@lexical/table",
+    "@lexical/code"
+  ]
+}

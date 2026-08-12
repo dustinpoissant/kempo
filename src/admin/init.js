@@ -1,4 +1,4 @@
-window.kempo = { pathsToIcons: ['/admin/icons', '/kempo/icons', '/kempo-ui/icons'], monacoUrl: '/monaco-editor' };
+window.kempo = { pathsToIcons: ['/admin/icons', '/kempo/icons', '/kempo-ui/icons'], monacoUrl: '/monaco-editor', lexicalUrl: '/kempo/vendor/lexical' };
 window.litDisableBundleWarning = true;
 
 /*

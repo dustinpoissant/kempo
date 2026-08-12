@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import { readdir } from 'fs/promises';
 import { minify as terserMinify } from 'terser';
 import { minify as htmlMinify } from 'html-minifier-terser';
+import bundleLexical from './bundle-lexical.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -187,6 +188,12 @@ for(const srcFile of files){
 
 process.stdout.write('\n\n');
 
+/*
+  Bundle lexical into dist/kempo/vendor so the admin editor loads it from this install rather than
+  from a CDN. It goes under dist/kempo because consumers already serve that directory at /kempo/**.
+*/
+const lexical = await bundleLexical(join(distDir, 'kempo'));
+
 // Summary
 const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
 
@@ -195,6 +202,7 @@ console.log(`  JS    ${stats.js.count} files   ${formatBytes(stats.js.originalBy
 console.log(`  HTML  ${stats.html.count} files   ${formatBytes(stats.html.originalBytes)} → ${formatBytes(stats.html.minifiedBytes)} (${pct(stats.html.originalBytes, stats.html.minifiedBytes)} reduction)`);
 console.log(`  JSON  ${stats.json.count} files   ${formatBytes(stats.json.originalBytes)} → ${formatBytes(stats.json.minifiedBytes)} (${pct(stats.json.originalBytes, stats.json.minifiedBytes)} reduction)`);
 console.log(`  Copy  ${stats.copied.count} files   ${formatBytes(stats.copied.bytes)}`);
+console.log(`  Lexical ${lexical.count} bundles + ${lexical.chunks} shared chunk(s)   ${formatBytes(lexical.bytes)} (v${lexical.version}, browser-ready)`);
 
 const totalOriginal = stats.js.originalBytes + stats.html.originalBytes + stats.json.originalBytes;
 const totalMinified = stats.js.minifiedBytes + stats.html.minifiedBytes + stats.json.minifiedBytes;
