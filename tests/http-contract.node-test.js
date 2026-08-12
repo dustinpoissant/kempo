@@ -116,21 +116,17 @@ const CONTRACT = [
   ['GET', '/admin/settings', 'admin', 200],
 
   /*
-    API permission checks are independent of the page gate above.
-
-    Note the asymmetry in how "not allowed" is reported: a missing cookie produces 400, because
-    currentUserHasPermission treats an absent token as a bad request, while an invalid cookie
-    produces 403 because getSession fails and it returns [null, false]. 401 would be the correct
-    answer for both. These rows encode what it does today rather than what it should do, so
-    changing it is a deliberate edit here and not a silent behaviour change.
+    API permission checks are independent of the page gate above, and separate 401 from 403: no
+    cookie or a cookie matching no session means authenticate and retry, while a valid session
+    lacking the permission means retrying will not help.
   */
-  ['GET', '/kempo/api/user', null, 400],
-  ['GET', '/kempo/api/user', 'invalid', 403],
+  ['GET', '/kempo/api/user', null, 401],
+  ['GET', '/kempo/api/user', 'invalid', 401],
   ['GET', '/kempo/api/user', 'member', 403],
   ['GET', '/kempo/api/user', 'admin', 200],
 
-  ['GET', '/kempo/api/admin-globals', null, 400],
-  ['GET', '/kempo/api/admin-globals', 'invalid', 403],
+  ['GET', '/kempo/api/admin-globals', null, 401],
+  ['GET', '/kempo/api/admin-globals', 'invalid', 401],
   ['GET', '/kempo/api/admin-globals', 'member', 403],
   ['GET', '/kempo/api/admin-globals', 'admin', 200],
 

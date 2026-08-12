@@ -362,13 +362,45 @@ Refer to the [kempo-css docs](https://github.com/dustinpoissant/kempo-css) and [
 
 ## Development
 
-### Running the Dev Server
+### Running the framework
+
+Kempo is developed against **[kempo-demo](https://github.com/dustinpoissant/kempo-demo)**, a real consumer project that installs kempo, kempo-blog and the rest the way a user would. Running a server inside this repo instead was misleading: paths resolve differently when the framework runs from within `node_modules/kempo` than when it runs from its own directory, so problems appeared here that users never hit, and vice versa.
 
 ```bash
-npm run dev
+cd ../kempo-demo
+npm install
+npm run link:local     # symlink the sibling checkouts into node_modules
+npm start              # http://localhost:9876
 ```
 
-This serves `app-public/` at `http://localhost:9876` for testing the consumer-facing boilerplate. The dev server watches for changes and auto-reloads.
+After editing `src/` here, rebuild so the demo picks it up — `dist/` is what actually gets served:
+
+```bash
+npm run build:deps     # from kempo-demo; builds kempo, kempo-server, kempo-ui, kempo-css
+```
+
+To edit the admin portal without rebuilding on every change, point the middleware at the source instead of the build by adding `adminRoot` to the demo's `public/.config.json`:
+
+```json
+{
+  "middleware": {
+    "custom": ["../node_modules/kempo/middleware/kempo.js"],
+    "adminRoot": "node_modules/kempo/src/admin"
+  }
+}
+```
+
+### Running the tests
+
+Most of the suite needs nothing, but the extension-lifecycle and HTTP-contract tests drive a real database and skip themselves when none is reachable. To run everything:
+
+```bash
+docker compose up -d                 # postgres on 5434, separate from kempo-demo's on 5433
+npx drizzle-kit push --force         # apply the schema
+npm test
+```
+
+`.env.example` has the matching `DATABASE_URL`. The suite seeds its own groups and permissions, and cleans up the rows it creates.
 
 ### Building for Distribution
 

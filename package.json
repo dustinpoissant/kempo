@@ -4,18 +4,18 @@
   "type": "module",
   "description": "A fullstack CMS framework for creating websites with user authentication",
   "scripts": {
-    "dev": "node scripts/dev.js",
     "build": "node scripts/build.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "makeAdmin": "node ./scripts/make-admin.js",
-    "removeAdmin": "node ./scripts/removeAdmin.js",
+    "removeAdmin": "node ./scripts/remove-admin.js",
     "test:email": "node ./scripts/test-email.js",
     "test": "kempo-test -n",
     "test:node": "kempo-test -n",
-    "link:local": "npm install ../kempo-server ../kempo-ui --no-save"
+    "link:local": "npm install ../kempo-server ../kempo-ui --no-save",
+    "db:reset": "node ./scripts/reset-db.js"
   },
   "author": "Dustin Poissant",
   "license": "MIT",
