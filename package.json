@@ -46,10 +46,10 @@
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "drizzle-kit": "^0.31.7",
-    "drizzle-orm": "^0.44.7",
+    "drizzle-orm": "^0.45.2",
     "inquirer": "^12.6.1",
     "lexical": "^0.42.0",
-    "monaco-editor": "^0.55.1",
+    "monaco-editor": "^0.56.0",
     "postgres": "^3.4.7",
     "resend": "^6.5.2"
   },
