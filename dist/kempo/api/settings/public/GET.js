@@ -1,2 +1,2 @@
-import e from"../../../../../server/utils/settings/getPublicSettings.js";export default async t=>{const[s,n]=await e();return s?new Response(JSON.stringify({error:s.msg}),{status:s.code,headers:{"Content-Type":"application/json"}}):new Response(JSON.stringify(n),{headers:{"Content-Type":"application/json"}})};
+import t from"../../../../../server/utils/settings/getPublicSettings.js";export default async(s,e)=>{const[r,o]=await t();if(r)return e.status(r.code).json({error:r.msg});e.json(o)};
 //# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\settings\public\GET.js.map

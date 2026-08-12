@@ -14,3 +14,6 @@ tasks/
 # Written at runtime by createAdminGlobalContent when an extension installs its admin nav.
 # Per-installation state, not source. Note: `npm run build` wipes dist/ and destroys it.
 dist/admin/kempo-global.global.html
+
+# Scratch dirs created by the http-contract suite
+tests/.tmp-*
