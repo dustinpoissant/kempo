@@ -1,2 +1,2 @@
 import s from"../../../../server/utils/permissions/currentUserHasPermission.js";import r from"../../../../server/utils/users/getUsers.js";export default async(e,t)=>{const o=e.cookies.session_token,[i,n]=await s(o,"system:user:read");if(i)return t.status(i.code).json({error:i.msg});if(!n)return t.status(403).json({error:"You do not have permission to view users"});const u=parseInt(e.query.limit)||50,a=parseInt(e.query.offset)||0,[m,f]=await r({limit:u,offset:a});if(m)return t.status(m.code).json({error:m.msg});t.json(f)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\user\GET.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\user\GET.js.map

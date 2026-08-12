@@ -1,2 +1,2 @@
 import s from"../../../../../../server/utils/permissions/currentUserHasPermission.js";import r from"../../../../../../server/utils/admin-global-content/disableAdminGlobalContent.js";export default async(e,o)=>{const t=e.cookies.session_token,[i,n]=await s(t,"system:globals:update");if(i)return o.status(i.code).json({error:i.msg});if(!n)return o.status(403).json({error:"Insufficient permissions"});const a=e.params.id,[m,u]=await r({id:a});if(m)return o.status(m.code).json({error:m.msg});o.json(u)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\admin-globals\[id]\disable\PUT.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\admin-globals\[id]\disable\PUT.js.map

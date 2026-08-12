@@ -1,5 +1,5 @@
 import { readFile, readdir } from 'fs/promises';
-import { existsSync } from 'fs';
+import { existsSync, readdirSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { builtinModules } from 'module';
@@ -100,6 +100,41 @@ const sources = new Map(
 
 const rel = file => path.relative(root, file).replace(/\\/g, '/');
 
+/*
+  Walks a relative specifier one segment at a time, checking each against the real directory
+  listing. existsSync cannot do this on Windows or macOS: their filesystems are case-insensitive,
+  so an import of TcExportCSV.js happily resolves to TcExportCsv.js locally and then 404s on Linux.
+  Returns null when the specifier is fine, or a description of what is wrong.
+*/
+const resolveCaseExact = (fromDir, specifier) => {
+  let dir = fromDir;
+  const segments = specifier.split('/').filter(s => s !== '' && s !== '.');
+  for(const [i, segment] of segments.entries()){
+    if(segment === '..'){
+      dir = path.dirname(dir);
+      continue;
+    }
+    const last = i === segments.length - 1;
+    let listing;
+    try {
+      listing = readdirSync(dir);
+    } catch {
+      return `${dir} is not a directory`;
+    }
+    // Extensionless imports may resolve to name.js or name/index.js
+    const candidates = last ? [segment, `${segment}.js`] : [segment];
+    const match = candidates.find(c => listing.includes(c));
+    if(!match){
+      const insensitive = listing.filter(n => candidates.some(c => n.toLowerCase() === c.toLowerCase()));
+      return insensitive.length
+        ? `case mismatch — on disk it is ${insensitive.join(', ')}`
+        : `${segment} does not exist`;
+    }
+    dir = path.join(dir, match);
+  }
+  return null;
+};
+
 export default {
   'no dependency is declared with a file: or link: specifier': async ({ pass, fail }) => {
     const offenders = [];
@@ -147,20 +182,17 @@ export default {
     pass();
   },
 
-  'every relative import resolves to a file that exists': async ({ pass, fail }) => {
+  'every relative import resolves, matching case exactly': async ({ pass, fail }) => {
     const broken = [];
     for(const [file, source] of sources){
       for(const specifier of specifiersFor(source)){
         if(!specifier.startsWith('.')) continue;
-        const target = path.resolve(path.dirname(file), specifier);
-        if(existsSync(target)) continue;
-        if(existsSync(`${target}.js`)) continue;
-        if(existsSync(path.join(target, 'index.js'))) continue;
-        broken.push(`${rel(file)}\n      -> ${specifier}`);
+        const problem = resolveCaseExact(path.dirname(file), specifier);
+        if(problem) broken.push(`${rel(file)}\n      -> ${specifier}   (${problem})`);
       }
     }
     if(broken.length){
-      return fail(`relative imports that do not resolve (usually the wrong number of ../ segments):\n    ${broken.join('\n    ')}`);
+      return fail(`relative imports that do not resolve (wrong number of ../ segments, or a case mismatch that only fails on a case-sensitive filesystem):\n    ${broken.join('\n    ')}`);
     }
     pass();
   },

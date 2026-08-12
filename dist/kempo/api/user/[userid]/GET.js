@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import r from"../../../../../server/utils/users/getUserById.js";export default async(e,t)=>{const o=e.cookies.session_token,[i,n]=await s(o,"system:user:read");if(i)return t.status(i.code).json({error:i.msg});if(!n)return t.status(403).json({error:"Insufficient permissions"});const{userid:u}=e.params,[a,m]=await r(u);if(a)return t.status(a.code).json({error:a.msg});t.json(m)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\user\[userid]\GET.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\user\[userid]\GET.js.map

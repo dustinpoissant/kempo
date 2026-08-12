@@ -1,2 +1,2 @@
 import r from"../../../../../../server/utils/permissions/currentUserHasPermission.js";import s from"../../../../../../server/utils/groups/removeUserFromGroup.js";export default async(e,o)=>{const t=e.cookies.session_token,[i,n]=await r(t,"system:group:update");if(i)return o.status(i.code).json({error:i.msg});if(!n)return o.status(403).json({error:"Insufficient permissions"});const{userid:u}=e.params,{groupName:a}=e.body;if(!a)return o.status(400).json({error:"Group name is required"});const[m,p]=await s(u,a);if(m)return o.status(m.code).json({error:m.msg});o.json(p)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\user\[userid]\groups\DELETE.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\user\[userid]\groups\DELETE.js.map

@@ -1,2 +1,2 @@
 import s from"../../../../server/utils/permissions/currentUserHasPermission.js";export default async(e,t)=>{const r=e.cookies.session_token,[n,o]=await s(r,"system:extensions:install");if(n)return t.status(n.code).json({error:n.msg});if(!o)return t.status(403).json({error:"Insufficient permissions"});const{name:i}=e.body,{default:a}=await(import("../../../../server/utils/extensions/installExtension.js")),[u,m]=await a({name:i});if(u)return t.status(u.code).json({error:u.msg});t.json(m)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\POST.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\extensions\POST.js.map
