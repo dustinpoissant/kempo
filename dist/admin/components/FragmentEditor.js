@@ -98,4 +98,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/ke
         </k-accordion-panel>
       </k-accordion>
     `}}customElements.define("admin-fragment-editor",d);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\FragmentEditor.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\FragmentEditor.js.map

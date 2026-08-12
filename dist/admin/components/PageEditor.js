@@ -149,4 +149,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,repeat a
           `})}
       </k-accordion>
     `}}customElements.define("admin-page-editor",g);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\PageEditor.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\PageEditor.js.map

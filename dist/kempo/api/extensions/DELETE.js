@@ -1,2 +1,2 @@
 import s from"../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../server/utils/extensions/uninstallExtension.js";export default async(r,n)=>{const t=r.cookies.session_token,[o,i]=await s(t,"system:extensions:uninstall");if(o)return n.status(o.code).json({error:o.msg});if(!i)return n.status(403).json({error:"Insufficient permissions"});const{name:a,purgeData:u}=r.body,[m,c]=await e({name:a,purgeData:!0===u});if(m)return n.status(m.code).json({error:m.msg});n.json(c)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\extensions\DELETE.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\DELETE.js.map

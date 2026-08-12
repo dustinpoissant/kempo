@@ -1,2 +1,2 @@
 import e from"../../../../../server/utils/auth/logout.js";export default async(t,s)=>{try{const o=t.cookies.session_token,[r,a]=await e({token:o});if(r)return s.status(r.code).json({error:r.msg});s.setHeader("Set-Cookie","session_token=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0"),s.json(a)}catch(e){s.status(500).json({error:e.message})}};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\auth\logout\POST.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\auth\logout\POST.js.map

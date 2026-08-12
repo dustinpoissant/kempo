@@ -1,2 +1,2 @@
 import s from"../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../server/utils/admin-global-content/deleteAdminGlobalContent.js";export default async(r,o)=>{const t=r.cookies.session_token,[n,i]=await s(t,"system:globals:delete");if(n)return o.status(n.code).json({error:n.msg});if(!i)return o.status(403).json({error:"Insufficient permissions"});const{ids:a}=r.body,[m,l]=await e({ids:a});if(m)return o.status(m.code).json({error:m.msg});o.json(l)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\admin-globals\DELETE.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\admin-globals\DELETE.js.map

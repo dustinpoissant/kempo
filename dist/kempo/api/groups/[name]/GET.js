@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import r from"../../../../../server/utils/groups/getGroup.js";export default async(e,o)=>{const t=e.cookies.session_token,[n,i]=await s(t,"system:group:read");if(n)return o.status(n.code).json({error:n.msg});if(!i)return o.status(403).json({error:"Insufficient permissions"});const{name:a}=e.params,[u,m]=await r(decodeURIComponent(a));if(u)return o.status(u.code).json({error:u.msg});o.json(m)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\groups\[name]\GET.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\groups\[name]\GET.js.map

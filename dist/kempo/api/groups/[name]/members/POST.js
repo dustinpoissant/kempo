@@ -1,2 +1,2 @@
 import s from"../../../../../../server/utils/permissions/currentUserHasPermission.js";import r from"../../../../../../server/utils/groups/addUserToGroup.js";export default async(e,o)=>{const t=e.cookies.session_token,{userId:n}=e.body;if(!n)return o.status(400).json({error:"User ID is required"});const[i,u]=await s(t,"system:group:update");if(i)return o.status(i.code).json({error:i.msg});if(!u)return o.status(403).json({error:"Insufficient permissions"});const{name:a}=e.params,[m,d]=await r(n,decodeURIComponent(a));if(m)return o.status(m.code).json({error:m.msg});o.json(d)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\groups\[name]\members\POST.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\groups\[name]\members\POST.js.map

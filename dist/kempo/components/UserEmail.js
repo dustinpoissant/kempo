@@ -1,2 +1,2 @@
 import e from"/kempo-ui/components/LightComponent.js";import{getSession as t}from"../sdk.js";export default class o extends e{connectedCallback(){super.connectedCallback(),this.loadUserEmail()}async loadUserEmail(){const[e,o]=await t();if(e)return console.error("Failed to load user email:",e.msg),void(this.textContent="");this.textContent=o?.user?.email||""}renderLightDom(){return"Loading..."}}customElements.define("k-user-email",o);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\UserEmail.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\UserEmail.js.map

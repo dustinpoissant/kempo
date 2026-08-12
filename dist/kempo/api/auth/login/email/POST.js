@@ -1,2 +1,2 @@
 import e from"../../../../../../server/utils/auth/loginEmail.js";export default async(r,s)=>{try{const{email:o,password:t}=r.body,[n,a]=await e(o,t);if(n)return s.status(n.code).json({error:n.msg});s.cookie("session_token",a.sessionToken,{httpOnly:!0,secure:"production"===process.env.NODE_ENV,sameSite:"lax",path:"/",maxAge:a.expiresAt.getTime()-Date.now()}),s.json({user:a.user})}catch(e){console.error("Login error:",e),s.status(500).json({error:"Internal server error"})}};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\auth\login\email\POST.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\auth\login\email\POST.js.map

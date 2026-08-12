@@ -1,2 +1,2 @@
 import s from"../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../server/utils/extensions/listExtensions.js";export default async(r,t)=>{const o=r.cookies.session_token,[i,n]=await s(o,"system:extensions:read");if(i)return t.status(i.code).json({error:i.msg});if(!n)return t.status(403).json({error:"Insufficient permissions"});const a=parseInt(r.query.limit)||50,u=parseInt(r.query.offset)||0,[f,m]=await e({limit:a,offset:u});if(f)return t.status(f.code).json({error:f.msg});t.json(m)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\extensions\GET.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\GET.js.map
