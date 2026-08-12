@@ -1,21 +1,24 @@
 import { html } from '/kempo-ui/lit-all.min.js';
-import TableControl from '/kempo-ui/components/tableControls/TableControl.js';
+import AdminTableControl from './AdminTableControl.js';
 import Dialog from '/kempo-ui/components/Dialog.js';
 import Toast from '/kempo-ui/components/Toast.js';
 import '/kempo-ui/components/Icon.js';
 
-export default class TableRowDelete extends TableControl {
+export default class TableRowDelete extends AdminTableControl {
   static properties = {
-    maxWidth: { type: Number, attribute: 'max-width' },
     sdkMethod: { type: String, attribute: 'sdk-method' },
     primaryKey: { type: String, attribute: 'primary-key' }
   };
 
   constructor(){
     super();
-    this.maxWidth = 40;
     this.sdkMethod = 'deleteUsers';
     this.idField = 'id';
+  }
+
+  connectedCallback(){
+    super.connectedCallback();
+    if(!this.hasAttribute('title')) this.title = 'Delete Record';
   }
 
   delete = () => {
@@ -32,7 +35,7 @@ export default class TableRowDelete extends TableControl {
         return;
       }
 
-      const [error, result] = await deleteMethod([this.record[this.primaryKey]]);
+      const [error] = await deleteMethod([this.record[this.primaryKey]]);
 
       if(error){
         Toast.error(error.msg || 'Failed to delete record');
@@ -44,11 +47,9 @@ export default class TableRowDelete extends TableControl {
     });
   };
 
-  render(){
-    return html`<button class="no-btn icon-btn" @click="${this.delete}">
-      <slot><k-icon name="delete"></k-icon></slot>
-    </button>`;
-  }
+  handleAction(){ this.delete(); }
+
+  render(){ return html`<slot><k-icon name="delete"></k-icon></slot>`; }
 }
 
 customElements.define('admin-table-row-delete', TableRowDelete);

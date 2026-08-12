@@ -6,14 +6,14 @@
 <script type="module" src="/kempo-ui/components/Toggle.js"></script>
 <script type="module" src="/kempo-ui/components/Icon.js"></script>
 <script type="module" src="/kempo-ui/components/Table.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcFirstPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPrevPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcNextPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcLastPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPageSelect.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPageSize.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcDeleteRecord.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcDeleteSelected.js"></script>
 <script type="module" src="/admin/components/GroupDeleteSelected.js"></script>
 <script type="module" src="/admin/components/AddGroupControl.js"></script>
 <script type="module" src="/admin/components/ClearExpiredSessionsControl.js"></script>
@@ -65,7 +65,7 @@
 				<h2>Groups</h2>
 				<k-table id="groupsTable" request-delete placeholder="Not a member of any groups.">
 					<admin-table-row-link slot="before" url-pattern="/admin/accounts/groups/{name}" field-name="name"></admin-table-row-link>
-					<k-tc-delete-record slot="after"></k-tc-delete-record>
+					<kc-tc-delete-record slot="after"></kc-tc-delete-record>
 					<div slot="top" id="groupsTableTop" class="d-f full" style="display:none; align-items: center;">
 						<div><admin-group-delete-selected></admin-group-delete-selected></div>
 						<div class="flex"></div>
@@ -78,23 +78,23 @@
 			<div class="card">
 				<h2>Sessions</h2>
 				<k-table id="sessionsTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No active sessions.">
-					<k-tc-delete-record slot="after"></k-tc-delete-record>
+					<kc-tc-delete-record slot="after"></kc-tc-delete-record>
 					<div slot="top" class="d-f full" style="align-items: center;">
-						<div><k-tc-delete-selected></k-tc-delete-selected></div>
+						<div><kc-tc-delete-selected></kc-tc-delete-selected></div>
 						<div class="flex"></div>
 						<div><admin-clear-expired-sessions id="clearExpiredBtn" style="display:none;"></admin-clear-expired-sessions></div>
 					</div>
 					<div class="d-f full" style="align-items: center;">
 						<div>
-							<k-tc-first-page></k-tc-first-page>
-							<k-tc-prev-page></k-tc-prev-page>
-							<k-tc-next-page></k-tc-next-page>
-							<k-tc-last-page></k-tc-last-page>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
 						</div>
 						<div class="flex"></div>
-						<div><k-tc-page-select></k-tc-page-select></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
 						<div class="flex"></div>
-						<div><k-tc-page-size></k-tc-page-size></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
 					</div>
 				</k-table>
 			</div>

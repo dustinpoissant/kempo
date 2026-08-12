@@ -1,6 +1,2 @@
-import o from"/kempo-ui/components/tableControls/TableControl.js";import{html as t}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Icon.js";export default class n extends o{render(){return t`
-      <button class="no-btn icon-btn" title="Add to Group">
-        <k-icon name="add"></k-icon>
-      </button>
-    `}}customElements.define("admin-add-group-control",n);
+import t from"./AdminTableControl.js";import{html as e}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Icon.js";export default class o extends t{connectedCallback(){super.connectedCallback(),this.hasAttribute("title")||(this.title="Add to Group")}render(){return e`<k-icon name="add"></k-icon>`}}customElements.define("admin-add-group-control",o);
 //# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\AddGroupControl.js.map

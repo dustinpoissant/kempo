@@ -1,4 +1,4 @@
-import TableControl from '/kempo-ui/components/tableControls/TableControl.js';
+import AdminTableControl from '../AdminTableControl.js';
 import { html } from '/kempo-ui/lit-all.min.js';
 import Dialog from '/kempo-ui/components/Dialog.js';
 import Toast from '/kempo-ui/components/Toast.js';
@@ -6,7 +6,7 @@ import '/kempo-ui/components/Icon.js';
 import '/kempo-ui/components/Combobox.js';
 import '/kempo-ui/components/Spinner.js';
 
-export default class AddMember extends TableControl {
+export default class AddMember extends AdminTableControl {
   groupName = '';
 
   addMember = () => {
@@ -49,13 +49,14 @@ export default class AddMember extends TableControl {
     });
   };
 
-  render(){
-    return html`
-      <button class="no-btn icon-btn" title="Add Member" @click="${this.addMember}">
-        <k-icon name="person_add"></k-icon>
-      </button>
-    `;
+  connectedCallback(){
+    super.connectedCallback();
+    if(!this.hasAttribute('title')) this.title = 'Add Member';
   }
+
+  handleAction(){ this.addMember(); }
+
+  render(){ return html`<k-icon name="person_add"></k-icon>`; }
 }
 
 customElements.define('admin-add-member', AddMember);

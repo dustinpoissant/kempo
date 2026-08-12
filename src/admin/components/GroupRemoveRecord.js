@@ -1,19 +1,21 @@
-import TableControl from '/kempo-ui/components/tableControls/TableControl.js';
+import AdminTableControl from './AdminTableControl.js';
 import { html } from '/kempo-ui/lit-all.min.js';
 import '/kempo-ui/components/Icon.js';
 
-export default class GroupRemoveRecord extends TableControl {
-  remove = () => {
-    if(this.record) this.table.deleteRecord(this.record);
-  };
+export default class GroupRemoveRecord extends AdminTableControl {
+  connectedCallback(){
+    super.connectedCallback();
+    if(!this.hasAttribute('title')) this.title = 'Remove from Group';
+  }
 
-  render() {
+  handleAction(){
+    if(this.record && this.record.name !== 'system:Users') this.table.deleteRecord(this.record);
+  }
+
+  render(){
+    // system:Users is the built-in group every user belongs to and cannot be removed from
     if(this.record?.name === 'system:Users') return html``;
-    return html`
-      <button class="no-btn icon-btn" @click="${this.remove}">
-        <k-icon name="delete"></k-icon>
-      </button>
-    `;
+    return html`<k-icon name="delete"></k-icon>`;
   }
 }
 

@@ -4,15 +4,15 @@
 <page title="Permissions - Admin">
 <content>
 <script type="module" src="/kempo-ui/components/Table.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/Edit.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcFirstPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPrevPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcNextPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcLastPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPageSelect.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPageSize.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcEdit.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcDeleteRecord.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcDeleteSelected.js"></script>
 <script type="module" src="/kempo-ui/components/Tags.js"></script>
 <script type="module" src="/kempo/components/Permission.js"></script>
 
@@ -28,21 +28,21 @@
 			<div slot="top" class="d-f full" style="align-items: center;">
 				<div>
 					<k-permission has="system:permissions:manage">
-						<k-tc-delete-selected></k-tc-delete-selected>
+						<kc-tc-delete-selected></kc-tc-delete-selected>
 					</k-permission>
 				</div>
 			</div>
 			<div class="d-f full" style="align-items: center;">
 				<div>
-					<k-tc-first-page></k-tc-first-page>
-					<k-tc-prev-page></k-tc-prev-page>
-					<k-tc-next-page></k-tc-next-page>
-					<k-tc-last-page></k-tc-last-page>
+					<kc-tc-first-page></kc-tc-first-page>
+					<kc-tc-prev-page></kc-tc-prev-page>
+					<kc-tc-next-page></kc-tc-next-page>
+					<kc-tc-last-page></kc-tc-last-page>
 				</div>
 				<div class="flex"></div>
-				<div><k-tc-page-select></k-tc-page-select></div>
+				<div><kc-tc-page-select></kc-tc-page-select></div>
 				<div class="flex"></div>
-				<div><k-tc-page-size></k-tc-page-size></div>
+				<div><kc-tc-page-size></kc-tc-page-size></div>
 			</div>
 		</k-table>
 
@@ -50,15 +50,15 @@
 		<k-table id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension permissions installed.">
 			<div class="d-f full" style="align-items: center;">
 				<div>
-					<k-tc-first-page></k-tc-first-page>
-					<k-tc-prev-page></k-tc-prev-page>
-					<k-tc-next-page></k-tc-next-page>
-					<k-tc-last-page></k-tc-last-page>
+					<kc-tc-first-page></kc-tc-first-page>
+					<kc-tc-prev-page></kc-tc-prev-page>
+					<kc-tc-next-page></kc-tc-next-page>
+					<kc-tc-last-page></kc-tc-last-page>
 				</div>
 				<div class="flex"></div>
-				<div><k-tc-page-select></k-tc-page-select></div>
+				<div><kc-tc-page-select></kc-tc-page-select></div>
 				<div class="flex"></div>
-				<div><k-tc-page-size></k-tc-page-size></div>
+				<div><kc-tc-page-size></kc-tc-page-size></div>
 			</div>
 		</k-table>
 
@@ -66,15 +66,15 @@
 		<k-table id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system permissions found.">
 			<div class="d-f full" style="align-items: center;">
 				<div>
-					<k-tc-first-page></k-tc-first-page>
-					<k-tc-prev-page></k-tc-prev-page>
-					<k-tc-next-page></k-tc-next-page>
-					<k-tc-last-page></k-tc-last-page>
+					<kc-tc-first-page></kc-tc-first-page>
+					<kc-tc-prev-page></kc-tc-prev-page>
+					<kc-tc-next-page></kc-tc-next-page>
+					<kc-tc-last-page></kc-tc-last-page>
 				</div>
 				<div class="flex"></div>
-				<div><k-tc-page-select></k-tc-page-select></div>
+				<div><kc-tc-page-select></kc-tc-page-select></div>
 				<div class="flex"></div>
-				<div><k-tc-page-size></k-tc-page-size></div>
+				<div><kc-tc-page-size></kc-tc-page-size></div>
 			</div>
 		</k-table>
 
@@ -126,7 +126,7 @@
 			const setupTable = ($table, owner, loadFn) => {
 				if(canManage && owner !== 'system'){
 					$table.setAttribute('request-edit', '');
-					const edit = document.createElement('k-tc-edit');
+					const edit = document.createElement('kc-tc-edit');
 					edit.setAttribute('slot', 'after');
 					$table.appendChild(edit);
 				}
@@ -134,7 +134,7 @@
 				if(canManage && owner === 'custom'){
 					$table.setAttribute('request-delete', '');
 					$table.setAttribute('enable-selection', '');
-					const del = document.createElement('k-tc-delete-record');
+					const del = document.createElement('kc-tc-delete-record');
 					del.setAttribute('slot', 'after');
 					$table.appendChild(del);
 				}

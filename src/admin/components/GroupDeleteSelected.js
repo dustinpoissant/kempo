@@ -1,47 +1,37 @@
-import TableControl from '/kempo-ui/components/tableControls/TableControl.js';
+import AdminTableControl from './AdminTableControl.js';
 import { html } from '/kempo-ui/lit-all.min.js';
 import '/kempo-ui/components/Icon.js';
 
-export default class GroupDeleteSelected extends TableControl {
-  constructor() {
-    super({ maxWidth: null });
-    this.selectionChangeHandler = () => this.requestUpdate();
-  }
+export default class GroupDeleteSelected extends AdminTableControl {
+  // Control re-renders on these host events, replacing the manual listener wiring
+  static hostEvents = ['selectionChange'];
 
-  connectedCallback() {
+  connectedCallback(){
     super.connectedCallback();
-    this.onTableEvent('selectionChange', this.selectionChangeHandler);
+    if(!this.hasAttribute('title')) this.title = 'Remove Selected';
   }
 
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    if(this.table) this.table.removeEventListener('selectionChange', this.selectionChangeHandler);
-  }
-
-  deleteSelected = () => {
-    if(!this.table) return;
-    const selected = this.table.getSelectedRecords();
-    const records = selected.filter(r => r.name !== 'system:Users');
-    if(!records.length) return;
-    const systemUsersSkipped = selected.some(r => r.name === 'system:Users');
-    this.dispatchEvent(new CustomEvent('groupRemoveSelected', {
-      detail: { records, systemUsersSkipped },
-      bubbles: true
-    }));
-  };
-
-  get deletableCount() {
+  get deletableCount(){
     if(!this.table) return 0;
     return this.table.getSelectedRecords().filter(r => r.name !== 'system:Users').length;
   }
 
-  render() {
-    return html`
-      <button class="no-btn icon-btn" ?disabled="${this.deletableCount === 0}" @click="${this.deleteSelected}">
-        <k-icon name="delete"></k-icon>
-      </button>
-    `;
+  willUpdate(){
+    this.disabled = this.deletableCount === 0;
   }
+
+  handleAction(){
+    if(!this.table) return;
+    const selected = this.table.getSelectedRecords();
+    const records = selected.filter(r => r.name !== 'system:Users');
+    if(!records.length) return;
+    this.dispatchEvent(new CustomEvent('groupRemoveSelected', {
+      detail: { records, systemUsersSkipped: selected.some(r => r.name === 'system:Users') },
+      bubbles: true
+    }));
+  }
+
+  render(){ return html`<k-icon name="delete"></k-icon>`; }
 }
 
 customElements.define('admin-group-delete-selected', GroupDeleteSelected);

@@ -9,35 +9,35 @@
 		></script>
 		<script
 			type="module"
-			src="/kempo-ui/components/tableControls/FirstPage.js"
+			src="/kempo-ui/components/controls/TcFirstPage.js"
 		></script>
 		<script
 			type="module"
-			src="/kempo-ui/components/tableControls/PrevPage.js"
+			src="/kempo-ui/components/controls/TcPrevPage.js"
 		></script>
 		<script
 			type="module"
-			src="/kempo-ui/components/tableControls/NextPage.js"
+			src="/kempo-ui/components/controls/TcNextPage.js"
 		></script>
 		<script
 			type="module"
-			src="/kempo-ui/components/tableControls/LastPage.js"
+			src="/kempo-ui/components/controls/TcLastPage.js"
 		></script>
 		<script
 			type="module"
-			src="/kempo-ui/components/tableControls/PageSelect.js"
+			src="/kempo-ui/components/controls/TcPageSelect.js"
 		></script>
 		<script
 			type="module"
-			src="/kempo-ui/components/tableControls/PageSize.js"
+			src="/kempo-ui/components/controls/TcPageSize.js"
 		></script>
 		<script
 			type="module"
-			src="/kempo-ui/components/tableControls/DeleteRecord.js"
+			src="/kempo-ui/components/controls/TcDeleteRecord.js"
 		></script>
 		<script
 			type="module"
-			src="/kempo-ui/components/tableControls/DeleteSelected.js"
+			src="/kempo-ui/components/controls/TcDeleteSelected.js"
 		></script>
 		<script
 			type="module"
@@ -86,7 +86,7 @@
 			>
 				<div>
 					<k-permission has="system:pages:delete">
-						<k-tc-delete-selected></k-tc-delete-selected>
+						<kc-tc-delete-selected></kc-tc-delete-selected>
 					</k-permission>
 				</div>
 			</div>
@@ -95,15 +95,15 @@
 				style="align-items: center;"
 			>
 				<div>
-					<k-tc-first-page></k-tc-first-page>
-					<k-tc-prev-page></k-tc-prev-page>
-					<k-tc-next-page></k-tc-next-page>
-					<k-tc-last-page></k-tc-last-page>
+					<kc-tc-first-page></kc-tc-first-page>
+					<kc-tc-prev-page></kc-tc-prev-page>
+					<kc-tc-next-page></kc-tc-next-page>
+					<kc-tc-last-page></kc-tc-last-page>
 				</div>
 				<div class="flex"></div>
-				<div><k-tc-page-select></k-tc-page-select></div>
+				<div><kc-tc-page-select></kc-tc-page-select></div>
 				<div class="flex"></div>
-				<div><k-tc-page-size></k-tc-page-size></div>
+				<div><kc-tc-page-size></kc-tc-page-size></div>
 			</div>
 		</k-table>
 
@@ -125,15 +125,15 @@
 				style="align-items: center;"
 			>
 				<div>
-					<k-tc-first-page></k-tc-first-page>
-					<k-tc-prev-page></k-tc-prev-page>
-					<k-tc-next-page></k-tc-next-page>
-					<k-tc-last-page></k-tc-last-page>
+					<kc-tc-first-page></kc-tc-first-page>
+					<kc-tc-prev-page></kc-tc-prev-page>
+					<kc-tc-next-page></kc-tc-next-page>
+					<kc-tc-last-page></kc-tc-last-page>
 				</div>
 				<div class="flex"></div>
-				<div><k-tc-page-select></k-tc-page-select></div>
+				<div><kc-tc-page-select></kc-tc-page-select></div>
 				<div class="flex"></div>
-				<div><k-tc-page-size></k-tc-page-size></div>
+				<div><kc-tc-page-size></kc-tc-page-size></div>
 			</div>
 		</k-table>
 
@@ -155,15 +155,15 @@
 				style="align-items: center;"
 			>
 				<div>
-					<k-tc-first-page></k-tc-first-page>
-					<k-tc-prev-page></k-tc-prev-page>
-					<k-tc-next-page></k-tc-next-page>
-					<k-tc-last-page></k-tc-last-page>
+					<kc-tc-first-page></kc-tc-first-page>
+					<kc-tc-prev-page></kc-tc-prev-page>
+					<kc-tc-next-page></kc-tc-next-page>
+					<kc-tc-last-page></kc-tc-last-page>
 				</div>
 				<div class="flex"></div>
-				<div><k-tc-page-select></k-tc-page-select></div>
+				<div><kc-tc-page-select></kc-tc-page-select></div>
 				<div class="flex"></div>
-				<div><k-tc-page-size></k-tc-page-size></div>
+				<div><kc-tc-page-size></kc-tc-page-size></div>
 			</div>
 		</k-table>
 
@@ -256,7 +256,7 @@
 			if(myPerms.has('system:pages:delete')){
 				$customTable.setAttribute('request-delete', '');
 				$customTable.setAttribute('enable-selection', '');
-				const del = document.createElement('k-tc-delete-record');
+				const del = document.createElement('kc-tc-delete-record');
 				del.setAttribute('slot', 'after');
 				$customTable.appendChild(del);
 			}

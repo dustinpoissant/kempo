@@ -5,14 +5,14 @@
 <content>
 <script type="module" src="/kempo-ui/components/Icon.js"></script>
 <script type="module" src="/kempo-ui/components/Table.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/FirstPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/PrevPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/NextPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/LastPage.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/PageSelect.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/PageSize.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/DeleteRecord.js"></script>
-<script type="module" src="/kempo-ui/components/tableControls/DeleteSelected.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcFirstPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPrevPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcNextPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcLastPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPageSelect.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPageSize.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcDeleteRecord.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcDeleteSelected.js"></script>
 <script type="module" src="/admin/components/tableControls/AddMember.js"></script>
 <script type="module" src="/admin/components/tableControls/AddPermission.js"></script>
 <script type="module" src="/admin/components/TableRowLink.js"></script>
@@ -65,19 +65,19 @@
 				<p id="usersMembersMsg" style="display:none">All users are automatically members of this group.</p>
 				<k-table id="membersTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="This group has no members.">
 					<admin-table-row-link slot="before" url-pattern="/admin/accounts/users/{id}" field-name="id"></admin-table-row-link>
-					<k-tc-delete-selected id="tcDeleteSelected" slot="top" style="display:none;"></k-tc-delete-selected>
+					<kc-tc-delete-selected id="tcDeleteSelected" slot="top" style="display:none;"></kc-tc-delete-selected>
 					<admin-add-member id="tcAddMember" slot="top" style="display:none;"></admin-add-member>
 					<div class="d-f full" style="align-items: center;">
 						<div>
-							<k-tc-first-page></k-tc-first-page>
-							<k-tc-prev-page></k-tc-prev-page>
-							<k-tc-next-page></k-tc-next-page>
-							<k-tc-last-page></k-tc-last-page>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
 						</div>
 						<div class="flex"></div>
-						<div><k-tc-page-select></k-tc-page-select></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
 						<div class="flex"></div>
-						<div><k-tc-page-size></k-tc-page-size></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
 					</div>
 				</k-table>
 			</div>
@@ -87,19 +87,19 @@
 				<h2>Permissions</h2>
 				<p id="adminPermsMsg" style="display:none">Members of this group automatically have all permissions.</p>
 				<k-table id="permissionsTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No permissions assigned to this group.">
-					<k-tc-delete-selected id="tcDeleteSelectedPerm" slot="top" style="display:none;"></k-tc-delete-selected>
+					<kc-tc-delete-selected id="tcDeleteSelectedPerm" slot="top" style="display:none;"></kc-tc-delete-selected>
 					<admin-add-permission id="tcAddPermission" slot="top" style="display:none;"></admin-add-permission>
 					<div class="d-f full" style="align-items: center;">
 						<div>
-							<k-tc-first-page></k-tc-first-page>
-							<k-tc-prev-page></k-tc-prev-page>
-							<k-tc-next-page></k-tc-next-page>
-							<k-tc-last-page></k-tc-last-page>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
 						</div>
 						<div class="flex"></div>
-						<div><k-tc-page-select></k-tc-page-select></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
 						<div class="flex"></div>
-						<div><k-tc-page-size></k-tc-page-size></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
 					</div>
 				</k-table>
 			</div>
@@ -239,7 +239,7 @@
 						$tcDeleteSelected.style.display = '';
 						$tcAddMember.style.display = '';
 
-						const del = document.createElement('k-tc-delete-record');
+						const del = document.createElement('kc-tc-delete-record');
 						del.setAttribute('slot', 'after');
 						$membersTable.appendChild(del);
 					}
@@ -318,7 +318,7 @@
 						$tcAddPermission.groupName = groupName;
 						$tcAddPermission.style.display = '';
 
-						const delPerm = document.createElement('k-tc-delete-record');
+						const delPerm = document.createElement('kc-tc-delete-record');
 						delPerm.setAttribute('slot', 'after');
 						$permissionsTable.appendChild(delPerm);
 
