@@ -123,7 +123,7 @@
 			const myPerms = new Set(permData?.permissions ?? []);
 
 			const fields = [
-				{ name: 'lockedBadge', label: '', size: 40, formatter: v => v },
+				{ name: 'locked', label: '', size: 40, calculator: r => r.locked ? html`<k-icon name="lock"></k-icon>` : html`` },
 				{ name: 'name', label: 'Name', size: 150 },
 				{ name: 'directory', label: 'Directory', size: 200 },
 				{ name: 'author', label: 'Author', size: 150 },
@@ -149,8 +149,7 @@
 				const toEditPath = t => ({
 					...t,
 					directory: t.directory === '.' ? '/' : t.directory,
-					editPath: (t.directory === '.' ? t.name : `${t.directory}/${t.name}`),
-					lockedBadge: t.locked ? '<k-icon name="lock"></k-icon>' : ''
+					editPath: (t.directory === '.' ? t.name : `${t.directory}/${t.name}`)
 				});
 				const custom = data.templates.filter(t => t.owner === 'custom').map(toEditPath);
 				const extension = data.templates.filter(t => t.owner !== 'custom' && t.owner !== 'system').map(toEditPath);

@@ -94,7 +94,7 @@
 			const myPerms = new Set(permData?.permissions ?? []);
 
 			const fields = [
-				{ name: 'lockedBadge', label: '', size: 40, formatter: v => v },
+				{ name: 'locked', label: '', size: 40, calculator: r => r.locked ? html`<k-icon name="lock"></k-icon>` : html`` },
 				{ name: 'name', label: 'Name', size: 200 },
 				{ name: 'location', label: 'Location', size: 150 },
 				{ name: 'priority', label: 'Priority', size: 80 },
@@ -112,17 +112,15 @@
 			const $extensionTable = document.getElementById('extensionTable');
 			const $systemTable = document.getElementById('systemTable');
 
-			const addBadge = e => ({ ...e, lockedBadge: e.locked ? '<k-icon name="lock"></k-icon>' : '' });
-
 			const loadEntries = async () => {
 				const [error, data] = await listGlobalContent();
 				if(error){
 					Toast.error(error.msg || 'Failed to load global content');
 					return;
 				}
-				const custom = data.entries.filter(e => e.owner === 'custom').map(addBadge);
-				const extension = data.entries.filter(e => e.owner !== 'custom' && e.owner !== 'system').map(addBadge);
-				const system = data.entries.filter(e => e.owner === 'system').map(addBadge);
+				const custom = data.entries.filter(e => e.owner === 'custom');
+				const extension = data.entries.filter(e => e.owner !== 'custom' && e.owner !== 'system');
+				const system = data.entries.filter(e => e.owner === 'system');
 				$customTable.setData({ records: custom, fields });
 				$extensionTable.setData({ records: extension, fields: extensionFields });
 				$systemTable.setData({ records: system, fields });

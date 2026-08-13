@@ -93,7 +93,7 @@
 			const myPerms = new Set(permData?.permissions ?? []);
 
 			const fields = [
-				{ name: 'lockedBadge', label: '', size: 40, formatter: v => v },
+				{ name: 'locked', label: '', size: 40, calculator: r => r.locked ? html`<k-icon name="lock"></k-icon>` : html`` },
 				{ name: 'name', label: 'Name', size: 200 },
 				{ name: 'file', label: 'File', size: 300 },
 				{ name: 'author', label: 'Author', size: 150 },
@@ -116,7 +116,7 @@
 					Toast.error(error.msg || 'Failed to load fragments');
 					return;
 				}
-				const toEditPath = f => ({ ...f, editPath: f.file.replace(/\.fragment\.html$/, ''), lockedBadge: f.locked ? '<k-icon name="lock"></k-icon>' : '' });
+				const toEditPath = f => ({ ...f, editPath: f.file.replace(/\.fragment\.html$/, '') });
 				const custom = data.fragments.filter(f => f.owner === 'custom').map(toEditPath);
 				const extension = data.fragments.filter(f => f.owner !== 'custom' && f.owner !== 'system').map(toEditPath);
 				const system = data.fragments.filter(f => f.owner === 'system').map(toEditPath);
