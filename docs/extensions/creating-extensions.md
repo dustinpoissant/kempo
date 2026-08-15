@@ -205,6 +205,8 @@ export default async (data) => {
 
 Errors in hook handlers are caught and logged — they do not interrupt the triggering operation.
 
+Handlers are **awaited one at a time, in registration order**. That means slow work in a handler delays whatever triggered the event: if your handler needs to do something expensive (call an external API, run a model), start the work and return rather than awaiting it here.
+
 ### Built-in Events
 
 | Event | Data | When |
@@ -213,6 +215,35 @@ Errors in hook handlers are caught and logged — they do not interrupt the trig
 | `extension:uninstalled` | `{ name }` | After any extension is uninstalled |
 | `extension:updated` | `{ name, oldVersion, newVersion }` | After any extension is updated |
 | `page-created` | `{ page }` | After a page is created |
+| `route:unmatched` | `{ url, method, request, draft }` | A request matched no file, page or route anywhere on the site |
+
+### Answering a Request Nothing Else Claimed
+
+`route:unmatched` is how an extension serves something that has no file behind it — a download gated behind a permission check, a short link, a generated feed. It fires for any unmatched URL on the site, at any depth, with no prefix or configuration involved.
+
+Handlers never touch the response directly. Instead they fill in `data.draft`, and kempo performs a single write once every handler has run:
+
+```javascript
+// hooks/route-unmatched.js
+export default async ({ url, request, draft }) => {
+  const file = await lookUpByPath(url);
+  if(!file) return;                         // not ours — leave the draft untouched
+
+  draft.headers['Content-Type'] = 'text/plain';
+  draft.filePath = file.absolutePath;        // streamed with Range support
+  draft.handled = true;
+};
+```
+
+| Field | Effect |
+|---|---|
+| `filePath` | Streamed through kempo-server, so `Range`/`206` works and large media still seeks. Takes precedence over `body`. |
+| `body` | Sent as-is with `status` (default `200`). |
+| `status` | Response status. Defaults to `200` with a body, `204` when only `handled` is set. |
+| `headers` | Merged into the response — including onto the default 404, so you can annotate a response you did not claim. |
+| `handled` | Whether an earlier handler already answered. Set it when you claim the request. |
+
+Because nothing is sent until every handler has run, claiming a request never silences the handlers after you — an extension that logs 404s still sees requests you answered, and a later handler can add to a response already in progress. Check `draft.handled` if you want to defer to whoever got there first. If no handler claims the request, the site's `CATCH.page.html` renders as a normal 404.
 
 ## Public Routes
 

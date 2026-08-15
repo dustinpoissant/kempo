@@ -232,7 +232,7 @@ export default class PageEditor extends ShadowComponent {
 
         Toast.success('Page saved and moved');
         setTimeout(() => {
-          window.location.href = `/admin/pages/edit?path=${encodeURIComponent(moved.file.replace(/\.page\.html$/, ''))}`;
+          window.location.href = `/admin/content/pages/edit?path=${encodeURIComponent(moved.file.replace(/\.page\.html$/, ''))}`;
         }, 1000);
       },
       cancelText: 'Cancel'
