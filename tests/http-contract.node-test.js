@@ -250,6 +250,36 @@ const buildTests = () => ({
     pass();
   },
 
+  'lexical bundles are served no-cache so a stale entry can never outlive a rebuild': async ({ pass, fail }) => {
+    if(!state.port) return fail('server did not start');
+
+    const url = `http://127.0.0.1:${state.port}/kempo/vendor/lexical/lexical@0.43.0`;
+    const res = await fetch(url);
+    const cacheControl = res.headers.get('cache-control') || '';
+
+    /*
+      Regression test for the stale-cache bug: 'public, must-revalidate' with no max-age leaves
+      freshness to browser heuristics, so a cached entry could be reused with no conditional request
+      at all — even after a rebuild deleted the chunk it imports. no-cache forces a conditional GET
+      every time, so the ETag check below always gets a chance to catch a rebuild.
+    */
+    if(!cacheControl.includes('no-cache')) return fail(`expected Cache-Control to include no-cache, got '${cacheControl}'`);
+    if(cacheControl.includes('must-revalidate') && !cacheControl.includes('no-cache')){
+      return fail(`must-revalidate alone is not enough — got '${cacheControl}'`);
+    }
+
+    const etag = res.headers.get('etag');
+    if(!etag) return fail('no ETag header — a conditional request has nothing to validate against');
+
+    const revalidated = await fetch(url, { headers: { 'If-None-Match': etag } });
+    if(revalidated.status !== 304) return fail(`expected a 304 for a matching ETag, got ${revalidated.status}`);
+    if(!(revalidated.headers.get('cache-control') || '').includes('no-cache')){
+      return fail('the 304 response dropped the no-cache directive');
+    }
+
+    pass();
+  },
+
   'a signed-out session is rejected once its cookie is revoked': async ({ pass, fail }) => {
     if(!state.port) return fail('server did not start');
 
