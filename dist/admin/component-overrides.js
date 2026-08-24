@@ -1,0 +1,2 @@
+export const registerComponentOverride=(e,o)=>{window.kempo=window.kempo||{},window.kempo.componentOverrides=window.kempo.componentOverrides||{},window.kempo.componentOverrides[e]=o};export const getComponentOverride=(e,o)=>window.kempo?.componentOverrides?.[e]||o;
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\component-overrides.js.map

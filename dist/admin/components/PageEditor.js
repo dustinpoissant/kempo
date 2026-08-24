@@ -1,13 +1,13 @@
-import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,repeat as a}from"/kempo-ui/lit-all.min.js";import{getPage as n,updatePage as s,listTemplates as i,deletePages as l,listDirectories as o,movePage as r}from"/kempo/sdk.js";import c from"/kempo-ui/components/Dialog.js";import d from"/kempo-ui/components/Toast.js";import"/kempo-ui/components/Icon.js";import"/kempo-ui/components/Accordion.js";import"/kempo-ui/components/HtmlEditor.js";const m=new Set(["head","scripts"]),p=e=>e.toLowerCase().trim().replace(/[^\w\s-]/g,"").replace(/[\s_]+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");export default class g extends e{static properties={loading:{state:!0},error:{state:!0},saving:{state:!0},page:{state:!0},templates:{state:!0},contents:{state:!0}};constructor(){super(),this.loading=!0,this.error=!1,this.saving=!1,this.page=null,this.templates=[],this.contents=[],this.file=""}async connectedCallback(){if(super.connectedCallback(),document.addEventListener("keydown",this.handleKeyDown),this.file=new URLSearchParams(window.location.search).get("path")+".page.html",!this.file||".page.html"===this.file)return this.loading=!1,void(this.error=!0);const[[e,t],[,a]]=await Promise.all([n(this.file),i()]);this.loading=!1,e?this.error=!0:(this.templates=a?.templates||[],this.page=t,this.contents=this.buildContents(t.template,t.contents),document.title=`Edit: ${t.name||t.title||this.file} - Admin`)}disconnectedCallback(){super.disconnectedCallback(),document.removeEventListener("keydown",this.handleKeyDown)}getPageUrl(){return"/"+this.file.replace(/\.page\.html$/,"").split("/").filter(Boolean).join("/")}buildContents(e,t){const a=this.templates.find(t=>t.name===e),n=(a?.locations||[{name:"default",label:null}]).map(e=>"string"==typeof e?{name:e,label:null}:e),s=n.map(({name:e,label:a})=>{const n=t.find(t=>t.location===e);return{location:e,label:a||null,content:n?.content||"",orphaned:!1}});for(const e of t)n.some(t=>t.name===e.location)||s.push({location:e.location,label:null,content:e.content,orphaned:!0});return s}getFormState(){const e=this.shadowRoot,t=new Map([...e.querySelectorAll("k-html-editor[data-location]")].map(e=>[e.dataset.location,e.getValue()]));return{name:e.querySelector("#metaName").value,title:e.querySelector("#metaTitle").value,description:e.querySelector("#metaDescription").value,template:e.querySelector("#metaTemplate").value,contents:this.contents.map(({location:e,content:a,orphaned:n})=>({location:e,content:n?t.get(e)?.trim()||a:t.get(e)??a}))}}handleKeyDown=e=>{(e.ctrlKey||e.metaKey)&&"s"===e.key&&(e.preventDefault(),this.saving||this.page?.locked||this.handleSave())};handleTemplateChange=e=>{if(this.page?.locked)return;const t=e.target.value,a=new Map([...this.shadowRoot.querySelectorAll("k-html-editor[data-location]")].map(e=>[e.dataset.location,e.getValue()])),n=this.contents.map(({location:e,content:t})=>({location:e,content:a.get(e)?.trim()||t}));this.contents=this.buildContents(t,n),this.page={...this.page,template:t}};handleDelete=()=>{c.confirm("Delete this page? This action cannot be undone.",async e=>{if(!e)return;const[t]=await l([this.file]);t?d.error(t.msg||"Failed to delete page"):(d.success("Page deleted"),setTimeout(()=>{window.location.href="/admin/pages"},1e3))})};handleMove=async()=>{const[,e]=await o(),a=e?.directories||["."],n=this.file.replace(/\.page\.html$/,"").split("/"),i=n.pop(),l=n.join("/")||".",m=e=>/^\/[a-zA-Z0-9_\-\[\]\/]*$/.test(e)&&!e.includes("..")&&!e.includes("//"),g=e=>(e||"/").replace(/^\//,"").replace(/\/$/,"")||".",h="."===l?"/":"/"+l,u=c.create(t`
+import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,repeat as a,staticHtml as n,unsafeStatic as s}from"/kempo-ui/lit-all.min.js";import{getPage as i,updatePage as l,listTemplates as o,deletePages as r,listDirectories as c,movePage as d}from"/kempo/sdk.js";import m from"/kempo-ui/components/Dialog.js";import p from"/kempo-ui/components/Toast.js";import{getComponentOverride as g}from"../component-overrides.js";import"/kempo-ui/components/Icon.js";import"/kempo-ui/components/Accordion.js";import"/kempo-ui/components/HtmlEditor.js";const h=new Set(["head","scripts"]),u=e=>e.toLowerCase().trim().replace(/[^\w\s-]/g,"").replace(/[\s_]+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");export default class v extends e{static properties={loading:{state:!0},error:{state:!0},saving:{state:!0},page:{state:!0},templates:{state:!0},contents:{state:!0}};constructor(){super(),this.loading=!0,this.error=!1,this.saving=!1,this.page=null,this.templates=[],this.contents=[],this.file=""}async connectedCallback(){if(super.connectedCallback(),document.addEventListener("keydown",this.handleKeyDown),this.file=new URLSearchParams(window.location.search).get("path")+".page.html",!this.file||".page.html"===this.file)return this.loading=!1,void(this.error=!0);const[[e,t],[,a]]=await Promise.all([i(this.file),o()]);this.loading=!1,e?this.error=!0:(this.templates=a?.templates||[],this.page=t,this.contents=this.buildContents(t.template,t.contents),document.title=`Edit: ${t.name||t.title||this.file} - Admin`)}disconnectedCallback(){super.disconnectedCallback(),document.removeEventListener("keydown",this.handleKeyDown)}getPageUrl(){return"/"+this.file.replace(/\.page\.html$/,"").split("/").filter(Boolean).join("/")}buildContents(e,t){const a=this.templates.find(t=>t.name===e),n=(a?.locations||[{name:"default",label:null}]).map(e=>"string"==typeof e?{name:e,label:null}:e),s=n.map(({name:e,label:a})=>{const n=t.find(t=>t.location===e);return{location:e,label:a||null,content:n?.content||"",orphaned:!1}});for(const e of t)n.some(t=>t.name===e.location)||s.push({location:e.location,label:null,content:e.content,orphaned:!0});return s}getFormState(){const e=this.shadowRoot,t=new Map([...e.querySelectorAll("[data-location]")].map(e=>[e.dataset.location,e.getValue()]));return{name:e.querySelector("#metaName").value,title:e.querySelector("#metaTitle").value,description:e.querySelector("#metaDescription").value,template:e.querySelector("#metaTemplate").value,contents:this.contents.map(({location:e,content:a,orphaned:n})=>({location:e,content:n?t.get(e)?.trim()||a:t.get(e)??a}))}}handleKeyDown=e=>{(e.ctrlKey||e.metaKey)&&"s"===e.key&&(e.preventDefault(),this.saving||this.page?.locked||this.handleSave())};handleTemplateChange=e=>{if(this.page?.locked)return;const t=e.target.value,a=new Map([...this.shadowRoot.querySelectorAll("[data-location]")].map(e=>[e.dataset.location,e.getValue()])),n=this.contents.map(({location:e,content:t})=>({location:e,content:a.get(e)?.trim()||t}));this.contents=this.buildContents(t,n),this.page={...this.page,template:t}};handleDelete=()=>{m.confirm("Delete this page? This action cannot be undone.",async e=>{if(!e)return;const[t]=await r([this.file]);t?p.error(t.msg||"Failed to delete page"):(p.success("Page deleted"),setTimeout(()=>{window.location.href="/admin/pages"},1e3))})};handleMove=async()=>{const[,e]=await c(),a=e?.directories||["."],n=this.file.replace(/\.page\.html$/,"").split("/"),s=n.pop(),i=n.join("/")||".",o=e=>/^\/[a-zA-Z0-9_\-\[\]\/]*$/.test(e)&&!e.includes("..")&&!e.includes("//"),r=e=>(e||"/").replace(/^\//,"").replace(/\/$/,"")||".",g="."===i?"/":"/"+i,h=m.create(t`
       <div class="p">
         <div class="mb">
           <label class="d-b mb-sm"><strong>Location</strong></label>
-          <input type="text" id="dlg-move-dir" class="full" list="dlg-move-dir-list" .value="${h}" placeholder="/">
+          <input type="text" id="dlg-move-dir" class="full" list="dlg-move-dir-list" .value="${g}" placeholder="/">
           <datalist id="dlg-move-dir-list">
             ${a.map(e=>t`<option value="${"."===e?"/":"/"+e}">`)} 
           </datalist>
           <p id="dlg-move-dir-error" class="mt-sm tc-danger d-n"><small>Invalid path — use format: /path/to/directory</small></p>
-          <p class="mt-sm muted"><small>Supports dynamic segments e.g. <code>/blog/[slug]</code>. <button class="link" @click="${()=>c.alert(t`
+          <p class="mt-sm muted"><small>Supports dynamic segments e.g. <code>/blog/[slug]</code>. <button class="link" @click="${()=>m.alert(t`
       <div class="p">
         <p>Directory paths define where a page lives in the URL structure.</p>
         <p><strong>Examples:</strong></p>
@@ -23,17 +23,17 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,repeat a
         </div>
         <div>
           <label class="d-b mb-sm"><strong>Page Name</strong></label>
-          <input type="text" id="dlg-move-name" class="full" .value="${i}">
+          <input type="text" id="dlg-move-name" class="full" .value="${s}">
           <p class="mt-sm muted"><small id="dlg-move-preview"></small></p>
         </div>
       </div>
-    `,{title:"Move Page",confirmText:"Save and Move Page",confirmAction:async()=>{const e=u.querySelector("#dlg-move-dir").value.trim()||"/",t=p(u.querySelector("#dlg-move-name").value.trim());if(!t)return void d.error("Page name is required");if(!m(e))return void d.error("Invalid directory path");const a=g(e),n="."===a?`${t}.page.html`:`${a}/${t}.page.html`;this.saving=!0;const[i]=await s({file:this.file,...this.getFormState()});if(this.saving=!1,i)return void d.error(i.msg||"Failed to save page");const[l,o]=await r({file:this.file,newFile:n});l?d.error(l.msg||"Failed to move page"):(d.success("Page saved and moved"),setTimeout(()=>{window.location.href=`/admin/content/pages/edit?path=${encodeURIComponent(o.file.replace(/\.page\.html$/,""))}`},1e3))},cancelText:"Cancel"}),v=()=>{const e=g(u.querySelector("#dlg-move-dir").value||"/"),t=p(u.querySelector("#dlg-move-name").value),a="."===e?"/":"/"+e+"/";u.querySelector("#dlg-move-preview").textContent=t?a+t:""};u.querySelector("#dlg-move-dir").addEventListener("input",e=>{u.querySelector("#dlg-move-dir-error").classList.toggle("d-n",m(e.target.value||"/")),v()}),u.querySelector("#dlg-move-name").addEventListener("input",v),v()};handleReset=()=>{c.confirm("Reset this page? Any unsaved changes will be lost.",e=>{e&&(this.contents=this.buildContents(this.page.template,this.page.contents),this.page={...this.page})})};handleSave=async()=>{this.saving=!0;const e=this.getFormState(),[t,a]=await s({file:this.file,...e});this.saving=!1,t?d.error(t.msg||"Failed to save page"):(this.contents=this.contents.map(t=>{const a=e.contents.find(e=>e.location===t.location);return a?{...t,content:a.content}:t}),this.page={...this.page,...e,contents:e.contents.filter(e=>e.content.trim()),updatedAt:a.updatedAt},document.title=`Edit: ${e.name||e.title||this.file} - Admin`,d.success("Page saved"))};render(){if(this.loading)return t`<div>Loading page...</div>`;if(this.error)return t`
+    `,{title:"Move Page",confirmText:"Save and Move Page",confirmAction:async()=>{const e=h.querySelector("#dlg-move-dir").value.trim()||"/",t=u(h.querySelector("#dlg-move-name").value.trim());if(!t)return void p.error("Page name is required");if(!o(e))return void p.error("Invalid directory path");const a=r(e),n="."===a?`${t}.page.html`:`${a}/${t}.page.html`;this.saving=!0;const[s]=await l({file:this.file,...this.getFormState()});if(this.saving=!1,s)return void p.error(s.msg||"Failed to save page");const[i,c]=await d({file:this.file,newFile:n});i?p.error(i.msg||"Failed to move page"):(p.success("Page saved and moved"),setTimeout(()=>{window.location.href=`/admin/content/pages/edit?path=${encodeURIComponent(c.file.replace(/\.page\.html$/,""))}`},1e3))},cancelText:"Cancel"}),v=()=>{const e=r(h.querySelector("#dlg-move-dir").value||"/"),t=u(h.querySelector("#dlg-move-name").value),a="."===e?"/":"/"+e+"/";h.querySelector("#dlg-move-preview").textContent=t?a+t:""};h.querySelector("#dlg-move-dir").addEventListener("input",e=>{h.querySelector("#dlg-move-dir-error").classList.toggle("d-n",o(e.target.value||"/")),v()}),h.querySelector("#dlg-move-name").addEventListener("input",v),v()};handleReset=()=>{m.confirm("Reset this page? Any unsaved changes will be lost.",e=>{e&&(this.contents=this.buildContents(this.page.template,this.page.contents),this.page={...this.page})})};handleSave=async()=>{this.saving=!0;const e=this.getFormState(),[t,a]=await l({file:this.file,...e});this.saving=!1,t?p.error(t.msg||"Failed to save page"):(this.contents=this.contents.map(t=>{const a=e.contents.find(e=>e.location===t.location);return a?{...t,content:a.content}:t}),this.page={...this.page,...e,contents:e.contents.filter(e=>e.content.trim()),updatedAt:a.updatedAt},document.title=`Edit: ${e.name||e.title||this.file} - Admin`,p.success("Page saved"))};render(){if(this.loading)return t`<div>Loading page...</div>`;if(this.error)return t`
       <div>
         <p>Page not found.</p>
         <a href="/admin/pages">Back to Pages</a>
       </div>
-    `;const{page:e,templates:n,contents:s}=this,i="system"===e.owner,l=e.locked;return t`
-      ${l?t`
+    `;const{page:e,templates:i,contents:l}=this,o="system"===e.owner,r=e.locked;return t`
+      ${r?t`
         <div class="p r mb bc-warning tc-warning">
           <k-icon name="lock"></k-icon> This page is locked and cannot be edited. ${"custom"===e.owner?"Locked by developer":`Managed by: ${e.owner||"external system"}`}
         </div>
@@ -49,13 +49,13 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,repeat a
         </div>
         
         <div class="flex"></div>
-        ${i||l?"":t`
+        ${o||r?"":t`
           <div class="btn-grp mrh mb">
             <button class="danger" @click="${this.handleDelete}"><k-icon name="delete"></k-icon> Delete</button>
             <button @click="${this.handleMove}"><k-icon name="drive_file_move"></k-icon> Move Page</button>
           </div>
         `}
-        ${l?"":t`
+        ${r?"":t`
           <div class="btn-grp mrh mb">
             <button @click="${this.handleReset}"><k-icon name="restart_alt"></k-icon> Reset</button>
             <button id="saveBtn" class="primary" ?disabled="${this.saving}" @click="${this.handleSave}">
@@ -74,17 +74,17 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,repeat a
           <div class="p">
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Name</strong></label>
-              <input type="text" id="metaName" class="flex" .value="${e.name||""}" ?disabled="${i||l}">
+              <input type="text" id="metaName" class="flex" .value="${e.name||""}" ?disabled="${o||r}">
             </div>
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Title</strong></label>
-              <input type="text" id="metaTitle" class="flex" .value="${e.title||""}" ?disabled="${l}">
+              <input type="text" id="metaTitle" class="flex" .value="${e.title||""}" ?disabled="${r}">
             </div>
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Description</strong></label>
-              <input type="text" id="metaDescription" class="flex" .value="${e.description||""}" ?disabled="${i||l}">
+              <input type="text" id="metaDescription" class="flex" .value="${e.description||""}" ?disabled="${o||r}">
             </div>
-            ${i?"":t`
+            ${o?"":t`
               <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
                 <label style="min-width: 120px;"><strong>Author</strong></label>
                 <span class="muted">${e.author||""}</span>
@@ -92,10 +92,10 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,repeat a
             `}
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Template</strong></label>
-              ${(()=>{const a=this.file.replace(/\.page\.html$/,"").split("/").slice(0,-1).join("/")||".",s=n.filter(e=>{const t="."===e.directory?"":e.directory,n="."===a?"":a;return""===t||n===t||n.startsWith(t+"/")}),i=s.some(t=>t.name===e.template);return t`
-                  <select id="metaTemplate" class="flex" @change="${this.handleTemplateChange}" ?disabled="${l}">
-                    ${i?"":t`<option value="${e.template}" selected>${e.template} (Not Found, using default)</option>`}
-                    ${s.map(a=>t`
+              ${(()=>{const a=this.file.replace(/\.page\.html$/,"").split("/").slice(0,-1).join("/")||".",n=i.filter(e=>{const t="."===e.directory?"":e.directory,n="."===a?"":a;return""===t||n===t||n.startsWith(t+"/")}),s=n.some(t=>t.name===e.template);return t`
+                  <select id="metaTemplate" class="flex" @change="${this.handleTemplateChange}" ?disabled="${r}">
+                    ${s?"":t`<option value="${e.template}" selected>${e.template} (Not Found, using default)</option>`}
+                    ${n.map(a=>t`
                       <option value="${a.name}" ?selected="${a.name===e.template}">${(e=>"."===e.directory?`/${e.name}`:`/${e.directory}/${e.name}`)(a)}</option>
                     `)}
                   </select>
@@ -129,24 +129,24 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,repeat a
             </div>
           </k-accordion-panel>
         `:""}
-        ${a(s,e=>e.location,({location:e,label:a,content:n,orphaned:s})=>{const i="default"===e,o=a||(i?"Content":e.slice(0,1).toUpperCase()+e.slice(1));return t`
-            <k-accordion-header for-panel="content-${e}" ?active="${i}">
-              ${o}${s?t` <span class="tc-warning"><small>(not in template)</small></span>`:""}
+        ${a(l,e=>e.location,({location:e,label:a,content:i,orphaned:l})=>{const o="default"===e,c=a||(o?"Content":e.slice(0,1).toUpperCase()+e.slice(1)),d=s(g("page-content-editor","k-html-editor"));return t`
+            <k-accordion-header for-panel="content-${e}" ?active="${o}">
+              ${c}${l?t` <span class="tc-warning"><small>(not in template)</small></span>`:""}
             </k-accordion-header>
-            <k-accordion-panel name="content-${e}" ?active="${i}">
+            <k-accordion-panel name="content-${e}" ?active="${o}">
               <div class="p">
-                <k-html-editor
+                ${n`<${d}
                   class="r b"
                   data-location="${e}"
                   controls="full"
-                  .value="${n}"
-                  mode="${m.has(e)?"code":"visual"}"
+                  .value="${i}"
+                  mode="${h.has(e)?"code":"visual"}"
                   style="height: 400px;"
-                  ?disabled="${l}"
-                ></k-html-editor>
+                  ?disabled="${r}"
+                ></${d}>`}
               </div>
             </k-accordion-panel>
           `})}
       </k-accordion>
-    `}}customElements.define("admin-page-editor",g);
+    `}}customElements.define("admin-page-editor",v);
 //# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\PageEditor.js.map

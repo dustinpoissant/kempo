@@ -1,8 +1,9 @@
 import ShadowComponent from '/kempo-ui/components/ShadowComponent.js';
-import { html, repeat } from '/kempo-ui/lit-all.min.js';
+import { html, repeat, staticHtml, unsafeStatic } from '/kempo-ui/lit-all.min.js';
 import { getPage, updatePage, listTemplates, deletePages, listDirectories, movePage } from '/kempo/sdk.js';
 import Dialog from '/kempo-ui/components/Dialog.js';
 import Toast from '/kempo-ui/components/Toast.js';
+import { getComponentOverride } from '../component-overrides.js';
 import '/kempo-ui/components/Icon.js';
 import '/kempo-ui/components/Accordion.js';
 import '/kempo-ui/components/HtmlEditor.js';
@@ -99,7 +100,7 @@ export default class PageEditor extends ShadowComponent {
   getFormState() {
     const root = this.shadowRoot;
     const editorMap = new Map(
-      [...root.querySelectorAll('k-html-editor[data-location]')].map(ed => [ed.dataset.location, ed.getValue()])
+      [...root.querySelectorAll('[data-location]')].map(ed => [ed.dataset.location, ed.getValue()])
     );
     return {
       name: root.querySelector('#metaName').value,
@@ -130,7 +131,7 @@ export default class PageEditor extends ShadowComponent {
     if(this.page?.locked) return;
     const newTemplate = e.target.value;
     const editorMap = new Map(
-      [...this.shadowRoot.querySelectorAll('k-html-editor[data-location]')].map(ed => [ed.dataset.location, ed.getValue()])
+      [...this.shadowRoot.querySelectorAll('[data-location]')].map(ed => [ed.dataset.location, ed.getValue()])
     );
     // Fall back to state content for any editor that hasn't initialized (Monaco lazy-loads)
     const currentContents = this.contents.map(({ location, content }) => ({
@@ -414,13 +415,14 @@ export default class PageEditor extends ShadowComponent {
         ${repeat(contents, c => c.location, ({ location, label, content, orphaned }) => {
       const isDefault = location === 'default';
       const headerTitle = label || (isDefault ? 'Content' : location.slice(0, 1).toUpperCase() + location.slice(1));
+      const editorTag = unsafeStatic(getComponentOverride('page-content-editor', 'k-html-editor'));
       return html`
             <k-accordion-header for-panel="content-${location}" ?active="${isDefault}">
               ${headerTitle}${orphaned ? html` <span class="tc-warning"><small>(not in template)</small></span>` : ''}
             </k-accordion-header>
             <k-accordion-panel name="content-${location}" ?active="${isDefault}">
               <div class="p">
-                <k-html-editor
+                ${staticHtml`<${editorTag}
                   class="r b"
                   data-location="${location}"
                   controls="full"
@@ -428,7 +430,7 @@ export default class PageEditor extends ShadowComponent {
                   mode="${CODE_MODE_LOCATIONS.has(location) ? 'code' : 'visual'}"
                   style="height: 400px;"
                   ?disabled="${isLocked}"
-                ></k-html-editor>
+                ></${editorTag}>`}
               </div>
             </k-accordion-panel>
           `;

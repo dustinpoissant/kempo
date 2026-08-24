@@ -280,6 +280,35 @@ admin/
 
 Admin pages can use kempo-ui components and the frontend SDK.
 
+## Admin Component Overrides
+
+An extension can swap in its own custom element for a named admin panel slot — for example, replacing the page/fragment content editor (`k-html-editor`) with a custom WYSIWYG. This is registered through `/admin/component-overrides.js`:
+
+```javascript
+import { registerComponentOverride } from '/admin/component-overrides.js';
+
+registerComponentOverride('page-content-editor', 'my-ext-wysiwyg');
+```
+
+| Slot | Default | Used by |
+|---|---|---|
+| `page-content-editor` | `k-html-editor` | The Content/Head/Scripts editors on the page editor |
+
+A replacement for `page-content-editor` must, at minimum: accept a `.value` property with the initial HTML, expose a `getValue()` method returning the current HTML, and support a boolean `disabled` attribute. It may ignore `controls`/`mode`, which are `k-html-editor`-specific.
+
+**Registration must run after `/admin/init.js`.** The admin template loads `init.js` first and it does `window.kempo = {...}` — a full reassignment, not a merge — so anything set on `window.kempo` before that line runs is wiped out. Any `*.global.html` file in your extension's `admin/` directory is picked up automatically (same convention as `admin/nav.global.html` — no install step needed); target `location="head"` and it renders after `init.js`, same as the site template's `head` location:
+
+```html
+<!-- admin/register-editor-override.global.html -->
+<content id="my-extension-editor-override" name="Editor Override" owner="my-extension" enabled="true" locked="true" location="head" priority="0">
+<script type="module">
+  import { registerComponentOverride } from '/admin/component-overrides.js';
+  import '/admin/extension/my-extension/components/MyWysiwyg.js';
+  registerComponentOverride('page-content-editor', 'my-ext-wysiwyg');
+</script>
+</content>
+```
+
 ## Lifecycle Scripts
 
 Use these only for logic that can't be expressed in the declarative config.
