@@ -212,16 +212,23 @@ export default config => {
             Revalidated rather than immutable. The URL carries lexical's version but not kempo's, so
             rebuilding kempo changes what lives at the same URL, and caching that for a year would
             strand every client on a stale bundle. A 304 costs almost nothing.
+
+            `no-cache`, not `must-revalidate` alone: without an explicit max-age, must-revalidate
+            leaves freshness to the browser's heuristics, and a heuristically-fresh entry is served
+            straight from disk cache with no conditional request at all — so a stale entry chunk can
+            keep pointing at a chunk hash a rebuild already deleted, breaking the editor with no
+            network request to observe. no-cache forces a conditional GET on every load regardless of
+            heuristic freshness, so a rebuild is always picked up via the ETag check above.
           */
           const etag = `"${info.size}-${Math.floor(info.mtimeMs)}"`;
           if(request.headers['if-none-match'] === etag){
-            response.writeHead(304, { ETag: etag, 'Cache-Control': 'public, must-revalidate' });
+            response.writeHead(304, { ETag: etag, 'Cache-Control': 'public, no-cache' });
             response.end();
             return;
           }
           response.writeHead(200, {
             'Content-Type': 'application/javascript; charset=utf-8',
-            'Cache-Control': 'public, must-revalidate',
+            'Cache-Control': 'public, no-cache',
             ETag: etag,
           });
           response.end(await readFile(file));
