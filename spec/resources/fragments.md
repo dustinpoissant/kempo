@@ -34,7 +34,7 @@ Fragments provide a way to share common HTML across multiple pages without dupli
 |---|---|---|
 | `listFragments` | `({ rootDir })` | List all fragments (includes `disabled: true/false` field) |
 | `getFragment` | `({ rootDir, file })` | Read fragment with parsed frontmatter |
-| `createFragment` | `({ rootDir, directory, name, author })` | Create new fragment |
+| `createFragment` | `({ rootDir, directory, name, author, owner })` | Create new fragment. `owner` defaults to `'custom'` — set by extension SDK callers, never accepted from the public API |
 | `updateFragment` | `({ rootDir, file, name, author, markup })` | Update fragment markup |
 | `deleteFragment` | `({ rootDir, files })` | Delete fragment files |
 | `disableFragment` | `({ rootDir, file })` | Rename `.fragment.html` → `.fragment-disabled.html` |

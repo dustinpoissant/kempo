@@ -48,7 +48,7 @@ Pages are the primary content unit of the CMS. They are file-based (not database
 | `listDirectories` | `({ rootDir })` | List all directories |
 | `listTemplates` | `({ rootDir })` | List available templates (includes `disabled: true/false` field) |
 | `getPage` | `({ rootDir, file })` | Read page file with parsed frontmatter |
-| `createPage` | `({ rootDir, directory, name, template, author })` | Create new page file |
+| `createPage` | `({ rootDir, directory, name, template, author, owner })` | Create new page file. `owner` defaults to `'custom'` — set by extension SDK callers, never accepted from the public API |
 | `updatePage` | `({ rootDir, file, name, title, description, author, template, contents })` | Update page content and metadata |
 | `deletePage` | `({ rootDir, files })` | Delete page files |
 | `movePage` | `({ rootDir, file, newFile })` | Rename/move page file |

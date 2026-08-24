@@ -20,7 +20,7 @@ const serializeEntries = entries => entries.map(e => {
   return `<content ${attrs}>\n${e.markup}\n</content>`;
 }).join('\n');
 
-export default async ({ rootDir, name, location, priority, author }) => {
+export default async ({ rootDir, name, location, priority, author, owner = 'custom' }) => {
   if(!rootDir){
     return [{ code: 400, msg: 'Root directory is required' }, null];
   }
@@ -42,7 +42,7 @@ export default async ({ rootDir, name, location, priority, author }) => {
   const entry = {
     id: crypto.randomUUID(),
     name,
-    owner: 'custom',
+    owner,
     author: author || '',
     locked: false,
     location,

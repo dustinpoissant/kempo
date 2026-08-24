@@ -47,7 +47,7 @@ There is a separate system for admin-scoped global content (`server/utils/admin-
 |---|---|---|
 | `listGlobalContent` | `({ rootDir })` | List all entries (includes `disabled: true/false` field) |
 | `getGlobalContent` | `({ rootDir, id })` | Get entry by ID |
-| `createGlobalContent` | `({ rootDir, name, location, priority, author })` | Create entry |
+| `createGlobalContent` | `({ rootDir, name, location, priority, author, owner })` | Create entry. `owner` defaults to `'custom'` — set by extension SDK callers, never accepted from the public API |
 | `updateGlobalContent` | `({ rootDir, id, name, location, priority, markup })` | Update entry |
 | `deleteGlobalContent` | `({ rootDir, ids })` | Delete entries |
 | `disableGlobalContent` | `({ rootDir, id })` | Move entry to `kempo-global.global-disabled.html` |

@@ -730,7 +730,7 @@ const [error, page] = await getPage({
 // page includes: { file, name, title, owner, locked, author, description, createdAt, updatedAt, extraMetadata, contents }
 ```
 
-### `createPage({ rootDir, directory, name, template, author, locked, extraMetadata })`
+### `createPage({ rootDir, directory, name, template, author, owner, locked, extraMetadata })`
 
 Create a new page file.
 
@@ -743,6 +743,7 @@ const [error, page] = await createPage({
   directory: 'blog',
   template: 'post',
   author: 'Jane',
+  owner: 'my-extension', // optional, default 'custom' — mark the page as extension-owned
   locked: true, // optional, default false
   extraMetadata: { category: 'news', status: 'draft' } // optional
 });
@@ -1022,7 +1023,7 @@ const [error, fragment] = await getFragment({
 // fragment includes: { file, name, owner, locked, author, createdAt, updatedAt, markup }
 ```
 
-### `createFragment({ rootDir, directory, name, author, locked })`
+### `createFragment({ rootDir, directory, name, author, owner, locked })`
 
 Create a new fragment file.
 
@@ -1034,6 +1035,7 @@ const [error, fragment] = await createFragment({
   name: 'Navigation Menu',
   directory: 'components',
   author: 'Jane',
+  owner: 'my-extension', // optional, default 'custom' — mark the fragment as extension-owned
   locked: true // optional, default false
 });
 ```

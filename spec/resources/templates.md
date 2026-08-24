@@ -52,7 +52,7 @@ Templates are the outermost layer of the rendering pipeline. They define `<!DOCT
 | Util | Signature | Purpose |
 |---|---|---|
 | `getTemplate` | `({ rootDir, file })` | Read template file with parsed frontmatter |
-| `createTemplate` | `({ rootDir, directory, name, author, copyFrom })` | Create new template |
+| `createTemplate` | `({ rootDir, directory, name, author, owner, copyFrom })` | Create new template. `owner` defaults to `'custom'` — set by extension SDK callers, never accepted from the public API |
 | `updateTemplate` | `({ rootDir, file, name, author, markup })` | Update template markup |
 | `deleteTemplate` | `({ rootDir, files })` | Delete template files |
 | `disableTemplate` | `({ rootDir, file })` | Rename `.template.html` → `.template-disabled.html` |

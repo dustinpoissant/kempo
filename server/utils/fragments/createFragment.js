@@ -11,7 +11,7 @@ const slugify = name => name
   .replace(/-+/g, '-')
   .replace(/^-|-$/g, '');
 
-export default async ({ rootDir, directory, name, author, locked = false }) => {
+export default async ({ rootDir, directory, name, author, owner = 'custom', locked = false }) => {
   if(!rootDir){
     return [{ code: 400, msg: 'Root directory is required' }, null];
   }
@@ -38,7 +38,7 @@ export default async ({ rootDir, directory, name, author, locked = false }) => {
   const now = new Date().toISOString();
   const frontmatter = [
     '<!--',
-    `  owner: custom`,
+    `  owner: ${owner}`,
     `  name: ${name}`,
     `  author: ${author || ''}`,
     `  created: ${now}`,
