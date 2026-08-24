@@ -28,6 +28,7 @@ Extensions enable third-party developers to add features to a kempo site without
       "hooks": {
         "page-created": "hooks/page-created.js"
       },
+      "dependencies": ["kempo-files"],
       "permissions": [
         { "name": "blog:posts:create", "description": "Create new blog posts" }
       ],
@@ -45,6 +46,7 @@ Extensions enable third-party developers to add features to a kempo site without
 - **`schema` field**: Path to a Drizzle schema file exporting named table objects. On install, kempo generates `CREATE TABLE IF NOT EXISTS` for each exported table. On uninstall, kempo generates `DROP TABLE IF EXISTS`. On update, kempo re-runs `CREATE TABLE IF NOT EXISTS` for all exported tables (new tables are created; existing ones are no-ops); column-level migrations are left to `update.js`.
 - **`permissions`/`settings`/`groups`**: Declared in kempo config. On install, all are created. On update, new ones are added and removed ones are left in place (user data may depend on them). On uninstall, all are deleted.
 - **`hooks`**: On update, new hooks are registered and hooks removed from config are deleted.
+- **`dependencies` field**: An array of other extension names that must already be installed and enabled. Checked on install and enable (fails with 409 if unmet); enforced in reverse on disable and uninstall (fails with 409 if another enabled extension still depends on this one). Version constraints are not checked, only presence and enabled state. See `server/utils/extensions/dependencies.js`.
 - **`public-scope`**: On update, scope change is applied automatically. The scope determines the URL prefix under which the extension's `public/` directory is served by `extension-scope-router`. The enabled extensions list is cached in-memory (`server/utils/extensions/scopeCache.js`) and invalidated on every install/enable/disable/uninstall.
 - **Display metadata from `package.json`**: `description`, `author`, `license`, and `kempo.docs` are not stored in the DB. They are read live from the installed package's `package.json` by `getExtension` and `listExtensions` and appended to the returned objects. The DB only stores what's needed for runtime behavior and update diffing.
 - **Stored kempo config snapshot**: The full `kempo` config from `package.json` is stored as JSON in the `extension` DB record at install/update time. This allows diffing old vs new config during updates even after `npm install` overwrites the package.
@@ -87,14 +89,23 @@ my-extension/
 ### Install Flow
 1. Resolve package from `node_modules`
 2. Read `package.json` for version, description, and `kempo` config
-3. If `kempo.schema` set: import schema file, run `CREATE TABLE IF NOT EXISTS` for each exported table
-4. Create permissions from `kempo.permissions`
-5. Create settings from `kempo.settings`
-6. Create groups from `kempo.groups` and assign their permissions
-7. Register hooks from `kempo.hooks`
-8. Run `install.js` if present
-9. Insert extension record with `kempo` config snapshot
-10. Trigger `extension:installed` hook
+3. Check `kempo.dependencies`: fail with 409 if any named extension is not installed and enabled
+4. If `kempo.schema` set: import schema file, run `CREATE TABLE IF NOT EXISTS` for each exported table
+5. Create permissions from `kempo.permissions`
+6. Create settings from `kempo.settings`
+7. Create groups from `kempo.groups` and assign their permissions
+8. Register hooks from `kempo.hooks`
+9. Run `install.js` if present
+10. Insert extension record with `kempo` config snapshot
+11. Trigger `extension:installed` hook
+
+### Enable Flow
+1. Check `kempo.dependencies` (from the stored DB snapshot): fail with 409 if any named extension is not currently enabled
+2. Set `enabled = true`
+
+### Disable Flow
+1. Check for enabled dependents: fail with 409 if any other enabled extension's stored `kempo.dependencies` names this one
+2. Set `enabled = false`
 
 ### Update Flow
 1. `npm install name@latest` in project cwd
@@ -111,14 +122,15 @@ my-extension/
 12. Trigger `extension:updated` hook
 
 ### Uninstall Flow
-1. Run `uninstall.js` if present (custom logic, e.g. preserve user data)
-2. Delete hooks owned by the extension
-3. Delete permissions from `kempo.permissions`
-4. Delete settings from `kempo.settings`
-5. Delete groups from `kempo.groups`
-6. If `kempo.schema` set: run `DROP TABLE IF EXISTS` for each exported table
-7. Delete extension record
-8. Trigger `extension:uninstalled` hook
+1. Check for enabled dependents: fail with 409 if any other enabled extension's stored `kempo.dependencies` names this one
+2. Run `uninstall.js` if present (custom logic, e.g. preserve user data)
+3. Delete hooks owned by the extension
+4. Delete permissions from `kempo.permissions`
+5. Delete settings from `kempo.settings`
+6. Delete groups from `kempo.groups`
+7. If `kempo.schema` set: run `DROP TABLE IF EXISTS` for each exported table
+8. Delete extension record
+9. Trigger `extension:uninstalled` hook
 
 ### Update Detection
 When listing extensions, kempo can check for updates by:

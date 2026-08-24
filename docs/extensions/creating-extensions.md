@@ -79,6 +79,7 @@ All extension capabilities are declared in the `kempo` field of `package.json`:
 | `settings` | Settings to create on install |
 | `groups` | Groups to create on install, with their assigned permissions |
 | `hooks` | Event hooks to register (`{ "event-name": "path/to/handler.js" }`) |
+| `dependencies` | Names of other extensions that must be installed and enabled first |
 
 ## Database Tables
 
@@ -245,6 +246,16 @@ export default async ({ url, request, draft }) => {
 
 Because nothing is sent until every handler has run, claiming a request never silences the handlers after you — an extension that logs 404s still sees requests you answered, and a later handler can add to a response already in progress. Check `draft.handled` if you want to defer to whoever got there first. If no handler claims the request, the site's `CATCH.page.html` renders as a normal 404.
 
+## Dependencies
+
+If your extension requires another extension to be installed and enabled first, declare it in `kempo.dependencies`:
+
+```json
+"dependencies": ["kempo-files"]
+```
+
+Install and enable both fail with a 409 while a declared dependency isn't installed and enabled. In the other direction, disable and uninstall fail with a 409 while another enabled extension still declares a dependency on yours — so a dependency can't be pulled out from under something that needs it. Version constraints aren't checked, only presence and enabled state; use `install.js` for anything more specific.
+
 ## Public Routes
 
 Set `kempo.public-scope` to a URL prefix. Files in your `public/` directory are served under that prefix:
@@ -410,6 +421,7 @@ When users check for updates in the admin panel, kempo fetches the latest `packa
     "hooks": {
       "event-name": "string — relative path to handler file"
     },
+    "dependencies": ["array of extension names — must be installed and enabled first"],
     "permissions": [
       {
         "name": "string — owner:resource:action",
@@ -438,13 +450,14 @@ When users check for updates in the admin panel, kempo fetches the latest `packa
 ### Install / Update / Uninstall Lifecycle
 
 **Install:**
-1. `CREATE TABLE IF NOT EXISTS` for each table in `kempo.schema`
-2. Create permissions from `kempo.permissions`
-3. Create settings from `kempo.settings`
-4. Create groups from `kempo.groups` and assign their permissions
-5. Register hooks from `kempo.hooks`
-6. Run `install.js` (custom logic)
-7. Save `kempo` config snapshot to DB
+1. Check `kempo.dependencies` — fails with 409 if any named extension isn't installed and enabled
+2. `CREATE TABLE IF NOT EXISTS` for each table in `kempo.schema`
+3. Create permissions from `kempo.permissions`
+4. Create settings from `kempo.settings`
+5. Create groups from `kempo.groups` and assign their permissions
+6. Register hooks from `kempo.hooks`
+7. Run `install.js` (custom logic)
+8. Save `kempo` config snapshot to DB
 
 **Update:**
 1. `npm install name@latest`
@@ -456,11 +469,16 @@ When users check for updates in the admin panel, kempo fetches the latest `packa
 7. Run `update.js` with `{ oldVersion, newVersion, oldKempo, newKempo }`
 8. Save new `kempo` config snapshot to DB
 
+**Enable:** checks `kempo.dependencies` (fails with 409 if any named extension isn't currently enabled), then flips `enabled` to `true`.
+
+**Disable:** checks that no other enabled extension declares this one in its `kempo.dependencies` (fails with 409 if one does), then flips `enabled` to `false`.
+
 **Uninstall:**
-1. Run `uninstall.js` (custom cleanup)
-2. Delete hooks owned by the extension
-3. Delete permissions from `kempo.permissions`
-4. Delete settings from `kempo.settings`
-5. Delete groups from `kempo.groups`
-6. `DROP TABLE IF EXISTS` for each table in `kempo.schema`
-7. Delete extension DB record
+1. Check that no other enabled extension declares this one in its `kempo.dependencies` — fails with 409 if one does
+2. Run `uninstall.js` (custom cleanup)
+3. Delete hooks owned by the extension
+4. Delete permissions from `kempo.permissions`
+5. Delete settings from `kempo.settings`
+6. Delete groups from `kempo.groups`
+7. `DROP TABLE IF EXISTS` for each table in `kempo.schema`
+8. Delete extension DB record

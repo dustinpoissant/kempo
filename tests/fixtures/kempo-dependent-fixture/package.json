@@ -1,0 +1,8 @@
+{
+  "name": "kempo-dependent-fixture",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Throwaway extension used by tests/extension-dependencies.node-test.js — declares a dependency on kempo-base-fixture",
+  "kempo": {}
+}

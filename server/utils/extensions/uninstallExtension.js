@@ -6,6 +6,7 @@ import { pathToFileURL } from 'url';
 import { sql } from 'drizzle-orm';
 import triggerHook, { clearHandlerCache } from '../hooks/triggerHook.js';
 import { invalidateScopeCache } from './scopeCache.js';
+import { getEnabledDependents } from './dependencies.js';
 
 /*
   Uninstall an extension.
@@ -36,6 +37,11 @@ export default async ({ name, purgeData = false }) => {
     kempoConfig = existing.kempo || {};
   } catch(error) {
     return [{ code: 500, msg: 'Failed to find extension' }, null];
+  }
+
+  const dependents = await getEnabledDependents(name);
+  if(dependents.length){
+    return [{ code: 409, msg: `${dependents.join(', ')} depends on this extension and is still enabled` }, null];
   }
 
   try {

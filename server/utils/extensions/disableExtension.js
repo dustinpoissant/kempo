@@ -2,10 +2,16 @@ import db from '../../db/index.js';
 import { extension } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { invalidateScopeCache } from './scopeCache.js';
+import { getEnabledDependents } from './dependencies.js';
 
 export default async ({ name }) => {
   if(!name){
     return [{ code: 400, msg: 'Extension name is required' }, null];
+  }
+
+  const dependents = await getEnabledDependents(name);
+  if(dependents.length){
+    return [{ code: 409, msg: `${dependents.join(', ')} depends on this extension and is still enabled` }, null];
   }
 
   try {

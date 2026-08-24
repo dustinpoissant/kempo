@@ -11,6 +11,7 @@ import createHook from '../hooks/createHook.js';
 import setSetting from '../settings/setSetting.js';
 import createTablesFromSchema from './createTablesFromSchema.js';
 import { invalidateScopeCache } from './scopeCache.js';
+import { getUnmetDependencies } from './dependencies.js';
 
 export default async ({ name }) => {
   if(!name){
@@ -42,6 +43,11 @@ export default async ({ name }) => {
       : {};
   } catch {
     return [{ code: 500, msg: `Failed to read extension package files` }, null];
+  }
+
+  const unmet = await getUnmetDependencies(kempoConfig.dependencies || []);
+  if(unmet.length){
+    return [{ code: 409, msg: `Requires ${unmet.join(', ')} to be installed and enabled first` }, null];
   }
 
   /*
