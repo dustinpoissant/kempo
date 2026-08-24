@@ -416,6 +416,8 @@ npm test
 
 `.env.example` has the matching `DATABASE_URL`. The suite seeds its own groups and permissions, and cleans up the rows it creates.
 
+`npm test` (`kempo-test -n`) only runs the Node-side suite. Admin components that need a real DOM run in an actual browser via `npm run test:browser` — no database or running server required, since it exercises the real component/SDK code with only `window.fetch` intercepted for canned responses. It temporarily junctions `/kempo-ui`, `/kempo-css` and `/kempo` onto `node_modules`/`dist` at the project root so the admin bundle's absolute imports resolve against kempo-testing-framework's static test server, and removes them afterward regardless of pass/fail.
+
 ### Building for Distribution
 
 When preparing the framework for npm release, minify and optimize the source code:

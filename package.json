@@ -14,6 +14,7 @@
     "test:email": "node ./scripts/test-email.js",
     "test": "kempo-test -n",
     "test:node": "kempo-test -n",
+    "test:browser": "node scripts/run-browser-tests.js",
     "link:local": "npm install ../kempo-server ../kempo-ui --no-save",
     "db:reset": "node ./scripts/reset-db.js"
   },
