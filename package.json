@@ -1,6 +1,6 @@
 {
   "name": "kempo",
-  "version": "4.2.37",
+  "version": "4.2.38",
   "type": "module",
   "description": "A fullstack CMS framework for creating websites with user authentication",
   "scripts": {
