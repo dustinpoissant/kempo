@@ -58,7 +58,7 @@
   },
   "peerDependencies": {
     "kempo-css": ">=2.2.5",
-    "kempo-server": ">=3.1.4",
+    "kempo-server": ">=3.3.0",
     "kempo-ui": ">=0.4.39"
   },
   "devDependencies": {
