@@ -34,6 +34,7 @@ const enableExtension = (await import(pathToFileURL(path.join(root, 'server/util
 const disableExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/disableExtension.js')).href)).default;
 const { adminGlobalDirs } = await import(pathToFileURL(path.join(root, 'middleware/kempo.js')).href);
 const { invalidateScopeCache } = await import(pathToFileURL(path.join(root, 'server/utils/extensions/scopeCache.js')).href);
+const getSetting = (await import(pathToFileURL(path.join(root, 'server/utils/settings/getSetting.js')).href)).default;
 
 const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
 
@@ -93,6 +94,23 @@ const buildTests = () => {
       // Settings carry ownership in the name as "extname:settingname"; there is no owner column
       const settings = await db.select().from(setting).where(like(setting.name, `${FIXTURE}:%`));
       if(!settings.length) return fail('declared setting was not created');
+
+      /*
+        A json setting has to survive the round trip as the thing it describes, not as text.
+
+        kempo-config.json declares every default as a string — that is what the extension docs say
+        to write — while setSetting takes the real value and serialises it according to the type.
+        For every scalar type those agree; for json they do not, and storing the declared string
+        unparsed encodes it a second time. Reading it back then yields the JSON text rather than the
+        array, which no code errors on: the extension simply behaves as though the setting were
+        empty. Found by kempo-thumbs, whose sizes are declared this way.
+      */
+      const [jsonError, jsonValue] = await getSetting(FIXTURE, 'fixture_json_setting');
+      if(jsonError) return fail(`declared json setting could not be read: ${jsonError.msg}`);
+      if(!Array.isArray(jsonValue)){
+        return fail(`a json setting read back as ${typeof jsonValue} rather than an array: ${JSON.stringify(jsonValue)}`);
+      }
+      if(jsonValue[0]?.label !== 'sm') return fail(`json setting contents were not preserved: ${JSON.stringify(jsonValue)}`);
 
       const hooks = await db.select().from(hook).where(eq(hook.owner, FIXTURE));
       if(hooks.length !== 1) return fail(`expected 1 registered hook, got ${hooks.length}`);

@@ -19,13 +19,21 @@
       "value": "42",
       "type": "number",
       "description": "Fixture setting"
+    },
+    {
+      "name": "fixture_json_setting",
+      "value": "[{\"label\":\"sm\",\"width\":320}]",
+      "type": "json",
+      "description": "Fixture json setting, declared the way the docs say to \u2014 as a string"
     }
   ],
   "groups": [
     {
       "name": "lifecycle-fixture:members",
       "description": "Fixture group",
-      "permissions": ["lifecycle-fixture:read"]
+      "permissions": [
+        "lifecycle-fixture:read"
+      ]
     }
   ]
 }

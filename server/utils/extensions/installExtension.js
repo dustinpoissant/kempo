@@ -9,6 +9,7 @@ import { randomUUID } from 'crypto';
 import triggerHook, { clearHandlerCache } from '../hooks/triggerHook.js';
 import createHook from '../hooks/createHook.js';
 import setSetting from '../settings/setSetting.js';
+import declaredValue from '../settings/declaredValue.js';
 import createTablesFromSchema from './createTablesFromSchema.js';
 import { invalidateScopeCache } from './scopeCache.js';
 import { getUnmetDependencies } from './dependencies.js';
@@ -91,7 +92,7 @@ export default async ({ name }) => {
     Create declarative settings
   */
   for(const { name: settingName, value, type, description } of kempoConfig.settings || []){
-    await setSetting(name, settingName, value, type || null, false, description || null);
+    await setSetting(name, settingName, declaredValue(value, type), type || null, false, description || null);
   }
 
   /*

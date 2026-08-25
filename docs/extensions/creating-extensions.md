@@ -156,6 +156,18 @@ Declare settings in `kempo.settings`. They are stored as `extensionName:settingN
 ]
 ```
 
+`value` is written as a string whatever the type — kempo converts it on the way in. A `json` setting
+may be written either way, as a string holding JSON or as the real array or object:
+
+```json
+"settings": [
+  { "name": "sizes", "value": "[{\"label\":\"sm\",\"width\":320}]", "type": "json", "description": "Thumbnail sizes" },
+  { "name": "sizes", "value": [{ "label": "sm", "width": 320 }], "type": "json", "description": "Thumbnail sizes" }
+]
+```
+
+Both store the same thing, and `getSetting` hands back the array either way.
+
 Read them at runtime:
 
 ```javascript
@@ -163,7 +175,11 @@ import getSetting from 'kempo/server/utils/settings/getSetting.js';
 
 const perPage = await getSetting('my-ext', 'posts_per_page', 10);
 const commentsEnabled = await getSetting('my-ext', 'allow_comments', true);
+const sizes = await getSetting('my-ext', 'sizes', []);   // a real array, not JSON text
 ```
+
+Values come back converted to the setting's declared type, so a `json` setting is an array or object
+rather than a string you have to parse.
 
 Settings appear in the admin panel at `/admin/settings` grouped by owner. Site admins can change them without a code deploy.
 

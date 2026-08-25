@@ -9,6 +9,7 @@ import { execSync } from 'child_process';
 import triggerHook, { clearHandlerCache } from '../hooks/triggerHook.js';
 import createHook from '../hooks/createHook.js';
 import setSetting from '../settings/setSetting.js';
+import declaredValue from '../settings/declaredValue.js';
 import createTablesFromSchema from './createTablesFromSchema.js';
 
 const requireFromProject = createRequire(join(process.cwd(), 'package.json'));
@@ -97,7 +98,7 @@ export default async ({ name, version = 'latest' }) => {
   const oldSettingNames = new Set((oldKempo.settings || []).map(s => s.name));
   for(const { name: settingName, value, type, description } of newKempo.settings || []){
     if(!oldSettingNames.has(settingName)){
-      await setSetting(name, settingName, value, type || null, false, description || null);
+      await setSetting(name, settingName, declaredValue(value, type), type || null, false, description || null);
     }
   }
 

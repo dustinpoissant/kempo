@@ -30,6 +30,11 @@ const [error] = await setSetting('myapp', 'feature_flag', true, 'boolean', false
 
 `setSetting` creates the setting if it doesn't exist, or updates the value if it does.
 
+Pass the **real value**, not a serialised one — `setSetting` serialises it according to `type`. For
+`json` that means handing it the array or object itself; a string containing JSON would be encoded a
+second time and read back as text. (Declarative settings in `kempo-config.json` may use either form;
+kempo parses a JSON string there before storing it.)
+
 ## Public Settings
 
 Settings marked `isPublic = true` are accessible from the browser without authentication:

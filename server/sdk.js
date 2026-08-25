@@ -82,6 +82,7 @@ export { default as userHasSomePermissions } from './utils/permissions/userHasSo
   Settings
 */
 
+export { default as declaredValue } from './utils/settings/declaredValue.js';
 export { default as deleteSetting } from './utils/settings/deleteSetting.js';
 export { default as getPublicSettings } from './utils/settings/getPublicSettings.js';
 export { default as getSetting } from './utils/settings/getSetting.js';
