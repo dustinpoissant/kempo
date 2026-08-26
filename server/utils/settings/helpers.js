@@ -1,6 +1,8 @@
+import { encryptSecret, decryptSecret } from './secretCrypto.js';
+
 export const convertValue = (value, type) => {
   if(value === null) return null;
-  
+
   switch(type){
     case 'number':
       return Number(value);
@@ -8,6 +10,8 @@ export const convertValue = (value, type) => {
       return value === 'true';
     case 'json':
       return JSON.parse(value);
+    case 'secret':
+      return decryptSecret(value);
     case 'string':
     default:
       return value;
@@ -16,10 +20,12 @@ export const convertValue = (value, type) => {
 
 export const serializeValue = (value, type) => {
   if(value === null) return null;
-  
+
   switch(type){
     case 'json':
       return JSON.stringify(value);
+    case 'secret':
+      return encryptSecret(value);
     case 'number':
     case 'boolean':
     case 'string':

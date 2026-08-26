@@ -35,6 +35,26 @@ Pass the **real value**, not a serialised one — `setSetting` serialises it acc
 second time and read back as text. (Declarative settings in `kempo-config.json` may use either form;
 kempo parses a JSON string there before storing it.)
 
+## Secret Settings
+
+`type: 'secret'` is for values that should never be readable by anyone but the server — API keys,
+webhook signing secrets, OAuth client secrets:
+
+```javascript
+await setSetting('my-ext', 'stripe_secret_key', 'sk_live_...', 'secret', false, 'Stripe API key');
+```
+
+- It's encrypted at rest with AES-256-GCM. `SETTINGS_ENCRYPTION_KEY` (a 64-character hex string, i.e.
+  32 bytes) must be set in the environment, or saving/reading a secret throws.
+- `isPublic` is forced to `false` no matter what you pass — a secret can never be exposed through
+  `getPublicSettings`.
+- `getSetting`/`getSettingsByOwner` still return the real decrypted value, since server-side code
+  (e.g. calling the Stripe API) needs it. Nothing else does: `getSettingWithMetadata` and
+  `listSettings` — the two paths that feed the admin panel's HTTP API — return the literal string
+  `••••••••` in place of the value, never the ciphertext or the plaintext.
+- Editing one in the admin panel is replace-only: leaving the field blank keeps the existing secret;
+  typing a new value replaces it. There is no way to view a previously-saved secret again.
+
 ## Public Settings
 
 Settings marked `isPublic = true` are accessible from the browser without authentication:

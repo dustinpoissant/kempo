@@ -1,7 +1,7 @@
 # Settings
 
 ## Description
-A key-value configuration store for system settings, extension settings, and custom user-defined settings. Settings are typed (string, number, boolean) and can be marked as public (accessible without authentication).
+A key-value configuration store for system settings, extension settings, and custom user-defined settings. Settings are typed (string, number, boolean, json, secret) and can be marked as public (accessible without authentication).
 
 ## Dependencies
 - [Database](../concepts/db.md) — `setting` table
@@ -11,8 +11,9 @@ Settings provide runtime configuration that can be changed without restarting th
 
 ### Decisions
 - **`owner:name` naming convention**: Settings use an owner prefix (e.g., `system:site_name`, `blog:posts_per_page`). The owner indicates who created and manages the setting.
-- **Type coercion**: Settings store values as text but have a `type` field (`string`, `number`, `boolean`) for proper conversion on read via the `convertValue` helper.
-- **Public settings**: Settings with `isPublic = true` can be fetched without authentication via `GET /kempo/api/settings/public`. Used for frontend configuration like site name.
+- **Type coercion**: Settings store values as text but have a `type` field (`string`, `number`, `boolean`, `json`, `secret`) for proper conversion on read via the `convertValue` helper.
+- **Public settings**: Settings with `isPublic = true` can be fetched without authentication via `GET /kempo/api/settings/public`. Used for frontend configuration like site name. `secret`-typed settings are excluded from this endpoint even if `isPublic` were somehow true — `setSetting` refuses to let a secret be public in the first place.
+- **Secret settings are encrypted, not just typed**: `type: 'secret'` values are encrypted at rest (AES-256-GCM, key from `SETTINGS_ENCRYPTION_KEY`) via `serializeValue`/`convertValue` in `helpers.js`. `getSetting`/`getSettingsByOwner` decrypt for server-side use; `getSettingWithMetadata` and `listSettings` — the two reads that back the admin HTTP API — mask the value as `••••••••` instead, so a secret's plaintext never crosses the network after its initial save. `setSetting` treats a resubmitted mask as "unchanged" and keeps the existing ciphertext (replace-only editing).
 - **System settings are protected**: The `prevent_system_setting_delete` trigger blocks deletion of settings where `name LIKE 'system:%'`.
 - **Name as primary key**: Setting names are unique identifiers.
 

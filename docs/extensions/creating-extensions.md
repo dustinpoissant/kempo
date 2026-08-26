@@ -183,6 +183,30 @@ rather than a string you have to parse.
 
 Settings appear in the admin panel at `/admin/settings` grouped by owner. Site admins can change them without a code deploy.
 
+### Secret Settings
+
+Use `type: "secret"` for anything you wouldn't want visible in the admin panel or an API response —
+a payment provider's API key, a webhook signing secret, an OAuth client secret:
+
+```json
+"settings": [
+  { "name": "stripe_secret_key", "value": "", "type": "secret", "description": "Stripe API secret key" }
+]
+```
+
+A `secret` setting is encrypted at rest (`SETTINGS_ENCRYPTION_KEY` must be set — see `.env.example`),
+is always excluded from `getPublicSettings`/`isPublic` regardless of what you pass, and the admin
+panel only ever shows `••••••••` for one that has a value — editing it is replace-only, never a reveal.
+
+`getSetting`/`getSettingsByOwner` still hand back the real decrypted value for your own server-side
+code to use (e.g. to call the provider's API):
+
+```javascript
+const stripeKey = await getSetting('my-ext', 'stripe_secret_key');
+```
+
+Never route a `secret` value back to the browser yourself — that's the one thing this type exists to prevent.
+
 ## Groups
 
 Declare groups with their default permissions in `kempo.groups`:
@@ -477,7 +501,7 @@ When users check for updates in the admin panel, kempo fetches the latest `packa
       {
         "name": "string — setting key (owner prefix added automatically)",
         "value": "string — default value",
-        "type": "string | number | boolean",
+        "type": "string | number | boolean | json | secret",
         "description": "string"
       }
     ],

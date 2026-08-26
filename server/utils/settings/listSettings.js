@@ -1,6 +1,7 @@
 import db from '../../db/index.js';
 import { setting } from '../../db/schema.js';
 import { like, not, and, sql } from 'drizzle-orm';
+import { SECRET_MASK } from './secretCrypto.js';
 
 export default async ({ owner, limit = 50, offset = 0 } = {}) => {
   try {
@@ -16,8 +17,15 @@ export default async ({ owner, limit = 50, offset = 0 } = {}) => {
     const q = db.select().from(setting);
     const cq = db.select({ count: sql`count(*)` }).from(setting);
     if(where){ q.where(where); cq.where(where); }
-    const settings = await q.limit(limit).offset(offset);
+    const results = await q.limit(limit).offset(offset);
     const [{ count }] = await cq;
+
+    // Never send secret ciphertext to the admin UI, not even encrypted.
+    const settings = results.map(s => s.type === 'secret'
+      ? { ...s, value: s.value === null ? null : SECRET_MASK }
+      : s
+    );
+
     return [null, { settings, total: Number(count), limit, offset }];
   } catch(error){
     return [{ code: 500, msg: 'Failed to retrieve settings' }, null];

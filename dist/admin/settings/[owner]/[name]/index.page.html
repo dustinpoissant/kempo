@@ -45,6 +45,7 @@
 						<option value="number">Number</option>
 						<option value="boolean">Boolean</option>
 						<option value="json">JSON</option>
+						<option value="secret">Secret</option>
 					</select>
 				</div>
 				<div class="mb d-f" style="align-items: center; gap: var(--spacer_h);">
@@ -122,6 +123,17 @@
 				await customElements.whenDefined('k-toggle');
 				$publicToggle.value = settingData.isPublic;
 
+				// Secrets are never public — force the toggle off and lock it whenever the type is (or becomes) 'secret'.
+				const syncPublicToggleForType = type => {
+					if(type === 'secret'){
+						$publicToggle.value = false;
+						$publicToggle.setAttribute('disabled', '');
+					} else if(canEditMetadata){
+						$publicToggle.removeAttribute('disabled');
+					}
+				};
+				syncPublicToggleForType(settingData.type);
+
 				/*
 					Value editors
 				*/
@@ -140,6 +152,13 @@
 							const monacoEl = $editorContainer.querySelector('admin-monaco');
 							if(monacoEl) return JSON.parse(monacoEl.value);
 							return settingData.value;
+						}
+						case 'secret': {
+							// Blank on an existing secret means "unchanged" — round-trip the masked sentinel so the server keeps it.
+							// Blank while switching some other value's type to secret has nothing to preserve, so it clears instead.
+							const typed = $editorContainer.querySelector('input[type="password"]').value;
+							if(typed !== '') return typed;
+							return settingData.type === 'secret' ? settingData.value : null;
 						}
 					}
 				};
@@ -195,6 +214,23 @@
 					$editorContainer.appendChild(editor);
 				};
 
+				const renderSecretEditor = value => {
+					$editorContainer.innerHTML = '';
+					const input = document.createElement('input');
+					input.type = 'password';
+					input.className = 'full';
+					input.autocomplete = 'new-password';
+					input.placeholder = value ? 'Leave blank to keep the current secret' : 'Enter a secret value';
+					if(!canEditValue) input.readOnly = true;
+					$editorContainer.appendChild(input);
+					const note = document.createElement('p');
+					note.className = 'tc-muted mb0';
+					note.textContent = value
+						? 'The stored value is encrypted and cannot be displayed. Type a new value to replace it.'
+						: 'This secret has not been set yet.';
+					$editorContainer.appendChild(note);
+				};
+
 				const renderEditor = async (type, value) => {
 					currentType = type;
 					switch(type){
@@ -202,6 +238,7 @@
 						case 'number': renderNumberEditor(value); break;
 						case 'boolean': await renderBooleanEditor(value); break;
 						case 'json': renderJsonEditor(value); break;
+						case 'secret': renderSecretEditor(value); break;
 						default: renderStringEditor(String(value ?? ''));
 					}
 				};
@@ -217,6 +254,9 @@
 					let converted;
 					try { converted = getValueFromEditor(); }
 					catch(e){ converted = settingData.value; }
+
+					// A secret editor left blank round-trips as the masked sentinel — treat that as empty rather than carrying it into the new type as if it were real plaintext.
+					if(currentType === 'secret' && converted === settingData.value) converted = '';
 
 					switch(newType){
 						case 'string':
@@ -236,8 +276,13 @@
 								catch(e){ /* keep as string */ }
 							}
 							break;
+						case 'secret':
+							// Never carry a value across into a secret field silently — require the user to type it.
+							converted = null;
+							break;
 					}
 					currentType = newType;
+					syncPublicToggleForType(newType);
 					await renderEditor(newType, converted);
 					setTimeout(checkDirty, 0);
 				});
@@ -321,10 +366,16 @@
 						return;
 					}
 
-					settingData.value = value;
+					// Don't hold the plaintext secret in page state any longer than the request needs it — mirror what a reload would show.
+					settingData.value = $typeSelect.value === 'secret'
+						? (value === null ? null : '••••••••')
+						: value;
 					settingData.type = $typeSelect.value;
 					settingData.isPublic = $publicToggle.value;
 					settingData.description = $descriptionInput.value.trim();
+
+					// Clear the typed plaintext out of the input now that it's saved, rather than leaving it sitting in the DOM.
+					if(settingData.type === 'secret') await renderEditor(settingData.type, settingData.value);
 
 					Toast.success('Setting saved');
 					document.getElementById('updatedAt').textContent = new Date().toLocaleString();

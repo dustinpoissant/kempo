@@ -241,9 +241,10 @@
 									<option value="number">Number</option>
 									<option value="boolean">Boolean</option>
 									<option value="json">JSON</option>
+									<option value="secret">Secret</option>
 								</select>
 							</div>
-							<div class="mb d-f" style="align-items: center; gap: var(--spacer-sm);">
+							<div class="mb d-f" style="align-items: center; gap: var(--spacer-sm);" id="dlg-isPublic-row">
 								<input type="checkbox" id="dlg-isPublic">
 								<label for="dlg-isPublic">Public (accessible without authentication)</label>
 							</div>
@@ -279,6 +280,16 @@
 							loadTable($customTable, 'custom', canManageCustom);
 						},
 						cancelText: 'Cancel'
+					});
+
+					const $dlgValue = $dialog.querySelector('#dlg-value');
+					const $dlgIsPublic = $dialog.querySelector('#dlg-isPublic');
+					const $dlgIsPublicRow = $dialog.querySelector('#dlg-isPublic-row');
+					$dialog.querySelector('#dlg-type').addEventListener('change', e => {
+						const isSecret = e.target.value === 'secret';
+						$dlgValue.type = isSecret ? 'password' : 'text';
+						$dlgIsPublicRow.style.display = isSecret ? 'none' : '';
+						if(isSecret) $dlgIsPublic.checked = false;
 					});
 				});
 			}
