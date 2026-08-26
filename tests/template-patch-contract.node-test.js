@@ -5,13 +5,13 @@ import { fileURLToPath } from 'url';
 /*
   The scaffolded site template makes a promise to template patches, and this is what holds it.
 
-  A *.template-patch.html targets one element by id and throws when that id is absent. So the
-  `id="main"` on the page body wrapper is not decoration: removing or renaming it breaks every
-  extension patch that names it, and it breaks them at render time, on the pages that use them —
-  after the change has already shipped. kempo-blog replaces exactly this element with an <article>.
+  A *.template-patch.html targets one element by id, and an id that is absent is skipped rather than
+  thrown — deliberately, so that a template changing out from under an extension does not take the
+  page down with it. Which is exactly why this test exists: the failure is quiet. Renaming or
+  removing `id="main"` does not break the site loudly, it just stops kempo-blog posts from getting
+  their <article> wrapper, leaving a line in a server log as the only evidence.
 
-  Nothing else in the codebase reads the attribute, so without this test the only signal would be a
-  broken site.
+  Nothing else in the codebase reads the attribute, so without this test nothing would notice.
 */
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

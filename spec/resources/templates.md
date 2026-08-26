@@ -43,7 +43,9 @@ This is how an extension gives pages a different wrapper without copying the sit
 </replace>
 ```
 
-**`id="main"` in `app-public/default.template.html` is load-bearing.** Patch operations target one element by id and **throw when that id is absent**, so renaming or removing it breaks every patch naming it — visibly, at render time, for the pages that use them. A site whose template predates the attribute has a bare `<main>`; `kempo-blog`'s install/update adds the id when there is exactly one `<main>`, and reports it rather than guessing when there is not.
+**`id="main"` in `app-public/default.template.html` is load-bearing.** Patch operations target one element by id. A missing id is **skipped and logged, not fatal** — a patch and the template it patches ship on different release cycles, so core removing a section an extension still targets must not take down every page using that patch. That resilience cuts both ways: renaming or removing this id does not break the site, it silently stops `kempo-blog` posts from getting their `<article>` wrapper, with only a server log to say so. Hence the test that holds it.
+
+A site whose template predates the attribute has a bare `<main>`; `kempo-blog`'s install/update adds the id when there is exactly one `<main>`, and reports it rather than guessing when there is not.
 
 The alternative this replaced was generating a *copy* of the site's default template per extension. A copy is a snapshot: it stopped matching the moment the site edited its own template, silently, and could not be reliably invalidated because editing a template usually means opening the file, which fires no hook.
 
@@ -66,7 +68,7 @@ The alternative this replaced was generating a *copy* of the site's default temp
 </head>
 <body>
   <fragment name="nav" />
-  <main>
+  <main id="main">
     <location />
   </main>
   <location name="scripts" />
