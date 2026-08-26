@@ -32,7 +32,9 @@ const installExtension = (await import(pathToFileURL(path.join(root, 'server/uti
 const uninstallExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/uninstallExtension.js')).href)).default;
 const enableExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/enableExtension.js')).href)).default;
 const disableExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/disableExtension.js')).href)).default;
-const { adminGlobalDirs } = await import(pathToFileURL(path.join(root, 'middleware/kempo.js')).href);
+const { adminGlobalDirs, adminFragmentDirs } = await import(pathToFileURL(path.join(root, 'middleware/kempo.js')).href);
+const { extensionPublicDirs } = await import(pathToFileURL(path.join(root, 'server/utils/extensions/contentDirs.js')).href);
+const { renderExternalPage } = await import('kempo-server/templating');
 const { invalidateScopeCache } = await import(pathToFileURL(path.join(root, 'server/utils/extensions/scopeCache.js')).href);
 const getSetting = (await import(pathToFileURL(path.join(root, 'server/utils/settings/getSetting.js')).href)).default;
 
@@ -144,6 +146,65 @@ const buildTests = () => {
       pass();
     },
 
+    /*
+      The public half of the same idea. Until extension content dirs existed an extension could ship
+      its own pages but could not add anything to anyone else's: public renders passed no extra
+      directories at all, so a *.global.html or *.fragment.html inside a package was never read
+      outside /admin.
+    */
+    'an enabled extension contributes its public dir to site renders': async ({ pass, fail }) => {
+      if(!state.installed) return fail('install step did not complete');
+
+      const dirs = await extensionPublicDirs();
+      const expected = path.join(root, 'node_modules', FIXTURE, 'public');
+      if(!dirs.includes(expected)) return fail(`enabled extension's public dir missing:\n    got ${JSON.stringify(dirs)}`);
+
+      // Admin fragments come from the package too, and never from the admin-authored globals dir
+      const fragmentDirs = await adminFragmentDirs();
+      const expectedAdmin = path.join(root, 'node_modules', FIXTURE, 'admin');
+      if(!fragmentDirs.includes(expectedAdmin)) return fail(`enabled extension's admin dir missing from the fragment scan:\n    got ${JSON.stringify(fragmentDirs)}`);
+      if(fragmentDirs.some(dir => dir.includes('.kempo'))) return fail(`admin-authored globals dir leaked into the fragment scan: ${JSON.stringify(fragmentDirs)}`);
+
+      pass();
+    },
+
+    'a public page render picks up the extension\'s pushed content and pulled fragment': async ({ pass, fail }) => {
+      if(!state.installed) return fail('install step did not complete');
+
+      /*
+        The end-to-end proof, rendered exactly the way the middleware renders a consumer page: a
+        <location> the extension knows the name of, and a <fragment> the page asks for by name
+        without knowing who supplies it.
+      */
+      const { mkdtemp, writeFile } = await import('fs/promises');
+      const os = await import('os');
+      const tmp = await mkdtemp(path.join(os.tmpdir(), 'kempo-pubdirs-'));
+      await writeFile(
+        path.join(tmp, 'default.template.html'),
+        '<html><body><location name="site-banner" /><fragment name="promo">no promo</fragment></body></html>'
+      );
+      await writeFile(path.join(tmp, 'index.page.html'), '<page></page>');
+
+      const contentDirs = await extensionPublicDirs();
+      const html = await renderExternalPage(
+        path.join(tmp, 'index.page.html'), tmp, tmp, {}, {}, 10, contentDirs, contentDirs
+      );
+
+      if(!html.includes('data-fixture-banner')) return fail(`extension global content did not reach the page:\n    ${html}`);
+      if(!html.includes('data-fixture-promo')) return fail(`extension fragment did not reach the page:\n    ${html}`);
+      if(html.includes('no promo')) return fail(`the inline fallback rendered instead of the extension's fragment:\n    ${html}`);
+
+      // Without the extension dirs the same page must render exactly as it did before this feature
+      const bare = await renderExternalPage(path.join(tmp, 'index.page.html'), tmp, tmp);
+      if(bare.includes('data-fixture-banner') || bare.includes('data-fixture-promo')){
+        return fail(`extension content leaked into a render that passed no extra dirs:\n    ${bare}`);
+      }
+      if(!bare.includes('no promo')) return fail(`the inline fallback should render with no extra dirs:\n    ${bare}`);
+
+      await rm(tmp, { recursive: true, force: true }).catch(() => {});
+      pass();
+    },
+
     'disabling removes the extension from the admin global scan': async ({ pass, fail }) => {
       if(!state.installed) return fail('install step did not complete');
 
@@ -153,6 +214,14 @@ const buildTests = () => {
       const dirs = await adminGlobalDirs();
       const expected = path.join(root, 'node_modules', FIXTURE, 'admin');
       if(dirs.includes(expected)) return fail('a disabled extension still contributes its admin nav');
+
+      /*
+        Being dropped from these lists is the whole of the on/off switch for packaged content —
+        there is no stored row to carry an `enabled` flag the way admin-authored globals have one.
+      */
+      const publicDirs = await extensionPublicDirs();
+      const expectedPublic = path.join(root, 'node_modules', FIXTURE, 'public');
+      if(publicDirs.includes(expectedPublic)) return fail('a disabled extension still contributes public content');
 
       const [row] = await db.select().from(extension).where(eq(extension.name, FIXTURE));
       if(row?.enabled !== false) return fail(`expected enabled=false, got ${row?.enabled}`);

@@ -86,6 +86,36 @@ my-extension/
     â””â”€â”€ ...              # Scoped public files â€” served at /{public-scope}/
 ```
 
+### Contributing Content to Other Pages
+
+An extension ships its own pages, but it can also add content to pages it does not own — the
+consumer's own pages, and other extensions' pages. Two mechanisms, both file-based, both read
+straight from the package at render time:
+
+| | `*.global.html` (push) | `*.fragment.html` (pull) |
+|---|---|---|
+| Who decides it appears | The contributing extension | The page, by asking for the name |
+| How many can contribute | Many — all merge into the `<location>` | One — the highest `priority` wins |
+| The target page must | Expose a `<location name="...">` | Ask via `<fragment name="...">` |
+
+Which directory contributes depends on which half of the site is rendering
+(`server/utils/extensions/contentDirs.js`):
+
+- **`admin/`** — contributes to `/admin/**` renders
+- **`public/`** — contributes to the live site: the consumer's own pages, every extension's scoped
+  pages, and the 404 page
+
+Because nothing is written anywhere on install, there is nothing to clean up on uninstall, and
+enabling, disabling, upgrading or removing an extension takes effect immediately. Dropping out of
+the scan when disabled *is* the on/off switch — a packaged file carries no `enabled` flag, since
+there is no stored row to put one on. This is the same mechanism the admin nav has always used,
+extended to the public site.
+
+A fragment competes on the `priority` declared on its own `<fragment>` wrapper — see
+[fragments.md](fragments.md#cross-package-resolution). That is how an extension deliberately
+*overrides* a fragment another package ships, rather than merely supplying a missing one.
+
+
 ### Install Flow
 1. Resolve package from `node_modules`
 2. Read `package.json` for version, description, and `kempo` config

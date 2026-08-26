@@ -1,6 +1,7 @@
 import { join } from 'path';
 import { renderExternalPage } from 'kempo-server/templating';
 import triggerHook from '../hooks/triggerHook.js';
+import { extensionPublicDirs } from '../extensions/contentDirs.js';
 
 /*
   Imported only when a handler actually serves a file. `kempo-server/serve-static-file` is a newer
@@ -102,7 +103,13 @@ export default async (request, response, publicDir) => {
     because nothing served a body. The content type is applied last so it cannot be clobbered.
   */
   try {
-    const html = await renderExternalPage(join(publicDir, 'CATCH.page.html'), publicDir, resolveDir);
+    /*
+      The 404 is an ordinary public page, so it gets the same extension-contributed content every
+      other public page does — a site-wide banner pushed by an extension should not vanish on the
+      one page a lost visitor actually lands on.
+    */
+    const contentDirs = await extensionPublicDirs();
+    const html = await renderExternalPage(join(publicDir, 'CATCH.page.html'), publicDir, resolveDir, {}, {}, 10, contentDirs, contentDirs);
     response.writeHead(404, { ...draft.headers, 'Content-Type': 'text/html; charset=utf-8' });
     response.end(html);
   } catch {

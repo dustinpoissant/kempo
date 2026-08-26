@@ -20,6 +20,33 @@ Global content provides a way to add HTML to every page without modifying indivi
 ### Admin Global Content
 There is a separate system for admin-scoped global content (`server/utils/admin-global-content/`) that works similarly but targets the admin template. These entries also have an `enabled` flag (stored as an HTML attribute) that can be toggled without renaming the file. This is used by extensions to inject UI into the admin panel.
 
+### Extension-Hosted Global Content
+
+An enabled extension contributes global content by shipping `*.global.html` **inside its own
+package** — `public/` for the live site, `admin/` for the admin portal
+(`server/utils/extensions/contentDirs.js` builds the lists; the middleware passes them to
+kempo-server's `extraGlobalDirs`). Files are read from the package at render time, exactly like
+extension pages.
+
+This is a **different system** from the `createGlobalContent` / `createAdminGlobalContent` CRUD
+utilities documented below, and the distinction matters:
+
+| | Admin-authored (CRUD utils) | Extension-hosted (packaged files) |
+|---|---|---|
+| Lives in | The consumer's project (`kempo-global.global.html`, `.kempo/admin-globals/`) | The extension's own package |
+| Created by | The admin UI / API | Shipping a file — no install step |
+| Turned off by | The `enabled` attribute or `-disabled` rename | Disabling the extension |
+| Cleaned up | Explicitly (`deleteAdminGlobalContentByOwner` on uninstall) | Nothing to clean up |
+
+The CRUD system was built for admin-authored content and is **not** a suitable place for an
+extension to write entries: `deleteGlobalContent` refuses to delete any entry whose `owner` is not
+`'custom'` (403) and there is no `deleteGlobalContentByOwner` counterpart, so an entry written there
+by an extension could not be removed when that extension is uninstalled. Extensions should ship
+packaged files instead.
+
+Both mechanisms feed the same `<location>` tags and are merged and ordered by `priority` together —
+a page cannot tell which source a contribution came from.
+
 ## Implementation
 
 ### File Format (`kempo-global.global.html`)

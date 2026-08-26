@@ -30,9 +30,13 @@ my-extension/
 ├── hooks/
 │   └── *.js              # Event hook handlers
 ├── admin/
-│   └── index.page.html   # Admin page
+│   ├── index.page.html   # Admin page
+│   ├── *.global.html     # Content pushed into admin page slots
+│   └── *.fragment.html   # Fragments offered to admin pages
 └── public/
-    └── ...               # Public-facing pages and assets
+    ├── ...               # Public-facing pages and assets
+    ├── *.global.html     # Content pushed into site page slots
+    └── *.fragment.html   # Fragments offered to site pages
 ```
 
 ## The `kempo` Config
@@ -306,7 +310,73 @@ Set `kempo.public-scope` to a URL prefix. Files in your `public/` directory are 
 
 With this, `public/index.page.html` is served at `/blog/`, `public/posts.page.html` at `/blog/posts`, etc.
 
-The `extension-scope-router` middleware handles static file serving. Dynamic route handlers (`.js` files) and server-side templating are not currently supported in extension public files — use kempo's API routes for dynamic behavior.
+The kempo middleware serves these, and your `public/` directory gets the same capabilities the
+site's own does: static files, dynamic route handlers (`GET.js`, `POST.js`, `[param]/` directories,
+`CATCH.js`), and server-side templated `.page.html` pages with fragments and global content.
+
+## Contributing Content to Pages You Don't Own
+
+Your extension ships its own pages — but it can also add content to pages it does not own: the
+site's own pages, and other extensions' pages. There are two ways, and which one you want depends
+on whether the target page knows you exist.
+
+Both work by dropping a file into your package. Nothing is written anywhere on install, so there is
+nothing to clean up on uninstall, and enabling, disabling or upgrading your extension takes effect
+immediately. Put the file in `public/` to contribute to the live site, or `admin/` to contribute to
+the admin portal.
+
+### Push: `*.global.html`
+
+The target page exposes a named slot and does not know or care who fills it. Any number of
+extensions can contribute to the same slot; everything is merged and ordered by `priority`.
+
+```html
+<!-- public/promo-banner.global.html -->
+<content location="site-banner" priority="10">
+  <aside>Free shipping this week</aside>
+</content>
+```
+
+That lands in any page whose template has `<location name="site-banner" />`. This is the same
+mechanism `admin/nav.global.html` has always used to add an admin nav entry.
+
+### Pull: `*.fragment.html`
+
+The page explicitly asks for something by name, and you supply it. Exactly one fragment can win —
+a `<fragment>` tag inserts one thing, not a merged list.
+
+```html
+<!-- public/payment-badge.fragment.html -->
+<fragment>
+  <span class="badge">Secure checkout</span>
+</fragment>
+```
+
+A page (in any package) that contains `<fragment name="payment-badge" />` renders it. If nobody
+supplies it, the tag's inline fallback content renders instead — so a page can ask for something
+optional without requiring the extension that provides it.
+
+### Overriding a fragment someone else ships
+
+Because only one fragment can win, same-named files compete on `priority`, declared on the
+`<fragment>` wrapper (default `0`):
+
+```html
+<!-- public/add-to-cart.fragment.html — replaces the default -->
+<fragment priority="10">
+  <button>Notify me when back in stock</button>
+</fragment>
+```
+
+Resolution: the site's own directory walk-up yields at most one candidate (unchanged — a page's
+nearest fragment still shadows a more general one), each enabled extension contributes at most one
+more, and the **highest priority wins**. A tie keeps the site's own file, so overriding something a
+site already has is always deliberate rather than an accident of install order. Extensions compete
+on priority alone, never on directory proximity.
+
+This is how one extension deliberately replaces another's markup — a commerce extension's default
+"add to cart" block swapped for one that handles out-of-stock items — with the extension being
+overridden knowing nothing about it.
 
 ## Admin Pages
 

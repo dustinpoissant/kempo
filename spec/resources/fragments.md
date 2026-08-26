@@ -14,6 +14,44 @@ Fragments provide a way to share common HTML across multiple pages without dupli
 - **Frontmatter metadata**: Fragment metadata (name, author) in HTML comment frontmatter.
 - **Included by name**: The `<fragment name="nav" />` tag tells kempo-server to find and include the `nav.fragment.html` file.
 - **Can be disabled**: Fragment files can be renamed with `-disabled` suffix (e.g., `nav.fragment-disabled.html`) to exclude them from rendering.
+- **Extensions can supply and override fragments**: an enabled extension's `public/` (site) or `admin/` (admin portal) directory is searched alongside the site's own tree. See [Cross-Package Resolution](#cross-package-resolution).
+
+## Cross-Package Resolution
+
+A fragment name can be offered by more than one source: the site's own tree, and any enabled
+extension package. Because a `<fragment>` tag inserts exactly one thing, those sources **compete**
+rather than merge — unlike global content, where every contribution to a `<location>` is combined.
+
+A fragment file's own `<fragment>` wrapper may carry a `priority` (higher wins, default `0`):
+
+```html
+<!-- my-extension/public/add-to-cart.fragment.html -->
+<fragment priority="10">
+  <button>Notify me when back in stock</button>
+</fragment>
+```
+
+Resolution order (implemented in kempo-server's templating engine):
+
+1. The site's own walk-up from the page's directory to the root runs **unchanged**, yielding at most
+   one candidate — the nearest match. Directory shadowing within the site behaves exactly as it
+   always has.
+2. Each enabled extension directory contributes at most one more candidate.
+3. Highest `priority` wins. Extension directories compete on priority alone, never proximity — they
+   sit outside the site's directory chain, so there is no distance to compare them by.
+4. A tie keeps the site's own file; a tie between two extensions keeps whichever was scanned first.
+   Overriding something the site already has is therefore always deliberate, never an accident of
+   install order.
+5. If no source has it, the calling tag's inline fallback renders.
+
+This is what lets one extension override another's fragment — e.g. a default "add to cart" block
+replaced by one that handles out-of-stock items — without the extension being overridden knowing
+anything about it.
+
+Extension-supplied fragments are read from the package at render time and require no install step
+and no cleanup on uninstall; a disabled extension simply drops out of the scan. This is distinct
+from the `createFragment` CRUD utils below, which manage admin-authored fragments stored in the
+consumer's project.
 
 ## Implementation
 

@@ -6,6 +6,7 @@ import getSession from '../server/utils/auth/getSession.js';
 import currentUserHasPermission from '../server/utils/permissions/currentUserHasPermission.js';
 import { LEXICAL_BASE, bundleFileName as lexicalBundleFileName } from '../server/utils/lexical/packages.js';
 import { getEnabledExtensions } from '../server/utils/extensions/scopeCache.js';
+import { extensionAdminDirs, extensionPublicDirs } from '../server/utils/extensions/contentDirs.js';
 import triggerHook from '../server/utils/hooks/triggerHook.js';
 import { ADMIN_GLOBALS_DIR } from '../server/utils/admin-global-content/helpers.js';
 
@@ -112,7 +113,7 @@ const executeRouteFile = async (filePath, request, response, params = {}) => {
   extensions guard their own private pages. Rendering a page anywhere without this helper silently
   bypasses those guards.
 */
-const renderGuardedPage = async (pageFilePath, request, response, rootDir, resolveDir, params = {}, extraGlobalDirs = []) => {
+const renderGuardedPage = async (pageFilePath, request, response, rootDir, resolveDir, params = {}, extraGlobalDirs = [], extraFragmentDirs = []) => {
   try {
     await triggerHook('middleware:before_page', {
       url: request.url.split('?')[0],
@@ -127,7 +128,7 @@ const renderGuardedPage = async (pageFilePath, request, response, rootDir, resol
     return;
   }
 
-  const html = await renderExternalPage(pageFilePath, rootDir, resolveDir, {}, {}, 10, extraGlobalDirs);
+  const html = await renderExternalPage(pageFilePath, rootDir, resolveDir, {}, {}, 10, extraGlobalDirs, extraFragmentDirs);
   response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   response.end(html);
 };
@@ -145,16 +146,22 @@ const renderGuardedPage = async (pageFilePath, request, response, rootDir, resol
 */
 export const adminGlobalDirs = async () => [
   ADMIN_GLOBALS_DIR,
-  ...(await getEnabledExtensions()).map(ext => join(NODE_MODULES, ext.name, 'admin')),
+  ...await extensionAdminDirs(),
 ];
 
-const serveDir = async (dirPath, method, request, response, resolveDir, rootDir, params = {}, extraGlobalDirs = []) => {
+/*
+  Fragments an admin render may pull from extension packages. ADMIN_GLOBALS_DIR is deliberately not
+  here: it holds admin-authored global content and never fragments.
+*/
+export const adminFragmentDirs = () => extensionAdminDirs();
+
+const serveDir = async (dirPath, method, request, response, resolveDir, rootDir, params = {}, extraGlobalDirs = [], extraFragmentDirs = []) => {
   const candidates = [`${method}.js`, 'index.page.html', 'index.js', 'index.html', 'CATCH.js'];
   for(const candidate of candidates){
     const candidatePath = join(dirPath, candidate);
     try { await stat(candidatePath); } catch { continue; }
     if(candidate.endsWith('.page.html')){
-      await renderGuardedPage(candidatePath, request, response, rootDir, resolveDir, params, extraGlobalDirs);
+      await renderGuardedPage(candidatePath, request, response, rootDir, resolveDir, params, extraGlobalDirs, extraFragmentDirs);
       return true;
     }
     if(ROUTE_FILES.includes(candidate)){
@@ -271,9 +278,10 @@ export default config => {
         const segments = url.slice('/admin'.length).replace(/^\//, '').split('/').filter(Boolean);
         const resolveDir = buildResolveDir(ADMIN_ROOT, url);
         const globalDirs = await adminGlobalDirs();
+        const fragmentDirs = await adminFragmentDirs();
 
         if(segments.length === 0){
-          const served = await serveDir(ADMIN_ROOT, method, request, response, resolveDir, ADMIN_ROOT, {}, globalDirs);
+          const served = await serveDir(ADMIN_ROOT, method, request, response, resolveDir, ADMIN_ROOT, {}, globalDirs, fragmentDirs);
           if(served) return;
         } else {
           const walked = await walkDynamic(ADMIN_ROOT, segments);
@@ -283,12 +291,12 @@ export default config => {
             try { fileStat = await stat(filePath); } catch { /* not found */ }
 
             if(fileStat?.isDirectory()){
-              const served = await serveDir(filePath, method, request, response, resolveDir, ADMIN_ROOT, params, globalDirs);
+              const served = await serveDir(filePath, method, request, response, resolveDir, ADMIN_ROOT, params, globalDirs, fragmentDirs);
               if(served) return;
             } else if(fileStat?.isFile()){
               const name = filePath.split(/[/\\]/).pop();
               if(name.endsWith('.page.html')){
-                await renderGuardedPage(filePath, request, response, ADMIN_ROOT, resolveDir, params, globalDirs);
+                await renderGuardedPage(filePath, request, response, ADMIN_ROOT, resolveDir, params, globalDirs, fragmentDirs);
                 return;
               }
               if(ROUTE_FILES.includes(name)){
@@ -317,6 +325,7 @@ export default config => {
       const resolveDir = buildResolveDir(ADMIN_ROOT, url);
       const method = request.method?.toUpperCase() || 'GET';
       const globalDirs = await adminGlobalDirs();
+      const fragmentDirs = await adminFragmentDirs();
 
       const pageCandidates = subPath.endsWith('/')
         ? [join(adminDir, subPath, 'index.page.html')]
@@ -329,7 +338,7 @@ export default config => {
         try {
           await stat(pagePath);
         } catch { continue; }
-        await renderGuardedPage(pagePath, request, response, ADMIN_ROOT, resolveDir, {}, globalDirs);
+        await renderGuardedPage(pagePath, request, response, ADMIN_ROOT, resolveDir, {}, globalDirs, fragmentDirs);
         return;
       }
 
@@ -351,12 +360,12 @@ export default config => {
         let walkedStat;
         try { walkedStat = await stat(walkedPath); } catch { /* not found */ }
         if(walkedStat?.isDirectory()){
-          const served = await serveDir(walkedPath, method, request, response, resolveDir, ADMIN_ROOT, params, globalDirs);
+          const served = await serveDir(walkedPath, method, request, response, resolveDir, ADMIN_ROOT, params, globalDirs, fragmentDirs);
           if(served) return;
         } else if(walkedStat?.isFile()){
           const name = walkedPath.split(/[/\\]/).pop();
           if(name.endsWith('.page.html')){
-            await renderGuardedPage(walkedPath, request, response, ADMIN_ROOT, resolveDir, params, globalDirs);
+            await renderGuardedPage(walkedPath, request, response, ADMIN_ROOT, resolveDir, params, globalDirs, fragmentDirs);
             return;
           }
           if(ROUTE_FILES.includes(name)){
@@ -378,6 +387,12 @@ export default config => {
     */
     const extensions = await getEnabledExtensions();
 
+    /*
+      Resolved once for every public render below — an extension's own scoped pages, the consumer's
+      pages, and the 404 alike — so any enabled extension can contribute to any of them.
+    */
+    const publicContentDirs = await extensionPublicDirs();
+
     for(const ext of extensions){
       let pkgPath, pkg;
       try {
@@ -398,7 +413,7 @@ export default config => {
       const segments = subPath.replace(/^\//, '').split('/').filter(Boolean);
 
       if(segments.length === 0){
-        const served = await serveDir(publicDir, method, request, response, resolveDir, PROJECT_PUBLIC);
+        const served = await serveDir(publicDir, method, request, response, resolveDir, PROJECT_PUBLIC, {}, publicContentDirs, publicContentDirs);
         if(served) return;
         return next();
       }
@@ -410,12 +425,12 @@ export default config => {
         try { fileStat = await stat(filePath); } catch { /* not found */ }
 
         if(fileStat?.isDirectory()){
-          const served = await serveDir(filePath, method, request, response, resolveDir, PROJECT_PUBLIC, params);
+          const served = await serveDir(filePath, method, request, response, resolveDir, PROJECT_PUBLIC, params, publicContentDirs, publicContentDirs);
           if(served) return;
         } else if(fileStat?.isFile()){
           const name = filePath.split(/[/\\]/).pop();
           if(name.endsWith('.page.html')){
-            await renderGuardedPage(filePath, request, response, PROJECT_PUBLIC, resolveDir, params);
+            await renderGuardedPage(filePath, request, response, PROJECT_PUBLIC, resolveDir, params, publicContentDirs, publicContentDirs);
             return;
           }
           if(ROUTE_FILES.includes(name)){
@@ -448,7 +463,7 @@ export default config => {
 
       for(const pageFilePath of candidates){
         try { await stat(pageFilePath); } catch { continue; }
-        await renderGuardedPage(pageFilePath, request, response, PROJECT_PUBLIC, resolveDir);
+        await renderGuardedPage(pageFilePath, request, response, PROJECT_PUBLIC, resolveDir, {}, publicContentDirs, publicContentDirs);
         return;
       }
     }
