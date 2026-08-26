@@ -1,0 +1,55 @@
+import { readFile } from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+/*
+  The scaffolded site template makes a promise to template patches, and this is what holds it.
+
+  A *.template-patch.html targets one element by id and throws when that id is absent. So the
+  `id="main"` on the page body wrapper is not decoration: removing or renaming it breaks every
+  extension patch that names it, and it breaks them at render time, on the pages that use them —
+  after the change has already shipped. kempo-blog replaces exactly this element with an <article>.
+
+  Nothing else in the codebase reads the attribute, so without this test the only signal would be a
+  broken site.
+*/
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+const templates = {
+  'app-public/default.template.html': 'the template scaffolded into every new site'
+};
+
+export default {
+  'the scaffolded template keeps id="main" on its page body wrapper': async ({ pass, fail }) => {
+    for(const [file, description] of Object.entries(templates)){
+      const markup = await readFile(path.join(root, file), 'utf8');
+
+      const main = markup.match(/<main(\s[^>]*)?>/);
+      if(!main) return fail(`${file} (${description}) has no <main> element`);
+      if(!/\bid\s*=\s*"main"/.test(main[0])){
+        return fail(`${file} (${description}) must keep id="main" on its <main> — template patches target it by id and throw when it is absent, so dropping it breaks kempo-blog's post template at render time`);
+      }
+
+      /*
+        The id is only useful on the element that actually wraps the page body: a patch replaces it
+        wholesale and supplies its own <location />.
+      */
+      const wrapper = markup.match(/<main\s[^>]*id\s*=\s*"main"[^>]*>([\s\S]*?)<\/main>/);
+      if(!wrapper) return fail(`${file}: could not read the <main id="main"> element's contents`);
+      if(!/<location\s*\/>|<location\s*>/.test(wrapper[1])){
+        return fail(`${file}: <main id="main"> no longer wraps the default <location /> — a patch replacing it would drop the page body`);
+      }
+    }
+    pass();
+  },
+
+  'exactly one <main> exists, so a patch cannot target the wrong one': async ({ pass, fail }) => {
+    for(const [file] of Object.entries(templates)){
+      const markup = await readFile(path.join(root, file), 'utf8');
+      const count = (markup.match(/<main(\s[^>]*)?>/g) || []).length;
+      if(count !== 1) return fail(`${file} has ${count} <main> elements — kempo-blog's migration only adds id="main" when there is exactly one`);
+    }
+    pass();
+  }
+};

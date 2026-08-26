@@ -20,6 +20,32 @@ Templates are the outermost layer of the rendering pipeline. They define `<!DOCT
 - **`{{pathToRoot}}`**: kempo-server variable for relative paths to the public root.
 - **`{{title}}`**: kempo-server variable replaced with the page's title from frontmatter.
 - **`copyFrom` on create**: New templates can be created as copies of existing templates.
+- **`id="main"` on the page body wrapper**: the scaffolded `default.template.html` gives its `<main>` an id so that a `*.template-patch.html` can replace it. This is a contract, not decoration — see below.
+
+### Template Patches
+
+kempo-server ≥3.4.0 supports `*.template-patch.html`: a file that describes changes to another template rather than being one. A page's `template="x"` resolves to `x.template.html` first, then `x.template-patch.html`.
+
+This is how an extension gives pages a different wrapper without copying the site's template. `kempo-blog` uses it — its generated `post/blog-post.template-patch.html` is:
+
+```html
+<!--
+  owner: kempo-blog
+  extends: default
+  locked: true
+-->
+<replace id="main">
+  <article>
+    <fragment name="blog-post-header" />
+    <location />
+    <fragment name="blog-post-comments" />
+  </article>
+</replace>
+```
+
+**`id="main"` in `app-public/default.template.html` is load-bearing.** Patch operations target one element by id and **throw when that id is absent**, so renaming or removing it breaks every patch naming it — visibly, at render time, for the pages that use them. A site whose template predates the attribute has a bare `<main>`; `kempo-blog`'s install/update adds the id when there is exactly one `<main>`, and reports it rather than guessing when there is not.
+
+The alternative this replaced was generating a *copy* of the site's default template per extension. A copy is a snapshot: it stopped matching the moment the site edited its own template, silently, and could not be reliably invalidated because editing a template usually means opening the file, which fires no hook.
 
 ## Implementation
 
