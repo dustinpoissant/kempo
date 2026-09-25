@@ -168,6 +168,8 @@ Kempo provides these tables out of the box:
 | `permission` | Named permissions (e.g. `system:admin:access`) |
 | `groupPermission` | Group-to-permission assignments |
 | `setting` | Key-value settings with type, visibility, and ownership |
+| `realtimeMessage` | Messages on channels that persist, so a reconnecting client can replay what it missed |
+| `realtimeChannel` | How far each realtime channel has been pruned, to tell a client it missed messages |
 
 ## Frontend SDK
 
@@ -322,6 +324,7 @@ The `init-db.js` script seeds these permissions:
 | `system:settings:read` | View private settings |
 | `system:settings:update` | Update settings |
 | `system:custom-settings:manage` | Create and delete custom settings |
+| `system:realtime:read` | View realtime connections and channels |
 
 Two default groups are created:
 
@@ -340,6 +343,10 @@ Two default groups are created:
 | `password_reset_url` | `http://localhost:3000/reset-password/{{token}}` | string | no | Password reset URL template |
 
 Settings can be managed through the admin panel at `/admin/settings` or the SDK.
+
+## Realtime
+
+Extensions can push live updates to browsers: declare a channel, publish to it from any server code, and every subscribed browser on any kempo process receives it. Channels can persist messages so a client that reconnects replays what it missed, and a browser client handles connecting and reconnecting. It uses a Postgres `LISTEN`/`NOTIFY` bus, so it needs no extra service. See [docs/realtime.md](docs/realtime.md).
 
 ## Email
 

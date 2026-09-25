@@ -1638,3 +1638,32 @@ export default async (request, response) => {
   response.json({ page });
 };
 ```
+
+## Realtime
+
+Exported as a namespace: `import { realtime } from 'kempo/server/sdk.js'`. See [Realtime](../realtime.md) for the concepts.
+
+### `realtime.publish({ channel, data })`
+
+Sends `data` to everyone subscribed to `channel`, on any kempo process. `data` must be JSON-serializable and not `null`. Returns `[null, { id }]`, where `id` is the message id on a persisted channel and `null` otherwise.
+
+Errors: `400` for a missing channel or bad data, `404` if the channel is not registered, `413` if the message is too large (about 7,900 bytes on a channel that does not persist, 1,000,000 on one that does).
+
+```javascript
+const [error, result] = await realtime.publish({
+  channel: 'my-ext:orders',
+  data: { id: 'order_123', status: 'shipped' }
+});
+```
+
+### `realtime.registerChannel({ owner, name, permission, authorize, persist, retention })`
+
+Registers a channel from code, for application code that cannot use `kempo-config.json`. Returns `[null, { channel }]` with `channel` being `<owner>:<name>`. A channel needs `permission` and/or an `authorize({ user, channel })` function; without one it is refused, since channels are closed by default. Returns `409` for a name already registered. Register at startup only; see [Realtime](../realtime.md#declaring-a-channel-in-code).
+
+### `realtime.listConnections()`
+
+Returns `[null, { process, connections, channels }]` for the sockets held by this process. Each connection has `id`, `userId`, `userName`, `path`, `connectedAt`, `lastActivity` and `channels`. Session tokens are never included.
+
+### `realtime.pruneMessages({ now })`
+
+Deletes persisted messages older than their channel's retention and returns `[null, { deleted }]`. Kempo calls this on a schedule; it is exported for running it yourself, for example from a cron job.

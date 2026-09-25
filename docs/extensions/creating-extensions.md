@@ -547,6 +547,20 @@ The `git` field in your `kempo` config enables update detection:
 
 When users check for updates in the admin panel, kempo fetches the latest `package.json` from the `main` branch of this repository and compares the version. Only GitHub URLs are currently supported.
 
+## Realtime Channels
+
+An extension can push live updates to browsers by declaring a channel in `kempo-config.json` and publishing to it:
+
+```json
+"realtime": {
+  "channels": [
+    { "name": "status", "permission": "my-ext:status:read", "persist": true, "retention": "24h" }
+  ]
+}
+```
+
+Channels are closed by default: `permission` is required, and only users who hold it can subscribe. `persist` stores messages so a client that reconnects can catch up, and `retention` says how long they are kept. The channel is named `my-ext:status`, and you publish with `realtime.publish({ channel, data })` from the [Server SDK](sdk.md). See [Realtime](../realtime.md) for the full guide.
+
 ## Reference
 
 ### Full `kempo` Config Schema
@@ -581,7 +595,17 @@ When users check for updates in the admin panel, kempo fetches the latest `packa
         "description": "string",
         "permissions": ["array of permission names"]
       }
-    ]
+    ],
+    "realtime": {
+      "channels": [
+        {
+          "name": "string — channel name, becomes <extension-name>:<name>",
+          "permission": "string — required; the permission a user needs to subscribe",
+          "persist": "boolean — keep messages so clients can replay what they missed (default false)",
+          "retention": "string or number — how long persisted messages are kept, e.g. \"24h\" (default 24h)"
+        }
+      ]
+    }
   }
 }
 ```
