@@ -8,7 +8,9 @@ import createPermission from '../server/utils/permissions/createPermission.js';
 import addPermissionToGroup from '../server/utils/permissions/addPermissionToGroup.js';
 import addUserToGroup from '../server/utils/groups/addUserToGroup.js';
 import parseDuration from '../server/utils/realtime/duration.js';
-import { registerChannel, unregisterChannel, resolveChannel, authorizeSubscription } from '../server/utils/realtime/channels.js';
+import { mkdir, writeFile, rm } from 'fs/promises';
+import path from 'path';
+import { registerChannel, unregisterChannel, resolveChannel, authorizeSubscription, loadMessageHandler, clearMessageHandlerCache } from '../server/utils/realtime/channels.js';
 
 /*
   Channel registration, resolution and authorization.
@@ -151,6 +153,44 @@ const pureTests = {
 
     cleanupRegistered();
     pass('authorize functions');
+  },
+
+  'scope, onMessage and dropIfBackedUp are validated, and a process channel cannot persist': async ({ pass }) => {
+    const [defaultError, defaulted] = register({ name: 'defaults', permission: 'x:y:read' });
+    expect(defaultError === null, 'should register');
+    const config = await resolveChannel(defaulted.channel);
+    expect(config.scope === 'cluster' && config.onMessage === null && config.dropIfBackedUp === false, `unexpected defaults ${JSON.stringify(config)}`);
+
+    const handler = async () => 'handled';
+    const [, custom] = register({ name: 'custom', permission: 'x:y:read', scope: 'process', onMessage: handler, dropIfBackedUp: true });
+    const customConfig = await resolveChannel(custom.channel);
+    expect(customConfig.scope === 'process' && customConfig.onMessage === handler && customConfig.dropIfBackedUp === true, 'options should be kept');
+
+    const [scopeError] = register({ name: 'bad-scope', permission: 'x:y:read', scope: 'everywhere' });
+    expect(scopeError?.code === 400, `an unknown scope should be a 400, got ${JSON.stringify(scopeError)}`);
+
+    const [persistError] = register({ name: 'process-persist', permission: 'x:y:read', scope: 'process', persist: true });
+    expect(persistError?.code === 400 && /cannot persist/.test(persistError.msg), `a process channel cannot persist, got ${JSON.stringify(persistError)}`);
+
+    for(const onMessage of ['./handler.js', 5, {}, true]){
+      const [error] = register({ name: 'bad-handler', permission: 'x:y:read', onMessage });
+      expect(error?.code === 400, `onMessage ${JSON.stringify(onMessage)} should be refused, got ${JSON.stringify(error)}`);
+    }
+
+    cleanupRegistered();
+    pass('channel options');
+  },
+
+  'a code-registered handler loads as itself, and a channel with none loads null': async ({ pass }) => {
+    const handler = async () => 1;
+    const [, withHandler] = register({ name: 'with-handler', permission: 'x:y:read', onMessage: handler });
+    const [, without] = register({ name: 'without-handler', permission: 'x:y:read' });
+
+    expect(await loadMessageHandler(await resolveChannel(withHandler.channel)) === handler, 'should return the registered function');
+    expect(await loadMessageHandler(await resolveChannel(without.channel)) === null, 'a channel with no handler should load null');
+
+    cleanupRegistered();
+    pass('code handlers');
   }
 };
 
@@ -268,6 +308,72 @@ const databaseTests = () => ({
       await purge();
     }
     pass('permission gating');
+  },
+
+  'a declared channel carries its scope, handler path and drop policy, and anything unusable closes it': async ({ pass }) => {
+    await purge();
+    try {
+      await declareExtension([
+        { name: 'world', permission: 'ext:world:read', scope: 'process', onMessage: './handlers/world.js', dropIfBackedUp: true },
+        { name: 'plain', permission: 'ext:plain:read' },
+        { name: 'process-persist', permission: 'ext:x:read', scope: 'process', persist: true },
+        { name: 'bad-scope', permission: 'ext:x:read', scope: 'galaxy' },
+        { name: 'escape', permission: 'ext:x:read', onMessage: '../../../../etc/passwd' },
+        { name: 'nested-escape', permission: 'ext:x:read', onMessage: './../../other/handler.js' },
+        { name: 'absolute', permission: 'ext:x:read', onMessage: '/etc/passwd' },
+        { name: 'bare', permission: 'ext:x:read', onMessage: 'handlers/world.js' },
+        { name: 'not-a-string', permission: 'ext:x:read', onMessage: 5 }
+      ]);
+
+      const world = await resolveChannel(`${EXTENSION}:world`);
+      expect(world?.scope === 'process' && world.dropIfBackedUp === true, `unexpected world config ${JSON.stringify(world)}`);
+      const expectedPath = path.join(process.cwd(), 'node_modules', EXTENSION, 'handlers', 'world.js');
+      expect(world.handlerPath === expectedPath, `the handler path should be inside the package, got ${world.handlerPath}`);
+
+      const plain = await resolveChannel(`${EXTENSION}:plain`);
+      expect(plain.scope === 'cluster' && plain.handlerPath === null && plain.dropIfBackedUp === false, 'a plain declaration keeps the defaults');
+
+      for(const name of ['process-persist', 'bad-scope', 'escape', 'nested-escape', 'absolute', 'bare', 'not-a-string']){
+        expect(await resolveChannel(`${EXTENSION}:${name}`) === null, `"${name}" cannot be honoured as declared, so the channel must stay closed rather than open with other behaviour`);
+      }
+    } finally {
+      await purge();
+    }
+    pass('declared options');
+  },
+
+  'an extension\'s handler is loaded from its own package, once, and a broken one is reported': async ({ pass }) => {
+    await purge();
+    const packageDir = path.join(process.cwd(), 'node_modules', EXTENSION);
+    try {
+      await mkdir(path.join(packageDir, 'handlers'), { recursive: true });
+      await writeFile(path.join(packageDir, 'handlers', 'good.js'), 'export default async ({ data }) => ({ echoed: data });\n');
+      await writeFile(path.join(packageDir, 'handlers', 'not-a-function.js'), 'export default { nope: true };\n');
+      await writeFile(path.join(packageDir, 'handlers', 'broken.js'), 'this is not javascript (\n');
+
+      await declareExtension([
+        { name: 'good', permission: 'ext:x:read', onMessage: './handlers/good.js' },
+        { name: 'not-a-function', permission: 'ext:x:read', onMessage: './handlers/not-a-function.js' },
+        { name: 'broken', permission: 'ext:x:read', onMessage: './handlers/broken.js' },
+        { name: 'missing', permission: 'ext:x:read', onMessage: './handlers/missing.js' }
+      ]);
+      clearMessageHandlerCache();
+
+      const good = await loadMessageHandler(await resolveChannel(`${EXTENSION}:good`));
+      expect(typeof good === 'function' && (await good({ data: 7 })).echoed === 7, 'the declared handler should load and run');
+      expect(await loadMessageHandler(await resolveChannel(`${EXTENSION}:good`)) === good, 'it should be loaded once and kept, not re-imported per message');
+
+      for(const name of ['not-a-function', 'broken', 'missing']){
+        let failure = null;
+        try { await loadMessageHandler(await resolveChannel(`${EXTENSION}:${name}`)); } catch(error) { failure = error; }
+        expect(failure, `"${name}" should throw so the caller can report it, not be mistaken for "no handler"`);
+      }
+    } finally {
+      clearMessageHandlerCache();
+      await rm(packageDir, { recursive: true, force: true }).catch(() => {});
+      await purge();
+    }
+    pass('handler loading');
   },
 
   'a permission and an authorize function must both agree': async ({ pass }) => {

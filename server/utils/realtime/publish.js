@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import db from '../../db/index.js';
 import { realtimeMessage } from '../../db/schema.js';
 import { resolveChannel } from './channels.js';
+import getHub from './getHub.js';
 import { BUS_CHANNEL, MAX_INLINE_BYTES, MAX_PERSISTED_BYTES, LOCK_PREFIX } from './constants.js';
 
 /*
@@ -35,6 +36,19 @@ export default async ({ channel, data } = {}) => {
   }
   if(serialized === undefined){
     return [{ code: 400, msg: 'Data must be JSON-serializable' }, null];
+  }
+
+  /*
+    A channel with scope "process" never touches the database: the message is delivered in memory to the
+    subscribers this process holds. That is what makes it fast enough for traffic the bus cannot carry, and
+    it means a publish made in another process does not reach them, which is why the scope is a choice
+    the channel makes and not a default.
+  */
+  if(config.scope === 'process'){
+    if(Buffer.byteLength(serialized) > MAX_PERSISTED_BYTES){
+      return [{ code: 413, msg: `Message is larger than the ${MAX_PERSISTED_BYTES} byte limit` }, null];
+    }
+    return [null, { id: null, delivered: getHub().deliverLocal({ channel, data }) }];
   }
 
   if(config.persist){
