@@ -554,12 +554,15 @@ An extension can push live updates to browsers by declaring a channel in `kempo-
 ```json
 "realtime": {
   "channels": [
-    { "name": "status", "permission": "my-ext:status:read", "persist": true, "retention": "24h" }
+    { "name": "status", "permission": "my-ext:status:read", "persist": true, "retention": "24h" },
+    { "name": "arena", "permission": "my-ext:arena:play", "scope": "process", "dropIfBackedUp": true, "onMessage": "./handlers/arena.js" }
   ]
 }
 ```
 
-Channels are closed by default: `permission` is required, and only users who hold it can subscribe. `persist` stores messages so a client that reconnects can catch up, and `retention` says how long they are kept. The channel is named `my-ext:status`, and you publish with `realtime.publish({ channel, data })` from the [Server SDK](sdk.md). See [Realtime](../realtime.md) for the full guide.
+Channels are closed by default: `permission` is required, and only users who hold it can subscribe. `persist` stores messages so a client that reconnects can catch up, and `retention` says how long they are kept. `scope` is `"cluster"` (default) or `"process"` for fast in-memory traffic that never touches the database. `onMessage` is a path inside your package to a handler that receives what browsers send to the channel and can reply. `dropIfBackedUp` skips deliveries to a client that is already behind. The channel is named `my-ext:status`, and you publish with `realtime.publish({ channel, data })` from the [Server SDK](sdk.md).
+
+Connections are observable through hooks, declared in `kempo.hooks` like any other: `realtime:connected`, `realtime:disconnected`, `realtime:subscribed`, `realtime:unsubscribed`, and the guard `realtime:before_subscribe`, which refuses a subscription when it throws `{ code, msg }`. Use hooks for lifecycle and `onMessage` for messages. See [Realtime](../realtime.md) for the full guide.
 
 ## Reference
 

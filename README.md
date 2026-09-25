@@ -346,7 +346,7 @@ Settings can be managed through the admin panel at `/admin/settings` or the SDK.
 
 ## Realtime
 
-Extensions can push live updates to browsers: declare a channel, publish to it from any server code, and every subscribed browser on any kempo process receives it. Channels can persist messages so a client that reconnects replays what it missed, and a browser client handles connecting and reconnecting. It uses a Postgres `LISTEN`/`NOTIFY` bus, so it needs no extra service. See [docs/realtime.md](docs/realtime.md).
+Extensions can push live updates to browsers: declare a channel, publish to it from any server code, and every subscribed browser on any kempo process receives it. Channels can persist messages so a client that reconnects replays what it missed, and a browser client handles connecting and reconnecting. Browsers can also send to a channel, where the extension's own handler receives and answers it, and extensions observe connections through hooks and act on them through SDK functions, so interactive features (chat, collaboration, games) can be built as extensions without touching a socket. Fast traffic can use an in-memory channel that skips the database, and connections are limited and backpressured. It uses a Postgres `LISTEN`/`NOTIFY` bus, so it needs no extra service. See [docs/realtime.md](docs/realtime.md).
 
 ## Email
 

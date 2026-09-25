@@ -1428,6 +1428,18 @@ The following events are fired automatically during page operations. Register ho
 | `page:updated` | `{ file, updatedAt }` | A page's metadata or content is updated |
 | `page:deleted` | `{ file }` | A page is deleted |
 
+### Realtime Events
+
+| Event | Data | Fired when |
+|---|---|---|
+| `realtime:connected` | `{ connectionId, userId, path }` | A socket is open and its user is known |
+| `realtime:disconnected` | `{ connectionId, userId, path, channels, reason }` | A socket closes |
+| `realtime:before_subscribe` | `{ connectionId, userId, user, channel }` | Before a subscription is granted; throw `{ code, msg }` to refuse |
+| `realtime:subscribed` | `{ connectionId, userId, channel }` | After a subscription is granted |
+| `realtime:unsubscribed` | `{ connectionId, userId, channel, reason }` | After a subscription ends |
+
+These are for lifecycle. Per-message work belongs in a channel's `onMessage` handler. See [Realtime](../realtime.md#reacting-to-connections).
+
 **Example — reacting to page creation:**
 
 ```javascript
@@ -1656,9 +1668,21 @@ const [error, result] = await realtime.publish({
 });
 ```
 
-### `realtime.registerChannel({ owner, name, permission, authorize, persist, retention })`
+### `realtime.registerChannel({ owner, name, permission, authorize, persist, retention, scope, onMessage, dropIfBackedUp })`
 
-Registers a channel from code, for application code that cannot use `kempo-config.json`. Returns `[null, { channel }]` with `channel` being `<owner>:<name>`. A channel needs `permission` and/or an `authorize({ user, channel })` function; without one it is refused, since channels are closed by default. Returns `409` for a name already registered. Register at startup only; see [Realtime](../realtime.md#declaring-a-channel-in-code).
+Registers a channel from code, for application code that cannot use `kempo-config.json`. Returns `[null, { channel }]` with `channel` being `<owner>:<name>`. A channel needs `permission` and/or an `authorize({ user, channel })` function; without one it is refused, since channels are closed by default. `scope` is `"cluster"` (default) or `"process"`; a process channel cannot `persist`. `onMessage` is a function `async ({ user, channel, data, connectionId })` that handles what clients send. `dropIfBackedUp` skips deliveries to a client that is behind. Returns `409` for a name already registered. Register at startup only; see [Realtime](../realtime.md#declaring-a-channel-in-code).
+
+### `realtime.sendToConnection({ connectionId, data })`
+
+Sends `data` to one connection, which receives it as a `direct` frame (`realtime.onDirect` in the browser client). Returns `[null, { delivered }]`, where `delivered` is `false` if the connection was skipped for being backed up. Returns `404` if this process does not hold that connection: connection ids belong to the process that accepted the socket. To reach a user wherever they are connected, publish to `user:<id>`.
+
+### `realtime.closeConnection({ connectionId, code, reason })`
+
+Closes one connection held by this process (`code` defaults to `1000`). Returns `[null, { closed: true }]`, or `404`. To end a user's access on every process, delete their sessions.
+
+### `realtime.listSubscribers({ channel })`
+
+Returns `[null, { channel, subscribers }]`, each subscriber `{ connectionId, userId, userName }`, for the subscribers of `channel` that this process holds. Other processes hold their own.
 
 ### `realtime.listConnections()`
 
