@@ -1,0 +1,81 @@
+<!--
+	locked: true
+-->
+<page title="Realtime - Admin">
+<content>
+<script type="module" src="/kempo-ui/components/Table.js"></script>
+<script type="module" src="/kempo-ui/components/Icon.js"></script>
+
+	<div class="d-f mb">
+		<h1 class="flex mb0">Realtime</h1>
+		<button id="refresh"><k-icon name="replay"></k-icon> Refresh</button>
+	</div>
+
+	<p class="tc-muted" id="scope">Loading&hellip;</p>
+
+	<h2>Connections</h2>
+	<k-table id="connectionsTable" placeholder="No one is connected to this process."></k-table>
+
+	<h2>Channels</h2>
+	<k-table id="channelsTable" placeholder="Nothing is subscribed to any channel on this process."></k-table>
+
+	<p class="small tc-muted">
+		Sockets are held by the process that accepted them, so with several kempo processes behind a load balancer this
+		page shows only the one that answered this request. Messages still reach every process.
+	</p>
+
+</content>
+<content location="scripts">
+<script type="module">
+	import { listRealtimeConnections } from '/kempo/sdk.js';
+
+	const connectionsTable = document.getElementById('connectionsTable');
+	const channelsTable = document.getElementById('channelsTable');
+	const scope = document.getElementById('scope');
+	const formatTime = value => new Date(value).toLocaleString();
+
+	const refresh = async () => {
+		const [error, data] = await listRealtimeConnections();
+
+		if(error){
+			scope.textContent = error.code === 403
+				? 'You do not have permission to view realtime connections.'
+				: `Could not load connections: ${error.msg}`;
+			return;
+		}
+
+		scope.textContent = `${data.connections.length} connection${data.connections.length === 1 ? '' : 's'} on process ${data.process}.`;
+
+		connectionsTable.setData({
+			records: data.connections.map(connection => ({
+				id: connection.id,
+				user: connection.userName || connection.userId,
+				path: connection.path,
+				channels: connection.channels.join(', ') || 'none',
+				connectedAt: formatTime(connection.connectedAt),
+				lastActivity: formatTime(connection.lastActivity)
+			})),
+			fields: [
+				{ name: 'user', label: 'User' },
+				{ name: 'path', label: 'Path' },
+				{ name: 'channels', label: 'Channels' },
+				{ name: 'connectedAt', label: 'Connected' },
+				{ name: 'lastActivity', label: 'Last activity' }
+			]
+		});
+
+		channelsTable.setData({
+			records: data.channels.map(channel => ({ id: channel.channel, channel: channel.channel, subscribers: channel.subscribers })),
+			fields: [
+				{ name: 'channel', label: 'Channel' },
+				{ name: 'subscribers', label: 'Subscribers' }
+			]
+		});
+	};
+
+	document.getElementById('refresh').addEventListener('click', refresh);
+	await refresh();
+	setInterval(refresh, 5000);
+</script>
+</content>
+</page>

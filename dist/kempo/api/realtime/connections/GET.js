@@ -1,0 +1,2 @@
+import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import r from"../../../../../server/utils/realtime/listConnections.js";export default async(e,t)=>{const o=e.cookies.session_token,[i,n]=await s(o,"system:realtime:read");if(i)return t.status(i.code).json({error:i.msg});if(!n)return t.status(403).json({error:"Insufficient permissions"});const[m,a]=r();if(m)return t.status(m.code).json({error:m.msg});t.json(a)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\realtime\connections\GET.js.map
