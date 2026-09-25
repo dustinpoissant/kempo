@@ -1,5 +1,6 @@
 import getSession from '../../../../server/utils/auth/getSession.js';
 import getHub from '../../../../server/utils/realtime/getHub.js';
+import { TOO_MANY_CONNECTIONS_CODE } from '../../../../server/utils/realtime/constants.js';
 
 /*
   The realtime socket, served at /kempo/api/realtime.
@@ -8,8 +9,10 @@ import getHub from '../../../../server/utils/realtime/getHub.js';
   hands the hub's frames back to the socket. Channels, authorization, delivery and replay all live in
   server/utils/realtime.
 
-  Client to server: { type: 'subscribe', channel, since? } and { type: 'unsubscribe', channel }.
-  Server to client: ready, subscribed, unsubscribed, message, gap and error frames.
+  Client to server: { type: 'subscribe', channel, since? }, { type: 'unsubscribe', channel } and
+  { type: 'send', channel, data, ref? }. A send is handed to the channel's own handler; with a `ref` the
+  handler's return value comes back as an ack carrying the same ref.
+  Server to client: ready, subscribed, unsubscribed, message, direct, ack, gap and error frames.
 */
 export default async (request, socket) => {
   const token = request.cookies.session_token;
@@ -22,7 +25,7 @@ export default async (request, socket) => {
   }
 
   const hub = getHub();
-  const send = frame => socket.send(JSON.stringify(frame));
+  const send = (frame, options) => socket.send(JSON.stringify(frame), options);
   let subscriberId = null;
 
   /*
@@ -39,7 +42,8 @@ export default async (request, socket) => {
     });
 
     if(addError){
-      socket.close(1011, addError.msg);
+      // The user is at their connection limit: retrying would be refused again, so tell the client to stop
+      socket.close(addError.code === 429 ? TOO_MANY_CONNECTIONS_CODE : 1011, addError.msg);
       return;
     }
 
@@ -71,6 +75,21 @@ export default async (request, socket) => {
       return;
     }
 
+    if(frame.type === 'send'){
+      const [sendError, result] = await hub.handleMessage({ id: subscriberId, channel: frame.channel, data: frame.data });
+
+      if(sendError){
+        return send({ type: 'error', channel: frame.channel, ref: frame.ref, code: sendError.code, msg: sendError.msg });
+      }
+      if(frame.ref === undefined) return;
+
+      try {
+        return send({ type: 'ack', channel: frame.channel, ref: frame.ref, data: result });
+      } catch(serializeError) {
+        return send({ type: 'error', channel: frame.channel, ref: frame.ref, code: 500, msg: 'The handler returned something that cannot be sent' });
+      }
+    }
+
     if(frame.type === 'unsubscribe'){
       hub.unsubscribe({ id: subscriberId, channel: frame.channel });
       return send({ type: 'unsubscribed', channel: frame.channel });
@@ -79,7 +98,7 @@ export default async (request, socket) => {
     send({ type: 'error', code: 400, msg: `Unknown frame type "${frame.type}"` });
   });
 
-  socket.on('close', () => {
-    if(subscriberId) hub.removeSubscriber({ id: subscriberId });
+  socket.on('close', (code) => {
+    if(subscriberId) hub.removeSubscriber({ id: subscriberId, reason: code });
   });
 };

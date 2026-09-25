@@ -1,7 +1,7 @@
 import http from 'http';
 import crypto from 'crypto';
 import { spawn, execFileSync } from 'child_process';
-import { writeFile, mkdir, rm } from 'fs/promises';
+import { writeFile, mkdir, rm, readFile } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { sql, eq } from 'drizzle-orm';
@@ -17,13 +17,16 @@ import { sql, eq } from 'drizzle-orm';
 
   Needs a reachable Postgres with kempo's schema applied and a current build (`npm run build`). Skips
   itself with a clear message when there is no database.
+
+  The tests share one server, started by the first. Run the whole file: filtering to a single test by name
+  skips that setup and fails with a meaningless "Failed to parse URL ... null" instead.
 */
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const load = async relative => (await import(pathToFileURL(path.join(root, relative)).href));
 
 const db = (await load('server/db/index.js')).default;
-const { user, userGroup, session, group, groupPermission, permission, extension, realtimeMessage } = await load('server/db/schema.js');
+const { user, userGroup, session, group, groupPermission, permission, extension, realtimeMessage, hook } = await load('server/db/schema.js');
 const createUser = (await load('server/utils/users/createUser.js')).default;
 const createSession = (await load('server/utils/sessions/createSession.js')).default;
 const createGroup = (await load('server/utils/groups/createGroup.js')).default;
@@ -31,6 +34,7 @@ const createPermission = (await load('server/utils/permissions/createPermission.
 const addPermissionToGroup = (await load('server/utils/permissions/addPermissionToGroup.js')).default;
 const addUserToGroup = (await load('server/utils/groups/addUserToGroup.js')).default;
 const publish = (await load('server/utils/realtime/publish.js')).default;
+const createHook = (await load('server/utils/hooks/createHook.js')).default;
 const { connect } = await load('src/kempo/realtime.js');
 
 const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
@@ -57,12 +61,18 @@ const EXTENSION = 'realtime-http-test-ext';
 const GROUP = 'realtime-http-test:Readers';
 const PERMISSION = 'realtime-http-test:feed:read';
 const FEED = `${EXTENSION}:feed`;
+const WORLD = `${EXTENSION}:world`;
+const GUARDED = `${EXTENSION}:guarded`;
+const PACKAGE_DIR = path.join(root, 'node_modules', EXTENSION);
+const HOOK_EVENTS = ['realtime:connected', 'realtime:subscribed', 'realtime:unsubscribed', 'realtime:disconnected', 'realtime:before_subscribe'];
 
 const state = { server: null, port: null, tmp: null, cookies: {}, ids: {} };
 
 const randomPort = () => 10000 + Math.floor(Math.random() * 20000);
 
 const purge = async () => {
+  await db.delete(hook).where(eq(hook.owner, EXTENSION)).catch(() => {});
+  await rm(PACKAGE_DIR, { recursive: true, force: true }).catch(() => {});
   await db.delete(extension).where(eq(extension.name, EXTENSION)).catch(() => {});
   for(const email of [ADMIN.email, MEMBER.email, OUTSIDER.email]){
     const [row] = await db.select().from(user).where(eq(user.email, email));
@@ -91,7 +101,7 @@ const startServer = async () => {
   ], {
     cwd: root,
     stdio: 'ignore',
-    env: { ...process.env, KEMPO_REALTIME_SESSION_CHECK_MS: '300' }
+    env: { ...process.env, KEMPO_REALTIME_SESSION_CHECK_MS: '300', KEMPO_REALTIME_MAX_CONNECTIONS_PER_USER: '4' }
   });
 
   for(let i = 0; i < 100; i++){
@@ -203,13 +213,56 @@ const buildTests = () => ({
       name: EXTENSION,
       version: '1.0.0',
       enabled: true,
-      kempo: { realtime: { channels: [{ name: 'feed', permission: PERMISSION, persist: true, retention: '1h' }] } },
+      kempo: { realtime: { channels: [
+        { name: 'feed', permission: PERMISSION, persist: true, retention: '1h' },
+        { name: 'world', permission: PERMISSION, scope: 'process', onMessage: './handlers/world.js', dropIfBackedUp: true },
+        { name: 'guarded', permission: PERMISSION }
+      ] } },
       installedAt: new Date(),
       updatedAt: new Date()
     });
 
     state.tmp = path.join(root, 'tests', '.tmp-realtime');
     await mkdir(state.tmp, { recursive: true });
+
+    /*
+      The extension's own code, in the place the server resolves a declared handler or hook from. Its import
+      of the SDK is an absolute file URL into this checkout, since the fixture package is not really installed.
+    */
+    await mkdir(path.join(PACKAGE_DIR, 'handlers'), { recursive: true });
+    await mkdir(path.join(PACKAGE_DIR, 'hooks'), { recursive: true });
+    await writeFile(path.join(PACKAGE_DIR, 'handlers', 'world.js'), [
+      `import { realtime } from ${JSON.stringify(pathToFileURL(path.join(root, 'server', 'sdk.js')).href)};`,
+      "export default async ({ user, data, connectionId }) => {",
+      "  if(data.action === 'move'){",
+      `    await realtime.publish({ channel: '${WORLD}', data: { from: user.id, x: data.x, y: data.y } });`,
+      "    return { ok: true };",
+      "  }",
+      "  if(data.action === 'hello'){",
+      "    realtime.sendToConnection({ connectionId, data: { greeting: 'hi ' + user.name } });",
+      "    return { ok: true };",
+      "  }",
+      "  if(data.action === 'deny') throw { code: 403, msg: 'Not allowed to do that' };",
+      "  if(data.action === 'boom') throw new Error('handler exploded');",
+      "  return { echoed: data };",
+      "};",
+      ""
+    ].join('\n'));
+
+    state.hookLog = path.join(state.tmp, 'hooks.log');
+    for(const event of HOOK_EVENTS){
+      const name = event.split(':')[1];
+      const guard = event === 'realtime:before_subscribe' ? `  if(data.channel === '${GUARDED}') throw { code: 451, msg: 'Not today' };\n` : '';
+      await writeFile(path.join(PACKAGE_DIR, 'hooks', `${name}.js`), [
+        "import { appendFileSync } from 'fs';",
+        "export default (data) => {",
+        `  appendFileSync(${JSON.stringify(state.hookLog)}, JSON.stringify({ event: '${event}', ...data }) + '\\n');`,
+        guard + "};",
+        ""
+      ].join('\n'));
+      const [hookError] = await createHook({ owner: EXTENSION, event, callback: `./hooks/${name}.js` });
+      expect(hookError === null, `could not create the ${event} hook: ${hookError?.msg}`);
+    }
     await writeFile(path.join(state.tmp, 'realtime.config.json'), JSON.stringify({
       customRoutes: { '/kempo/**': '../dist/kempo/**' },
       middleware: { custom: ['../middleware/kempo.js'] },
@@ -353,6 +406,163 @@ const buildTests = () => ({
     } finally {
       client.socket.close();
     }
+    pass();
+  },
+
+  'a client sends to a channel handler over the socket, replies carry the ref, and failures are safe': async ({ pass }) => {
+    const member = await openSocket(state.cookies.member);
+    const admin = await openSocket(state.cookies.admin);
+    const unsubscribed = await openSocket(state.cookies.member);
+    try {
+      member.send({ type: 'subscribe', channel: WORLD });
+      admin.send({ type: 'subscribe', channel: WORLD });
+      member.send({ type: 'subscribe', channel: FEED });
+      await until(() => member.of('subscribed').length === 2 && admin.of('subscribed').length === 1, 'the subscriptions');
+
+      member.send({ type: 'send', channel: WORLD, data: { action: 'move', x: 3, y: 4 }, ref: 1 });
+      await until(() => member.of('ack').length === 1, 'the ack');
+      expect(member.of('ack')[0].ref === 1 && member.of('ack')[0].data.ok === true, `unexpected ack ${JSON.stringify(member.of('ack')[0])}`);
+
+      // The handler published to the channel inside the server process, in memory, to everyone subscribed
+      await until(() => admin.of('message').length === 1, 'the other player to see the move');
+      expect(JSON.stringify(admin.of('message')[0].data) === JSON.stringify({ from: state.ids.member, x: 3, y: 4 }), `admin saw ${JSON.stringify(admin.of('message')[0].data)}`);
+      expect(!('id' in admin.of('message')[0]), 'a process channel has no message ids');
+
+      member.send({ type: 'send', channel: WORLD, data: { action: 'move', x: 5, y: 6 } });
+      await until(() => admin.of('message').length === 2, 'a send with no ref still runs the handler');
+      expect(member.of('ack').length === 1, 'but with no ref there is nothing to acknowledge');
+
+      member.send({ type: 'send', channel: WORLD, data: { action: 'deny' }, ref: 2 });
+      member.send({ type: 'send', channel: WORLD, data: { action: 'boom' }, ref: 3 });
+      member.send({ type: 'send', channel: FEED, data: { anything: true }, ref: 4 });
+      unsubscribed.send({ type: 'send', channel: WORLD, data: { action: 'move', x: 0, y: 0 }, ref: 5 });
+      await until(() => member.of('error').length === 3 && unsubscribed.of('error').length === 1, 'the four failures');
+
+      const error = ref => member.of('error').find(e => e.ref === ref);
+      expect(error(2).code === 403 && error(2).msg === 'Not allowed to do that', `a deliberate refusal should arrive as given, got ${JSON.stringify(error(2))}`);
+      expect(error(3).code === 500 && error(3).msg === 'Message handler failed' && !JSON.stringify(error(3)).includes('exploded'), `a crash must be reported without its reason, got ${JSON.stringify(error(3))}`);
+      expect(error(4).code === 405, `a channel with no handler accepts nothing, got ${JSON.stringify(error(4))}`);
+      expect(unsubscribed.of('error')[0].code === 403 && unsubscribed.of('error')[0].ref === 5, 'sending without being subscribed is refused');
+      expect(admin.of('message').length === 2, 'and none of the refused messages reached the handler');
+      expect(member.closed === null, 'handler failures must not close a connection');
+    } finally {
+      member.socket.close();
+      admin.socket.close();
+      unsubscribed.socket.close();
+    }
+    pass();
+  },
+
+  'a message published from another process does not reach a process-scope channel': async ({ pass }) => {
+    const admin = await openSocket(state.cookies.admin);
+    try {
+      admin.send({ type: 'subscribe', channel: WORLD });
+      await until(() => admin.of('subscribed').length === 1, 'the subscription');
+
+      // This process holds no subscribers of that channel, so nothing is delivered here, and nothing is sent anywhere else
+      const [error, result] = await publish({ channel: WORLD, data: { from: 'the test process' } });
+      expect(error === null && result.delivered === 0, `expected no delivery, got ${JSON.stringify([error, result])}`);
+      await wait(400);
+      expect(admin.of('message').length === 0, 'a process channel must not cross processes, which is the price of not using the database');
+    } finally {
+      admin.socket.close();
+    }
+    pass();
+  },
+
+  'the client\'s send() awaits the reply, and direct messages reach onDirect': async ({ pass }) => {
+    const CookieWebSocket = class extends WebSocket {
+      constructor(url){
+        super(url, { headers: { Cookie: `session_token=${state.cookies.member}` } });
+      }
+    };
+
+    const client = connect({ url: socketUrl(), WebSocket: CookieWebSocket, backoff: { base: 50, max: 250 } });
+    const direct = [];
+    client.onDirect(data => direct.push(data));
+
+    try {
+      client.subscribe(WORLD, () => {});
+      await until(() => client.status === 'open', 'the client to connect');
+      await wait(200);
+
+      const reply = await client.send(WORLD, { action: 'hello' });
+      expect(reply.ok === true, `send() should resolve with the handler's return value, got ${JSON.stringify(reply)}`);
+      await until(() => direct.length === 1, 'the direct message');
+      expect(direct[0].greeting === 'hi Realtime Member', `the handler sent this connection a message of its own, got ${JSON.stringify(direct[0])}`);
+
+      let refused = null;
+      try { await client.send(WORLD, { action: 'deny' }); } catch(error) { refused = error; }
+      expect(refused?.code === 403 && refused.msg === 'Not allowed to do that', `send() should reject with the server's refusal, got ${JSON.stringify(refused)}`);
+    } finally {
+      client.close();
+    }
+    pass();
+  },
+
+  'lifecycle hooks run in the server process, and a guard hook can refuse a subscription': async ({ pass }) => {
+    await rm(state.hookLog, { force: true });
+    const member = await openSocket(state.cookies.member);
+    try {
+      await until(() => member.of('ready').length === 1, 'the socket to be ready');
+      member.send({ type: 'subscribe', channel: WORLD });
+      member.send({ type: 'subscribe', channel: GUARDED });
+      await until(() => member.of('subscribed').length === 1 && member.of('error').length === 1, 'both replies');
+
+      const refusal = member.of('error')[0];
+      expect(refusal.channel === GUARDED && refusal.code === 451 && refusal.msg === 'Not today', `the guard hook's own refusal should arrive as given, got ${JSON.stringify(refusal)}`);
+    } finally {
+      member.socket.close();
+    }
+
+    const readLog = async () => (await readFile(state.hookLog, 'utf8').catch(() => '')).split('\n').filter(Boolean).map(line => JSON.parse(line));
+    await until(async () => (await readLog()).some(entry => entry.event === 'realtime:disconnected'), 'the disconnected hook to run', 6000);
+
+    const log = await readLog();
+    const of = event => log.filter(entry => entry.event === event);
+    expect(of('realtime:connected').length === 1 && of('realtime:connected')[0].userId === state.ids.member && of('realtime:connected')[0].path === '/kempo/api/realtime', `connected: ${JSON.stringify(of('realtime:connected'))}`);
+    expect(of('realtime:before_subscribe').map(entry => entry.channel).sort().join() === [GUARDED, WORLD].sort().join(), 'the guard should be asked about both channels');
+    expect(of('realtime:subscribed').length === 1 && of('realtime:subscribed')[0].channel === WORLD, 'only the allowed subscription should fire subscribed');
+    expect(of('realtime:unsubscribed')[0]?.reason === 'disconnect', `closing the socket unsubscribes it, got ${JSON.stringify(of('realtime:unsubscribed'))}`);
+    expect(JSON.stringify(of('realtime:disconnected')[0].channels) === JSON.stringify([WORLD]), 'disconnected should list what it was subscribed to');
+    expect(!JSON.stringify(log).includes(state.cookies.member), 'a session token must never reach a hook');
+    pass();
+  },
+
+  'a user past the connection limit is refused with 4429 and the client stops trying': async ({ pass }) => {
+    await wait(400);
+    const open = [];
+    try {
+      for(let i = 0; i < 4; i++){
+        const socket = await openSocket(state.cookies.member);
+        await until(() => socket.of('ready').length === 1, `socket ${i + 1} to be ready`);
+        open.push(socket);
+      }
+
+      // The server's limit for this test is 4 per user, so the fifth is accepted and then closed with the app code
+      const fifth = await openSocket(state.cookies.member);
+      await until(() => fifth.closed !== null, 'the fifth socket to be closed', 4000);
+      expect(fifth.closed === 4429, `expected close code 4429, got ${fifth.closed}`);
+      expect(fifth.of('ready').length === 0, 'it must not be told it is ready');
+
+      const CookieWebSocket = class extends WebSocket {
+        constructor(url){
+          super(url, { headers: { Cookie: `session_token=${state.cookies.member}` } });
+        }
+      };
+      const client = connect({ url: socketUrl(), WebSocket: CookieWebSocket, backoff: { base: 30, max: 100 } });
+      await until(() => client.status === 'refused', 'the client to give up', 4000);
+      await wait(300);
+      expect(client.status === 'refused', 'and it must stay stopped instead of retrying into the same refusal');
+
+      // Another user is not affected by this one's limit
+      const admin = await openSocket(state.cookies.admin);
+      await until(() => admin.of('ready').length === 1, 'the administrator to connect');
+      admin.socket.close();
+    } finally {
+      open.forEach(socket => socket.socket.close());
+    }
+    await wait(400);
     pass();
   },
 

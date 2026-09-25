@@ -341,6 +341,108 @@ export default {
     pass('robustness');
   },
 
+  'send() delivers to the channel with a ref and resolves with the handler\'s reply, matching concurrent sends': async ({ pass }) => {
+    const { client, sockets } = makeClient();
+    client.subscribe('ext:a', () => {});
+    sockets[0].serverOpens();
+
+    const first = client.send('ext:a', { n: 1 });
+    const second = client.send('ext:a', { n: 2 });
+    const frames = sockets[0].sent.filter(f => f.type === 'send');
+    expect(frames.length === 2 && frames[0].channel === 'ext:a' && frames[0].data.n === 1, `unexpected frames ${JSON.stringify(frames)}`);
+    expect(frames[0].ref !== frames[1].ref, 'each send needs its own ref');
+
+    // Replies arrive out of order; each must settle the send it belongs to
+    sockets[0].serverSends({ type: 'ack', channel: 'ext:a', ref: frames[1].ref, data: 'second-reply' });
+    sockets[0].serverSends({ type: 'ack', channel: 'ext:a', ref: frames[0].ref, data: 'first-reply' });
+    expect(await first === 'first-reply' && await second === 'second-reply', 'each ack should resolve its own send');
+    client.close();
+    pass('send and ack');
+  },
+
+  'send() rejects with the server\'s code and message, and an unknown ref is ignored': async ({ pass }) => {
+    const { client, sockets } = makeClient();
+    client.subscribe('ext:a', () => {});
+    sockets[0].serverOpens();
+
+    const sending = client.send('ext:a', { action: 'deny' });
+    const { ref } = sockets[0].sent.find(f => f.type === 'send');
+    sockets[0].serverSends({ type: 'ack', channel: 'ext:a', ref: 99999, data: 'for someone else' });
+    sockets[0].serverSends({ type: 'error', channel: 'ext:a', ref, code: 403, msg: 'Not allowed' });
+
+    let failure = null;
+    try { await sending; } catch(error) { failure = error; }
+    expect(failure?.code === 403 && failure.msg === 'Not allowed', `expected the server's error, got ${JSON.stringify(failure)}`);
+    client.close();
+    pass('send error');
+  },
+
+  'send() fails fast when not connected instead of queueing a stale message': async ({ pass }) => {
+    const { client, sockets } = makeClient();
+    let failure = null;
+    try { await client.send('ext:a', 1); } catch(error) { failure = error; }
+    expect(failure?.code === 503, `a send before the socket opens should be a 503, got ${JSON.stringify(failure)}`);
+    expect(sockets[0].sent.length === 0, 'and nothing may be sent');
+
+    sockets[0].serverOpens();
+    sockets[0].serverCloses(1006);
+    failure = null;
+    try { await client.send('ext:a', 1); } catch(error) { failure = error; }
+    expect(failure?.code === 503, 'nor while reconnecting');
+    client.close();
+    pass('not connected');
+  },
+
+  'send() times out without a reply, and connection loss or close() rejects what is waiting': async ({ pass }) => {
+    const { client, sockets } = makeClient();
+    sockets[0].serverOpens();
+
+    let timeout = null;
+    try { await client.send('ext:a', 1, { timeout: 40 }); } catch(error) { timeout = error; }
+    expect(timeout?.code === 504, `no reply should be a 504, got ${JSON.stringify(timeout)}`);
+
+    const lost = client.send('ext:a', 2).catch(error => error);
+    sockets[0].serverCloses(1006);
+    expect((await lost).code === 503, 'a message in flight when the connection drops should be rejected, not left hanging');
+
+    await until(() => sockets.length === 2, 'a reconnect');
+    sockets[1].serverOpens();
+    const closing = client.send('ext:a', 3).catch(error => error);
+    client.close();
+    expect((await closing).code === 503, 'close() should reject anything still waiting');
+    pass('send timeout and loss');
+  },
+
+  'direct messages reach onDirect listeners, and an unsubscribed listener stops': async ({ pass }) => {
+    const { client, sockets } = makeClient();
+    sockets[0].serverOpens();
+    const first = [];
+    const second = [];
+    const stopFirst = client.onDirect(data => first.push(data));
+    client.onDirect(data => second.push(data));
+
+    sockets[0].serverSends({ type: 'direct', data: { hello: 1 } });
+    stopFirst();
+    sockets[0].serverSends({ type: 'direct', data: { hello: 2 } });
+
+    expect(JSON.stringify(first) === JSON.stringify([{ hello: 1 }]), 'the removed listener should stop');
+    expect(JSON.stringify(second) === JSON.stringify([{ hello: 1 }, { hello: 2 }]), 'the other should keep receiving');
+    client.close();
+    pass('direct messages');
+  },
+
+  'a refused connection (4429) is final, like a session that ended': async ({ pass }) => {
+    const { client, sockets } = makeClient();
+    client.subscribe('ext:a', () => {});
+    sockets[0].serverOpens();
+    sockets[0].serverCloses(4429);
+
+    expect(client.status === 'refused', `expected refused, got ${client.status}`);
+    await wait(150);
+    expect(sockets.length === 1, 'reconnecting would only be refused again');
+    pass('4429');
+  },
+
   'connect() builds a client and starts it': async ({ pass }) => {
     const FakeWebSocket = makeFakeWebSocket();
     const client = connect({ url: 'ws://test/x', WebSocket: FakeWebSocket });
