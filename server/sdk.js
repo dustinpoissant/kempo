@@ -196,3 +196,8 @@ export { default as listExtensions } from './utils/extensions/listExtensions.js'
 export { default as uninstallExtension } from './utils/extensions/uninstallExtension.js';
 export { default as updateExtension } from './utils/extensions/updateExtension.js';
 
+/*
+  Realtime
+*/
+
+export * as realtime from './utils/realtime/index.js';
