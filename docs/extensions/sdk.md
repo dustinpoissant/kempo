@@ -614,26 +614,20 @@ Get a setting value by owner and name.
 ```javascript
 import { getSetting } from 'kempo/server/sdk.js';
 
-const postsPerPage = await getSetting('blog', 'posts_per_page', 10);
-const commentsEnabled = await getSetting('blog', 'allow_comments', true);
+const [, postsPerPage] = await getSetting('blog', 'posts_per_page', 10);
+const [, commentsEnabled] = await getSetting('blog', 'allow_comments', true);
 ```
 
-Note: This function returns the value directly (not a tuple) for convenience.
+Returns `[null, value]` like everything else here, with the value converted to the setting's declared type. `defaultValue` is returned as the value when the setting does not exist. (An earlier version of this page said it returned the value directly; it never did, and code written that way gets the tuple.)
 
-### `setSetting({ owner, name, value, type, public })`
+### `setSetting(owner, name, value, type, isPublic, description)`
 
-Set a setting value.
+Set a setting value. The arguments are positional.
 
 ```javascript
 import { setSetting } from 'kempo/server/sdk.js';
 
-const [error, setting] = await setSetting({
-  owner: 'blog',
-  name: 'posts_per_page',
-  value: '20',
-  type: 'number',
-  public: false
-});
+const [error] = await setSetting('blog', 'posts_per_page', 20, 'number', false, 'Posts per page');
 ```
 
 ### `listSettings()`
