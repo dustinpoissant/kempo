@@ -293,7 +293,8 @@ Returns a function that stops the subscription. `handler(data, { channel, id })`
 |---|---|
 | `since` | Resume from this message id, for a caller that remembers the last id it processed across page loads |
 | `onGap` | Called with `{ channel }` when messages were pruned before the client could get them |
-| `onError` | Called with `{ channel, code, msg }` if the server refuses, for example a `403` |
+| `onError` | Called with `{ channel, code, msg }` if the server refuses, for example a `403`, or `410` if the channel is removed while you are subscribed |
+| `onSubscribed` | Called with `{ channel }` when the server has granted the subscription, and again after every reconnect. Sending to the channel before this is refused (`403`), so wait for it, and use it to fetch fresh state after a reconnect |
 
 A handler that throws does not stop other handlers or later messages. A refused channel is not retried on reconnect, since it would only be refused again.
 

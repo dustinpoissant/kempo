@@ -130,17 +130,18 @@ export class RealtimeClient {
     resume from there rather than from now.
   */
 
-  subscribe = (channel, handler, { since, onGap, onError } = {}) => {
+  subscribe = (channel, handler, { since, onGap, onError, onSubscribed } = {}) => {
     let subscription = this.#subscriptions.get(channel);
 
     if(!subscription){
-      subscription = { handlers: new Set(), gapHandlers: new Set(), errorHandlers: new Set(), lastId: since ?? null, failed: false };
+      subscription = { handlers: new Set(), gapHandlers: new Set(), errorHandlers: new Set(), subscribedHandlers: new Set(), lastId: since ?? null, failed: false };
       this.#subscriptions.set(channel, subscription);
     }
 
     subscription.handlers.add(handler);
     if(onGap) subscription.gapHandlers.add(onGap);
     if(onError) subscription.errorHandlers.add(onError);
+    if(onSubscribed) subscription.subscribedHandlers.add(onSubscribed);
 
     // A repeat handler on a channel the server already confirmed needs no frame; a first one does
     if(subscription.handlers.size === 1) this.#sendSubscribe(channel, subscription);
@@ -149,6 +150,7 @@ export class RealtimeClient {
       subscription.handlers.delete(handler);
       if(onGap) subscription.gapHandlers.delete(onGap);
       if(onError) subscription.errorHandlers.delete(onError);
+      if(onSubscribed) subscription.subscribedHandlers.delete(onSubscribed);
 
       if(!subscription.handlers.size){
         this.#subscriptions.delete(channel);
@@ -306,6 +308,12 @@ export class RealtimeClient {
 
     const subscription = this.#subscriptions.get(frame.channel);
     if(!subscription) return;
+
+    // The server has granted the subscription, on the first connection and again after every reconnect
+    if(frame.type === 'subscribed'){
+      for(const handler of subscription.subscribedHandlers) this.#safely(() => handler({ channel: frame.channel }));
+      return;
+    }
 
     if(frame.type === 'message'){
       if(frame.id !== undefined) subscription.lastId = frame.id;

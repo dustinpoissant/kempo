@@ -413,6 +413,37 @@ export default {
     pass('send timeout and loss');
   },
 
+  'onSubscribed fires when the server grants the subscription, again after a reconnect, and not once removed': async ({ pass }) => {
+    const { client, sockets } = makeClient();
+    const granted = [];
+    const stop = client.subscribe('ext:room', () => {}, { onSubscribed: ({ channel }) => granted.push(channel) });
+    client.subscribe('ext:other', () => {});
+    sockets[0].serverOpens();
+    expect(granted.length === 0, 'asking to subscribe is not the same as being subscribed');
+
+    sockets[0].serverSends({ type: 'subscribed', channel: 'ext:other' });
+    expect(granted.length === 0, 'a confirmation for another channel must not reach this handler');
+    sockets[0].serverSends({ type: 'subscribed', channel: 'ext:room' });
+    expect(granted.length === 1 && granted[0] === 'ext:room', `the confirmation should reach the handler once, got ${JSON.stringify(granted)}`);
+
+    sockets[0].serverCloses(1006);
+    await until(() => sockets.length === 2, 'a second socket');
+    sockets[1].serverOpens();
+    sockets[1].serverSends({ type: 'subscribed', channel: 'ext:room' });
+    expect(granted.length === 2, 'it should fire again after a reconnect, which is when a caller needs fresh state');
+
+    let throws = 0;
+    client.subscribe('ext:room', () => {}, { onSubscribed: () => { throws++; throw new Error('handler bug'); } });
+    sockets[1].serverSends({ type: 'subscribed', channel: 'ext:room' });
+    expect(throws === 1 && granted.length === 3, 'a handler that throws does not stop the others');
+
+    stop();
+    sockets[1].serverSends({ type: 'subscribed', channel: 'ext:room' });
+    expect(granted.length === 3, 'a removed handler is no longer called');
+    client.close();
+    pass('onSubscribed');
+  },
+
   'direct messages reach onDirect listeners, and an unsubscribed listener stops': async ({ pass }) => {
     const { client, sockets } = makeClient();
     sockets[0].serverOpens();
