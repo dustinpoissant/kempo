@@ -444,6 +444,39 @@ export default {
     pass('onSubscribed');
   },
 
+  'a handler that joins a subscription the server already confirmed hears so at once, and not before it is confirmed': async ({ pass }) => {
+    const { client, sockets } = makeClient();
+    const early = [];
+    client.subscribe('ext:shared', () => {}, { onSubscribed: () => early.push('first') });
+    sockets[0].serverOpens();
+
+    const beforeConfirm = [];
+    client.subscribe('ext:shared', () => {}, { onSubscribed: () => beforeConfirm.push('second') });
+    await wait(10);
+    expect(beforeConfirm.length === 0, 'before the server confirms, a second handler waits for the one confirmation like the first');
+
+    sockets[0].serverSends({ type: 'subscribed', channel: 'ext:shared' });
+    expect(early.length === 1 && beforeConfirm.length === 1, 'the confirmation reaches both');
+
+    const late = [];
+    client.subscribe('ext:shared', () => {}, { onSubscribed: () => late.push('third') });
+    expect(late.length === 0, 'it is delivered asynchronously, so the caller has finished subscribing first');
+    await until(() => late.length === 1, 'the late handler to be told');
+    expect(sockets[0].sent.filter(frame => frame.type === 'subscribe').length === 1, 'and the server was asked to subscribe only once');
+
+    sockets[0].serverCloses(1006);
+    await until(() => sockets.length === 2, 'a reconnect');
+    sockets[1].serverOpens();
+    const afterReconnect = [];
+    client.subscribe('ext:shared', () => {}, { onSubscribed: () => afterReconnect.push('fourth') });
+    await wait(10);
+    expect(afterReconnect.length === 0, 'after a reconnect nothing is confirmed until the server says so again');
+    sockets[1].serverSends({ type: 'subscribed', channel: 'ext:shared' });
+    expect(afterReconnect.length === 1, 'and then it is');
+    client.close();
+    pass('late subscribers');
+  },
+
   'direct messages reach onDirect listeners, and an unsubscribed listener stops': async ({ pass }) => {
     const { client, sockets } = makeClient();
     sockets[0].serverOpens();
