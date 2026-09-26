@@ -283,6 +283,9 @@ export const listAvailableExtensions = async () =>
 export const listKnownExtensions = async () =>
   get(`${API_BASE}/extensions/known`);
 
+export const listRealtimeConnections = async () =>
+  get(`${API_BASE}/realtime/connections`);
+
 export const installExtension = async (name) =>
   post(`${API_BASE}/extensions`, { name });
 

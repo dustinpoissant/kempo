@@ -11,3 +11,4 @@ Kempo is a fullstack CMS framework. Install it into a project, scaffold the star
 - [Settings](settings.md) — runtime key-value configuration
 - [Extensions](extensions/README.md) — installing and managing extensions
 - [Creating Extensions](extensions/creating-extensions.md) — guide for building your own extension
+- [Realtime](realtime.md) — pushing live updates to browsers with channels, replay and a browser client

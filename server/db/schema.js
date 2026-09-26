@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, index, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, index, jsonb, bigserial, bigint } from 'drizzle-orm/pg-core';
 
 /*
   Auth Tables
@@ -112,6 +112,35 @@ export const extension = pgTable('extension', {
   kempo: jsonb('kempo'),
   installedAt: timestamp('installedAt').notNull(),
   updatedAt: timestamp('updatedAt').notNull(),
+});
+
+/*
+  Realtime System
+*/
+
+/*
+  A published message, kept only for channels that opt in to persistence. `id` is what a client
+  hands back as `since` to replay what it missed, so it must be ordered within a channel: publish
+  takes a per-channel lock, otherwise two rows could commit out of id order and a replay from the
+  earlier id would skip the later-committing one for good.
+*/
+export const realtimeMessage = pgTable('realtimeMessage', {
+  id: bigserial('id', { mode: 'number' }).primaryKey(),
+  channel: text('channel').notNull(),
+  data: jsonb('data').notNull(),
+  createdAt: timestamp('createdAt').notNull(),
+}, table => [
+  index('realtimeMessage_channel_id_idx').on(table.channel, table.id),
+  index('realtimeMessage_createdAt_idx').on(table.createdAt),
+]);
+
+/*
+  How far a channel has been pruned. Ids are shared across channels, so a gap cannot be inferred from
+  id arithmetic; a client whose `since` is below this watermark has provably missed messages.
+*/
+export const realtimeChannel = pgTable('realtimeChannel', {
+  channel: text('channel').primaryKey(),
+  prunedThrough: bigint('prunedThrough', { mode: 'number' }).notNull().default(0),
 });
 
 /*

@@ -1428,6 +1428,18 @@ The following events are fired automatically during page operations. Register ho
 | `page:updated` | `{ file, updatedAt }` | A page's metadata or content is updated |
 | `page:deleted` | `{ file }` | A page is deleted |
 
+### Realtime Events
+
+| Event | Data | Fired when |
+|---|---|---|
+| `realtime:connected` | `{ connectionId, userId, path }` | A socket is open and its user is known |
+| `realtime:disconnected` | `{ connectionId, userId, path, channels, reason }` | A socket closes |
+| `realtime:before_subscribe` | `{ connectionId, userId, user, channel }` | Before a subscription is granted; throw `{ code, msg }` to refuse |
+| `realtime:subscribed` | `{ connectionId, userId, channel }` | After a subscription is granted |
+| `realtime:unsubscribed` | `{ connectionId, userId, channel, reason }` | After a subscription ends |
+
+These are for lifecycle. Per-message work belongs in a channel's `onMessage` handler. See [Realtime](../realtime.md#reacting-to-connections).
+
 **Example — reacting to page creation:**
 
 ```javascript
@@ -1638,3 +1650,44 @@ export default async (request, response) => {
   response.json({ page });
 };
 ```
+
+## Realtime
+
+Exported as a namespace: `import { realtime } from 'kempo/server/sdk.js'`. See [Realtime](../realtime.md) for the concepts.
+
+### `realtime.publish({ channel, data })`
+
+Sends `data` to everyone subscribed to `channel`, on any kempo process. `data` must be JSON-serializable and not `null`. Returns `[null, { id }]`, where `id` is the message id on a persisted channel and `null` otherwise.
+
+Errors: `400` for a missing channel or bad data, `404` if the channel is not registered, `413` if the message is too large (about 7,900 bytes on a channel that does not persist, 1,000,000 on one that does).
+
+```javascript
+const [error, result] = await realtime.publish({
+  channel: 'my-ext:orders',
+  data: { id: 'order_123', status: 'shipped' }
+});
+```
+
+### `realtime.registerChannel({ owner, name, permission, authorize, persist, retention, scope, onMessage, dropIfBackedUp })`
+
+Registers a channel from code, for application code that cannot use `kempo-config.json`. Returns `[null, { channel }]` with `channel` being `<owner>:<name>`. A channel needs `permission` and/or an `authorize({ user, channel })` function; without one it is refused, since channels are closed by default. `scope` is `"cluster"` (default) or `"process"`; a process channel cannot `persist`. `onMessage` is a function `async ({ user, channel, data, connectionId })` that handles what clients send. `dropIfBackedUp` skips deliveries to a client that is behind. Returns `409` for a name already registered. Register at startup only; see [Realtime](../realtime.md#declaring-a-channel-in-code).
+
+### `realtime.sendToConnection({ connectionId, data })`
+
+Sends `data` to one connection, which receives it as a `direct` frame (`realtime.onDirect` in the browser client). Returns `[null, { delivered }]`, where `delivered` is `false` if the connection was skipped for being backed up. Returns `404` if this process does not hold that connection: connection ids belong to the process that accepted the socket. To reach a user wherever they are connected, publish to `user:<id>`.
+
+### `realtime.closeConnection({ connectionId, code, reason })`
+
+Closes one connection held by this process (`code` defaults to `1000`). Returns `[null, { closed: true }]`, or `404`. To end a user's access on every process, delete their sessions.
+
+### `realtime.listSubscribers({ channel })`
+
+Returns `[null, { channel, subscribers }]`, each subscriber `{ connectionId, userId, userName }`, for the subscribers of `channel` that this process holds. Other processes hold their own.
+
+### `realtime.listConnections()`
+
+Returns `[null, { process, connections, channels }]` for the sockets held by this process. Each connection has `id`, `userId`, `userName`, `path`, `connectedAt`, `lastActivity` and `channels`. Session tokens are never included.
+
+### `realtime.pruneMessages({ now })`
+
+Deletes persisted messages older than their channel's retention and returns `[null, { deleted }]`. Kempo calls this on a schedule; it is exported for running it yourself, for example from a cron job.

@@ -46,6 +46,8 @@ const DEFAULT_PERMISSIONS = [
   { name: 'system:extensions:uninstall', description: 'Uninstall extensions' },
   { name: 'system:extensions:manage', description: 'Enable and disable extensions' },
 
+  { name: 'system:realtime:read', description: 'View realtime connections and channels' },
+
   { name: 'system:admin:access', description: 'Access admin panel' },
 ];
 
@@ -66,7 +68,8 @@ const DEFAULT_GROUPS = {
       'system:menus:create', 'system:menus:read', 'system:menus:update', 'system:menus:delete',
       'system:fragments:read', 'system:fragments:create', 'system:fragments:update', 'system:fragments:delete',
       'system:globals:read', 'system:globals:create', 'system:globals:update', 'system:globals:delete',
-      'system:extensions:read', 'system:extensions:install', 'system:extensions:uninstall', 'system:extensions:manage'
+      'system:extensions:read', 'system:extensions:install', 'system:extensions:uninstall', 'system:extensions:manage',
+      'system:realtime:read'
     ]
   }
 };
