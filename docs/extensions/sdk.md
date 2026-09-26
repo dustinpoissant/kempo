@@ -1672,6 +1672,10 @@ const [error, result] = await realtime.publish({
 
 Registers a channel from code, for application code that cannot use `kempo-config.json`. Returns `[null, { channel }]` with `channel` being `<owner>:<name>`. A channel needs `permission` and/or an `authorize({ user, channel })` function; without one it is refused, since channels are closed by default. `scope` is `"cluster"` (default) or `"process"`; a process channel cannot `persist`. `onMessage` is a function `async ({ user, channel, data, connectionId })` that handles what clients send. `dropIfBackedUp` skips deliveries to a client that is behind. Returns `409` for a name already registered. Register at startup only; see [Realtime](../realtime.md#declaring-a-channel-in-code).
 
+### `realtime.unregisterChannel({ channel })`
+
+Removes a channel that was registered with `registerChannel`, and unsubscribes every subscriber this process holds, each of whom receives an `error` frame with code `410`. Returns `[null, { removed, dropped }]`; `removed` is `false` if there was nothing registered under that name. For channels that exist only while something else does, such as one per running game; see [Realtime](../realtime.md#channels-that-live-and-die-with-something-else). A channel declared in `kempo-config.json` is not affected.
+
 ### `realtime.sendToConnection({ connectionId, data })`
 
 Sends `data` to one connection, which receives it as a `direct` frame (`realtime.onDirect` in the browser client). Returns `[null, { delivered }]`, where `delivered` is `false` if the connection was skipped for being backed up. Returns `404` if this process does not hold that connection: connection ids belong to the process that accepted the socket. To reach a user wherever they are connected, publish to `user:<id>`.
