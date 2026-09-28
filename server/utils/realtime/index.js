@@ -6,6 +6,7 @@
   sockets belong to the process that accepted them.
 */
 export { registerChannel } from './channels.js';
+export { default as unregisterChannel } from './unregisterChannel.js';
 export { default as publish } from './publish.js';
 export { default as sendToConnection } from './sendToConnection.js';
 export { default as closeConnection } from './closeConnection.js';

@@ -614,26 +614,20 @@ Get a setting value by owner and name.
 ```javascript
 import { getSetting } from 'kempo/server/sdk.js';
 
-const postsPerPage = await getSetting('blog', 'posts_per_page', 10);
-const commentsEnabled = await getSetting('blog', 'allow_comments', true);
+const [, postsPerPage] = await getSetting('blog', 'posts_per_page', 10);
+const [, commentsEnabled] = await getSetting('blog', 'allow_comments', true);
 ```
 
-Note: This function returns the value directly (not a tuple) for convenience.
+Returns `[null, value]` like everything else here, with the value converted to the setting's declared type. `defaultValue` is returned as the value when the setting does not exist. (An earlier version of this page said it returned the value directly; it never did, and code written that way gets the tuple.)
 
-### `setSetting({ owner, name, value, type, public })`
+### `setSetting(owner, name, value, type, isPublic, description)`
 
-Set a setting value.
+Set a setting value. The arguments are positional.
 
 ```javascript
 import { setSetting } from 'kempo/server/sdk.js';
 
-const [error, setting] = await setSetting({
-  owner: 'blog',
-  name: 'posts_per_page',
-  value: '20',
-  type: 'number',
-  public: false
-});
+const [error] = await setSetting('blog', 'posts_per_page', 20, 'number', false, 'Posts per page');
 ```
 
 ### `listSettings()`
@@ -1671,6 +1665,10 @@ const [error, result] = await realtime.publish({
 ### `realtime.registerChannel({ owner, name, permission, authorize, persist, retention, scope, onMessage, dropIfBackedUp })`
 
 Registers a channel from code, for application code that cannot use `kempo-config.json`. Returns `[null, { channel }]` with `channel` being `<owner>:<name>`. A channel needs `permission` and/or an `authorize({ user, channel })` function; without one it is refused, since channels are closed by default. `scope` is `"cluster"` (default) or `"process"`; a process channel cannot `persist`. `onMessage` is a function `async ({ user, channel, data, connectionId })` that handles what clients send. `dropIfBackedUp` skips deliveries to a client that is behind. Returns `409` for a name already registered. Register at startup only; see [Realtime](../realtime.md#declaring-a-channel-in-code).
+
+### `realtime.unregisterChannel({ channel })`
+
+Removes a channel that was registered with `registerChannel`, and unsubscribes every subscriber this process holds, each of whom receives an `error` frame with code `410`. Returns `[null, { removed, dropped }]`; `removed` is `false` if there was nothing registered under that name. For channels that exist only while something else does, such as one per running game; see [Realtime](../realtime.md#channels-that-live-and-die-with-something-else). A channel declared in `kempo-config.json` is not affected.
 
 ### `realtime.sendToConnection({ connectionId, data })`
 

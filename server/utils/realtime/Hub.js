@@ -231,6 +231,25 @@ export default class Hub {
   };
 
   /*
+    The channel has been removed: every subscriber this process holds is unsubscribed and told, with the
+    same error frame a refused subscription gets, so the browser client stops treating it as live.
+  */
+  dropChannel = ({ channel, reason = 'channel_removed' } = {}) => {
+    let dropped = 0;
+    for(const id of [...(this.#channels.get(channel) || [])]){
+      const subscriber = this.#subscribers.get(id);
+      this.unsubscribe({ id, channel, reason });
+      try {
+        subscriber?.deliver({ type: 'error', channel, code: 410, msg: 'This channel has closed' });
+      } catch(error) {
+        this.#log.error(`[realtime] could not tell ${id} that ${channel} closed: ${error.message}`);
+      }
+      dropped++;
+    }
+    return [null, { dropped }];
+  };
+
+  /*
     Messages from clients
 
     A client sends to a channel it is subscribed to, and the channel's own handler receives it. The handler

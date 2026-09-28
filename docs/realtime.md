@@ -101,7 +101,23 @@ realtime.registerChannel({
 
 `registerChannel` returns `[error, { channel }]` and refuses a name that is invalid, unguarded, or already taken. If both `permission` and `authorize` are given, both must allow. An `authorize` that throws is a refusal, not an open door.
 
-**Only register at startup.** Nothing runs before the first subscriber connects, so a registration made inside a lazily loaded route file might not exist yet when someone subscribes. A file listed under `middleware.custom` in your server config is loaded at startup and is a safe place. A declaration in `kempo-config.json` has no such constraint, which is why extensions should use it.
+**Only register at startup** for a channel other processes or other browsers must be able to find. Nothing runs before the first subscriber connects, so a registration made inside a lazily loaded route file might not exist yet when someone subscribes. A file listed under `middleware.custom` in your server config is loaded at startup and is a safe place. A declaration in `kempo-config.json` has no such constraint, which is why extensions should use it.
+
+### Channels that live and die with something else
+
+Some channels exist only while something else does: one per running game, one per open document. Those cannot be declared, so register one from code when the thing starts and remove it when it ends:
+
+```javascript
+const [, { channel }] = realtime.registerChannel({
+  owner: 'my-ext', name: `room-${room.id}`, scope: 'process',
+  authorize: ({ user }) => room.hasMember(user.id),
+  onMessage: ({ user, data }) => room.handle(user, data)
+});
+// ...when the room closes:
+realtime.unregisterChannel({ channel });
+```
+
+The startup warning above does not apply to a `scope: "process"` channel like this, because it only ever needs to exist on the process that holds the room, and you register it before you tell anyone its name. Anyone connected to a process that does not hold it is refused with a `404`, which is correct. `unregisterChannel` returns `[null, { removed, dropped }]`; every subscriber this process holds is unsubscribed and receives an `error` frame with code `410`, and the browser client stops treating the channel as live. Removing a channel that is not registered is harmless.
 
 ## Delivery guarantees
 
@@ -213,6 +229,7 @@ All exported from the [Server SDK](extensions/sdk.md#realtime):
 | Function | |
 |---|---|
 | `realtime.publish({ channel, data })` | To everyone subscribed, on every process (or this one, for a `process` channel) |
+| `realtime.unregisterChannel({ channel })` | Remove a channel that code registered, dropping its subscribers |
 | `realtime.sendToConnection({ connectionId, data })` | To one connection held by this process |
 | `realtime.closeConnection({ connectionId, code, reason })` | Close one connection held by this process |
 | `realtime.listSubscribers({ channel })` | Who this process holds on a channel |
@@ -276,7 +293,8 @@ Returns a function that stops the subscription. `handler(data, { channel, id })`
 |---|---|
 | `since` | Resume from this message id, for a caller that remembers the last id it processed across page loads |
 | `onGap` | Called with `{ channel }` when messages were pruned before the client could get them |
-| `onError` | Called with `{ channel, code, msg }` if the server refuses, for example a `403` |
+| `onError` | Called with `{ channel, code, msg }` if the server refuses, for example a `403`, or `410` if the channel is removed while you are subscribed |
+| `onSubscribed` | Called with `{ channel }` when the server has granted the subscription, and again after every reconnect. A handler added to a channel the client is already subscribed to is called straight away, since the server will not confirm twice. Sending to the channel before this is refused (`403`), so wait for it, and use it to fetch fresh state after a reconnect |
 
 A handler that throws does not stop other handlers or later messages. A refused channel is not retried on reconnect, since it would only be refused again.
 

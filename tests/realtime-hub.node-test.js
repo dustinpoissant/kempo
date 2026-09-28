@@ -853,6 +853,42 @@ const tests = () => ({
     pass('process scope');
   },
 
+  'removing a channel closes it: subscribers are told, nothing more is delivered, and it cannot be joined again': async ({ pass }) => {
+    await withCleanup(async () => {
+      const running = channel('ends-with-its-game', { scope: 'process' });
+      const stays = channel('unrelated', { scope: 'process' });
+      const hub = getHub();
+      const first = connect(hub);
+      const second = connect(hub);
+      for(const client of [first, second]){
+        await subscribe(hub, client, running);
+        await subscribe(hub, client, stays);
+      }
+      await publishOne(running, { n: 1 });
+      expect(first.messages(running).length === 1, 'it delivers while it exists');
+
+      const [removeError, removed] = realtime.unregisterChannel({ channel: running });
+      expect(removeError === null && removed.removed === true && removed.dropped === 2, `both subscribers should be dropped, got ${JSON.stringify([removeError, removed])}`);
+      for(const client of [first, second]){
+        const last = client.frames.filter(frame => frame.channel === running).at(-1);
+        expect(last.type === 'error' && last.code === 410, `each subscriber should be told the channel closed, got ${JSON.stringify(last)}`);
+      }
+
+      const [publishError] = await publish({ channel: running, data: { n: 2 } });
+      expect(publishError?.code === 404, `publishing to a removed channel should be a 404, got ${JSON.stringify(publishError)}`);
+      expect(first.messages(running).length === 1, 'nothing more is delivered');
+
+      const [rejoinError] = await hub.subscribe({ id: first.id, channel: running });
+      expect(rejoinError?.code === 404, `it cannot be joined again, got ${JSON.stringify(rejoinError)}`);
+
+      await publishOne(stays, { n: 3 });
+      expect(first.messages(stays).length === 1, 'other channels are untouched');
+      expect(realtime.unregisterChannel({ channel: running })[1].removed === false, 'removing it twice is harmless');
+      expect(realtime.unregisterChannel({})[0]?.code === 400, 'a name is required');
+    });
+    pass('removing a channel');
+  },
+
   'a process channel cannot be published to from another process, which is why it is a choice': async ({ pass }) => {
     await withCleanup(async () => {
       const fast = channel('local-only', { scope: 'process' });

@@ -177,9 +177,9 @@ Read them at runtime:
 ```javascript
 import getSetting from 'kempo/server/utils/settings/getSetting.js';
 
-const perPage = await getSetting('my-ext', 'posts_per_page', 10);
-const commentsEnabled = await getSetting('my-ext', 'allow_comments', true);
-const sizes = await getSetting('my-ext', 'sizes', []);   // a real array, not JSON text
+const [, perPage] = await getSetting('my-ext', 'posts_per_page', 10);
+const [, commentsEnabled] = await getSetting('my-ext', 'allow_comments', true);
+const [, sizes] = await getSetting('my-ext', 'sizes', []);   // a real array, not JSON text
 ```
 
 Values come back converted to the setting's declared type, so a `json` setting is an array or object
@@ -206,7 +206,7 @@ panel only ever shows `••••••••` for one that has a value — ed
 code to use (e.g. to call the provider's API):
 
 ```javascript
-const stripeKey = await getSetting('my-ext', 'stripe_secret_key');
+const [, stripeKey] = await getSetting('my-ext', 'stripe_secret_key');
 ```
 
 Never route a `secret` value back to the browser yourself — that's the one thing this type exists to prevent.
