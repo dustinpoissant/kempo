@@ -1,6 +1,8 @@
 import readline from 'readline';
 import getUserByEmail from '../server/utils/users/getUserByEmail.js';
 import addUserToGroup from '../server/utils/groups/addUserToGroup.js';
+import removeSetupFiles from '../server/utils/setup/removeSetupFiles.js';
+import { join } from 'path';
 import db from '../server/db/index.js';
 import { userGroup } from '../server/db/schema.js';
 import { eq, and } from 'drizzle-orm';
@@ -43,6 +45,7 @@ const [existing] = await db
   .limit(1);
 
 if(existing){
+  await removeSetupFiles({ setupDir: join(process.cwd(), 'public', 'setup') });
   console.log('ℹ User is already an administrator');
   process.exit(0);
 }
@@ -53,6 +56,11 @@ if(addError){
   console.error('❌ Failed to add user to Administrators group:', addError.msg);
   process.exit(1);
 }
+
+/*
+  An administrator now exists, so the first-run setup page (if this project has one) is no longer needed.
+*/
+await removeSetupFiles({ setupDir: join(process.cwd(), 'public', 'setup') });
 
 console.log('✅ User is now an administrator!');
 process.exit(0);

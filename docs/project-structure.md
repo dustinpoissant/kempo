@@ -17,6 +17,7 @@ my-site/
 │   ├── nav.fragment.html     # Navigation fragment
 │   ├── login/
 │   ├── register/
+│   ├── setup/                # First-run admin setup; deletes itself once used
 │   ├── account/
 │   └── admin/
 └── server/

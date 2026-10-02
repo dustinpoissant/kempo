@@ -44,7 +44,9 @@ All prompts run before any files are written or commands executed.
 - If creating new: prompt for container name (default: `kempo-postgres`)
 - If using existing: prompt for `DATABASE_URL`
 
-**Admin user:**
+**Admin setup method:** terminal (the prompts below) or browser. Browser leaves the scaffolded `public/setup/` page and its API route in place; the first visit to `/setup` creates the admin and then deletes `public/setup/` (the page and its routes refuse to run, and delete themselves, if an administrator already exists). The terminal choice removes `public/setup/` immediately.
+
+**Admin user (terminal choice only):**
 - Full name (default: `Admin`)
 - Email (default: `admin@example.com`)
 - Password (default: auto-generated 16-char secure password)

@@ -2,7 +2,7 @@
 
 ## Users
 
-Users have an email address, password (hashed), and an email verification status. They are created through registration (`/register`) or via the admin panel at `/admin/accounts/users`.
+Users have an email address, password (hashed), and an email verification status. They are created through registration (`/register`) or via the admin panel at `/admin/accounts/users`. The first administrator is created by `npx kempo init` or the one-time `/setup` page.
 
 ## Authentication
 

@@ -43,7 +43,12 @@ Your site is running at `http://localhost:3000`.
 
 ### Create an Admin User
 
-Register a user through the UI at `/register`, then promote them:
+`npx kempo init` asks how to create the first admin:
+
+- **In the terminal** - the wizard prompts for a name, email and password.
+- **In the browser** - visit `/setup` on your new site and fill in the form. The setup page and its API route are deleted from `public/setup/` as soon as the admin is created, and they refuse to run (and delete themselves) if an administrator already exists, so they can only be used once.
+
+To promote an existing user instead, register through the UI at `/register`, then run:
 
 ```bash
 node node_modules/kempo/scripts/make-admin.js
@@ -64,6 +69,7 @@ Kempo scaffolds these pages into your `public/` directory. All are fully functio
 | `/` | Home page |
 | `/login` | Login form |
 | `/register` | Registration form |
+| `/setup` | First-run admin setup (deletes itself once an admin exists) |
 | `/forgot-password` | Password recovery |
 | `/reset-password/[token]` | Password reset (from email link) |
 | `/verify-email` | Email verification notice |

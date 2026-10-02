@@ -82,6 +82,7 @@ const printManualSteps = (databaseUrl) => {
   console.log('  docker compose up -d');
   console.log('  npx drizzle-kit push');
   console.log('  node node_modules/kempo/scripts/init-db.js');
+  console.log('  Then create your admin at http://localhost:9876/setup, or register and run:');
   console.log(`  DATABASE_URL="${databaseUrl}" node node_modules/kempo/scripts/make-admin.js`);
   console.log('  npm run dev\n');
 };
@@ -222,7 +223,19 @@ const databaseUrl = customDatabaseUrl || `postgresql://kempo:${dbPassword}@local
 const generatedAdminPassword = generatePassword();
 let adminName, adminEmail, adminPassword;
 
-if(useDefaults){
+const adminSetupChoice = useDefaults ? 'terminal' : (await inquirer.prompt([{
+  type: 'select',
+  name: 'adminSetup',
+  message: 'How would you like to create the first admin user?',
+  choices: [
+    { name: 'Here in the terminal', value: 'terminal' },
+    { name: 'In the browser (a /setup page that deletes itself once used)', value: 'browser' }
+  ]
+}])).adminSetup;
+
+if(adminSetupChoice === 'browser'){
+  // The admin is created on the /setup page instead
+} else if(useDefaults){
   adminName = 'Admin';
   adminEmail = 'admin@example.com';
   adminPassword = generatedAdminPassword;
@@ -245,7 +258,8 @@ if(useDefaults){
       type: 'password',
       name: 'adminPassword',
       message: 'Admin user password (leave blank to generate one):',
-      mask: '*'
+      mask: '*',
+      validate: v => !v || v.length >= 8 || 'Password must be at least 8 characters'
     }
   ]);
   adminName = adminAnswers.adminName;
@@ -467,26 +481,26 @@ execSync('node node_modules/kempo/scripts/init-db.js', { cwd: projectDir, stdio:
   Step 8: Create admin user
 */
 
-console.log('\n--- Creating admin user ---\n');
-
 process.env.DATABASE_URL = databaseUrl;
 
-const { default: createUser } = await import(pathToFileURL(join(moduleRoot, 'server', 'utils', 'users', 'createUser.js')).href);
-const { default: addUserToGroup } = await import(pathToFileURL(join(moduleRoot, 'server', 'utils', 'groups', 'addUserToGroup.js')).href);
+if(adminSetupChoice === 'terminal'){
+  console.log('\n--- Creating admin user ---\n');
 
-const [createError, createdUser] = await createUser({
-  name: adminName,
-  email: adminEmail,
-  password: adminPassword,
-  emailVerified: true
-});
+  /*
+    The same routine the /setup page uses: it creates the admin and then deletes public/setup/, so
+    this path leaves no setup page behind. If it fails no admin exists, so the setup page stays.
+  */
+  const { default: completeSetup } = await import(pathToFileURL(join(moduleRoot, 'server', 'utils', 'setup', 'completeSetup.js')).href);
 
-if(createError){
-  console.error(`Failed to create admin user: ${createError.msg}`);
-} else {
-  const [groupError] = await addUserToGroup(createdUser.user.id, 'system:Administrators');
-  if(groupError){
-    console.error(`Failed to assign admin role: ${groupError.msg}`);
+  const [setupError] = await completeSetup({
+    name: adminName,
+    email: adminEmail,
+    password: adminPassword,
+    setupDir: join(projectDir, 'public', 'setup')
+  });
+
+  if(setupError){
+    console.error(`Failed to create admin user: ${setupError.msg}`);
   } else {
     console.log(`Admin user created: ${adminEmail}`);
   }
@@ -501,10 +515,13 @@ console.log(`
 ║        Kempo setup complete!             ║
 ╚══════════════════════════════════════════╝
 
-Admin credentials:
+${adminSetupChoice === 'browser' ? `Create your admin user in the browser:
+  http://localhost:9876/setup
+  (the setup page deletes itself once you finish)
+` : `Admin credentials:
   Email:    ${adminEmail}
   Password: ${adminPassword}
-${emailServiceSkipped ? '\n  Note: Email is not configured. Update RESEND_API_KEY in .env when ready.\n' : ''}
+`}${emailServiceSkipped ? '\n  Note: Email is not configured. Update RESEND_API_KEY in .env when ready.\n' : ''}
 Next steps:
   npm run dev
 

@@ -17,7 +17,7 @@ npx kempo init
 The init wizard will prompt you to:
 1. Set up a PostgreSQL database (via Docker or an existing URL)
 2. Run the initial database migration
-3. Create an admin user
+3. Create an admin user, either in the terminal or in the browser at `/setup` (the setup page deletes itself once it has created the admin)
 
 ### Manual Setup
 
@@ -41,7 +41,14 @@ Your site is now running at `http://localhost:3000`.
 
 ## Creating an Admin User
 
-Register at `/register`, then run:
+There are two ways to create the first administrator:
+
+- **Terminal:** choose it in the `npx kempo init` wizard.
+- **Browser:** choose "in the browser" in the wizard, then visit `/setup` on your site and fill in the form.
+
+The `/setup` page and its API route live in `public/setup/` and delete themselves the moment the admin is created. Once an administrator exists, they refuse to run (and delete themselves if still present), so they can only be used once. Creating the admin in the terminal, or running `make-admin.js` below, also deletes `public/setup/`.
+
+If you set up manually without the wizard, the scaffolded `public/setup/` works the same way. Otherwise, register at `/register`, then run:
 
 ```bash
 node node_modules/kempo/scripts/make-admin.js
