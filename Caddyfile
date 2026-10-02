@@ -1,3 +1,0 @@
-crowd-pulse.app, www.crowd-pulse.app {
-	reverse_proxy kempo-app:3000
-}
