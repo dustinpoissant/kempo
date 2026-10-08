@@ -74,6 +74,8 @@ export default async (event, data = {}, { bail = false } = {}) => {
         results.push({ hookId: h.id, owner: h.owner, result });
       } catch(err) {
         if(bail) throw err;
+        /* A notification handler's failure stops nothing, but it must not vanish: nobody would ever know the extension broke. */
+        console.error(`[kempo] Hook handler for "${event}" (${h.owner}) threw: ${err?.message ?? err}`);
         results.push({ hookId: h.id, owner: h.owner, error: err.message });
       }
     }
