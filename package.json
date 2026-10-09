@@ -59,7 +59,7 @@
   "peerDependencies": {
     "kempo-css": ">=2.2.5",
     "kempo-server": ">=3.4.0",
-    "kempo-ui": ">=0.5.0"
+    "kempo-ui": ">=0.5.1"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
