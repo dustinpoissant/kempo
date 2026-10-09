@@ -1,0 +1,2 @@
+export default t=>"string"!=typeof t||t.length>2048||!t.startsWith("/")||t.startsWith("//")||/[\\\u0000-\u001f\u007f]/.test(t)?"":t;
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\utils\safeNext.js.map

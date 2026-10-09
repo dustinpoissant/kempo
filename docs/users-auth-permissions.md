@@ -21,6 +21,27 @@ Kempo uses cookie-based session authentication. On login, a `session_token` cook
 | `POST /kempo/api/auth/reset-password` | Reset password from email token |
 | `POST /kempo/api/auth/verify-email` | Verify email from token |
 
+### Adding Other Ways to Sign In
+
+The login and register forms are the `<k-login>` and `<k-register>` components, which live in kempo rather than in the site's pages, so updating kempo updates every site's forms. A site's page is just the element:
+
+```html
+<k-login redirect="/account">
+  <location name="login-form-after" />
+</k-login>
+```
+
+`redirect` is where to go after signing in (a same-site `?next=` in the URL wins); `<k-register>` also takes `verify-redirect`. Content inside the element is kept and shown between the form and the links, so each form has a named slot a kempo (CMS) extension can fill (kempo-oauth's "Continue with Google" buttons, for example):
+
+| Page | Slot |
+|---|---|
+| `/login` | `login-form-after` |
+| `/register` | `register-form-after` |
+
+An extension fills one with a `*.global.html` file in its `public/` directory (see [Creating Extensions](extensions/creating-extensions.md#push-globalhtml)). An empty slot renders nothing.
+
+**Upgrading a site that has its own full login/register pages:** replace `public/login/index.page.html` and `public/register/index.page.html` with the stock ones from `node_modules/kempo/app-public/`, then re-apply any customisation as attributes. This is needed once; after it, updating kempo is enough.
+
 ### Checking Authentication in Route Handlers
 
 ```javascript
