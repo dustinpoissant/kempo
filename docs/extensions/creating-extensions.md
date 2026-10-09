@@ -340,6 +340,24 @@ extensions can contribute to the same slot; everything is merged and ordered by 
 That lands in any page whose template has `<location name="site-banner" />`. This is the same
 mechanism `admin/nav.global.html` has always used to add an admin nav entry.
 
+#### Grouping admin nav entries
+
+An extension's nav entry is a `<k-aside-item>` pushed into the `admin-nav-extensions` location. Give it a
+`group` and the admin menu groups it with others that name the same group:
+
+```html
+<!-- admin/nav.global.html -->
+<content id="my-extension-nav" name="Products" owner="my-extension" enabled="true" locked="true" location="admin-nav-extensions" priority="15">
+<k-aside-item icon="label" group="Commerce" href="/admin/extension/my-extension/" no-expand>Products</k-aside-item>
+</content>
+```
+
+A group used by only one entry stays a normal link. When two or more extensions use the same group,
+the admin wraps them in a menu with that name, and takes the menu away again if one is disabled. The
+menu icon comes from the admin's own map (`Commerce` has one), otherwise from the first
+`group-icon="..."` attribute among the entries, otherwise a folder. Entries without a `group` are
+unaffected. This is `k-aside`'s item grouping, documented in kempo-ui.
+
 ### Pull: `*.fragment.html`
 
 The page explicitly asks for something by name, and you supply it. Exactly one fragment can win —
