@@ -41,6 +41,8 @@ const EMAILS = ['alice', 'bob', 'carol', 'dave', 'admin'].map(name => `notif-sdk
 
 const state = { ids: {}, tmp: path.join(root, 'tests', '.tmp-notifications') };
 
+const administratorIds = async () => (await db.select({ id: userGroup.userId }).from(userGroup).where(eq(userGroup.groupName, 'system:Administrators'))).map(row => row.id);
+
 const purge = async () => {
   await db.delete(notification).where(inArray(notification.owner, [OWNER, OTHER_OWNER])).catch(() => {});
   await db.delete(hook).where(eq(hook.owner, OWNER)).catch(() => {});
@@ -187,8 +189,9 @@ const buildTests = () => ({
 
   'sending to a group reaches its members only, and the union is deduplicated': async ({ pass }) => {
     const result = await send({ title: 'By group', group: GROUP, userIds: [state.ids.alice, state.ids.carol], permission: PERMISSION });
-    expect(result.recipientIds.length === 4, `alice, bob, carol and the administrator should be the four recipients, got ${result.recipientIds.length}`);
-    expect(new Set(result.recipientIds).size === 4, 'a person who matches several targets must be a recipient once');
+    const expected = new Set([state.ids.alice, state.ids.bob, state.ids.carol, ...(await administratorIds())]);
+    expect(result.recipientIds.length === expected.size && result.recipientIds.every(id => expected.has(id)), `alice, bob, carol and every administrator should be the recipients (${expected.size}), got ${result.recipientIds.length}`);
+    expect(new Set(result.recipientIds).size === result.recipientIds.length, 'a person who matches several targets must be a recipient once');
 
     const groupOnly = await send({ title: 'Group only', group: GROUP });
     expect(groupOnly.recipientIds.length === 2, `a group send reaches its two members, not the administrator, got ${groupOnly.recipientIds.length}`);
@@ -201,7 +204,8 @@ const buildTests = () => ({
       const [error, result] = await createNotification({ owner: OWNER, title: 'Nobody', ...target });
       if(target.permission){
         // Administrators hold every permission, so this one reaches them. Anyone else would be a bug.
-        expect(error === null && result.recipientIds.length === 1 && result.recipientIds[0] === state.ids.admin, `an unheld permission should reach only the administrator, got ${JSON.stringify([error, result])}`);
+        const admins = await administratorIds();
+        expect(error === null && result.recipientIds.length === admins.length && result.recipientIds.every(id => admins.includes(id)), `an unheld permission should reach only the administrators, got ${JSON.stringify([error, result])}`);
         continue;
       }
       expect(error === null && result.notification === null && result.recipientIds.length === 0, `expected an empty result, got ${JSON.stringify([error, result])}`);

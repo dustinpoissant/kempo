@@ -142,8 +142,12 @@ const tests = {
       if(secondError?.code !== 404) return fail(`a second run must be refused, got ${secondError?.code}`);
       pass('created once, then locked');
     } catch(e){ fail(e.message); } finally {
-      await db.delete(user).where(eq(user.email, email)).catch(() => {});
-      await db.delete(user).where(eq(user.email, 'second@setup.test')).catch(() => {});
+      for(const cleanupEmail of [email, 'second@setup.test']){
+        const [row] = await db.select().from(user).where(eq(user.email, cleanupEmail)).catch(() => []);
+        if(!row) continue;
+        await db.delete(userGroup).where(eq(userGroup.userId, row.id)).catch(() => {});
+        await db.delete(user).where(eq(user.id, row.id)).catch(() => {});
+      }
       await rm(path.dirname(dir), { recursive: true, force: true });
     }
   },
