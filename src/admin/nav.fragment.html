@@ -12,6 +12,9 @@
 		<k-aside-toggle>
 			<h3 class="m0">Kempo Admin</h3>
 		</k-aside-toggle>
+		<div class="px pbh">
+			<k-notification-bell page-href="/admin/notifications" open-direction="down right"></k-notification-bell>
+		</div>
 		<k-aside-item
 			icon="preview"
 			href="/"
@@ -74,6 +77,11 @@
 			no-expand
 		>Extensions</k-aside-item>
 		<k-aside-item
+			icon="notifications"
+			href="/admin/notifications"
+			no-expand
+		>Notifications</k-aside-item>
+		<k-aside-item
 			icon="sensors"
 			href="/admin/realtime"
 			no-expand
@@ -88,6 +96,7 @@
 	</k-aside>
 	<script type="module">
 		import '/kempo-ui/components/ThemeSwitcher.js';
+		import '/kempo/components/NotificationBell.js';
 		const items = document.querySelectorAll('k-aside-item');
 		const currentPath = window.location.pathname;
 

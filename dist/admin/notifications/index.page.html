@@ -1,0 +1,48 @@
+<!--
+	locked: true
+-->
+<page title="Notifications - Admin">
+<content>
+<script type="module" src="/kempo-ui/components/Icon.js"></script>
+<script type="module" src="/kempo/components/NotificationList.js"></script>
+
+	<div class="d-f mb">
+		<h1 class="flex mb0">Notifications</h1>
+		<div class="btn-grp mr">
+			<button id="showAll" class="primary">All</button>
+			<button id="showUnread">Unread</button>
+		</div>
+		<button id="markAllRead"><k-icon name="done_all"></k-icon> Mark all read</button>
+	</div>
+
+	<k-notification-list id="list" paginated></k-notification-list>
+
+	<p class="small tc-muted">
+		Dismissing a notification only removes it from your list. Notifications are deleted for everyone once they are
+		older than the retention set by <code>system:notification_retention_days</code> (default 90 days).
+	</p>
+
+</content>
+<content location="scripts">
+<script type="module">
+	import { markAllNotificationsRead } from '/kempo/sdk.js';
+
+	const list = document.getElementById('list');
+	const showAll = document.getElementById('showAll');
+	const showUnread = document.getElementById('showUnread');
+
+	const filter = unreadOnly => {
+		list.unreadOnly = unreadOnly;
+		showAll.classList.toggle('primary', !unreadOnly);
+		showUnread.classList.toggle('primary', unreadOnly);
+	};
+
+	showAll.addEventListener('click', () => filter(false));
+	showUnread.addEventListener('click', () => filter(true));
+	document.getElementById('markAllRead').addEventListener('click', async () => {
+		await markAllNotificationsRead();
+		await list.refresh();
+	});
+</script>
+</content>
+</page>

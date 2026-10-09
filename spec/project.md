@@ -44,6 +44,7 @@ Data entities managed by the CMS.
 - [Groups](resources/groups.md) — Role groups for organizing users
 - [Permissions](resources/permissions.md) — Granular access control definitions
 - [Settings](resources/settings.md) — Key-value configuration store
+- [Notifications](resources/notifications.md) — Per-user notifications with read state, history, dedupe and action buttons
 - [Pages](resources/pages.md) — CMS content pages with templates
 - [Templates](resources/templates.md) — HTML page layouts with locations
 - [Fragments](resources/fragments.md) — Reusable HTML snippets

@@ -176,6 +176,8 @@ Kempo provides these tables out of the box:
 | `setting` | Key-value settings with type, visibility, and ownership |
 | `realtimeMessage` | Messages on channels that persist, so a reconnecting client can replay what it missed |
 | `realtimeChannel` | How far each realtime channel has been pruned, to tell a client it missed messages |
+| `notification` | Notifications raised by core or extensions: title, message, level, actions, dedupe key |
+| `notificationRecipient` | One row per person a notification was sent to, with their own read, handled and dismissed state |
 
 ## Frontend SDK
 
@@ -353,6 +355,10 @@ Settings can be managed through the admin panel at `/admin/settings` or the SDK.
 ## Realtime
 
 Extensions can push live updates to browsers: declare a channel, publish to it from any server code, and every subscribed browser on any kempo process receives it. Channels can persist messages so a client that reconnects replays what it missed, and a browser client handles connecting and reconnecting. Browsers can also send to a channel, where the extension's own handler receives and answers it, and extensions observe connections through hooks and act on them through SDK functions, so interactive features (chat, collaboration, games) can be built as extensions without touching a socket. Fast traffic can use an in-memory channel that skips the database, and connections are limited and backpressured. It uses a Postgres `LISTEN`/`NOTIFY` bus, so it needs no extra service. See [docs/realtime.md](docs/realtime.md).
+
+## Notifications
+
+Core and extensions can notify users with `createNotification`: to specific users, everyone holding a permission, or a group. Each person has their own read state and history, a notification can carry buttons that link somewhere or call an API as the signed-in user, and a `dedupeKey` keeps a repeating event to one notification. The admin has a bell with an unread count and a Notifications page; a public site can use `<k-notification-bell>`. Existing sites need `npx drizzle-kit push` to add the two new tables. See [docs/notifications.md](docs/notifications.md).
 
 ## Email
 

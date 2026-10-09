@@ -283,6 +283,24 @@ export const listAvailableExtensions = async () =>
 export const listKnownExtensions = async () =>
   get(`${API_BASE}/extensions/known`);
 
+export const getNotifications = async ({ unreadOnly = false, limit, offset } = {}) =>
+  get(`${API_BASE}/notifications`, { unreadOnly, limit, offset });
+
+export const getUnreadNotificationCount = async () =>
+  get(`${API_BASE}/notifications/count`);
+
+export const markNotificationRead = async (id) =>
+  post(`${API_BASE}/notifications/${encodeURIComponent(id)}/read`, {});
+
+export const markNotificationHandled = async (id) =>
+  post(`${API_BASE}/notifications/${encodeURIComponent(id)}/handled`, {});
+
+export const markAllNotificationsRead = async () =>
+  post(`${API_BASE}/notifications/read-all`, {});
+
+export const dismissNotification = async (id) =>
+  del(`${API_BASE}/notifications/${encodeURIComponent(id)}`);
+
 export const listRealtimeConnections = async () =>
   get(`${API_BASE}/realtime/connections`);
 

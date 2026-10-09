@@ -1,0 +1,2 @@
+import s from"../../../../../server/utils/auth/getSession.js";import e from"../../../../../server/utils/notifications/markAllRead.js";export default async(t,o)=>{const[r,i]=await s({token:t.cookies.session_token});if(r)return o.status(500===r.code?500:401).json({error:500===r.code?r.msg:"Authentication required"});const[n,a]=await e({userId:i.user.id});if(n)return o.status(n.code).json({error:n.msg});o.json(a)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo-notifications\dist\kempo\api\notifications\read-all\POST.js.map

@@ -1422,6 +1422,12 @@ The following events are fired automatically during page operations. Register ho
 | `page:updated` | `{ file, updatedAt }` | A page's metadata or content is updated |
 | `page:deleted` | `{ file }` | A page is deleted |
 
+### Notification Events
+
+| Event | Data | Fired when |
+|---|---|---|
+| `notification:created` | `{ notification, recipientIds, refreshed }` | A notification reached at least one person; `refreshed` is true when a deduped one was updated |
+
 ### Realtime Events
 
 | Event | Data | Fired when |
@@ -1644,6 +1650,53 @@ export default async (request, response) => {
   response.json({ page });
 };
 ```
+
+## Notifications
+
+Per-user notifications with read and handled state, history, dedupe and action buttons. See [Notifications](../notifications.md) for the concepts, the action rules and the HTTP API. All return `[error, result]`. Needs the `notification` and `notificationRecipient` tables (`npx drizzle-kit push` on an existing site).
+
+### `createNotification({ owner, title, message, level, actions, dedupeKey, expiresAt, userIds, permission, group })`
+
+Sends a notification to the union of `userIds`, everyone holding `permission` (through groups, and all Administrators) and the members of `group`. At least one target is required; targets that resolve to nobody return `[null, { notification: null, recipientIds: [], refreshed: false }]`. Returns `[null, { notification, recipientIds, refreshed }]`. Errors: `400` for invalid input, including an action whose `href` or `api.url` is not a path on this site.
+
+A `dedupeKey` refreshes the existing `(owner, dedupeKey)` notification in place and re-opens it (unread, not handled, not dismissed) for the recipients of the call.
+
+```javascript
+await createNotification({
+  owner: 'my-ext',
+  title: 'Thumbnail failed: cover.png',
+  level: 'error',
+  permission: 'my-ext:thumbnails:manage',
+  dedupeKey: 'thumb:42',
+  actions: [{ label: 'Try again', api: { method: 'POST', url: '/kempo/api/my-ext/retry', body: { id: 42 } } }]
+});
+```
+
+An API action is only fetched by the browser, as the logged-in user; your route does its own permission checks.
+
+### `getNotifications({ userId, unreadOnly, limit, offset })`
+
+One person's notifications, newest first. Returns `[null, { notifications, total, unread, limit, offset }]`; `limit` is capped at 100. Dismissed and expired ones are left out.
+
+### `getUnreadCount({ userId })`
+
+Returns `[null, { count }]`.
+
+### `markRead({ userId, notificationId })` / `markAllRead({ userId })`
+
+Mark one (404 if the person is not a recipient) or all of a person's notifications read.
+
+### `markHandled({ userId, notificationId })` / `markHandled({ owner, dedupeKey })`
+
+Marks the action done and the notification read, for one person or, with `owner` and `dedupeKey` and no `userId`, for every recipient. Use it when you resolve the underlying problem yourself.
+
+### `deleteNotification({ notificationId, userId })` / `deleteNotification({ notificationId, everyone: true })`
+
+Dismiss for one person, or delete for everyone.
+
+### `pruneNotifications({ now, retentionDays })`
+
+Deletes expired notifications and those last raised before the retention (`system:notification_retention_days`, default 90, 0 keeps forever). Also runs lazily, at most hourly, when a notification is created.
 
 ## Realtime
 

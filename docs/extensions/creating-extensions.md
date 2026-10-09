@@ -260,6 +260,7 @@ Handlers are **awaited one at a time, in registration order**. That means slow w
 | `extension:uninstalled` | `{ name }` | After any extension is uninstalled |
 | `extension:updated` | `{ name, oldVersion, newVersion }` | After any extension is updated |
 | `page-created` | `{ page }` | After a page is created |
+| `notification:created` | `{ notification, recipientIds, refreshed }` | A notification reached at least one person |
 | `route:unmatched` | `{ url, method, request, draft }` | A request matched no file, page or route anywhere on the site |
 
 ### Answering a Request Nothing Else Claimed
@@ -581,6 +582,10 @@ An extension can push live updates to browsers by declaring a channel in `kempo-
 Channels are closed by default: `permission` is required, and only users who hold it can subscribe. `persist` stores messages so a client that reconnects can catch up, and `retention` says how long they are kept. `scope` is `"cluster"` (default) or `"process"` for fast in-memory traffic that never touches the database. `onMessage` is a path inside your package to a handler that receives what browsers send to the channel and can reply. `dropIfBackedUp` skips deliveries to a client that is already behind. The channel is named `my-ext:status`, and you publish with `realtime.publish({ channel, data })` from the [Server SDK](sdk.md).
 
 Connections are observable through hooks, declared in `kempo.hooks` like any other: `realtime:connected`, `realtime:disconnected`, `realtime:subscribed`, `realtime:unsubscribed`, and the guard `realtime:before_subscribe`, which refuses a subscription when it throws `{ code, msg }`. Use hooks for lifecycle and `onMessage` for messages. See [Realtime](../realtime.md) for the full guide.
+
+## Notifications
+
+An extension can tell users about something that needs them, such as a failed background job, with `createNotification` from the [Server SDK](sdk.md#notifications). Target `userIds`, a `permission` or a `group`, give it a `dedupeKey` so a repeating failure is one notification, and attach up to three actions: a link, or an API call that the user's browser makes with their own session (so your route must check permissions itself). The admin shows a bell and a history page; a public site can use `<k-notification-bell>`. Notifications are optional for the user's core version: guard the call so your extension still works on a kempo that predates them. See [Notifications](../notifications.md).
 
 ## Reference
 

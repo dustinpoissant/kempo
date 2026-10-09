@@ -161,6 +161,7 @@ const DEFAULT_SETTINGS = [
   { owner: 'system', name: 'allow_registration', value: true, type: 'boolean', isPublic: true, description: 'Allow new users to register' },
   { owner: 'system', name: 'require_email_verification', value: false, type: 'boolean', isPublic: false, description: 'Require email verification before account access' },
   { owner: 'system', name: 'verification_url', value: 'http://localhost:3000/verify-email/{{token}}', type: 'string', isPublic: false, description: 'Email verification URL template' },
+  { owner: 'system', name: 'notification_retention_days', value: 90, type: 'number', isPublic: false, description: 'Days to keep notifications before they are deleted (0 keeps them forever)' },
   { owner: 'system', name: 'password_reset_url', value: 'http://localhost:3000/reset-password/{{token}}', type: 'string', isPublic: false, description: 'Password reset URL template' },
 ];
 

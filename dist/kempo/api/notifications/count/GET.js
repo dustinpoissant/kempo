@@ -1,0 +1,2 @@
+import s from"../../../../../server/utils/auth/getSession.js";import t from"../../../../../server/utils/notifications/getUnreadCount.js";export default async(e,o)=>{const[r,i]=await s({token:e.cookies.session_token});if(r)return o.status(500===r.code?500:401).json({error:500===r.code?r.msg:"Authentication required"});const[n,u]=await t({userId:i.user.id});if(n)return o.status(n.code).json({error:n.msg});o.json(u)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo-notifications\dist\kempo\api\notifications\count\GET.js.map

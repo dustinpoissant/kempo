@@ -1,0 +1,2 @@
+import t from"../../../../../server/utils/auth/getSession.js";import o from"../../../../../server/utils/notifications/deleteNotification.js";export default async(s,e)=>{const[i,r]=await t({token:s.cookies.session_token});if(i)return e.status(500===i.code?500:401).json({error:500===i.code?i.msg:"Authentication required"});const[n,a]=await o({userId:r.user.id,notificationId:s.params.id});if(n)return e.status(n.code).json({error:n.msg});e.json(a)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo-notifications\dist\kempo\api\notifications\[id]\DELETE.js.map

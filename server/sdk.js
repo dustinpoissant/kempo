@@ -197,6 +197,19 @@ export { default as uninstallExtension } from './utils/extensions/uninstallExten
 export { default as updateExtension } from './utils/extensions/updateExtension.js';
 
 /*
+  Notifications
+*/
+
+export { default as createNotification } from './utils/notifications/createNotification.js';
+export { default as deleteNotification } from './utils/notifications/deleteNotification.js';
+export { default as getNotifications } from './utils/notifications/getNotifications.js';
+export { default as getUnreadCount } from './utils/notifications/getUnreadCount.js';
+export { default as markAllRead } from './utils/notifications/markAllRead.js';
+export { default as markHandled } from './utils/notifications/markHandled.js';
+export { default as markRead } from './utils/notifications/markRead.js';
+export { default as pruneNotifications } from './utils/notifications/pruneNotifications.js';
+
+/*
   Realtime
 */
 

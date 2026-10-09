@@ -1,4 +1,5 @@
-import { pgTable, text, timestamp, boolean, index, jsonb, bigserial, bigint } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import { pgTable, text, timestamp, boolean, index, uniqueIndex, primaryKey, jsonb, bigserial, bigint } from 'drizzle-orm/pg-core';
 
 /*
   Auth Tables
@@ -142,6 +143,50 @@ export const realtimeChannel = pgTable('realtimeChannel', {
   channel: text('channel').primaryKey(),
   prunedThrough: bigint('prunedThrough', { mode: 'number' }).notNull().default(0),
 });
+
+/*
+  Notification System
+*/
+
+/*
+  What happened, written once however many people it was sent to. `owner` is the extension name, or
+  `kempo` for core. A `dedupeKey` makes (owner, dedupeKey) one row that is refreshed instead of repeated.
+*/
+export const notification = pgTable('notification', {
+  id: text('id').primaryKey(),
+  owner: text('owner').notNull(),
+  title: text('title').notNull(),
+  message: text('message'),
+  level: text('level').notNull().default('info'),
+  actions: jsonb('actions').notNull().default([]),
+  dedupeKey: text('dedupeKey'),
+  createdAt: timestamp('createdAt').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
+  expiresAt: timestamp('expiresAt'),
+}, table => [
+  uniqueIndex('notification_owner_dedupeKey_idx').on(table.owner, table.dedupeKey).where(sql`${table.dedupeKey} is not null`),
+  index('notification_updatedAt_idx').on(table.updatedAt),
+]);
+
+/*
+  One row per person it was sent to, written when the notification is created so each person's read,
+  handled and dismissed state is their own and their history does not change if they later lose the
+  permission that earned them the notification.
+*/
+export const notificationRecipient = pgTable('notificationRecipient', {
+  notificationId: text('notificationId')
+    .notNull()
+    .references(() => notification.id, { onDelete: 'cascade' }),
+  userId: text('userId')
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  readAt: timestamp('readAt'),
+  handledAt: timestamp('handledAt'),
+  dismissedAt: timestamp('dismissedAt'),
+}, table => [
+  primaryKey({ columns: [table.notificationId, table.userId] }),
+  index('notificationRecipient_userId_idx').on(table.userId),
+]);
 
 /*
   Triggers to prevent deletion of system resources

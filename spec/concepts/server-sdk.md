@@ -42,6 +42,7 @@ import { db, schema, getUserById, createHook } from 'kempo/server/sdk.js';
 - **FS**: `parseFrontmatter`, `scanDir`
 - **Hooks**: `createHook`, `deleteHook`, `getHook`, `listHooks`, `triggerHook`, `clearHandlerCache`, `updateHook`
 - **Extensions**: `disableExtension`, `enableExtension`, `getExtension`, `installExtension`, `listExtensions`, `uninstallExtension`, `updateExtension`
+- **Notifications**: `createNotification`, `deleteNotification`, `getNotifications`, `getUnreadCount`, `markAllRead`, `markHandled`, `markRead`, `pruneNotifications`. See [Notifications](../resources/notifications.md).
 - **Realtime**: exported as the `realtime` namespace (`export * as realtime`) rather than flat names, since `publish` and `registerChannel` are too generic to sit beside everything else; it contains `publish`, `registerChannel`, `listConnections`, `pruneMessages`. See [Realtime](realtime.md).
 
 ## Notes
