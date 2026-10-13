@@ -210,6 +210,14 @@ export { default as markRead } from './utils/notifications/markRead.js';
 export { default as pruneNotifications } from './utils/notifications/pruneNotifications.js';
 
 /*
+  Dashboard
+*/
+
+export { default as listDashboardWidgets } from './utils/dashboard/listDashboardWidgets.js';
+export { default as registerDashboardWidget } from './utils/dashboard/registerDashboardWidget.js';
+export { default as unregisterDashboardWidget } from './utils/dashboard/unregisterDashboardWidget.js';
+
+/*
   Realtime
 */
 

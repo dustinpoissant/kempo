@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { pgTable, text, timestamp, boolean, index, uniqueIndex, primaryKey, jsonb, bigserial, bigint } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, boolean, index, uniqueIndex, primaryKey, jsonb, bigserial, bigint, integer } from 'drizzle-orm/pg-core';
 
 /*
   Auth Tables
@@ -186,6 +186,39 @@ export const notificationRecipient = pgTable('notificationRecipient', {
 }, table => [
   primaryKey({ columns: [table.notificationId, table.userId] }),
   index('notificationRecipient_userId_idx').on(table.userId),
+]);
+
+/*
+  Dashboard Widget System
+
+  A tile an extension adds to the admin dashboard. `id` is `owner:key`, which is also what the browser
+  stores its layout against. `element` is the custom element the dashboard creates and `module` is the
+  script that defines it; the widget fetches its own data once it is on the page. Kempo's own widgets
+  are not rows: they live in code (`server/utils/dashboard/coreWidgets.js`) so they need no seeding.
+*/
+export const dashboardWidget = pgTable('dashboardWidget', {
+  id: text('id').primaryKey(),
+  owner: text('owner').notNull(),
+  key: text('key').notNull(),
+  title: text('title').notNull(),
+  description: text('description'),
+  icon: text('icon'),
+  element: text('element').notNull(),
+  module: text('module').notNull(),
+  defaultWidth: integer('defaultWidth').notNull().default(2),
+  defaultHeight: integer('defaultHeight').notNull().default(1),
+  minWidth: integer('minWidth').notNull().default(1),
+  maxWidth: integer('maxWidth').notNull().default(4),
+  minHeight: integer('minHeight').notNull().default(1),
+  maxHeight: integer('maxHeight').notNull().default(3),
+  permission: text('permission'),
+  actions: jsonb('actions').notNull().default([]),
+  priority: integer('priority').notNull().default(100),
+  defaultVisible: boolean('defaultVisible').notNull().default(true),
+  createdAt: timestamp('createdAt').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
+}, table => [
+  uniqueIndex('dashboardWidget_owner_key_idx').on(table.owner, table.key),
 ]);
 
 /*

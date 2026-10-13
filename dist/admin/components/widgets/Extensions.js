@@ -1,0 +1,5 @@
+import t from"/kempo/components/DashboardWidget.js";import{html as s}from"/kempo-ui/lit-all.min.js";import{listExtensions as e}from"/kempo/sdk.js";export default class i extends t{static properties={...t.properties,total:{state:!0},disabled:{state:!0}};constructor(){super(),this.total=0,this.disabled=0,this.cta={label:"Add extension",icon:"extension_add",permission:"system:extensions:install",href:"/admin/extensions"}}load=async()=>{const{items:t,total:s}=await this.unwrap(e({limit:100}));this.total=s,this.disabled=t.filter(t=>!t.enabled).length};renderContent(){return this.total?s`
+      <div class="h1 m0">${this.total}</div>
+      <div class="tc-muted">${1===this.total?"Extension":"Extensions"}${this.disabled?s`, ${this.disabled} disabled`:""}</div>
+    `:s`<p class="tc-muted">No extensions installed.</p>`}}customElements.define("k-widget-extensions",i);
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\widgets\Extensions.js.map

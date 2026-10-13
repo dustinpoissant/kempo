@@ -8,6 +8,8 @@ import { randomUUID } from 'crypto';
 import { execSync } from 'child_process';
 import triggerHook, { clearHandlerCache } from '../hooks/triggerHook.js';
 import createHook from '../hooks/createHook.js';
+import registerDashboardWidget from '../dashboard/registerDashboardWidget.js';
+import unregisterDashboardWidget from '../dashboard/unregisterDashboardWidget.js';
 import setSetting from '../settings/setSetting.js';
 import declaredValue from '../settings/declaredValue.js';
 import createTablesFromSchema from './createTablesFromSchema.js';
@@ -138,6 +140,22 @@ export default async ({ name, version = 'latest' }) => {
   for(const event of Object.keys(oldHooks)){
     if(!newHooks[event]){
       await db.delete(hook).where(and(eq(hook.owner, name), eq(hook.event, event))).catch(() => {});
+    }
+  }
+
+  /*
+    Sync dashboard widgets: register or refresh every declared one, remove those no longer declared
+  */
+  const newWidgetKeys = new Set((newKempo.widgets || []).map(w => w.key));
+  for(const widget of newKempo.widgets || []){
+    const [widgetError] = await registerDashboardWidget({ ...widget, owner: name });
+    if(widgetError){
+      return [{ code: widgetError.code, msg: `Invalid dashboard widget "${widget.key}": ${widgetError.msg}` }, null];
+    }
+  }
+  for(const { key } of oldKempo.widgets || []){
+    if(!newWidgetKeys.has(key)){
+      await unregisterDashboardWidget({ owner: name, key });
     }
   }
 

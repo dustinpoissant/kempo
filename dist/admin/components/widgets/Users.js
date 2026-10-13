@@ -1,0 +1,5 @@
+import e from"/kempo/components/DashboardWidget.js";import{html as t}from"/kempo-ui/lit-all.min.js";import{getUsers as s,createUser as a}from"/kempo/sdk.js";export default class i extends e{static properties={...e.properties,total:{state:!0}};constructor(){super(),this.total=0,this.cta={label:"Add user",icon:"person_add",permission:"system:user:create",onClick:()=>this.addUser()}}load=async()=>{this.total=(await this.unwrap(s({limit:1}))).total};addUser=()=>this.openForm({title:"Add user",confirmText:"Create",fields:[{name:"name",label:"Name"},{name:"email",label:"Email",type:"email"},{name:"password",label:"Password",type:"password"}],submit:async({name:e,email:t,password:s})=>{const[i]=await a({name:e,email:t,password:s,emailVerified:!0});if(i)return i.msg||"Could not create the user.";await this.refresh()}});renderContent(){return t`
+      <div class="h1 m0">${this.total}</div>
+      <div class="tc-muted">${1===this.total?"User":"Users"}</div>
+    `}}customElements.define("k-widget-users",i);
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\widgets\Users.js.map

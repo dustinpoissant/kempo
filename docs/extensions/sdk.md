@@ -1698,6 +1698,35 @@ Dismiss for one person, or delete for everyone.
 
 Deletes expired notifications and those last raised before the retention (`system:notification_retention_days`, default 90, 0 keeps forever). Also runs lazily, at most hourly, when a notification is created.
 
+## Dashboard
+
+Widgets on the admin dashboard. See [Admin Dashboard](../dashboard.md) for sizes, the declarative `kempo.widgets` form and how to write the element. All return `[error, result]`. Needs the `dashboardWidget` table (`npx drizzle-kit push` on an existing site); without it `listDashboardWidgets` still returns Kempo's own widgets.
+
+### `registerDashboardWidget({ owner, key, title, element, module, ...options })`
+
+Adds a widget, or updates it when `owner` and `key` already exist. `options`: `description`, `icon`, `defaultWidth`, `defaultHeight`, `minWidth`, `maxWidth`, `minHeight`, `maxHeight`, `permission`, `actions` (up to 3 `{ label, href, icon, permission }` header links), `priority`, `defaultVisible`. Returns `[null, widget]`. Errors: `400` for an invalid definition (a size outside 1–4 by 1–3, an `element` that is not a custom element name, a `module` that is not a path on this site) and for the reserved owner `kempo`.
+
+```javascript
+await registerDashboardWidget({
+  owner: 'my-ext',
+  key: 'orders',
+  title: 'Recent orders',
+  element: 'k-shop-orders-widget',
+  module: '/my-ext/components/OrdersWidget.js',
+  defaultWidth: 2,
+  defaultHeight: 2,
+  permission: 'my-ext:orders:read'
+});
+```
+
+### `unregisterDashboardWidget({ owner, key })`
+
+Removes one widget, or all of the owner's when `key` is omitted. Returns `[null, { removed }]`. Removing what is not there is not an error. Uninstalling an extension does this for you.
+
+### `listDashboardWidgets({ userId })`
+
+Kempo's own widgets plus those of enabled extensions, ordered by `priority` then title. With `userId`, widgets, and individual actions, that person lacks the `permission` for are left out. Returns `[null, { widgets }]`.
+
 ## Realtime
 
 Exported as a namespace: `import { realtime } from 'kempo/server/sdk.js'`. See [Realtime](../realtime.md) for the concepts.

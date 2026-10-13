@@ -283,6 +283,17 @@ export const listAvailableExtensions = async () =>
 export const listKnownExtensions = async () =>
   get(`${API_BASE}/extensions/known`);
 
+/*
+  Dashboard
+*/
+
+export const getDashboardWidgets = async () =>
+  get(`${API_BASE}/dashboard/widgets`);
+
+/*
+  Notifications
+*/
+
 export const getNotifications = async ({ unreadOnly = false, limit, offset } = {}) =>
   get(`${API_BASE}/notifications`, { unreadOnly, limit, offset });
 

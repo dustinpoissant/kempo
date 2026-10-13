@@ -83,6 +83,7 @@ All extension capabilities are declared in the `kempo` field of `package.json`:
 | `settings` | Settings to create on install |
 | `groups` | Groups to create on install, with their assigned permissions |
 | `hooks` | Event hooks to register (`{ "event-name": "path/to/handler.js" }`) |
+| `widgets` | Widgets to add to the admin dashboard, see [Admin Dashboard](../dashboard.md) |
 | `dependencies` | Names of other extensions that must be installed and enabled first |
 
 ## Database Tables

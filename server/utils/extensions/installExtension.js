@@ -8,6 +8,7 @@ import { readFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import triggerHook, { clearHandlerCache } from '../hooks/triggerHook.js';
 import createHook from '../hooks/createHook.js';
+import registerDashboardWidget from '../dashboard/registerDashboardWidget.js';
 import setSetting from '../settings/setSetting.js';
 import declaredValue from '../settings/declaredValue.js';
 import createTablesFromSchema from './createTablesFromSchema.js';
@@ -120,6 +121,16 @@ export default async ({ name }) => {
   */
   for(const [event, callback] of Object.entries(kempoConfig.hooks || {})){
     await createHook({ owner: name, event, callback });
+  }
+
+  /*
+    Register declarative dashboard widgets
+  */
+  for(const widget of kempoConfig.widgets || []){
+    const [widgetError] = await registerDashboardWidget({ ...widget, owner: name });
+    if(widgetError){
+      return [{ code: widgetError.code, msg: `Invalid dashboard widget "${widget.key}": ${widgetError.msg}` }, null];
+    }
   }
 
   const now = new Date();

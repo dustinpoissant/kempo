@@ -178,6 +178,7 @@ Kempo provides these tables out of the box:
 | `realtimeChannel` | How far each realtime channel has been pruned, to tell a client it missed messages |
 | `notification` | Notifications raised by core or extensions: title, message, level, actions, dedupe key |
 | `notificationRecipient` | One row per person a notification was sent to, with their own read, handled and dismissed state |
+| `dashboardWidget` | Widgets extensions add to the admin dashboard: element, module script, size limits, permission |
 
 ## Frontend SDK
 
@@ -355,6 +356,10 @@ Settings can be managed through the admin panel at `/admin/settings` or the SDK.
 ## Realtime
 
 Extensions can push live updates to browsers: declare a channel, publish to it from any server code, and every subscribed browser on any kempo process receives it. Channels can persist messages so a client that reconnects replays what it missed, and a browser client handles connecting and reconnecting. Browsers can also send to a channel, where the extension's own handler receives and answers it, and extensions observe connections through hooks and act on them through SDK functions, so interactive features (chat, collaboration, games) can be built as extensions without touching a socket. Fast traffic can use an in-memory channel that skips the database, and connections are limited and backpressured. It uses a Postgres `LISTEN`/`NOTIFY` bus, so it needs no extra service. See [docs/realtime.md](docs/realtime.md).
+
+## Admin Dashboard
+
+The admin home page is a grid of widgets one to four blocks wide and one to three tall. Kempo provides widgets for pages, content, users, notifications and extensions; extensions add their own with `kempo.widgets` or `registerDashboardWidget`. Each person chooses which are shown, their order and size, kept in their browser's localStorage, and a widget only loads its script and data once it is shown. Existing sites need `npx drizzle-kit push` to add the `dashboardWidget` table (until then only Kempo's own widgets appear). See [docs/dashboard.md](docs/dashboard.md).
 
 ## Notifications
 
