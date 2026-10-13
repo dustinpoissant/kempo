@@ -24,6 +24,25 @@ jobs:
     permissions:
       contents: write
       id-token: write
+    # The database-backed suites skip themselves when no database is reachable, which reads as a pass.
+    # Publishing used to run without one, so a release could go out while the test workflow was red.
+    # This is the same service and schema the test workflow uses, so the two gates agree.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: kempo
+          POSTGRES_PASSWORD: kempo
+          POSTGRES_DB: kempo_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://kempo:kempo@localhost:5432/kempo_test
     steps:
       - uses: actions/checkout@v4
         with:
@@ -43,6 +62,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Apply database schema
+        run: npx drizzle-kit push --force
 
       - name: Run Unit Tests
         run: npm test
