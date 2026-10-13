@@ -3,6 +3,7 @@ import { readFile, stat, readdir } from 'fs/promises';
 import { pathToFileURL, fileURLToPath } from 'url';
 import { renderExternalPage } from 'kempo-server/templating';
 import { getEnabledExtensions } from '../server/utils/extensions/scopeCache.js';
+import readKempoConfig from '../server/utils/extensions/readKempoConfig.js';
 
 const MIME_TYPES = {
   '.js': 'application/javascript',
@@ -223,21 +224,21 @@ export default config => {
     const extensions = await getEnabledExtensions();
 
     for(const ext of extensions){
-      let pkgPath, pkg;
+      const extRoot = join(NODE_MODULES, ext.name);
+      let kempo;
       try {
-        pkgPath = join(NODE_MODULES, ext.name, 'package.json');
-        pkg = JSON.parse(await readFile(pkgPath, 'utf-8'));
+        ({ kempo } = await readKempoConfig(extRoot));
       } catch {
         continue;
       }
 
-      const scope = pkg.kempo?.['public-scope'];
+      const scope = kempo['public-scope'];
       if(!scope) continue;
 
       const scopePrefix = `/${scope}`;
       if(url !== scopePrefix && !url.startsWith(`${scopePrefix}/`)) continue;
 
-      const publicDir = join(dirname(pkgPath), 'public');
+      const publicDir = join(extRoot, 'public');
       const subPath = url.slice(scopePrefix.length) || '/';
       const method = request.method?.toUpperCase() || 'GET';
       const resolveDir = buildResolveDir(PROJECT_PUBLIC, url);

@@ -1,4 +1,6 @@
 {
+  "public-scope": "lifecycle-fixture",
+  "docs": "https://example.test/lifecycle-fixture",
   "schema": "./server/db/schema.js",
   "hooks": {
     "lifecycle-fixture:ping": "./hooks/ping.js"

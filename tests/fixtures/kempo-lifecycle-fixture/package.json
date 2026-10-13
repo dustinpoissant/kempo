@@ -3,8 +3,5 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Throwaway extension used by tests/extension-lifecycle.node-test.js",
-  "kempo": {
-    "public-scope": "lifecycle-fixture"
-  }
+  "description": "Throwaway extension used by tests/extension-lifecycle.node-test.js"
 }

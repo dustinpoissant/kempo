@@ -32,6 +32,8 @@ const listDashboardWidgets = (await import(pathToFileURL(path.join(root, 'server
 
 const installExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/installExtension.js')).href)).default;
 const uninstallExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/uninstallExtension.js')).href)).default;
+const getExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/getExtension.js')).href)).default;
+const listExtensions = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/listExtensions.js')).href)).default;
 const enableExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/enableExtension.js')).href)).default;
 const disableExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/disableExtension.js')).href)).default;
 const { adminGlobalDirs, adminFragmentDirs } = await import(pathToFileURL(path.join(root, 'middleware/kempo.js')).href);
@@ -128,6 +130,17 @@ const buildTests = () => {
       */
       const widgets = await db.select().from(dashboardWidget).where(eq(dashboardWidget.owner, FIXTURE));
       if(widgets.length !== 1 || widgets[0].key !== 'ok') return fail(`expected only the valid widget to be registered, got ${JSON.stringify(widgets.map(w => w.key))}`);
+
+      /*
+        The fixture's package.json has no `kempo` field at all: its public scope and docs link are in
+        kempo-config.json. Both used to be read from package.json, which left the docs link empty for
+        every extension and put the scope in two places that could disagree.
+      */
+      const [, detail] = await getExtension({ name: FIXTURE });
+      if(detail?.docs !== 'https://example.test/lifecycle-fixture') return fail(`getExtension did not read docs from kempo-config.json, got ${JSON.stringify(detail?.docs)}`);
+      const [, listing] = await listExtensions({ limit: 200 });
+      if(listing?.items.find(item => item.name === FIXTURE)?.docs !== 'https://example.test/lifecycle-fixture') return fail('listExtensions did not read docs from kempo-config.json');
+      if(row.kempo?.['public-scope'] !== 'lifecycle-fixture') return fail(`the stored configuration has no public-scope, got ${JSON.stringify(row.kempo?.['public-scope'])}`);
 
       state.installed = true;
       pass();

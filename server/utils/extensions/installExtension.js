@@ -4,7 +4,6 @@ import { eq } from 'drizzle-orm';
 import { join } from 'path';
 import { pathToFileURL } from 'url';
 import { existsSync } from 'fs';
-import { readFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import triggerHook, { clearHandlerCache } from '../hooks/triggerHook.js';
 import createHook from '../hooks/createHook.js';
@@ -12,6 +11,7 @@ import registerDashboardWidget from '../dashboard/registerDashboardWidget.js';
 import setSetting from '../settings/setSetting.js';
 import declaredValue from '../settings/declaredValue.js';
 import createTablesFromSchema from './createTablesFromSchema.js';
+import readKempoConfig from './readKempoConfig.js';
 import { invalidateScopeCache } from './scopeCache.js';
 import { getUnmetDependencies } from './dependencies.js';
 
@@ -31,7 +31,6 @@ export default async ({ name }) => {
 
   const extRoot = join(process.cwd(), 'node_modules', name);
   const extPkgPath = join(extRoot, 'package.json');
-  const kempoConfigPath = join(extRoot, 'kempo-config.json');
 
   if(!existsSync(extPkgPath)){
     return [{ code: 404, msg: `Extension package "${name}" not found` }, null];
@@ -39,10 +38,7 @@ export default async ({ name }) => {
 
   let pkg, kempoConfig;
   try {
-    pkg = JSON.parse(await readFile(extPkgPath, 'utf-8'));
-    kempoConfig = existsSync(kempoConfigPath)
-      ? JSON.parse(await readFile(kempoConfigPath, 'utf-8'))
-      : {};
+    ({ pkg, kempo: kempoConfig } = await readKempoConfig(extRoot));
   } catch {
     return [{ code: 500, msg: `Failed to read extension package files` }, null];
   }

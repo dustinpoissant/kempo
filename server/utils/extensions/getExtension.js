@@ -2,7 +2,7 @@ import db from '../../db/index.js';
 import { extension } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { join } from 'path';
-import { readFile } from 'fs/promises';
+import readKempoConfig from './readKempoConfig.js';
 
 const NODE_MODULES = join(process.cwd(), 'node_modules');
 
@@ -18,15 +18,16 @@ export default async ({ name }) => {
     }
     const ext = results[0];
     let pkg = {};
+    let kempo = {};
     try {
-      pkg = JSON.parse(await readFile(join(NODE_MODULES, name, 'package.json'), 'utf-8'));
+      ({ pkg, kempo } = await readKempoConfig(join(NODE_MODULES, name)));
     } catch { /* package may not be installed */ }
     return [null, {
       ...ext,
       description: pkg.description || null,
       author: pkg.author || null,
       license: pkg.license || null,
-      docs: pkg.kempo?.docs || null,
+      docs: kempo.docs || null,
     }];
   } catch(error) {
     return [{ code: 500, msg: 'Failed to get extension' }, null];

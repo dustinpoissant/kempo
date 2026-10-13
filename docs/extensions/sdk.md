@@ -1700,7 +1700,7 @@ Deletes expired notifications and those last raised before the retention (`syste
 
 ## Dashboard
 
-Widgets on the admin dashboard. See [Admin Dashboard](../dashboard.md) for sizes, the declarative `kempo.widgets` form and how to write the element. All return `[error, result]`. Needs the `dashboardWidget` table (`npx drizzle-kit push` on an existing site); without it `listDashboardWidgets` still returns Kempo's own widgets.
+Widgets on the admin dashboard. See [Admin Dashboard](../dashboard.md) for sizes, the declarative `widgets` form in `kempo-config.json` and how to write the element. All return `[error, result]`. Needs the `dashboardWidget` table (`npx drizzle-kit push` on an existing site); without it `listDashboardWidgets` still returns Kempo's own widgets.
 
 ### `registerDashboardWidget({ owner, key, title, element, module, ...options })`
 

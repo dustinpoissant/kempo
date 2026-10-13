@@ -2,15 +2,16 @@ import db from '../../db/index.js';
 import { extension } from '../../db/schema.js';
 import { sql } from 'drizzle-orm';
 import { join } from 'path';
-import { readFile } from 'fs/promises';
+import readKempoConfig from './readKempoConfig.js';
 
 const NODE_MODULES = join(process.cwd(), 'node_modules');
 
-const readPkg = async (name) => {
+const readConfig = async name => {
   try {
-    const raw = await readFile(join(NODE_MODULES, name, 'package.json'), 'utf-8');
-    return JSON.parse(raw);
-  } catch { return {}; }
+    return await readKempoConfig(join(NODE_MODULES, name));
+  } catch {
+    return { pkg: {}, kempo: {} };
+  }
 };
 
 export default async ({ limit = 50, offset = 0 } = {}) => {
@@ -20,13 +21,13 @@ export default async ({ limit = 50, offset = 0 } = {}) => {
       db.select({ count: sql`count(*)` }).from(extension),
     ]);
     const enriched = await Promise.all(items.map(async (ext) => {
-      const pkg = await readPkg(ext.name);
+      const { pkg, kempo } = await readConfig(ext.name);
       return {
         ...ext,
         description: pkg.description || null,
         author: pkg.author || null,
         license: pkg.license || null,
-        docs: pkg.kempo?.docs || null,
+        docs: kempo.docs || null,
       };
     }));
     return [null, { items: enriched, total: Number(count), limit, offset }];

@@ -1,32 +1,38 @@
 # Creating Extensions
 
-Extensions are standard npm packages with a `kempo` config in their `package.json`. Kempo reads this config to automatically handle database tables, permissions, settings, groups, and event hooks when the extension is installed, updated, or uninstalled.
+Extensions are standard npm packages with a `kempo-config.json` file at their root. Kempo reads this config to automatically handle database tables, permissions, settings, groups, event hooks and dashboard widgets when the extension is installed, updated, or uninstalled. Nothing kempo reads goes in `package.json`.
 
 ## Minimal Extension
 
-The minimum required for a kempo extension is a `package.json` with a `kempo` object:
+The minimum required for a kempo extension is an ordinary `package.json` and a `kempo-config.json`:
 
 ```json
+// package.json
 {
   "name": "my-extension",
-  "version": "1.0.0",
-  "kempo": {}
+  "version": "1.0.0"
 }
 ```
 
-That's a valid (though empty) extension. Anything you declare in `kempo` is handled automatically by kempo core.
+```json
+// kempo-config.json
+{}
+```
+
+That's a valid (though empty) extension. Anything you declare in `kempo-config.json` is handled automatically by kempo core.
 
 ## Package Structure
 
 ```
 my-extension/
-├── package.json          # Required — declares the kempo config
+├── package.json          # Required — an ordinary npm package.json, with no kempo field
+├── kempo-config.json     # Required — declares everything kempo reads (see below)
 ├── install.js            # Optional — custom install logic
 ├── update.js             # Optional — custom migration logic
 ├── uninstall.js          # Optional — custom uninstall logic
 ├── server/
 │   └── db/
-│       └── schema.js     # Database tables (if kempo.schema is set)
+│       └── schema.js     # Database tables (if `schema` is set in kempo-config.json)
 ├── hooks/
 │   └── *.js              # Event hook handlers
 ├── admin/
@@ -39,36 +45,32 @@ my-extension/
     └── *.fragment.html   # Fragments offered to site pages
 ```
 
-## The `kempo` Config
+## The `kempo-config.json` File
 
-All extension capabilities are declared in the `kempo` field of `package.json`:
+All extension capabilities are declared in `kempo-config.json`. Older extensions put the same object in a `kempo` field of `package.json`; kempo still reads that as a fallback, field by field with `kempo-config.json` winning, but new extensions should not use it.
 
 ```json
 {
-  "name": "my-extension",
-  "version": "1.0.0",
-  "kempo": {
-    "git": "https://github.com/yourname/my-extension",
-    "public-scope": "my-ext",
-    "schema": "./server/db/schema.js",
-    "hooks": {
-      "page-created": "hooks/page-created.js"
-    },
-    "permissions": [
-      { "name": "my-ext:posts:create", "description": "Create posts" },
-      { "name": "my-ext:posts:delete", "description": "Delete posts" }
-    ],
-    "settings": [
-      { "name": "posts_per_page", "value": "10", "type": "number", "description": "Posts shown per page" }
-    ],
-    "groups": [
-      {
-        "name": "my-ext:Authors",
-        "description": "Users who can create posts",
-        "permissions": ["my-ext:posts:create"]
-      }
-    ]
-  }
+  "git": "https://github.com/yourname/my-extension",
+  "public-scope": "my-ext",
+  "schema": "./server/db/schema.js",
+  "hooks": {
+    "page-created": "hooks/page-created.js"
+  },
+  "permissions": [
+    { "name": "my-ext:posts:create", "description": "Create posts" },
+    { "name": "my-ext:posts:delete", "description": "Delete posts" }
+  ],
+  "settings": [
+    { "name": "posts_per_page", "value": "10", "type": "number", "description": "Posts shown per page" }
+  ],
+  "groups": [
+    {
+      "name": "my-ext:Authors",
+      "description": "Users who can create posts",
+      "permissions": ["my-ext:posts:create"]
+    }
+  ]
 }
 ```
 
@@ -88,7 +90,7 @@ All extension capabilities are declared in the `kempo` field of `package.json`:
 
 ## Database Tables
 
-Create a Drizzle schema file and point `kempo.schema` at it:
+Create a Drizzle schema file and point `schema` in `kempo-config.json` at it:
 
 ```javascript
 // server/db/schema.js
@@ -230,7 +232,7 @@ Site admins assign users to these groups through the admin panel.
 
 ## Hooks
 
-Hooks let your extension react to events in the CMS. Declare them in `kempo.hooks`:
+Hooks let your extension react to events in the CMS. Declare them in `hooks` in `kempo-config.json`:
 
 ```json
 "hooks": {
@@ -304,7 +306,7 @@ Install and enable both fail with a 409 while a declared dependency isn't instal
 
 ## Public Routes
 
-Set `kempo.public-scope` to a URL prefix. Files in your `public/` directory are served under that prefix:
+Set `public-scope` in `kempo-config.json` to a URL prefix. Files in your `public/` directory are served under that prefix:
 
 ```json
 "public-scope": "blog"
@@ -519,7 +521,7 @@ Kempo installs are idempotent by design — `CREATE TABLE IF NOT EXISTS` and `IN
 ### Never Delete User Data on Uninstall Without Warning
 
 When a user uninstalls your extension, they may want to keep their content. Consider either:
-- Leaving tables in place (not using `kempo.schema` for tables with user content), or
+- Leaving tables in place (not using `schema` for tables with user content), or
 - Documenting clearly that uninstalling will delete data
 
 The declarative `DROP TABLE IF EXISTS` on uninstall is appropriate for configuration/system tables but not for user-generated content tables.
@@ -563,12 +565,10 @@ Extensions are standard npm packages. Publish to npm:
 npm publish
 ```
 
-The `git` field in your `kempo` config enables update detection:
+The `git` field in your `kempo-config.json` enables update detection:
 
 ```json
-"kempo": {
-  "git": "https://github.com/yourname/my-extension"
-}
+"git": "https://github.com/yourname/my-extension"
 ```
 
 When users check for updates in the admin panel, kempo fetches the latest `package.json` from the `main` branch of this repository and compares the version. Only GitHub URLs are currently supported.
@@ -588,7 +588,7 @@ An extension can push live updates to browsers by declaring a channel in `kempo-
 
 Channels are closed by default: `permission` is required, and only users who hold it can subscribe. `persist` stores messages so a client that reconnects can catch up, and `retention` says how long they are kept. `scope` is `"cluster"` (default) or `"process"` for fast in-memory traffic that never touches the database. `onMessage` is a path inside your package to a handler that receives what browsers send to the channel and can reply. `dropIfBackedUp` skips deliveries to a client that is already behind. The channel is named `my-ext:status`, and you publish with `realtime.publish({ channel, data })` from the [Server SDK](sdk.md).
 
-Connections are observable through hooks, declared in `kempo.hooks` like any other: `realtime:connected`, `realtime:disconnected`, `realtime:subscribed`, `realtime:unsubscribed`, and the guard `realtime:before_subscribe`, which refuses a subscription when it throws `{ code, msg }`. Use hooks for lifecycle and `onMessage` for messages. See [Realtime](../realtime.md) for the full guide.
+Connections are observable through hooks, declared in `hooks` like any other: `realtime:connected`, `realtime:disconnected`, `realtime:subscribed`, `realtime:unsubscribed`, and the guard `realtime:before_subscribe`, which refuses a subscription when it throws `{ code, msg }`. Use hooks for lifecycle and `onMessage` for messages. See [Realtime](../realtime.md) for the full guide.
 
 ## Notifications
 
@@ -596,49 +596,47 @@ An extension can tell users about something that needs them, such as a failed ba
 
 ## Reference
 
-### Full `kempo` Config Schema
+### Full `kempo-config.json` Schema
 
 ```json
 {
-  "kempo": {
-    "git": "string — GitHub repo URL for update detection",
-    "public-scope": "string — URL prefix for public/ files",
-    "schema": "string — relative path to Drizzle schema file",
-    "hooks": {
-      "event-name": "string — relative path to handler file"
-    },
-    "dependencies": ["array of extension names — must be installed and enabled first"],
-    "permissions": [
-      {
-        "name": "string — owner:resource:action",
-        "description": "string"
-      }
-    ],
-    "settings": [
-      {
-        "name": "string — setting key (owner prefix added automatically)",
-        "value": "string — default value",
-        "type": "string | number | boolean | json | secret",
-        "description": "string"
-      }
-    ],
-    "groups": [
-      {
-        "name": "string — owner:GroupName",
-        "description": "string",
-        "permissions": ["array of permission names"]
-      }
-    ],
-    "realtime": {
-      "channels": [
-        {
-          "name": "string — channel name, becomes <extension-name>:<name>",
-          "permission": "string — required; the permission a user needs to subscribe",
-          "persist": "boolean — keep messages so clients can replay what they missed (default false)",
-          "retention": "string or number — how long persisted messages are kept, e.g. \"24h\" (default 24h)"
-        }
-      ]
+  "git": "string — GitHub repo URL for update detection",
+  "public-scope": "string — URL prefix for public/ files",
+  "schema": "string — relative path to Drizzle schema file",
+  "hooks": {
+    "event-name": "string — relative path to handler file"
+  },
+  "dependencies": ["array of extension names — must be installed and enabled first"],
+  "permissions": [
+    {
+      "name": "string — owner:resource:action",
+      "description": "string"
     }
+  ],
+  "settings": [
+    {
+      "name": "string — setting key (owner prefix added automatically)",
+      "value": "string — default value",
+      "type": "string | number | boolean | json | secret",
+      "description": "string"
+    }
+  ],
+  "groups": [
+    {
+      "name": "string — owner:GroupName",
+      "description": "string",
+      "permissions": ["array of permission names"]
+    }
+  ],
+  "realtime": {
+    "channels": [
+      {
+        "name": "string — channel name, becomes <extension-name>:<name>",
+        "permission": "string — required; the permission a user needs to subscribe",
+        "persist": "boolean — keep messages so clients can replay what they missed (default false)",
+        "retention": "string or number — how long persisted messages are kept, e.g. \"24h\" (default 24h)"
+      }
+    ]
   }
 }
 ```
@@ -647,11 +645,11 @@ An extension can tell users about something that needs them, such as a failed ba
 
 **Install:**
 1. Check `kempo.dependencies` — fails with 409 if any named extension isn't installed and enabled
-2. `CREATE TABLE IF NOT EXISTS` for each table in `kempo.schema`
+2. `CREATE TABLE IF NOT EXISTS` for each table in `schema`
 3. Create permissions from `kempo.permissions`
 4. Create settings from `kempo.settings`
 5. Create groups from `kempo.groups` and assign their permissions
-6. Register hooks from `kempo.hooks`
+6. Register hooks from `hooks`
 7. Run `install.js` (custom logic)
 8. Save `kempo` config snapshot to DB
 
@@ -676,5 +674,5 @@ An extension can tell users about something that needs them, such as a failed ba
 4. Delete permissions from `kempo.permissions`
 5. Delete settings from `kempo.settings`
 6. Delete groups from `kempo.groups`
-7. `DROP TABLE IF EXISTS` for each table in `kempo.schema`
+7. `DROP TABLE IF EXISTS` for each table in `schema`
 8. Delete extension DB record

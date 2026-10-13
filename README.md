@@ -359,7 +359,7 @@ Extensions can push live updates to browsers: declare a channel, publish to it f
 
 ## Admin Dashboard
 
-The admin home page is a grid of widgets one to four blocks wide and one to three tall. Kempo provides widgets for pages, content, users, notifications and extensions; extensions add their own with `kempo.widgets` or `registerDashboardWidget`. Each person chooses which are shown, their order and size, kept in their browser's localStorage, and a widget only loads its script and data once it is shown. Existing sites need `npx drizzle-kit push` to add the `dashboardWidget` table (until then only Kempo's own widgets appear). See [docs/dashboard.md](docs/dashboard.md).
+The admin home page is a grid of widgets one to four blocks wide and one to three tall. Kempo provides widgets for pages, content, users, notifications and extensions; extensions add their own with `widgets` in `kempo-config.json` or `registerDashboardWidget`. Each person chooses which are shown, their order and size, kept in their browser's localStorage, and a widget only loads its script and data once it is shown. Existing sites need `npx drizzle-kit push` to add the `dashboardWidget` table (until then only Kempo's own widgets appear). See [docs/dashboard.md](docs/dashboard.md).
 
 ## Notifications
 

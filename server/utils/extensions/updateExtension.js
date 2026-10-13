@@ -3,7 +3,6 @@ import { extension, hook, permission, group, groupPermission } from '../../db/sc
 import { eq, and } from 'drizzle-orm';
 import { createRequire } from 'module';
 import { dirname, join } from 'path';
-import { readFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
 import { execSync } from 'child_process';
 import triggerHook, { clearHandlerCache } from '../hooks/triggerHook.js';
@@ -13,6 +12,7 @@ import unregisterDashboardWidget from '../dashboard/unregisterDashboardWidget.js
 import setSetting from '../settings/setSetting.js';
 import declaredValue from '../settings/declaredValue.js';
 import createTablesFromSchema from './createTablesFromSchema.js';
+import readKempoConfig from './readKempoConfig.js';
 
 const requireFromProject = createRequire(join(process.cwd(), 'package.json'));
 
@@ -43,16 +43,18 @@ export default async ({ name, version = 'latest' }) => {
     return [{ code: 500, msg: `Failed to update package: ${error.message}` }, null];
   }
 
-  let pkgPath, extRoot, pkg;
+  /*
+    What the new version declares comes from its kempo-config.json (package.json's own `kempo` field is
+    only the fallback for an older extension). Reading package.json alone meant that no extension's new
+    permissions, settings, groups, hooks or widgets ever reached the database through this update.
+  */
+  let extRoot, pkg, newKempo;
   try {
-    pkgPath = requireFromProject.resolve(`${name}/package.json`);
-    extRoot = dirname(pkgPath);
-    pkg = JSON.parse(await readFile(pkgPath, 'utf-8'));
+    extRoot = dirname(requireFromProject.resolve(`${name}/package.json`));
+    ({ pkg, kempo: newKempo } = await readKempoConfig(extRoot));
   } catch {
     return [{ code: 404, msg: `Updated package "${name}" not found` }, null];
   }
-
-  const newKempo = pkg.kempo || {};
 
   /*
     Create any new tables from schema
