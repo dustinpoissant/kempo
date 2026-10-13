@@ -18,7 +18,43 @@ if(existsSync(appSchemaPath) && realpathSync(appSchemaPath) !== realpathSync(fra
   appSchema = await import(pathToFileURL(appSchemaPath).href);
 }
 
-const client = postgres(process.env.DATABASE_URL);
-const db = drizzle(client, { schema: { ...frameworkSchema, ...appSchema } });
+const schema = { ...frameworkSchema, ...appSchema };
+
+let db;
+
+/*
+  KEMPO_DB=pglite swaps the server for an in-process, in-memory Postgres (PGlite) with the schema
+  applied, so the unit tier needs no service and cannot skip for want of one. It is real Postgres
+  (jsonb, partial indexes, ON CONFLICT, triggers), not a mock. Nothing outside tests sets it, and
+  PGlite is a dev dependency that is only imported on this branch.
+*/
+if(process.env.KEMPO_DB === 'pglite'){
+  const [{ PGlite }, { drizzle: drizzlePglite }, { generateDrizzleJson, generateMigration }] = await Promise.all([
+    import('@electric-sql/pglite'),
+    import('drizzle-orm/pglite'),
+    import('drizzle-kit/api')
+  ]);
+  const client = new PGlite();
+  db = drizzlePglite(client, { schema });
+
+  /*
+    The database is empty, so the whole schema is the diff from nothing. This is drizzle-kit's own
+    generator, so indexes, unique constraints and foreign keys match `drizzle-kit push` exactly.
+  */
+  const statements = await generateMigration(generateDrizzleJson({}), generateDrizzleJson(schema));
+  await client.exec(statements.join('\n'));
+
+  /*
+    postgres-js answers db.execute() with an array of rows and PGlite with `{ rows }`. Make PGlite look
+    like postgres-js (keeping `.rows`) so code and tests that read a raw result work on either.
+  */
+  const execute = db.execute.bind(db);
+  db.execute = async query => {
+    const result = await execute(query);
+    return Object.assign([...result.rows], { rows: result.rows });
+  };
+} else {
+  db = drizzle(postgres(process.env.DATABASE_URL), { schema });
+}
 
 export default db;

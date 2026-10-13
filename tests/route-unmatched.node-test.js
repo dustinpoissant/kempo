@@ -3,6 +3,7 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { sql, eq } from 'drizzle-orm';
+import { reachable } from './helpers/db.js';
 
 /*
   Covers the `route:unmatched` draft chain that answers requests nothing else claimed.
@@ -27,7 +28,7 @@ const { hook } = await import(pathToFileURL(path.join(root, 'server/db/schema.js
 const serveUnmatched = (await import(pathToFileURL(path.join(root, 'server/utils/routing/serveUnmatched.js')).href)).default;
 const { clearHandlerCache } = await import(pathToFileURL(path.join(root, 'server/utils/hooks/triggerHook.js')).href);
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
 
 const skipped = reason => ({
   'route:unmatched (SKIPPED)': async ({ pass }) => pass(`skipped: ${reason}`),

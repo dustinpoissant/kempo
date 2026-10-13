@@ -1,8 +1,8 @@
 import path from 'path';
-import { execFileSync } from 'child_process';
 import { existsSync } from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { sql, eq, inArray } from 'drizzle-orm';
+import { reachable, seedDatabase } from './helpers/db.js';
 
 /*
   The admin dashboard: what a widget definition may be, how Kempo's own widgets are defined, how the
@@ -26,7 +26,7 @@ const sdk = await load('server/sdk.js');
 const addPermissionToGroup = (await load('server/utils/permissions/addPermissionToGroup.js')).default;
 const { registerDashboardWidget, unregisterDashboardWidget, listDashboardWidgets, disableExtension, enableExtension, uninstallExtension, createUser, createGroup, createPermission, addUserToGroup } = sdk;
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
 
 const expect = (condition, message) => {
   if(!condition) throw new Error(message);
@@ -230,11 +230,7 @@ const database = {
       Permission checks need the system groups, which a fresh database does not have until init-db runs.
       Other suites seed them, but this one cannot rely on running after them.
     */
-    try {
-      execFileSync(process.execPath, [path.join(root, 'scripts', 'init-db.js')], { cwd: root, stdio: 'ignore' });
-    } catch(e) {
-      throw new Error(`could not seed system groups and permissions: ${e.message}`);
-    }
+    await seedDatabase();
 
     await createPermission({ resource: 'thing', action: 'see', description: 'test', owner: OWNER });
     await createGroup({ name: GROUP, description: 'test', owner: OWNER });

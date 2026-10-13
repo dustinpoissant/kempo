@@ -1,8 +1,8 @@
 import path from 'path';
-import { execFileSync } from 'child_process';
 import { writeFile, readFile, mkdir, rm } from 'fs/promises';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { sql, eq, inArray } from 'drizzle-orm';
+import { reachable, seedDatabase } from './helpers/db.js';
 
 /*
   The notification SDK against a real database: who receives what, how read, handled and dismissed state
@@ -23,7 +23,7 @@ const addPermissionToGroup = (await load('server/utils/permissions/addPermission
 const { createUser, createGroup, createPermission, addUserToGroup, removeUserFromGroup, createHook, deleteUser } = sdk;
 const { createNotification, getNotifications, getUnreadCount, markRead, markAllRead, markHandled, deleteNotification, pruneNotifications } = sdk;
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
 
 const expect = (condition, message) => {
   if(!condition) throw new Error(message);
@@ -83,11 +83,7 @@ const buildTests = () => ({
     await rm(state.tmp, { recursive: true, force: true }).catch(() => {});
     await mkdir(state.tmp, { recursive: true });
 
-    try {
-      execFileSync(process.execPath, [path.join(root, 'scripts', 'init-db.js')], { cwd: root, stdio: 'ignore' });
-    } catch(e) {
-      throw new Error(`could not seed system groups and permissions: ${e.message}`);
-    }
+    await seedDatabase();
 
     for(const name of ['alice', 'bob', 'carol', 'dave', 'admin']){
       const [error, created] = await createUser({ name, email: `notif-sdk-${name}@test.local`, password: 'NotifSdk123!', emailVerified: true });

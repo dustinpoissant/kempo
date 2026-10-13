@@ -3,6 +3,7 @@ import { writeFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { sql, eq } from 'drizzle-orm';
+import { reachable, integrationOnly, unitTier } from './helpers/db.js';
 
 /*
   Drives a real server over HTTP and asserts who is allowed to reach what.
@@ -24,7 +25,7 @@ const { user, userGroup, session } = await import(pathToFileURL(path.join(root, 
 const createUser = (await import(pathToFileURL(path.join(root, 'server/utils/users/createUser.js')).href)).default;
 const addUserToGroup = (await import(pathToFileURL(path.join(root, 'server/utils/groups/addUserToGroup.js')).href)).default;
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
 
 const ADMIN = { name: 'Contract Admin', email: 'contract-admin@test.local', password: 'ContractAdmin123!' };
 const MEMBER = { name: 'Contract Member', email: 'contract-member@test.local', password: 'ContractMember123!' };
@@ -298,6 +299,8 @@ const buildTests = () => ({
   },
 });
 
-export default databaseReachable
-  ? buildTests()
-  : skipped('no reachable database — set DATABASE_URL to a Postgres with kempo\'s schema applied (npx drizzle-kit push)');
+export default unitTier
+  ? integrationOnly('http contract')
+  : databaseReachable
+    ? buildTests()
+    : { 'http contract (SKIPPED)': async ({ pass }) => pass('skipped: no reachable database, set DATABASE_URL') };

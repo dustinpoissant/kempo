@@ -11,14 +11,35 @@ on:
       - master
 
 jobs:
-  # kempo-server and kempo-ui resolve from the registry, which is what a consumer installing this
-  # package gets. This is the gate that has to stay green.
-  published:
+  # Unit tier: an in-process, in-memory Postgres (PGlite), so there is no service to start and a
+  # database suite cannot skip for want of one. kempo-server and kempo-ui resolve from the registry,
+  # which is what a consumer installing this package gets. This is the fast gate.
+  unit:
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # RESEND_API_KEY is deliberately unset: the Resend client is constructed on first send, so the
+      # module graph must load without it configured.
+      - name: Run unit tests
+        run: npm test
+
+  # Integration tier: a real Postgres, for the suites that boot a second server process or need
+  # LISTEN/NOTIFY across connections. An unreachable database fails this tier rather than skipping.
+  integration:
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
     runs-on: ubuntu-latest
     services:
-      # The extension lifecycle suite needs a real database; it skips itself when none is reachable,
-      # so this is what makes it actually run rather than silently pass.
       postgres:
         image: postgres:16-alpine
         env:
@@ -49,10 +70,8 @@ jobs:
       - name: Apply database schema
         run: npx drizzle-kit push --force
 
-      # RESEND_API_KEY is deliberately unset: the Resend client is constructed on first send, so the
-      # module graph must load without it configured.
-      - name: Run Unit Tests
-        run: npm test
+      - name: Run integration tests
+        run: npm run test:integration
 
   # Same suite against the sibling checkouts rather than the last release, which is where the two
   # packages break each other. Advisory: a red run here means kempo and kempo-server have diverged
@@ -114,6 +133,10 @@ jobs:
         run: npx drizzle-kit push --force
         working-directory: kempo
 
-      - name: Run Unit Tests
+      - name: Run unit tests
         run: npm test
+        working-directory: kempo
+
+      - name: Run integration tests
+        run: npm run test:integration
         working-directory: kempo

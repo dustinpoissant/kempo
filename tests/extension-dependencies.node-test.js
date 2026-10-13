@@ -2,6 +2,7 @@ import { symlink, rm } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { sql, eq } from 'drizzle-orm';
+import { reachable } from './helpers/db.js';
 
 /*
   Exercises kempo.dependencies across install, enable, disable and uninstall using two fixtures:
@@ -28,7 +29,7 @@ const enableExtension = (await import(pathToFileURL(path.join(root, 'server/util
 const disableExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/disableExtension.js')).href)).default;
 const { invalidateScopeCache } = await import(pathToFileURL(path.join(root, 'server/utils/extensions/scopeCache.js')).href);
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
 
 const skipped = reason => ({
   'extension dependencies (SKIPPED)': async ({ pass }) => pass(`skipped: ${reason}`),

@@ -1,8 +1,9 @@
-import { spawn, execFileSync } from 'child_process';
+import { spawn } from 'child_process';
 import { writeFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { sql, eq } from 'drizzle-orm';
+import { reachable, seedDatabase, integrationOnly, unitTier } from './helpers/db.js';
 
 /*
   The notification routes over real HTTP: a real kempo-server process, kempo's real middleware, the built
@@ -25,7 +26,7 @@ const createUser = (await load('server/utils/users/createUser.js')).default;
 const addUserToGroup = (await load('server/utils/groups/addUserToGroup.js')).default;
 const createNotification = (await load('server/utils/notifications/createNotification.js')).default;
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
 
 const expect = (condition, message) => {
   if(!condition) throw new Error(message);
@@ -100,11 +101,7 @@ const buildTests = () => ({
   'a server boots and the fixture users can sign in': async ({ pass }) => {
     await purge();
 
-    try {
-      execFileSync(process.execPath, [path.join(root, 'scripts', 'init-db.js')], { cwd: root, stdio: 'ignore' });
-    } catch(e) {
-      throw new Error(`could not seed system groups and permissions: ${e.message}`);
-    }
+    await seedDatabase();
 
     for(const [key, account] of [['admin', ADMIN], ['member', MEMBER], ['other', OTHER]]){
       const [error, created] = await createUser({ ...account, emailVerified: true });
@@ -281,6 +278,8 @@ export const afterAll = async () => {
   if(databaseReachable) await purge();
 };
 
-export default databaseReachable
-  ? buildTests()
-  : { 'notifications http (SKIPPED)': async ({ pass }) => pass('skipped: no reachable database, set DATABASE_URL to a Postgres with kempo\'s schema applied') };
+export default unitTier
+  ? integrationOnly('notifications http')
+  : databaseReachable
+    ? buildTests()
+    : { 'notifications http (SKIPPED)': async ({ pass }) => pass('skipped: no reachable database, set DATABASE_URL') };

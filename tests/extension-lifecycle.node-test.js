@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { readFile } from 'fs/promises';
 import { sql, eq, like } from 'drizzle-orm';
+import { reachable } from './helpers/db.js';
 
 /*
   Exercises an extension through install → disable → enable → uninstall against a real database.
@@ -39,7 +40,7 @@ const { renderExternalPage } = await import('kempo-server/templating');
 const { invalidateScopeCache } = await import(pathToFileURL(path.join(root, 'server/utils/extensions/scopeCache.js')).href);
 const getSetting = (await import(pathToFileURL(path.join(root, 'server/utils/settings/getSetting.js')).href)).default;
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
 
 const skipped = reason => ({
   'extension lifecycle (SKIPPED)': async ({ pass }) => pass(`skipped: ${reason}`),

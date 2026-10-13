@@ -1,10 +1,11 @@
 import http from 'http';
 import crypto from 'crypto';
-import { spawn, execFileSync } from 'child_process';
+import { spawn } from 'child_process';
 import { writeFile, mkdir, rm, readFile } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { sql, eq } from 'drizzle-orm';
+import { reachable, seedDatabase, integrationOnly, unitTier } from './helpers/db.js';
 
 /*
   The realtime socket end to end: a real kempo-server process, kempo's real middleware, the built dist
@@ -37,7 +38,7 @@ const publish = (await load('server/utils/realtime/publish.js')).default;
 const createHook = (await load('server/utils/hooks/createHook.js')).default;
 const { connect } = await load('src/kempo/realtime.js');
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
 
 const expect = (condition, message) => {
   if(!condition) throw new Error(message);
@@ -187,11 +188,7 @@ const buildTests = () => ({
   'a server boots with the built realtime route and the fixture users can sign in': async ({ pass }) => {
     await purge();
 
-    try {
-      execFileSync(process.execPath, [path.join(root, 'scripts', 'init-db.js')], { cwd: root, stdio: 'ignore' });
-    } catch(e) {
-      throw new Error(`could not seed system groups and permissions: ${e.message}`);
-    }
+    await seedDatabase();
 
     const [adminError, admin] = await createUser({ ...ADMIN, emailVerified: true });
     expect(!adminError, `could not create the admin: ${adminError?.msg}`);
@@ -619,6 +616,8 @@ export const afterAll = async () => {
   if(databaseReachable) await purge();
 };
 
-export default databaseReachable
-  ? buildTests()
-  : { 'realtime http (SKIPPED)': async ({ pass }) => pass('skipped: no reachable database, set DATABASE_URL to a Postgres with kempo\'s schema applied') };
+export default unitTier
+  ? integrationOnly('realtime http')
+  : databaseReachable
+    ? buildTests()
+    : { 'realtime http (SKIPPED)': async ({ pass }) => pass('skipped: no reachable database, set DATABASE_URL') };

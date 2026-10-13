@@ -1,10 +1,11 @@
 import net from 'net';
 import crypto from 'crypto';
-import { spawn, execFileSync } from 'child_process';
+import { spawn } from 'child_process';
 import { writeFile, mkdir, rm } from 'fs/promises';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { sql, eq } from 'drizzle-orm';
+import { reachable, seedDatabase, integrationOnly, unitTier } from './helpers/db.js';
 
 /*
   How much a single kempo process can carry, measured rather than assumed.
@@ -34,7 +35,7 @@ const createPermission = (await load('server/utils/permissions/createPermission.
 const addPermissionToGroup = (await load('server/utils/permissions/addPermissionToGroup.js')).default;
 const addUserToGroup = (await load('server/utils/groups/addUserToGroup.js')).default;
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
 
 const expect = (condition, message) => {
   if(!condition) throw new Error(message);
@@ -145,11 +146,7 @@ const buildTests = () => ({
   'twenty clients at twenty messages a second: nothing is lost and latency stays low': async ({ pass, log }) => {
     await purge();
 
-    try {
-      execFileSync(process.execPath, [path.join(root, 'scripts', 'init-db.js')], { cwd: root, stdio: 'ignore' });
-    } catch(e) {
-      throw new Error(`could not seed system groups and permissions: ${e.message}`);
-    }
+    await seedDatabase();
 
     const [playerError, player] = await createUser({ ...PLAYER, emailVerified: true });
     expect(!playerError, `could not create the player: ${playerError?.msg}`);
@@ -337,6 +334,8 @@ export const afterAll = async () => {
   if(databaseReachable) await purge();
 };
 
-export default databaseReachable
-  ? buildTests()
-  : { 'realtime capacity (SKIPPED)': async ({ pass }) => pass('skipped: no reachable database, set DATABASE_URL to a Postgres with kempo\'s schema applied') };
+export default unitTier
+  ? integrationOnly('realtime capacity')
+  : databaseReachable
+    ? buildTests()
+    : { 'realtime capacity (SKIPPED)': async ({ pass }) => pass('skipped: no reachable database, set DATABASE_URL') };

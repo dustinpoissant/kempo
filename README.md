@@ -430,17 +430,28 @@ To edit the admin portal without rebuilding on every change, point the middlewar
 
 ### Running the tests
 
-Most of the suite needs nothing, but the extension-lifecycle and HTTP-contract tests drive a real database and skip themselves when none is reachable. To run everything:
+There are two tiers, and `npm test` needs nothing installed or running:
+
+```bash
+npm test                  # unit tier: no database service, nothing to start
+npm run test:integration  # integration tier: a real Postgres
+```
+
+**Unit tier.** The suites that use the database run against [PGlite](https://pglite.dev), real Postgres compiled to WebAssembly and running inside the test process (`KEMPO_DB=pglite`, set for you). It is not a mock: indexes, `ON CONFLICT`, jsonb, foreign keys and the system-protection triggers all behave as in production, and the schema is generated from the same Drizzle definitions. It starts in about a second and cannot be unreachable, so a database suite can never skip and read as a pass.
+
+**Integration tier.** The suites that boot a second server process, drive the make-admin script as a child, or use `LISTEN`/`NOTIFY` across connections cannot share an in-memory database, so they need a real Postgres. They show up in the unit tier as `(integration tier)` entries. Here an unreachable database is an error, not a skip:
 
 ```bash
 docker compose up -d                 # postgres on 5434, separate from kempo-demo's on 5433
 npx drizzle-kit push --force         # apply the schema
-npm test
+DATABASE_URL=postgresql://kempo:kempo_test_password@localhost:5434/kempo_test npm run test:integration
 ```
 
-`.env.example` has the matching `DATABASE_URL`. The suite seeds its own groups and permissions, and cleans up the rows it creates.
+`.env.example` has the matching `DATABASE_URL`. The suites seed their own groups and permissions (`server/utils/setup/seedDatabase.js`) and clean up the rows they create. CI runs the unit tier on every push with no service, the integration tier alongside it, and publishing is gated on both.
 
-`npm test` (`kempo-test -n`) only runs the Node-side suite. Admin components that need a real DOM run in an actual browser via `npm run test:browser` — no database or running server required, since it exercises the real component/SDK code with only `window.fetch` intercepted for canned responses. It temporarily junctions `/kempo-ui`, `/kempo-css` and `/kempo` onto `node_modules`/`dist` at the project root so the admin bundle's absolute imports resolve against kempo-testing-framework's static test server, and removes them afterward regardless of pass/fail.
+Both tiers run only the Node-side suite. Admin components that need a real DOM run in an actual browser via `npm run test:browser` — no database or running server required, since it exercises the real component/SDK code with only `window.fetch` intercepted for canned responses. It temporarily junctions `/kempo-ui`, `/kempo-css` and `/kempo` onto `node_modules`/`dist` at the project root so the admin bundle's absolute imports resolve against kempo-testing-framework's static test server, and removes them afterward regardless of pass/fail.
+
+A test that needs the database imports `./helpers/db.js` (`reachable`, `seedDatabase`, `integrationOnly`). Put a suite in the integration tier by exporting `integrationOnly('name')` when `unitTier` is true.
 
 ### Building for Distribution
 

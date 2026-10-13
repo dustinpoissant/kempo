@@ -4,6 +4,7 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { sql, eq } from 'drizzle-orm';
+import { reachable, seedDatabase, integrationOnly, unitTier } from './helpers/db.js';
 
 /*
   Covers the first-run setup flow: it creates the first administrator exactly once, and deletes the
@@ -24,7 +25,13 @@ const hasAdmin = await load('server/utils/setup/hasAdmin.js');
 const removeSetupFiles = await load('server/utils/setup/removeSetupFiles.js');
 const createUser = await load('server/utils/users/createUser.js');
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
+
+/*
+  The system groups must exist for an admin to be made one. Seed them here rather than relying on an
+  earlier suite having done it.
+*/
+if(databaseReachable) await seedDatabase();
 
 const skipped = reason => ({
   'setup (SKIPPED)': async ({ pass }) => pass(`skipped: ${reason}`),
@@ -153,4 +160,16 @@ const tests = {
   },
 };
 
-export default databaseReachable ? tests : { ...noDatabaseTests, ...skipped('no reachable database') };
+/*
+  The make-admin script is run as a child process, the way a developer would. A child cannot reach the
+  unit tier's in-memory database, so that one test belongs to the integration tier; the rest call the
+  same functions in-process and stay in the unit tier.
+*/
+const { 'makeAdmin deletes the setup page and api, and leaves the project without them': makeAdminScript, ...inProcess } = tests;
+
+export default !databaseReachable
+  ? { ...noDatabaseTests, ...skipped('no reachable database') }
+  : unitTier
+    ? { ...inProcess, ...integrationOnly('setup: the make-admin script') }
+    : tests;
+

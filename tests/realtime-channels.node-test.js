@@ -11,6 +11,7 @@ import parseDuration from '../server/utils/realtime/duration.js';
 import { mkdir, writeFile, rm } from 'fs/promises';
 import path from 'path';
 import { registerChannel, unregisterChannel, resolveChannel, authorizeSubscription, loadMessageHandler, clearMessageHandlerCache } from '../server/utils/realtime/channels.js';
+import { reachable } from './helpers/db.js';
 
 /*
   Channel registration, resolution and authorization.
@@ -24,7 +25,7 @@ const expect = (condition, message) => {
   if(!condition) throw new Error(message);
 };
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
 
 const OWNER = 'realtime-channels-test';
 const registered = [];

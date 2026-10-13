@@ -24,9 +24,8 @@ jobs:
     permissions:
       contents: write
       id-token: write
-    # The database-backed suites skip themselves when no database is reachable, which reads as a pass.
-    # Publishing used to run without one, so a release could go out while the test workflow was red.
-    # This is the same service and schema the test workflow uses, so the two gates agree.
+    # Publishing is gated on both test tiers, so a release cannot go out while the test workflow is
+    # red. The integration tier needs the same Postgres service and schema the test workflow uses.
     services:
       postgres:
         image: postgres:16-alpine
@@ -66,8 +65,11 @@ jobs:
       - name: Apply database schema
         run: npx drizzle-kit push --force
 
-      - name: Run Unit Tests
+      - name: Run unit tests
         run: npm test
+
+      - name: Run integration tests
+        run: npm run test:integration
 
       - name: Bump version and push
         id: bump

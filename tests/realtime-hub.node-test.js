@@ -21,6 +21,7 @@ import publish from '../server/utils/realtime/publish.js';
 import pruneMessages from '../server/utils/realtime/pruneMessages.js';
 import { registerChannel, unregisterChannel, clearMessageHandlerCache } from '../server/utils/realtime/channels.js';
 import { BUS_CHANNEL } from '../server/utils/realtime/constants.js';
+import { reachable, integrationOnly, unitTier } from './helpers/db.js';
 
 /*
   The realtime hub against a real Postgres.
@@ -37,7 +38,7 @@ const expect = (condition, message) => {
   if(!condition) throw new Error(message);
 };
 
-const databaseReachable = await db.execute(sql`select 1`).then(() => true).catch(() => false);
+const databaseReachable = await reachable(db);
 
 const OWNER = 'realtime-hub-test';
 const USER_EMAIL = 'realtime-hub-user@test.local';
@@ -1036,6 +1037,8 @@ const tests = () => ({
   }
 });
 
-export default databaseReachable
-  ? tests()
-  : { 'realtime hub (SKIPPED)': async ({ pass }) => pass('skipped: no reachable database, set DATABASE_URL to a Postgres with kempo\'s schema applied') };
+export default unitTier
+  ? integrationOnly('realtime hub')
+  : databaseReachable
+    ? tests()
+    : { 'realtime hub (SKIPPED)': async ({ pass }) => pass('skipped: no reachable database, set DATABASE_URL') };
