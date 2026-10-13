@@ -20,7 +20,15 @@ if(existsSync(appSchemaPath) && realpathSync(appSchemaPath) !== realpathSync(fra
 
 const schema = { ...frameworkSchema, ...appSchema };
 
-let db;
+/*
+  One database per process, whatever URL this module was loaded under. On Windows `c:\x` and `C:\x`
+  are different module URLs, so the same file can be evaluated twice (a test preload and a test file,
+  say), and the second evaluation would otherwise open a second connection, or boot a second in-memory
+  database that the first one's data is not in.
+*/
+const SINGLETON = Symbol.for('kempo.database');
+
+let db = globalThis[SINGLETON];
 
 /*
   KEMPO_DB=pglite swaps the server for an in-process, in-memory Postgres (PGlite) with the schema
@@ -28,7 +36,9 @@ let db;
   (jsonb, partial indexes, ON CONFLICT, triggers), not a mock. Nothing outside tests sets it, and
   PGlite is a dev dependency that is only imported on this branch.
 */
-if(process.env.KEMPO_DB === 'pglite'){
+if(db){
+  // already created by an earlier evaluation of this module
+} else if(process.env.KEMPO_DB === 'pglite'){
   const [{ PGlite }, { drizzle: drizzlePglite }, { generateDrizzleJson, generateMigration }] = await Promise.all([
     import('@electric-sql/pglite'),
     import('drizzle-orm/pglite'),
@@ -70,5 +80,7 @@ if(process.env.KEMPO_DB === 'pglite'){
 } else {
   db = drizzle(postgres(process.env.DATABASE_URL), { schema });
 }
+
+globalThis[SINGLETON] = db;
 
 export default db;
