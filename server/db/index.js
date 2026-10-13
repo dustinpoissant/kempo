@@ -34,6 +34,20 @@ if(process.env.KEMPO_DB === 'pglite'){
     import('drizzle-orm/pglite'),
     import('drizzle-kit/api')
   ]);
+  /*
+    A project's drizzle.config.js lists every schema its database holds (its own, kempo's and any
+    extensions it sits on), because `drizzle-kit push` needs the same list. Use it, so the in-memory
+    database is exactly what a push would have made.
+  */
+  const configPath = join(process.cwd(), 'drizzle.config.js');
+  if(existsSync(configPath)){
+    const { default: config } = await import(pathToFileURL(configPath).href);
+    for(const entry of [config?.schema].flat().filter(Boolean)){
+      const file = join(process.cwd(), entry);
+      if(existsSync(file)) Object.assign(schema, await import(pathToFileURL(realpathSync(file)).href));
+    }
+  }
+
   const client = new PGlite();
   db = drizzlePglite(client, { schema });
 
