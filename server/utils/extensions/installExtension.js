@@ -124,12 +124,14 @@ export default async ({ name }) => {
   }
 
   /*
-    Register declarative dashboard widgets
+    Register declarative dashboard widgets. A widget is decoration, so one that cannot be registered (an
+    invalid definition, or a site that has not applied the dashboardWidget table yet) is reported and
+    skipped rather than failing the install of an otherwise working extension.
   */
   for(const widget of kempoConfig.widgets || []){
     const [widgetError] = await registerDashboardWidget({ ...widget, owner: name });
     if(widgetError){
-      return [{ code: widgetError.code, msg: `Invalid dashboard widget "${widget.key}": ${widgetError.msg}` }, null];
+      console.warn(`[${name}] dashboard widget "${widget.key}" was not registered: ${widgetError.msg}`);
     }
   }
 

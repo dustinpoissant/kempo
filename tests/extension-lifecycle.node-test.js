@@ -26,7 +26,8 @@ const fixtureLink = path.join(root, 'node_modules', FIXTURE);
 
 const db = (await import(pathToFileURL(path.join(root, 'server/db/index.js')).href)).default;
 const schema = await import(pathToFileURL(path.join(root, 'server/db/schema.js')).href);
-const { extension, hook, permission, group, groupPermission, setting } = schema;
+const { extension, hook, permission, group, groupPermission, setting, dashboardWidget } = schema;
+const listDashboardWidgets = (await import(pathToFileURL(path.join(root, 'server/utils/dashboard/listDashboardWidgets.js')).href)).default;
 
 const installExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/installExtension.js')).href)).default;
 const uninstallExtension = (await import(pathToFileURL(path.join(root, 'server/utils/extensions/uninstallExtension.js')).href)).default;
@@ -53,6 +54,7 @@ const purgeFixture = async () => {
   await db.delete(permission).where(eq(permission.owner, FIXTURE)).catch(() => {});
   await db.delete(setting).where(like(setting.name, `${FIXTURE}:%`)).catch(() => {});
   await db.delete(hook).where(eq(hook.owner, FIXTURE)).catch(() => {});
+  await db.delete(dashboardWidget).where(eq(dashboardWidget.owner, FIXTURE)).catch(() => {});
   await db.delete(extension).where(eq(extension.name, FIXTURE)).catch(() => {});
   await db.execute(sql`DROP TABLE IF EXISTS "lifecycleFixtureItem" CASCADE`).catch(() => {});
 };
@@ -118,6 +120,13 @@ const buildTests = () => {
       if(hooks.length !== 1) return fail(`expected 1 registered hook, got ${hooks.length}`);
 
       if(!await tableExists('lifecycleFixtureItem')) return fail('declared schema table was not created');
+
+      /*
+        The fixture declares one good widget and one the dashboard refuses. A widget is decoration, so the
+        bad one must be skipped without failing the install, and the good one registered.
+      */
+      const widgets = await db.select().from(dashboardWidget).where(eq(dashboardWidget.owner, FIXTURE));
+      if(widgets.length !== 1 || widgets[0].key !== 'ok') return fail(`expected only the valid widget to be registered, got ${JSON.stringify(widgets.map(w => w.key))}`);
 
       state.installed = true;
       pass();
@@ -225,6 +234,11 @@ const buildTests = () => {
 
       const [row] = await db.select().from(extension).where(eq(extension.name, FIXTURE));
       if(row?.enabled !== false) return fail(`expected enabled=false, got ${row?.enabled}`);
+
+      const [, listed] = await listDashboardWidgets();
+      const widgetId = `${FIXTURE}:ok`;
+      if(listed.widgets.some(w => w.id === widgetId)) return fail('a disabled extension still offers its dashboard widget');
+      if(!listed.unavailable.includes(widgetId)) return fail('a disabled extension\'s widget is not reported unavailable, so a saved layout would lose its place');
       pass();
     },
 
@@ -237,6 +251,9 @@ const buildTests = () => {
       const dirs = await adminGlobalDirs();
       const expected = path.join(root, 'node_modules', FIXTURE, 'admin');
       if(!dirs.includes(expected)) return fail('a re-enabled extension does not contribute its admin nav');
+
+      const [, listed] = await listDashboardWidgets();
+      if(!listed.widgets.some(w => w.id === `${FIXTURE}:ok`)) return fail('a re-enabled extension does not offer its dashboard widget again');
       pass();
     },
 
@@ -249,6 +266,7 @@ const buildTests = () => {
       // Deregistered, and its hooks are gone — a hook whose module is absent would abort renders
       if((await db.select().from(extension).where(eq(extension.name, FIXTURE))).length) return fail('extension row survived uninstall');
       if((await db.select().from(hook).where(eq(hook.owner, FIXTURE))).length) return fail('hooks survived uninstall');
+      if((await db.select().from(dashboardWidget).where(eq(dashboardWidget.owner, FIXTURE))).length) return fail('dashboard widgets survived uninstall');
 
       // Everything a reinstall would need to restore the site is still here
       const kept = [];

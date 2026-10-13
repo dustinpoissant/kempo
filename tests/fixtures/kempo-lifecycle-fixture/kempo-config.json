@@ -3,6 +3,20 @@
   "hooks": {
     "lifecycle-fixture:ping": "./hooks/ping.js"
   },
+  "widgets": [
+    {
+      "key": "ok",
+      "title": "Fixture widget",
+      "element": "lifecycle-fixture-widget",
+      "module": "/lifecycle-fixture/Widget.js"
+    },
+    {
+      "key": "invalid",
+      "title": "Refused widget",
+      "element": "nodash",
+      "module": "/lifecycle-fixture/Widget.js"
+    }
+  ],
   "permissions": [
     {
       "name": "lifecycle-fixture:read",

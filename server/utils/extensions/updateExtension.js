@@ -150,7 +150,7 @@ export default async ({ name, version = 'latest' }) => {
   for(const widget of newKempo.widgets || []){
     const [widgetError] = await registerDashboardWidget({ ...widget, owner: name });
     if(widgetError){
-      return [{ code: widgetError.code, msg: `Invalid dashboard widget "${widget.key}": ${widgetError.msg}` }, null];
+      console.warn(`[${name}] dashboard widget "${widget.key}" was not registered: ${widgetError.msg}`);
     }
   }
   for(const { key } of oldKempo.widgets || []){

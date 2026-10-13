@@ -1,4 +1,5 @@
 import path from 'path';
+import { execFileSync } from 'child_process';
 import { existsSync } from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { sql, eq, inArray } from 'drizzle-orm';
@@ -224,6 +225,17 @@ const pure = {
 const database = {
   'fixtures: a permission, a group that holds it, a member and an outsider': async ({ pass }) => {
     await purge();
+
+    /*
+      Permission checks need the system groups, which a fresh database does not have until init-db runs.
+      Other suites seed them, but this one cannot rely on running after them.
+    */
+    try {
+      execFileSync(process.execPath, [path.join(root, 'scripts', 'init-db.js')], { cwd: root, stdio: 'ignore' });
+    } catch(e) {
+      throw new Error(`could not seed system groups and permissions: ${e.message}`);
+    }
+
     await createPermission({ resource: 'thing', action: 'see', description: 'test', owner: OWNER });
     await createGroup({ name: GROUP, description: 'test', owner: OWNER });
     await addPermissionToGroup(GROUP, PERMISSION);
