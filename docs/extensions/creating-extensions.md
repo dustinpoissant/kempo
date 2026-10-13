@@ -355,9 +355,15 @@ An extension's nav entry is a `<k-aside-item>` pushed into the `admin-nav-extens
 
 A group used by only one entry stays a normal link. When two or more extensions use the same group,
 the admin wraps them in a menu with that name, and takes the menu away again if one is disabled. The
-menu icon comes from the admin's own map (`Commerce` has one), otherwise from the first
+menu icon comes from the admin's own map (`Accounts`, `Content`, `Settings` and `Commerce` have one), otherwise from the first
 `group-icon="..."` attribute among the entries, otherwise a folder. Entries without a `group` are
 unaffected. This is `k-aside`'s item grouping, documented in kempo-ui.
+
+Kempo's own admin links use the same mechanism, so there is no separate "core" and "extension" section: an
+extension can join a core group by naming it. The core groups are **Accounts** (Users, Groups,
+Permissions), **Content** (Templates, Pages, Fragments, Global Content) and **Settings** (Admin Settings,
+Extensions). Put an entry in whichever group fits (`group="Settings"` for a configuration screen), or
+invent a group of your own.
 
 ### Pull: `*.fragment.html`
 

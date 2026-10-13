@@ -29,7 +29,7 @@ The admin portal is the primary interface for site administrators. It is not con
 
 ### Template Structure
 - `default.template.html` — shell with sidebar nav, `<k-main>` wrapper
-- `nav.fragment.html` — sidebar navigation with sections: Site, Dashboard, Content, Accounts, Settings, Extensions
+- `nav.fragment.html` — sidebar navigation. Every core link carries a `group` (Accounts, Content, Settings, ...) so `k-aside` auto-groups them and extensions can join the same groups; there is no separate core/extension divider
 - `init.js` — sets icon paths, loads kempo-ui `Aside`, `Main`, `Import` components
 
 ### Page Sections

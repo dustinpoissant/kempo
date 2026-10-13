@@ -18,4 +18,4 @@ import t from"/kempo-ui/components/LightComponent.js";import{html as i,nothing a
         <k-pagination class="d-b my" controls="simple" .page=${this.page} .totalItems=${this.total} .itemsPerPage=${this.pageSize} @page-change=${this.handlePageChange}></k-pagination>
       `:e}
     `:i`<p class="p tc-muted">${this.unreadOnly?"No unread notifications.":"No notifications."}</p>`}}customElements.define("k-notification-list",p);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo-notifications\dist\kempo\components\NotificationList.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\NotificationList.js.map

@@ -7,96 +7,95 @@
 		state="expanded"
 		style="--aside_padding: 0;"
 		persistent-id="admin-nav"
-		group-icons='{"Commerce":"storefront"}'
+		group-icons='{"Accounts":"manage-accounts","Content":"cards_stack","Settings":"settings","Commerce":"storefront"}'
 	>
 		<k-aside-toggle>
 			<h3 class="m0">Kempo Admin</h3>
 		</k-aside-toggle>
-		<div class="px pbh">
-			<k-notification-bell page-href="/admin/notifications" open-direction="down right"></k-notification-bell>
-		</div>
 		<k-aside-item
 			icon="preview"
 			href="/"
+			group="Site"
 			no-expand
 		>Site</k-aside-item>
 		<k-aside-item
 			icon="cards"
 			href="/admin"
+			group="Dashboard"
 			no-expand
 		>Dashboard</k-aside-item>
-		<k-aside-menu
-			icon="manage-accounts"
-			label="Accounts"
-		>
-			<k-aside-item
-				icon="person"
-				href="/admin/accounts/users"
-				no-expand
-			>Users</k-aside-item>
-			<k-aside-item
-				icon="group"
-				href="/admin/accounts/groups"
-				no-expand
-			>Groups</k-aside-item>
-			<k-aside-item
-				icon="lock"
-				href="/admin/accounts/permissions"
-				no-expand
-			>Permissions</k-aside-item>
-		</k-aside-menu>
-		<k-aside-menu
-			icon="cards_stack"
-			label="Content"
-		>
-			<k-aside-item
-				icon="browse"
-				href="/admin/content/templates"
-			>Templates</k-aside-item>
-			<k-aside-item
-				icon="docs"
-				href="/admin/content/pages"
-			>Pages</k-aside-item>
-			<k-aside-item
-				icon="content"
-				href="/admin/content/fragments"
-			>Fragments</k-aside-item>
-			<k-aside-item
-				icon="globe"
-				href="/admin/content/globals"
-			>Global Content</k-aside-item>
-		</k-aside-menu>
+		<k-aside-item
+			icon="person"
+			href="/admin/accounts/users"
+			group="Accounts"
+			no-expand
+		>Users</k-aside-item>
+		<k-aside-item
+			icon="group"
+			href="/admin/accounts/groups"
+			group="Accounts"
+			no-expand
+		>Groups</k-aside-item>
+		<k-aside-item
+			icon="lock"
+			href="/admin/accounts/permissions"
+			group="Accounts"
+			no-expand
+		>Permissions</k-aside-item>
+		<k-aside-item
+			icon="browse"
+			href="/admin/content/templates"
+			group="Content"
+			no-expand
+		>Templates</k-aside-item>
+		<k-aside-item
+			icon="docs"
+			href="/admin/content/pages"
+			group="Content"
+			no-expand
+		>Pages</k-aside-item>
+		<k-aside-item
+			icon="content"
+			href="/admin/content/fragments"
+			group="Content"
+			no-expand
+		>Fragments</k-aside-item>
+		<k-aside-item
+			icon="globe"
+			href="/admin/content/globals"
+			group="Content"
+			no-expand
+		>Global Content</k-aside-item>
 		<k-aside-item
 			icon="settings"
 			href="/admin/settings"
+			group="Settings"
 			no-expand
-		>Settings</k-aside-item>
+		>Admin Settings</k-aside-item>
 		<k-aside-item
 			icon="extension"
 			href="/admin/extensions"
+			group="Settings"
 			no-expand
 		>Extensions</k-aside-item>
-		<k-aside-item
-			icon="notifications"
-			href="/admin/notifications"
-			no-expand
-		>Notifications</k-aside-item>
+		<location name="admin-nav-extensions"></location>
 		<k-aside-item
 			icon="sensors"
 			href="/admin/realtime"
+			group="Games"
 			no-expand
-		>Realtime</k-aside-item>
-		<hr>
-		<location name="admin-nav-extensions"></location>
+		>Realtime Connections</k-aside-item>
 		<k-aside-spacer></k-aside-spacer>
-		<k-theme-switcher
-			labels
-			style="--padding:var(--spacer_h);margin:var(--spacer_h) auto"
-		></k-theme-switcher>
+		<k-admin-nav-footer class="pxh pyh">
+			<k-theme-switcher class="d-b" labels style="--padding:var(--spacer_h)"></k-theme-switcher>
+			<span class="flex"></span>
+			<k-notification-bell class="d-b" page-href="/admin/notifications" open-direction="up right" button-class="ph r"></k-notification-bell>
+		</k-admin-nav-footer>
 	</k-aside>
 	<script type="module">
 		import '/kempo-ui/components/ThemeSwitcher.js';
 		import '/kempo/components/NotificationBell.js';
+		import '/kempo/components/AdminNavFooter.js';
 		const items = document.querySelectorAll('k-aside-item');
 		const currentPath = window.location.pathname;
 

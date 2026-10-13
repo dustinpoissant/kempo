@@ -345,7 +345,7 @@ A malformed frame gets an `error` frame and the connection stays open. Close cod
 
 ## Admin
 
-**Admin, then Realtime** lists the connections held by the process that answered the request (user, path, channels, when they connected, last activity) and how many subscribers each channel has. It needs the `system:realtime:read` permission, which the Administrators group has.
+**Admin, then Realtime Connections** lists the connections held by the process that answered the request (user, path, channels, when they connected, last activity) and how many subscribers each channel has. It needs the `system:realtime:read` permission, which the Administrators group has.
 
 It shows one process only. Sockets are held by the process that accepted them, so with several processes behind a load balancer the page shows whichever one served your request. Messages still reach every process.
 

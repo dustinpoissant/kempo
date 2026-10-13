@@ -131,7 +131,7 @@ The browser SDK (`/kempo/sdk.js`) wraps them as `getNotifications`, `getUnreadNo
 
 ## Showing notifications
 
-The admin shell already has a bell in its sidebar and a **Notifications** page with an All / Unread filter, pagination, mark read, mark all read and dismiss.
+The admin shell has a bell at the bottom of its sidebar, next to the theme switcher. Its dropdown links to a **Notifications** page (**View all**) with an All / Unread filter, pagination, mark read, mark all read and dismiss.
 
 On a public site, add the bell to a template or fragment:
 
@@ -140,7 +140,7 @@ On a public site, add the bell to a template or fragment:
 <k-notification-bell page-href="/account/notifications"></k-notification-bell>
 ```
 
-`<k-notification-bell>` shows an unread badge and opens the latest notifications. It checks the count on load, when the window regains focus, when the tab becomes visible and every 60 seconds (`interval` in milliseconds, `0` to turn it off), with no websocket. It renders nothing for a visitor who is not signed in. `page-href` adds a "View all" link; `open-direction` positions the dropdown.
+`<k-notification-bell>` shows an unread badge and opens the latest notifications. It checks the count on load, when the window regains focus, when the tab becomes visible and every 60 seconds (`interval` in milliseconds, `0` to turn it off), with no websocket. It renders nothing for a visitor who is not signed in. `page-href` adds a "View all" link; `open-direction` positions the dropdown; `button-class` adds classes to the trigger button.
 
 For a full history page use the list directly:
 

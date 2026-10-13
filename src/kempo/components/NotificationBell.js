@@ -11,7 +11,8 @@ import { getUnreadNotificationCount, markAllNotificationsRead } from '/kempo/sdk
 
   Attributes: `page-href` (a "View all" link to a full notifications page, hidden when unset),
   `interval` (milliseconds between background checks of the count, default 60000, 0 to turn them off) and
-  `open-direction` (passed to the dropdown). The count is also refreshed on load, when the window regains
+  `open-direction` (passed to the dropdown) and `button-class` (extra classes for the trigger button, for
+  example to size it like the surrounding controls). The count is also refreshed on load, when the window regains
   focus and whenever the panel opens.
 */
 export default class NotificationBell extends LightComponent {
@@ -19,6 +20,7 @@ export default class NotificationBell extends LightComponent {
     pageHref: { type: String, attribute: 'page-href' },
     interval: { type: Number },
     openDirection: { type: String, attribute: 'open-direction' },
+    buttonClass: { type: String, attribute: 'button-class' },
     count: { state: true },
     signedOut: { state: true }
   };
@@ -30,6 +32,7 @@ export default class NotificationBell extends LightComponent {
     this.pageHref = '';
     this.interval = 60000;
     this.openDirection = 'down right';
+    this.buttonClass = '';
     this.count = 0;
     this.signedOut = false;
   }
@@ -103,7 +106,7 @@ export default class NotificationBell extends LightComponent {
     if(this.signedOut) return nothing;
     return html`
       <k-dropdown close-on-select="false" open-direction=${this.openDirection} @opened=${this.handleOpened}>
-        <button slot="trigger" class="no-btn d-f" aria-label=${this.count ? `Notifications, ${this.count} unread` : 'Notifications'}>
+        <button slot="trigger" class="no-btn d-f ${this.buttonClass}" aria-label=${this.count ? `Notifications, ${this.count} unread` : 'Notifications'}>
           <k-icon name="notifications"></k-icon>
           ${this.count ? html`<span class="bg-danger round pxh ml" data-unread-badge>${this.count > 99 ? '99+' : this.count}</span>` : nothing}
         </button>
