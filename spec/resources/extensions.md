@@ -52,8 +52,7 @@ Extensions enable third-party developers to add features to a kempo site without
 - **Stored kempo config snapshot**: The full `kempo` config from `package.json` is stored as JSON in the `extension` DB record at install/update time. This allows diffing old vs new config during updates even after `npm install` overwrites the package.
 - **Lifecycle scripts**: `install.js` and `uninstall.js` run for custom logic not covered by the declarative config. `update.js` receives `{ oldVersion, newVersion, oldKempo, newKempo }` for custom migration logic (e.g. column additions, data transforms).
 - **Name as primary key**: Extension names (npm package names) are unique identifiers.
-- **Known extensions registry**: `dist/admin/known-extensions.json` lists curated extensions that appear in the "available" section even if not installed as a dependency.
-- **Available extensions scan**: The API scans `node_modules` for packages with `kempo` config to find installable extensions.
+- **Extension catalogue**: the "available" section merges the packages in `node_modules` that have a `kempo-config.json` with the catalogue at `extensions.kempo.dev`, which the server fetches and caches in `.cache/extensions-catalog.json` for 5 minutes (stale copy on failure, then the seed list in `server/utils/extensions/known-extensions.json`). Installing an extension that is in the catalogue but not downloaded runs `npm install <name>@<version>` first. See [docs/extensions/catalogue.md](../../docs/extensions/catalogue.md).
 
 ## Implementation
 
@@ -245,8 +244,7 @@ Extensions enable third-party developers to add features to a kempo site without
 - **Install/uninstall lifecycle**: Extensions have `install.js` and `uninstall.js` scripts that run during installation/removal. These can create DB tables, seed data, register admin globals, etc.
 - **`public-scope`**: Maps a URL prefix to the extension's `public/` directory. `"public-scope": "blog"` makes the extension's public files available at `/blog/**`.
 - **Name as primary key**: Extension names (npm package names) are unique identifiers.
-- **Known extensions registry**: `dist/admin/known-extensions.json` lists curated extensions that appear in the "available" section even if not installed as a dependency.
-- **Available extensions scan**: The API scans `node_modules` for packages with `kempo` config to find installable extensions.
+- **Extension catalogue**: the "available" section merges the packages in `node_modules` that have a `kempo-config.json` with the catalogue at `extensions.kempo.dev`, which the server fetches and caches in `.cache/extensions-catalog.json` for 5 minutes (stale copy on failure, then the seed list in `server/utils/extensions/known-extensions.json`). Installing an extension that is in the catalogue but not downloaded runs `npm install <name>@<version>` first. See [docs/extensions/catalogue.md](../../docs/extensions/catalogue.md).
 
 ## Implementation
 

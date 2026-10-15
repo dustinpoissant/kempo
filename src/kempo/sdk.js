@@ -283,6 +283,9 @@ export const listAvailableExtensions = async () =>
 export const listKnownExtensions = async () =>
   get(`${API_BASE}/extensions/known`);
 
+export const getKnownExtension = async (name) =>
+  get(`${API_BASE}/extensions/known`, { name });
+
 /*
   Dashboard
 */

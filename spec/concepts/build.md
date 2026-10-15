@@ -71,7 +71,7 @@ dist/
 - **Input**: `.json` files in `src/`
 - **Output**: Minified JSON (no whitespace)
 - **Size Reduction**: ~13% per file
-- **Use Case**: Configuration files like `known-extensions.json`
+- **Use Case**: Configuration files
 
 ### Other Files
 - **Copied As-Is**: SVG icons, images, fonts

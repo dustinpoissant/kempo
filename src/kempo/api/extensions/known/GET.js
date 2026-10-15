@@ -1,10 +1,10 @@
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
-import { readFile } from 'fs/promises';
-import { existsSync } from 'fs';
-import { join } from 'path';
+import getSiteCatalog from '../../../../../server/utils/extensions/getSiteCatalog.js';
 
-const knownExtensionsPath = join(import.meta.dirname, '../../../admin/known-extensions.json');
-
+/*
+  The catalogue as this site's server has it. The list leaves out each README; `?name=` returns that one
+  entry with its README, which is what the Details dialog shows.
+*/
 export default async (request, response) => {
   const token = request.cookies.session_token;
   const [permError, hasPermission] = await currentUserHasPermission(token, 'system:extensions:read');
@@ -17,10 +17,18 @@ export default async (request, response) => {
     return response.status(403).json({ error: 'Insufficient permissions' });
   }
 
-  if(!existsSync(knownExtensionsPath)){
-    return response.json({ items: [], total: 0 });
+  const [, catalog] = await getSiteCatalog();
+  const meta = { from: catalog.from, fetchedAt: catalog.fetchedAt, problem: catalog.problem };
+
+  const { name } = request.query;
+  if(name){
+    const item = catalog.extensions.find(entry => entry.name === name);
+    if(!item){
+      return response.status(404).json({ error: `"${name}" is not in the extension catalogue` });
+    }
+    return response.json({ item, catalog: meta });
   }
 
-  const items = JSON.parse(await readFile(knownExtensionsPath, 'utf-8'));
-  response.json({ items, total: items.length });
+  const items = catalog.extensions.map(({ readme, ...rest }) => ({ ...rest, hasReadme: !!readme }));
+  response.json({ items, total: items.length, catalog: meta });
 };

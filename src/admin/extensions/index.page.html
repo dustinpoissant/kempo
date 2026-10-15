@@ -11,6 +11,7 @@
 <script type="module" src="/kempo-ui/components/controls/TcPageSelect.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcPageSize.js"></script>
 <script type="module" src="/admin/components/tableControls/InstallExtension.js"></script>
+<script type="module" src="/admin/components/tableControls/ExtensionDetails.js"></script>
 <script type="module" src="/admin/components/tableControls/UninstallExtension.js"></script>
 <script type="module" src="/kempo/components/Permission.js"></script>
 
@@ -36,8 +37,9 @@
 	</k-table>
 
 	<h2>Available Extensions</h2>
-	<k-table id="availableTable" enable-pages page-size="25" placeholder="No extensions are available to install. Install a kempo extension package via npm first.">
+	<k-table id="availableTable" enable-pages page-size="25" placeholder="No extensions are available to install.">
 		<admin-install-extension slot="after"></admin-install-extension>
+		<admin-extension-details slot="after"></admin-extension-details>
 		<div class="d-f full" style="align-items: center;">
 			<div>
 				<kc-tc-first-page></kc-tc-first-page>
@@ -51,6 +53,7 @@
 			<div><kc-tc-page-size></kc-tc-page-size></div>
 		</div>
 	</k-table>
+	<p id="catalogNotice" class="tc-muted" hidden></p>
 
 </content>
 <content location="scripts">
@@ -73,8 +76,14 @@
 		});
 	}
 
+	const catalogNotice = document.getElementById('catalogNotice');
+
 	const [availableErr, availableData] = await listAvailableExtensions();
 	if(!availableErr){
+		if(availableData.catalog?.problem){
+			catalogNotice.textContent = `${availableData.catalog.problem[0].toUpperCase()}${availableData.catalog.problem.slice(1)}. Showing ${availableData.catalog.from === 'stale' ? 'the last list it received' : 'the built-in list'}.`;
+			catalogNotice.hidden = false;
+		}
 		const installedNames = new Set((installedData?.items || []).map(e => e.name));
 		const notInstalled = availableData.items.filter(e => !installedNames.has(e.name));
 		availableTable.setData({

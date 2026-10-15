@@ -4,7 +4,7 @@ Extensions are npm packages that add features to a kempo site. They can provide 
 
 ## Installing Extensions
 
-In your project directory, install the npm package and then register it through the admin or the API:
+Extensions in the [extension catalogue](catalogue.md) (the first-party ones, today) are listed under **Admin > Extensions** and downloaded and installed with one click. Any other extension package is installed with npm first and then registered through the admin or the API:
 
 ```bash
 npm install kempo-blog
