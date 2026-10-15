@@ -330,8 +330,11 @@ export const uninstallExtension = async (name, purgeData = false) =>
 export const enableExtension = async (name) =>
   post(`${API_BASE}/extensions/${encodeURIComponent(name)}/enable`, {});
 
-export const disableExtension = async (name) =>
-  post(`${API_BASE}/extensions/${encodeURIComponent(name)}/disable`, {});
+export const disableExtension = async (name, { cascade = false } = {}) =>
+  post(`${API_BASE}/extensions/${encodeURIComponent(name)}/disable`, { cascade });
+
+export const getExtensionDependents = async (name) =>
+  get(`${API_BASE}/extensions/${encodeURIComponent(name)}/dependents`);
 
 /*
   Admin Global Content

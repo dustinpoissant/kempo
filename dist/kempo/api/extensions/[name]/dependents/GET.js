@@ -1,0 +1,2 @@
+import s from"../../../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../../../server/utils/extensions/dependentTree.js";export default async(r,n)=>{const t=r.cookies.session_token,[o,i]=await s(t,"system:extensions:manage");if(o)return n.status(o.code).json({error:o.msg});if(!i)return n.status(403).json({error:"Insufficient permissions"});const a=await e(r.params.name);n.json({dependents:a})};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\[name]\dependents\GET.js.map
