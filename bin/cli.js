@@ -326,7 +326,7 @@ if(!existsSync(pkgPath)){
 
 const gitignorePath = join(projectDir, '.gitignore');
 if(!existsSync(gitignorePath)){
-  writeFileSync(gitignorePath, 'node_modules\n.env\n');
+  writeFileSync(gitignorePath, 'node_modules\n.env\n.cache\n');
   console.log('Created .gitignore');
 }
 
