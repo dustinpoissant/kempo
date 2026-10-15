@@ -1,5 +1,5 @@
 import currentUserHasPermission from '../../../../../../server/utils/permissions/currentUserHasPermission.js';
-import disableExtension from '../../../../../../server/utils/extensions/disableExtension.js';
+import disableExtension from '../../../../../../server/utils/extensions/disableExtensionTree.js';
 
 /*
   POST /kempo/api/extensions/<name>/disable   { cascade? }

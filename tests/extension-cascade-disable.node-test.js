@@ -18,7 +18,7 @@ const db = (await load('server/db/index.js')).default;
 const { extension } = await load('server/db/schema.js');
 const { default: disableExtension } = await load('server/utils/extensions/disableExtension.js');
 const { default: enableExtension } = await load('server/utils/extensions/enableExtension.js');
-const { default: getEnabledDependentTree } = await load('server/utils/extensions/dependentTree.js');
+const { default: getEnabledDependentTree } = await load('server/utils/extensions/getDependentTree.js');
 
 const NAMES = ['cascade-base', 'cascade-middle', 'cascade-top', 'cascade-side', 'cascade-other'];
 

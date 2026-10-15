@@ -31,7 +31,7 @@ The **Admin > Extensions** page shows all installed extensions with their status
 
 - **Disable / Enable** (the pause and play button) — switch an extension off without uninstalling it. It stays installed with all its data, settings and groups, but the CMS does not use it: its public files, admin pages, dashboard widgets and hooks are left out until you enable it again. Disabling one that other extensions require also disables them, and everything that requires those; the dialog lists that whole chain first and nothing happens until you agree. Enabling is one at a time, and one whose requirements are still disabled cannot be enabled (the message says which).
 - **Update** — pull the latest version from npm and apply any changes
-- **Uninstall** — remove the extension and clean up its data
+- **Uninstall** — remove the extension. Its data is kept unless you tick the box to delete it. An extension cannot stay installed without what it requires, so uninstalling one that others require uninstalls them too (disabled ones included): the dialog lists the whole chain first, and nothing happens until you agree.
 
 ### Checking for Updates
 

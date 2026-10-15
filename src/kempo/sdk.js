@@ -324,8 +324,8 @@ export const listRealtimeConnections = async () =>
 export const installExtension = async (name, { withDependencies = false } = {}) =>
   post(`${API_BASE}/extensions`, { name, withDependencies });
 
-export const uninstallExtension = async (name, purgeData = false) =>
-  del(`${API_BASE}/extensions`, { name, purgeData });
+export const uninstallExtension = async (name, purgeData = false, { cascade = false } = {}) =>
+  del(`${API_BASE}/extensions`, { name, purgeData, cascade });
 
 export const enableExtension = async (name) =>
   post(`${API_BASE}/extensions/${encodeURIComponent(name)}/enable`, {});
@@ -333,8 +333,8 @@ export const enableExtension = async (name) =>
 export const disableExtension = async (name, { cascade = false } = {}) =>
   post(`${API_BASE}/extensions/${encodeURIComponent(name)}/disable`, { cascade });
 
-export const getExtensionDependents = async (name) =>
-  get(`${API_BASE}/extensions/${encodeURIComponent(name)}/dependents`);
+export const getExtensionDependents = async (name, { includeDisabled = false } = {}) =>
+  get(`${API_BASE}/extensions/${encodeURIComponent(name)}/dependents`, { includeDisabled: includeDisabled ? 'true' : undefined });
 
 /*
   Admin Global Content
