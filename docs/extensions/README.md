@@ -29,7 +29,7 @@ On install, kempo will automatically:
 
 The **Admin > Extensions** page shows all installed extensions with their status. From there you can:
 
-- **Enable/Disable** — temporarily disable an extension without uninstalling it
+- **Disable / Enable** (the pause and play button) — switch an extension off without uninstalling it. It stays installed with all its data, settings and groups, but the CMS does not use it: its public files, admin pages, dashboard widgets and hooks are left out until you enable it again. An extension that another enabled extension requires cannot be disabled, and one whose requirements are disabled cannot be enabled; the message says which.
 - **Update** — pull the latest version from npm and apply any changes
 - **Uninstall** — remove the extension and clean up its data
 

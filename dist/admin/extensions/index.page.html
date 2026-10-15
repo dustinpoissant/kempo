@@ -12,6 +12,7 @@
 <script type="module" src="/kempo-ui/components/controls/TcPageSize.js"></script>
 <script type="module" src="/admin/components/tableControls/InstallExtension.js"></script>
 <script type="module" src="/admin/components/tableControls/ExtensionDetails.js"></script>
+<script type="module" src="/admin/components/tableControls/ToggleExtension.js"></script>
 <script type="module" src="/admin/components/tableControls/UninstallExtension.js"></script>
 <script type="module" src="/kempo/components/Permission.js"></script>
 
@@ -22,6 +23,7 @@
 
 	<h2>Installed Extensions</h2>
 	<k-table id="installedTable" enable-pages page-size="25" placeholder="No extensions are currently installed.">
+		<admin-toggle-extension slot="after"></admin-toggle-extension>
 		<admin-uninstall-extension slot="after"></admin-uninstall-extension>
 		<div class="d-f full" style="align-items: center;">
 			<div>

@@ -2,6 +2,7 @@ import db from '../../db/index.js';
 import { hook } from '../../db/schema.js';
 import { eq, asc } from 'drizzle-orm';
 import { join } from 'path';
+import { getDisabledExtensionNames } from '../extensions/scopeCache.js';
 import { pathToFileURL } from 'url';
 
 const handlerCache = new Map();
@@ -46,8 +47,15 @@ export default async (event, data = {}, { bail = false } = {}) => {
       .where(eq(hook.event, event))
       .orderBy(asc(hook.createdAt), asc(hook.id));
     const results = [];
+    const disabled = await getDisabledExtensionNames();
 
     for(const h of hooks){
+      /*
+        A disabled extension is not used by the CMS in any way, and its hooks are part of that: they stay
+        registered (so enabling it again needs no re-registration) but never run.
+      */
+      if(disabled.has(h.owner)) continue;
+
       const handlerPath = resolveHandler(h.owner, h.callback);
       if(!handlerPath) continue;
 
