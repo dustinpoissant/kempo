@@ -1,7 +1,13 @@
 import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
-import { existsSync } from 'fs';
-import { join } from 'path';
 
+/*
+  POST /kempo/api/extensions   { name, withDependencies? }
+
+  Installs an extension. One that is not in node_modules yet is downloaded first, but only if the
+  marketplace lists it: this route never runs `npm install` for a name the caller made up. With
+  `withDependencies`, the extensions it needs are installed first, in order; the admin shows that list
+  for approval before sending it.
+*/
 export default async (request, response) => {
   const token = request.cookies.session_token;
   const [permError, hasPermission] = await currentUserHasPermission(token, 'system:extensions:install');
@@ -14,43 +20,22 @@ export default async (request, response) => {
     return response.status(403).json({ error: 'Insufficient permissions' });
   }
 
-  const { name } = request.body || {};
+  const { name, withDependencies } = request.body || {};
 
-  /*
-    A package that is not in node_modules yet is downloaded first, but only if it is in the catalogue
-    and installable: this route never runs `npm install` for a name the caller made up.
-  */
-  if(typeof name === 'string' && !existsSync(join(process.cwd(), 'node_modules', name, 'package.json'))){
-    const { default: getSiteCatalog } = await import('../../../../server/utils/extensions/getSiteCatalog.js');
-    const { default: installPackage } = await import('../../../../server/utils/extensions/installPackage.js');
-    const { getUnmetDependencies } = await import('../../../../server/utils/extensions/dependencies.js');
+  const { default: getMarketplaceClient } = await import('../../../../server/utils/extensions/getMarketplaceClient.js');
+  const { default: getSiteInstallId } = await import('../../../../server/utils/extensions/getSiteInstallId.js');
+  const { default: installFromCatalog } = await import('../../../../server/utils/extensions/installFromCatalog.js');
 
-    const [, catalog] = await getSiteCatalog();
-    const entry = catalog.extensions.find(item => item.name === name);
-
-    if(!entry){
-      return response.status(404).json({ error: `Extension package "${name}" is not installed and is not in the extension catalogue` });
-    }
-    if(!entry.installable){
-      return response.status(409).json({ error: `"${name}" is listed but not published yet, so it cannot be installed` });
-    }
-
-    const unmet = await getUnmetDependencies(entry.requires.extensions);
-    if(unmet.length){
-      return response.status(409).json({ error: `Requires ${unmet.join(', ')} to be installed and enabled first` });
-    }
-
-    const [downloadError] = await installPackage({ name, version: entry.version });
-    if(downloadError){
-      return response.status(downloadError.code).json({ error: downloadError.msg });
-    }
-  }
-
-  const { default: installExtension } = await import('../../../../server/utils/extensions/installExtension.js');
-  const [error, data] = await installExtension({ name });
+  const [, installId] = await getSiteInstallId();
+  const [error, data] = await installFromCatalog({
+    name,
+    withDependencies: withDependencies === true,
+    client: await getMarketplaceClient(),
+    installId,
+  });
 
   if(error){
-    return response.status(error.code).json({ error: error.msg });
+    return response.status(error.code).json({ error: error.msg, needs: error.needs, installed: error.installed });
   }
 
   response.json(data);

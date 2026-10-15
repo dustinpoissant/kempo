@@ -1,32 +1,45 @@
-# The extension catalogue
+# The extension marketplace
 
-The **Available Extensions** list in the admin is built from two places:
+**Admin > Extensions > Browse extensions** is a storefront for the Kempo extension marketplace at
+<https://extensions.kempo.dev>. You can search it, sort by installs or rating, open an extension to read
+its README and see what it requires and adds, and install it. The marketplace today lists first-party
+extensions only, all free.
 
-1. packages already in your project's `node_modules` that have a `kempo-config.json`, and
-2. the **extension catalogue** at <https://extensions.kempo.dev>, a public list of extensions built from
-   each extension's own repository (its `package.json`, `kempo-config.json` and README).
+## Installing from it
 
-An extension from the catalogue that is not downloaded yet shows as available too. **Install** downloads
-it with `npm install <name>@<version>` (which also adds it to your `package.json`) and then installs it
-the usual way. The **Details** button shows who wrote it, what it requires and adds, and its README.
+An extension's page shows the **whole tree** it needs: the extensions it requires, and the ones those
+require, in the order they will be installed. Clicking **Install** lists exactly that and asks you to
+approve it. Approving downloads each missing package with `npm install <name>@<version>` (which also
+adds it to your `package.json`) and then installs them, dependencies first. If something it needs is
+not in the marketplace, or is listed but not published, the page says so and does not offer to install.
 
-Today the catalogue lists first-party extensions only, all free.
+Packages already in your project's `node_modules` are listed on the Extensions page under
+**Downloaded, Not Installed** and install without a download.
 
-## How your site reads it
+## What your site sends
 
-Only your site's **server** talks to the catalogue; the admin in the browser only calls your site's own
-API.
+Your site's **server** talks to the marketplace; your browser never does.
 
-- The answer is cached in `.cache/extensions-catalog.json` in the project folder for **5 minutes** and
-  revalidated with an `ETag`.
-- If the catalogue cannot be reached, the last good copy is used however old it is, and the Extensions
-  page says so. A site that has never reached it falls back to the short list that ships with kempo.
-- What it returns is checked before use: only known fields are kept, links must be `http(s)`, and the
-  size is capped. It is never executed.
+- Reads (lists, details) are cached in memory for 5 minutes. If the marketplace cannot be reached, the
+  last copy is used; with none, the Browse page says so. Browsing is the only thing that stops working:
+  installing an extension already in `node_modules` and everything else on the Extensions page is
+  unaffected.
+- When you install an extension through the admin, the site tells the marketplace, so it can show how
+  many sites run it. When you rate one, that is sent too.
+- The site identifies itself with a **random UUID** it generates the first time it is needed and keeps
+  in the `system:install_id` setting. It is used so that uninstalling and reinstalling counts as one
+  install, and so a site has one rating per extension. It contains nothing about you, your site's name
+  or its address.
 
-To use a different catalogue, or none, set the `system:extensions_catalog_url` setting. An empty value
-turns the catalogue off (only packages already in `node_modules` are offered). It is not one of the
-seeded default settings, so create it only if you want to change it.
+To use a different marketplace, or none, set the `system:extensions_catalog_url` setting to its API
+address (default `https://extensions.kempo.dev/api/v1`). An empty value turns the marketplace off: the
+Browse page then says so and nothing is sent. It is not one of the seeded default settings (seeding
+rewrites those on every run), so create it only if you want to change it.
+
+## Ratings
+
+A site may rate an extension 1 to 5 from the extension's page once it has had it installed for a
+minute, and may change it later. The marketplace keeps one rating per site per extension.
 
 ## Things to know
 
@@ -34,18 +47,19 @@ seeded default settings, so create it only if you want to change it.
   rebuilds its image from your repository, an extension downloaded from the admin is gone at the next
   deploy unless it is also in your repository's `package.json` (and lock file).
 - Install runs `npm` on the server, so the process needs write access to the project folder and
-  network access to the npm registry. Package names and versions are validated before `npm` is run, and
-  only a name that is in the catalogue is ever downloaded.
-- Downloading is not trust. An extension is code that runs with your site's permissions; the catalogue
-  lists first-party extensions only for now.
+  network access to the npm registry. Package names and versions are validated before `npm` runs, and
+  only a name the marketplace lists is ever downloaded.
+- Downloading is not trust. An extension is code that runs with your site's permissions. The
+  marketplace lists first-party extensions only for now.
 
 ## API
 
-All need `system:extensions:read` (the install route needs `system:extensions:install`).
+All need `system:extensions:read` (install and rating need `system:extensions:install`).
 
 | Request | Answer |
 | --- | --- |
-| `GET /kempo/api/extensions/available` | installed-on-disk plus catalogue extensions, each with `needsDownload`, `installable`, `requires`, and a `catalog` block (`from`: `fresh`, `network`, `stale` or `seed`; `problem`) |
-| `GET /kempo/api/extensions/known` | the catalogue, without READMEs |
-| `GET /kempo/api/extensions/known?name=<name>` | one catalogue entry with its README |
-| `POST /kempo/api/extensions` `{ name }` | downloads (if needed) and installs |
+| `GET /kempo/api/extensions/known?search=&sort=&limit=&offset=` | a page of cards from the marketplace (`sort`: `installs`, `rating`, `name`, `updated`) |
+| `GET /kempo/api/extensions/known?name=<name>` | one extension in full, with its dependency tree, whether it is installed here, and this site's own rating |
+| `GET /kempo/api/extensions/available` | packages already downloaded into this site |
+| `POST /kempo/api/extensions` `{ name, withDependencies }` | downloads (if needed) and installs; with `withDependencies` it installs the whole tree first |
+| `PUT /kempo/api/extensions/rating` `{ name, rating }` | this site's rating of an installed extension |

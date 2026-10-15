@@ -1,9 +1,15 @@
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
-import getSiteCatalog from '../../../../../server/utils/extensions/getSiteCatalog.js';
+import getMarketplaceClient from '../../../../../server/utils/extensions/getMarketplaceClient.js';
+import getSiteInstallId from '../../../../../server/utils/extensions/getSiteInstallId.js';
+import getExtension from '../../../../../server/utils/extensions/getExtension.js';
 
 /*
-  The catalogue as this site's server has it. The list leaves out each README; `?name=` returns that one
-  entry with its README, which is what the Details dialog shows.
+  The extension marketplace, through this site's server (the browser never calls it directly).
+
+    GET /kempo/api/extensions/known?search=&sort=&limit=&offset=   a page of cards
+    GET /kempo/api/extensions/known?name=<name>                    one extension in full, plus whether
+                                                                   it is installed here and this site's
+                                                                   own rating of it
 */
 export default async (request, response) => {
   const token = request.cookies.session_token;
@@ -17,18 +23,34 @@ export default async (request, response) => {
     return response.status(403).json({ error: 'Insufficient permissions' });
   }
 
-  const [, catalog] = await getSiteCatalog();
-  const meta = { from: catalog.from, fetchedAt: catalog.fetchedAt, problem: catalog.problem };
+  const client = await getMarketplaceClient();
+  const { name, search, sort, limit, offset } = request.query;
 
-  const { name } = request.query;
   if(name){
-    const item = catalog.extensions.find(entry => entry.name === name);
-    if(!item){
-      return response.status(404).json({ error: `"${name}" is not in the extension catalogue` });
+    const [error, item] = await client.details(name);
+    if(error){
+      return response.status(error.code).json({ error: error.msg });
     }
-    return response.json({ item, catalog: meta });
+
+    const [, local] = await getExtension({ name });
+    let mine = null;
+    if(local){
+      const [, installId] = await getSiteInstallId();
+      const [, given] = installId ? await client.siteRating({ installId, extension: name }) : [null, null];
+      mine = given?.rating ?? null;
+    }
+
+    return response.json({
+      item,
+      local: local ? { installed: true, version: local.version, enabled: local.enabled } : { installed: false },
+      myRating: mine,
+    });
   }
 
-  const items = catalog.extensions.map(({ readme, ...rest }) => ({ ...rest, hasReadme: !!readme }));
-  response.json({ items, total: items.length, catalog: meta });
+  const [error, page] = await client.list({ search, sort, limit, offset });
+  if(error){
+    return response.status(error.code).json({ error: error.msg });
+  }
+
+  response.json(page);
 };

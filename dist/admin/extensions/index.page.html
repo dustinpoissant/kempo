@@ -17,6 +17,7 @@
 
 	<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
 		<h1 class="flex mb0">Extensions</h1>
+		<a href="/admin/extensions/browse/" class="no-link"><button class="primary"><k-icon name="extension"></k-icon> Browse extensions</button></a>
 	</div>
 
 	<h2>Installed Extensions</h2>
@@ -36,8 +37,9 @@
 		</div>
 	</k-table>
 
-	<h2>Available Extensions</h2>
-	<k-table id="availableTable" enable-pages page-size="25" placeholder="No extensions are available to install.">
+	<h2>Downloaded, Not Installed</h2>
+	<p class="tc-muted">Extension packages already in this site. To find and download more, <a href="/admin/extensions/browse/">browse the marketplace</a>.</p>
+	<k-table id="availableTable" enable-pages page-size="25" placeholder="Every downloaded extension is installed.">
 		<admin-install-extension slot="after"></admin-install-extension>
 		<admin-extension-details slot="after"></admin-extension-details>
 		<div class="d-f full" style="align-items: center;">
@@ -53,7 +55,6 @@
 			<div><kc-tc-page-size></kc-tc-page-size></div>
 		</div>
 	</k-table>
-	<p id="catalogNotice" class="tc-muted" hidden></p>
 
 </content>
 <content location="scripts">
@@ -76,14 +77,8 @@
 		});
 	}
 
-	const catalogNotice = document.getElementById('catalogNotice');
-
 	const [availableErr, availableData] = await listAvailableExtensions();
 	if(!availableErr){
-		if(availableData.catalog?.problem){
-			catalogNotice.textContent = `${availableData.catalog.problem[0].toUpperCase()}${availableData.catalog.problem.slice(1)}. Showing ${availableData.catalog.from === 'stale' ? 'the last list it received' : 'the built-in list'}.`;
-			catalogNotice.hidden = false;
-		}
 		const installedNames = new Set((installedData?.items || []).map(e => e.name));
 		const notInstalled = availableData.items.filter(e => !installedNames.has(e.name));
 		availableTable.setData({

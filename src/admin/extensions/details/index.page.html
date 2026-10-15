@@ -1,0 +1,236 @@
+<!--
+	locked: true
+-->
+<page title="Extension - Admin">
+<content>
+<script type="module" src="/kempo-ui/components/Icon.js"></script>
+<script type="module" src="/kempo-ui/components/Rating.js"></script>
+<script type="module" src="/kempo-ui/components/Markdown.js"></script>
+<script type="module" src="/kempo/components/Permission.js"></script>
+
+	<div class="d-f mb">
+		<a href="/admin/extensions/browse/" class="no-link mrh">
+			<button><k-icon name="arrow" direction="left"></k-icon> Browse</button>
+		</a>
+		<a href="/admin/extensions" class="no-link">
+			<button>Installed</button>
+		</a>
+	</div>
+
+	<div id="notFound" class="d-n">
+		<h1 id="notFoundTitle">Extension</h1>
+		<p id="notFoundMessage" class="tc-muted"></p>
+	</div>
+
+	<div id="content" class="d-n">
+		<div class="d-f mb">
+			<div class="flex">
+				<h1 id="name" class="mb0"></h1>
+				<p id="meta" class="tc-muted"></p>
+			</div>
+			<div>
+				<span id="installedBadge" class="tc-success d-n"><k-icon name="check"></k-icon> Installed</span>
+				<button id="installBtn" class="primary d-n">Install</button>
+			</div>
+		</div>
+
+		<p id="description"></p>
+		<div id="problem" class="tc-danger mb d-n"></div>
+
+		<div class="d-f mb">
+			<div class="mr">
+				<strong>Rating</strong><br />
+				<k-rating id="average" disabled></k-rating>
+				<span id="ratingText" class="tc-muted"></span>
+			</div>
+			<div id="mine" class="d-n">
+				<strong>Your rating</strong><br />
+				<k-rating id="myRating"></k-rating>
+				<span id="myRatingText" class="tc-muted"></span>
+			</div>
+		</div>
+
+		<div id="treeBlock" class="d-n">
+			<h2>Installing also installs</h2>
+			<p class="tc-muted">In this order, before the extension itself:</p>
+			<ol id="tree"></ol>
+		</div>
+
+		<div id="providesBlock" class="d-n">
+			<h2>What it adds</h2>
+			<div id="provides"></div>
+		</div>
+
+		<h2>README</h2>
+		<k-markdown id="readme"></k-markdown>
+	</div>
+
+</content>
+<content location="scripts">
+<script type="module">
+	import { getKnownExtension, listExtensions, installExtension, rateExtension } from '/kempo/sdk.js';
+	import Dialog from '/kempo-ui/components/Dialog.js';
+	import Toast from '/kempo-ui/components/Toast.js';
+
+	const name = new URLSearchParams(location.search).get('name') || '';
+	const $ = id => document.getElementById(id);
+
+	const show = id => { $(id).classList.remove('d-n'); };
+
+	const list = (title, items) => {
+		if(!items.length) return null;
+		const wrap = document.createElement('div');
+		const heading = document.createElement('p');
+		heading.className = 'mb0';
+		const strong = document.createElement('strong');
+		strong.textContent = title;
+		heading.append(strong);
+		const ul = document.createElement('ul');
+		for(const text of items){
+			const li = document.createElement('li');
+			li.textContent = text;
+			ul.append(li);
+		}
+		wrap.append(heading, ul);
+		return wrap;
+	};
+
+	const render = async () => {
+		const [error, data] = await getKnownExtension(name);
+		if(error){
+			$('notFoundTitle').textContent = name || 'Extension';
+			$('notFoundMessage').textContent = error.code === 404
+				? 'The marketplace does not list this extension.'
+				: error.msg;
+			show('notFound');
+			return;
+		}
+
+		const { item, local, myRating } = data;
+		document.title = `${item.name} - Admin`;
+		$('name').textContent = item.name;
+		$('description').textContent = item.description;
+		$('meta').textContent = [
+			item.author && `By ${item.author}`,
+			item.license,
+			item.version && `Version ${item.version}`,
+			`${item.installs} install${item.installs === 1 ? '' : 's'}`,
+		].filter(Boolean).join(' · ');
+
+		$('average').value = Math.round(item.rating.average || 0);
+		$('ratingText').textContent = item.rating.count ? `${item.rating.average} (${item.rating.count} rating${item.rating.count === 1 ? '' : 's'})` : 'No ratings yet';
+		$('readme').value = item.readme || '*This extension has no README.*';
+
+		/*
+			What installing will do: the extensions it needs that this site does not have yet, in order.
+		*/
+		const [, installedData] = await listExtensions({ limit: 200 });
+		const installedNames = new Set((installedData?.items || []).map(extension => extension.name));
+		const missing = item.dependencies.extensions.filter(dependency => !installedNames.has(dependency.name));
+
+		if(missing.length){
+			$('tree').replaceChildren(...missing.map(dependency => {
+				const li = document.createElement('li');
+				li.textContent = `${dependency.name} ${dependency.version}${dependency.installable ? '' : ' (not published yet)'}`;
+				return li;
+			}));
+			show('treeBlock');
+		}
+
+		const blockers = [
+			...item.dependencies.unresolved.map(unresolved => `Needs ${unresolved}, which the marketplace does not list.`),
+			...(!item.installable ? [`${item.name} is listed but not published yet.`] : []),
+			...missing.filter(dependency => !dependency.installable).map(dependency => `Needs ${dependency.name}, which is not published yet.`),
+		];
+
+		const provides = [
+			list('Permissions', item.provides.permissions.map(permission => permission.description ? `${permission.name}: ${permission.description}` : permission.name)),
+			list('Settings', item.provides.settings.map(setting => setting.name)),
+			list('Groups', item.provides.groups.map(group => group.name)),
+			list('Dashboard widgets', item.provides.widgets.map(widget => widget.title || widget.key)),
+		].filter(Boolean);
+		if(provides.length){
+			$('provides').replaceChildren(...provides);
+			show('providesBlock');
+		}
+
+		if(local.installed){
+			show('installedBadge');
+			show('mine');
+			const mine = $('myRating');
+			mine.value = myRating || 0;
+			$('myRatingText').textContent = myRating ? '' : 'Not rated yet';
+			await mine.updateComplete;
+			mine.addEventListener('change', async event => {
+				if(!event.detail.value || event.detail.value === myRating) return;
+				const [rateError] = await rateExtension(name, event.detail.value);
+				if(rateError){
+					Toast.error(rateError.msg || 'Failed to save the rating');
+					mine.value = myRating || 0;
+					return;
+				}
+				Toast.success('Rating saved');
+				$('myRatingText').textContent = '';
+			});
+		} else if(blockers.length){
+			$('problem').textContent = blockers.join(' ');
+			show('problem');
+		} else {
+			show('installBtn');
+		}
+
+		$('installBtn').addEventListener('click', () => {
+			const contents = document.createElement('div');
+			contents.className = 'p';
+
+			const intro = document.createElement('p');
+			intro.textContent = missing.length
+				? `Installing "${item.name}" also downloads and installs these extensions first, in this order:`
+				: `Install "${item.name}"?`;
+			contents.append(intro);
+
+			if(missing.length){
+				const ol = document.createElement('ol');
+				for(const dependency of missing){
+					const li = document.createElement('li');
+					li.textContent = `${dependency.name} ${dependency.version}`;
+					ol.append(li);
+				}
+				contents.append(ol);
+			}
+
+			const note = document.createElement('p');
+			note.className = 'tc-muted';
+			note.textContent = 'Extensions are code that runs on your site with its permissions. Only install what you trust.';
+			contents.append(note);
+
+			Dialog.create(contents, {
+				title: 'Install Extension',
+				closeBtn: false,
+				overlayClose: false,
+				confirmText: missing.length ? `Install ${missing.length + 1} extensions` : 'Install',
+				cancelText: 'Cancel',
+				confirmAction: async () => {
+					const [installError, result] = await installExtension(name, { withDependencies: true });
+					if(installError){
+						Toast.error(installError.msg || 'Failed to install the extension');
+						return;
+					}
+					Toast.success(`Installed ${result.installed?.join(', ') || name}`);
+					window.location.reload();
+				},
+			});
+		});
+
+		show('content');
+	};
+
+	if(!name){
+		$('notFoundMessage').textContent = 'No extension was chosen.';
+		show('notFound');
+	} else {
+		render();
+	}
+</script>
+</content>
+</page>

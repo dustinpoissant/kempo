@@ -8,7 +8,7 @@ export default class InstallExtension extends AdminTableControl {
   install = async () => {
     if(!this.record) return;
 
-    Dialog.confirm(`Install "${this.record.name}"?${this.record.needsDownload ? ' It will be downloaded from npm first.' : ''}`, async confirmed => {
+    Dialog.confirm(`Install "${this.record.name}"?`, async confirmed => {
       if(!confirmed) return;
 
       const { installExtension } = await import('/kempo/sdk.js');

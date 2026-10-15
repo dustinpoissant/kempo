@@ -280,11 +280,14 @@ export const listExtensions = async ({ limit, offset } = {}) =>
 export const listAvailableExtensions = async () =>
   get(`${API_BASE}/extensions/available`);
 
-export const listKnownExtensions = async () =>
-  get(`${API_BASE}/extensions/known`);
+export const listKnownExtensions = async ({ search, sort, limit, offset } = {}) =>
+  get(`${API_BASE}/extensions/known`, { search, sort, limit, offset });
 
 export const getKnownExtension = async (name) =>
   get(`${API_BASE}/extensions/known`, { name });
+
+export const rateExtension = async (name, rating) =>
+  put(`${API_BASE}/extensions/rating`, { name, rating });
 
 /*
   Dashboard
@@ -318,8 +321,8 @@ export const dismissNotification = async (id) =>
 export const listRealtimeConnections = async () =>
   get(`${API_BASE}/realtime/connections`);
 
-export const installExtension = async (name) =>
-  post(`${API_BASE}/extensions`, { name });
+export const installExtension = async (name, { withDependencies = false } = {}) =>
+  post(`${API_BASE}/extensions`, { name, withDependencies });
 
 export const uninstallExtension = async (name, purgeData = false) =>
   del(`${API_BASE}/extensions`, { name, purgeData });
