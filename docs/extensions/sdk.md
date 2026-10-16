@@ -1578,35 +1578,55 @@ import { updateExtension } from 'kempo/server/sdk.js';
 const [error, extension] = await updateExtension('blog');
 ```
 
-### `uninstallExtension(name)`
+### `uninstallExtension({ name, purgeData, cascade })`
 
-Uninstall an extension.
+Uninstall an extension. An extension cannot stay installed without what it requires, so one that other
+installed extensions require (directly or through another, disabled ones included) is **refused** with a
+409 whose `error.dependents` is the whole chain. Pass `cascade: true` to uninstall that chain first,
+deepest first, and then the extension; `purgeData` applies to all of them. The result is
+`{ success, uninstalled }`.
 
 ```javascript
 import { uninstallExtension } from 'kempo/server/sdk.js';
 
-const [error] = await uninstallExtension('blog');
+const [error, result] = await uninstallExtension({ name: 'kempo-files' });
+// error.code === 409, error.dependents: [{ name, requires, enabled }, ...]
+
+const [, done] = await uninstallExtension({ name: 'kempo-files', cascade: true });
+// done.uninstalled: ['kempo-media', 'kempo-thumbs', 'kempo-user-dirs', 'kempo-files']
 ```
 
-### `enableExtension(name)`
+### `enableExtension({ name, cascade })`
 
-Enable a disabled extension.
+Enable a disabled extension. It cannot run without what it requires, so one whose requirements are
+switched off is **refused** with a 409 whose `error.requirements` is the chain of them (dependencies
+first). Pass `cascade: true` to enable them with it; the result's `enabledNames` lists everything that
+was enabled. A requirement that is not installed at all is refused either way, with `error.missing`.
 
 ```javascript
 import { enableExtension } from 'kempo/server/sdk.js';
 
-const [error, extension] = await enableExtension('blog');
+const [error, extension] = await enableExtension({ name: 'kempo-media', cascade: true });
+// extension.enabledNames: ['kempo-files', 'kempo-thumbs', 'kempo-media']
 ```
 
-### `disableExtension(name)`
+### `disableExtension({ name, cascade })`
 
-Disable an extension without uninstalling.
+Disable an extension without uninstalling. Whatever enabled extensions require it (directly or through
+another) cannot keep running, so it is **refused** with a 409 whose `error.dependents` is that chain.
+Pass `cascade: true` to disable them together in one statement; the result's `disabled` lists them.
 
 ```javascript
 import { disableExtension } from 'kempo/server/sdk.js';
 
-const [error, extension] = await disableExtension('blog');
+const [error, extension] = await disableExtension({ name: 'kempo-files', cascade: true });
+// extension.disabled: ['kempo-media', 'kempo-thumbs', 'kempo-user-dirs', 'kempo-files']
 ```
+
+> **`cascade: true` is the caller's confirmation.** Kempo does not ask anyone anything: passing it says
+> that whoever is acting has been shown the chain and agreed. Fetch it first with
+> `GET /kempo/api/extensions/<name>/dependents` (add `?includeDisabled=true` for uninstalling) or
+> `/requirements`, show it, and only then send `cascade: true`. Without it, nothing is changed.
 
 ## Usage in Extensions
 
