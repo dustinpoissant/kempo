@@ -5,6 +5,10 @@
 its README and see what it requires and adds, and install it. The marketplace today lists first-party
 extensions only, all free.
 
+## Finding and viewing extensions
+
+**Browse extensions** lists what is **not installed yet** on this site, so it is always a list of things you could add. Installed extensions are on the Extensions page, where the store button on each row opens that extension's marketplace page: README, what it requires and adds, and your rating of it.
+
 ## Installing from it
 
 An extension's page shows the **whole tree** it needs: the extensions it requires, and the ones those
@@ -58,7 +62,7 @@ All need `system:extensions:read` (install and rating need `system:extensions:in
 
 | Request | Answer |
 | --- | --- |
-| `GET /kempo/api/extensions/known?search=&sort=&limit=&offset=` | a page of cards from the marketplace (`sort`: `installs`, `rating`, `name`, `updated`) |
+| `GET /kempo/api/extensions/known?search=&sort=&limit=&offset=` | a page of cards from the marketplace that are not installed here (`sort`: `installs`, `rating`, `name`, `updated`); add `includeInstalled=true` to list everything |
 | `GET /kempo/api/extensions/known?name=<name>` | one extension in full, with its dependency tree, whether it is installed here, and this site's own rating |
 | `GET /kempo/api/extensions/available` | packages already downloaded into this site |
 | `POST /kempo/api/extensions` `{ name, withDependencies }` | downloads (if needed) and installs; with `withDependencies` it installs the whole tree first |

@@ -1,6 +1,6 @@
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { NAME_PATTERN } from './catalogClient.js';
+import { NAME_PATTERN } from './marketplaceClient.js';
 
 const run = promisify(execFile);
 

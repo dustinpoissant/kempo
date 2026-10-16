@@ -22,7 +22,7 @@ export default async (request, response) => {
 
   const { name, withDependencies } = request.body || {};
 
-  const { default: getMarketplaceClient } = await import('../../../../server/utils/extensions/getMarketplaceClient.js');
+  const { default: getSiteMarketplaceClient } = await import('../../../../server/utils/extensions/getSiteMarketplaceClient.js');
   const { default: getSiteInstallId } = await import('../../../../server/utils/extensions/getSiteInstallId.js');
   const { default: installFromCatalog } = await import('../../../../server/utils/extensions/installFromCatalog.js');
 
@@ -30,7 +30,7 @@ export default async (request, response) => {
   const [error, data] = await installFromCatalog({
     name,
     withDependencies: withDependencies === true,
-    client: await getMarketplaceClient(),
+    client: await getSiteMarketplaceClient(),
     installId,
   });
 

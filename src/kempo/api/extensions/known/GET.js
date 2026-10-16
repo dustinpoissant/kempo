@@ -1,12 +1,16 @@
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
-import getMarketplaceClient from '../../../../../server/utils/extensions/getMarketplaceClient.js';
+import getSiteMarketplaceClient from '../../../../../server/utils/extensions/getSiteMarketplaceClient.js';
 import getSiteInstallId from '../../../../../server/utils/extensions/getSiteInstallId.js';
 import getExtension from '../../../../../server/utils/extensions/getExtension.js';
+import db from '../../../../../server/db/index.js';
+import { extension } from '../../../../../server/db/schema.js';
 
 /*
   The extension marketplace, through this site's server (the browser never calls it directly).
 
-    GET /kempo/api/extensions/known?search=&sort=&limit=&offset=   a page of cards
+    GET /kempo/api/extensions/known?search=&sort=&limit=&offset=   a page of cards, without what is
+                                                                   installed here (includeInstalled=true
+                                                                   lists everything)
     GET /kempo/api/extensions/known?name=<name>                    one extension in full, plus whether
                                                                    it is installed here and this site's
                                                                    own rating of it
@@ -23,7 +27,7 @@ export default async (request, response) => {
     return response.status(403).json({ error: 'Insufficient permissions' });
   }
 
-  const client = await getMarketplaceClient();
+  const client = await getSiteMarketplaceClient();
   const { name, search, sort, limit, offset } = request.query;
 
   if(name){
@@ -47,7 +51,17 @@ export default async (request, response) => {
     });
   }
 
-  const [error, page] = await client.list({ search, sort, limit, offset });
+  /*
+    What is already installed is not offered again: the Browse page is for finding something to add,
+    and an installed extension's own page is reached from the Installed table. `includeInstalled=true`
+    lists everything.
+  */
+  let exclude = [];
+  if(request.query.includeInstalled !== 'true'){
+    exclude = (await db.select({ name: extension.name }).from(extension)).map(row => row.name);
+  }
+
+  const [error, page] = await client.list({ search, sort, limit, offset, exclude });
   if(error){
     return response.status(error.code).json({ error: error.msg });
   }

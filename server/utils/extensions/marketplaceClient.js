@@ -181,12 +181,15 @@ export const createCatalogClient = ({ baseUrl = DEFAULT_CATALOG_URL, fetchImpl =
   };
 
   return {
-    list: ({ search, sort, limit, offset } = {}) => {
+    /* `exclude` is a list of extension names to leave out, which is how a site hides what it has installed. */
+    list: ({ search, sort, limit, offset, exclude } = {}) => {
       const query = new URLSearchParams();
       if(search) query.set('search', String(search).slice(0, 100));
       if(sort) query.set('sort', String(sort));
       if(limit) query.set('limit', String(limit));
       if(offset) query.set('offset', String(offset));
+      const excluded = (Array.isArray(exclude) ? exclude : []).filter(name => NAME_PATTERN.test(name || '')).slice(0, 500);
+      if(excluded.length) query.set('exclude', excluded.join(','));
       return read(`/extensions${query.size ? `?${query}` : ''}`, normalizePage);
     },
 

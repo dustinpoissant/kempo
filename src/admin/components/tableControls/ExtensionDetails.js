@@ -3,13 +3,14 @@ import { html } from '/kempo-ui/lit-all.min.js';
 import '/kempo-ui/components/Icon.js';
 
 /*
-  Opens the full details page for a row's extension (README, what it requires and adds, rating,
-  install). The page shows whatever the marketplace knows; for an extension it does not list it says so.
+  Opens the marketplace page for a row's extension: its README, what it requires and adds, its rating (which
+  can be changed from there once it is installed). The page shows whatever the marketplace knows; for an
+  extension it does not list it says so.
 */
 export default class ExtensionDetails extends AdminTableControl {
   connectedCallback(){
     super.connectedCallback();
-    if(!this.hasAttribute('title')) this.title = 'Extension Details';
+    if(!this.hasAttribute('title')) this.title = 'View in Store';
   }
 
   handleAction(){
@@ -17,7 +18,7 @@ export default class ExtensionDetails extends AdminTableControl {
     window.location.href = `/admin/extensions/details/?name=${encodeURIComponent(this.record.name)}`;
   }
 
-  render(){ return html`<k-icon name="info"></k-icon>`; }
+  render(){ return html`<k-icon name="storefront"></k-icon>`; }
 }
 
 customElements.define('admin-extension-details', ExtensionDetails);

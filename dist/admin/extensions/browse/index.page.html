@@ -15,7 +15,7 @@
 		</a>
 	</div>
 	<h1>Browse Extensions</h1>
-	<p class="tc-muted">Extensions from the Kempo marketplace. Pick one to see what it does and what it needs before installing it.</p>
+	<p class="tc-muted">Extensions from the Kempo marketplace that are not installed here yet. Pick one to see what it does and what it needs before installing it. Installed ones are on the <a href="/admin/extensions">Extensions</a> page, with a store button to see their page.</p>
 
 	<div class="row mb">
 		<div class="col mr">
@@ -95,6 +95,9 @@
 		}
 
 		cards.replaceChildren(...data.items.map(card));
+		empty.textContent = search.value.trim()
+			? 'No extensions match that search.'
+			: 'Everything in the marketplace is already installed on this site.';
 		empty.hidden = data.total > 0;
 		pagination.totalItems = data.total;
 		pagination.page = page;

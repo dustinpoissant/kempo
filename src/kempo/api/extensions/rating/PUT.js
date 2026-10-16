@@ -1,5 +1,5 @@
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
-import getMarketplaceClient from '../../../../../server/utils/extensions/getMarketplaceClient.js';
+import getSiteMarketplaceClient from '../../../../../server/utils/extensions/getSiteMarketplaceClient.js';
 import getSiteInstallId from '../../../../../server/utils/extensions/getSiteInstallId.js';
 import getExtension from '../../../../../server/utils/extensions/getExtension.js';
 
@@ -37,7 +37,7 @@ export default async (request, response) => {
     return response.status(idError.code).json({ error: idError.msg });
   }
 
-  const client = await getMarketplaceClient();
+  const client = await getSiteMarketplaceClient();
 
   /*
     A site that installed before the marketplace existed was never counted. Reporting is idempotent, so

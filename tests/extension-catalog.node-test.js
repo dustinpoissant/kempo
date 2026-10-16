@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const load = file => import(pathToFileURL(path.join(root, file)).href);
 
-const { createCatalogClient, normalizeDetails, normalizePage } = await load('server/utils/extensions/catalogClient.js');
+const { createCatalogClient, normalizeDetails, normalizePage } = await load('server/utils/extensions/marketplaceClient.js');
 const { default: installFromCatalog } = await load('server/utils/extensions/installFromCatalog.js');
 const { default: installPackage } = await load('server/utils/extensions/installPackage.js');
 
@@ -137,6 +137,16 @@ export default {
     const [install, rate] = net.calls;
     if(install.method !== 'POST' || install.url !== `${BASE}/extensions/kempo-files/installs` || install.body.installId !== 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa') return fail(`install: ${JSON.stringify(install)}`);
     if(rate.method !== 'PUT' || rate.body.rating !== 4) return fail(`rate: ${JSON.stringify(rate)}`);
+    pass('');
+  },
+
+  'a list can leave out what is installed, by name, and only by valid names': async ({ pass, fail }) => {
+    const net = network({ '*': reply(200, { total: 0, limit: 24, offset: 0, items: [] }) });
+    const client = createCatalogClient({ baseUrl: BASE, fetchImpl: net.fetchImpl });
+    await client.list({ exclude: ['kempo-files', 'kempo-media', '../bad', 'Has Spaces', null] });
+    if(net.calls[0].url !== `${BASE}/extensions?exclude=kempo-files%2Ckempo-media`) return fail(`url: ${net.calls[0].url}`);
+    await client.list({ exclude: [] });
+    if(net.calls[1].url !== `${BASE}/extensions`) return fail(`an empty exclude was sent: ${net.calls[1].url}`);
     pass('');
   },
 

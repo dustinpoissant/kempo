@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import installExtension from './installExtension.js';
 import installPackage from './installPackage.js';
 import enableExtension from './enableExtension.js';
-import { NAME_PATTERN } from './catalogClient.js';
+import { NAME_PATTERN } from './marketplaceClient.js';
 
 const isInstalled = async name => {
   const [row] = await db.select({ name: extension.name }).from(extension).where(eq(extension.name, name)).limit(1);

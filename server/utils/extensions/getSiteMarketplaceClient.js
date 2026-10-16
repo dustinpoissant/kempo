@@ -1,5 +1,5 @@
 import getSetting from '../settings/getSetting.js';
-import { createCatalogClient, DEFAULT_CATALOG_URL } from './catalogClient.js';
+import { createCatalogClient, DEFAULT_CATALOG_URL } from './marketplaceClient.js';
 
 const clients = new Map();
 
