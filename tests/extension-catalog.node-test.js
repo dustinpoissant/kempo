@@ -166,6 +166,7 @@ export default {
       installId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
       deps: {
         isInstalled: async name => installedNow.has(name),
+        isEnabled: async () => true,
         hasPackage: name => onDisk.has(name),
         download: async ({ name, version }) => { log.push(`download ${name}@${version}`); onDisk.add(name); return [null, {}]; },
         install: async ({ name }) => { log.push(`install ${name}`); installedNow.add(name); return [null, { name }]; },
@@ -178,6 +179,30 @@ export default {
     await new Promise(resolve => setTimeout(resolve, 20));
     const reported = net.calls.filter(call => call.method === 'POST').map(call => call.url.split('/').slice(-2)[0]);
     if(reported.join() !== 'kempo-thumbs,kempo-media') return fail(`reported: ${reported}`);
+    pass('');
+  },
+
+  'a requirement that is installed but switched off is enabled with the approved chain, never silently without it': async ({ pass, fail }) => {
+    const net = network({ '*': reply(200, details('kempo-media', [{ name: 'kempo-files' }, { name: 'kempo-thumbs' }])) });
+    const client = createCatalogClient({ baseUrl: BASE, fetchImpl: net.fetchImpl });
+    const state = new Map([['kempo-files', false], ['kempo-thumbs', true]]);
+    const log = [];
+    const deps = {
+      isInstalled: async name => state.has(name),
+      isEnabled: async name => state.get(name) === true,
+      hasPackage: () => true,
+      download: async () => { log.push('download'); return [null, {}]; },
+      enable: async ({ name }) => { log.push(`enable ${name}`); state.set(name, true); return [null, {}]; },
+      install: async ({ name }) => { log.push(`install ${name}`); state.set(name, true); return [null, { name }]; },
+    };
+
+    const [refused] = await installFromCatalog({ name: 'kempo-media', client, deps });
+    if(refused?.code !== 409 || refused.needs.join() !== 'kempo-files' || log.length) return fail(`without approval: ${JSON.stringify(refused)} ${log}`);
+
+    const [error, result] = await installFromCatalog({ name: 'kempo-media', withDependencies: true, client, deps });
+    if(error) return fail(`approved: ${JSON.stringify(error)}`);
+    if(log.join() !== 'enable kempo-files,install kempo-media') return fail(`order: ${log.join()}`);
+    if(result.enabled.join() !== 'kempo-files' || result.installed.join() !== 'kempo-media') return fail(`result: ${JSON.stringify(result)}`);
     pass('');
   },
 

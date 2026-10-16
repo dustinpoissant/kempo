@@ -327,8 +327,11 @@ export const installExtension = async (name, { withDependencies = false } = {}) 
 export const uninstallExtension = async (name, purgeData = false, { cascade = false } = {}) =>
   del(`${API_BASE}/extensions`, { name, purgeData, cascade });
 
-export const enableExtension = async (name) =>
-  post(`${API_BASE}/extensions/${encodeURIComponent(name)}/enable`, {});
+export const enableExtension = async (name, { cascade = false } = {}) =>
+  post(`${API_BASE}/extensions/${encodeURIComponent(name)}/enable`, { cascade });
+
+export const getExtensionRequirements = async (name) =>
+  get(`${API_BASE}/extensions/${encodeURIComponent(name)}/requirements`);
 
 export const disableExtension = async (name, { cascade = false } = {}) =>
   post(`${API_BASE}/extensions/${encodeURIComponent(name)}/disable`, { cascade });

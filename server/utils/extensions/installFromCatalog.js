@@ -5,11 +5,17 @@ import { extension } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
 import installExtension from './installExtension.js';
 import installPackage from './installPackage.js';
+import enableExtension from './enableExtension.js';
 import { NAME_PATTERN } from './catalogClient.js';
 
 const isInstalled = async name => {
   const [row] = await db.select({ name: extension.name }).from(extension).where(eq(extension.name, name)).limit(1);
   return !!row;
+};
+
+const isEnabled = async name => {
+  const [row] = await db.select({ enabled: extension.enabled }).from(extension).where(eq(extension.name, name)).limit(1);
+  return row?.enabled === true;
 };
 
 const hasPackage = name => existsSync(join(process.cwd(), 'node_modules', name, 'package.json'));
@@ -31,6 +37,8 @@ export default async ({ name, withDependencies = false, client, installId, repor
   const download = deps.download || installPackage;
   const install = deps.install || installExtension;
   const installed = deps.isInstalled || isInstalled;
+  const enabled = deps.isEnabled || isEnabled;
+  const enable = deps.enable || enableExtension;
   const present = deps.hasPackage || hasPackage;
 
   if(typeof name !== 'string' || !NAME_PATTERN.test(name)){
@@ -65,18 +73,30 @@ export default async ({ name, withDependencies = false, client, installId, repor
   if(!withDependencies){
     const needs = [];
     for(const step of plan.slice(0, -1)){
-      if(!(await installed(step.name))) needs.push(step.name);
+      if(!(await installed(step.name)) || !(await enabled(step.name))) needs.push(step.name);
     }
     if(needs.length){
-      return [{ code: 409, msg: `Requires ${needs.join(', ')} to be installed first`, needs }, null];
+      return [{ code: 409, msg: `Requires ${needs.join(', ')} to be installed and enabled first`, needs }, null];
     }
   }
 
   const done = [];
+  const switchedOn = [];
   let result = {};
 
   for(const step of withDependencies ? plan : plan.slice(-1)){
-    if(await installed(step.name)) continue;
+    /*
+      Installed but switched off is not usable as a requirement. The administrator approved this chain,
+      so it is switched on rather than refused.
+    */
+    if(await installed(step.name)){
+      if(!(await enabled(step.name))){
+        const [enableError] = await enable({ name: step.name, cascade: true });
+        if(enableError) return [{ ...enableError, installed: done, enabled: switchedOn }, null];
+        switchedOn.push(step.name);
+      }
+      continue;
+    }
 
     if(!present(step.name)){
       if(!step.installable){
@@ -103,5 +123,5 @@ export default async ({ name, withDependencies = false, client, installId, repor
     }
   }
 
-  return [null, { name, installed: done, ...result }];
+  return [null, { name, installed: done, enabled: switchedOn, ...result }];
 };

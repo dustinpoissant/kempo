@@ -51,8 +51,8 @@
 		</div>
 
 		<div id="treeBlock" class="d-n">
-			<h2>Installing also installs</h2>
-			<p class="tc-muted">In this order, before the extension itself:</p>
+			<h2>Installing also changes</h2>
+			<p class="tc-muted">It cannot run without these, so they are installed or enabled first, in this order:</p>
 			<ol id="tree"></ol>
 		</div>
 
@@ -122,18 +122,25 @@
 		$('readme').value = item.readme || '*This extension has no README.*';
 
 		/*
-			What installing will do: the extensions it needs that this site does not have yet, in order.
+			What installing will change, worked out before anything is offered: the extensions it needs that
+			this site does not have yet (downloaded and installed), and the ones it has but has switched
+			off (enabled). An extension cannot run without what it requires, so the administrator approves
+			the whole list or none of it.
 		*/
 		const [, installedData] = await listExtensions({ limit: 200 });
-		const installedNames = new Set((installedData?.items || []).map(extension => extension.name));
-		const missing = item.dependencies.extensions.filter(dependency => !installedNames.has(dependency.name));
+		const installedState = new Map((installedData?.items || []).map(extension => [extension.name, extension.enabled]));
+		const missing = item.dependencies.extensions.filter(dependency => !installedState.has(dependency.name));
+		const switchedOff = item.dependencies.extensions.filter(dependency => installedState.get(dependency.name) === false);
 
-		if(missing.length){
-			$('tree').replaceChildren(...missing.map(dependency => {
-				const li = document.createElement('li');
-				li.textContent = `${dependency.name} ${dependency.version}${dependency.installable ? '' : ' (not published yet)'}`;
-				return li;
-			}));
+		if(missing.length || switchedOff.length){
+			$('tree').replaceChildren(...item.dependencies.extensions
+				.filter(dependency => missing.includes(dependency) || switchedOff.includes(dependency))
+				.map(dependency => {
+					const li = document.createElement('li');
+					const action = missing.includes(dependency) ? 'install' : 'enable';
+					li.textContent = `${dependency.name} ${dependency.version} (${action}${dependency.installable || action === 'enable' ? '' : ', not published yet'})`;
+					return li;
+				}));
 			show('treeBlock');
 		}
 
@@ -183,21 +190,31 @@
 			const contents = document.createElement('div');
 			contents.className = 'p';
 
+			const total = missing.length + switchedOff.length + 1;
+
 			const intro = document.createElement('p');
-			intro.textContent = missing.length
-				? `Installing "${item.name}" also downloads and installs these extensions first, in this order:`
+			intro.textContent = total > 1
+				? `"${item.name}" cannot run without the extensions below, so installing it also changes these, in this order:`
 				: `Install "${item.name}"?`;
 			contents.append(intro);
 
-			if(missing.length){
+			const step = (title, dependencies) => {
+				if(!dependencies.length) return;
+				const heading = document.createElement('p');
+				heading.className = 'mb0';
+				const strong = document.createElement('strong');
+				strong.textContent = title;
+				heading.append(strong);
 				const ol = document.createElement('ol');
-				for(const dependency of missing){
+				for(const dependency of dependencies){
 					const li = document.createElement('li');
 					li.textContent = `${dependency.name} ${dependency.version}`;
 					ol.append(li);
 				}
-				contents.append(ol);
-			}
+				contents.append(heading, ol);
+			};
+			step('Downloaded and installed', missing);
+			step('Already installed, will be enabled', switchedOff);
 
 			const note = document.createElement('p');
 			note.className = 'tc-muted';
@@ -205,10 +222,10 @@
 			contents.append(note);
 
 			Dialog.create(contents, {
-				title: 'Install Extension',
+				title: total > 1 ? `Install ${total} Extensions` : 'Install Extension',
 				closeBtn: false,
 				overlayClose: false,
-				confirmText: missing.length ? `Install ${missing.length + 1} extensions` : 'Install',
+				confirmText: total > 1 ? `Install and enable ${total} extensions` : 'Install',
 				cancelText: 'Cancel',
 				confirmAction: async () => {
 					const [installError, result] = await installExtension(name, { withDependencies: true });
@@ -216,7 +233,8 @@
 						Toast.error(installError.msg || 'Failed to install the extension');
 						return;
 					}
-					Toast.success(`Installed ${result.installed?.join(', ') || name}`);
+					const enabled = result.enabled?.length ? `, enabled ${result.enabled.join(', ')}` : '';
+					Toast.success(`Installed ${result.installed?.join(', ') || name}${enabled}`);
 					window.location.reload();
 				},
 			});
