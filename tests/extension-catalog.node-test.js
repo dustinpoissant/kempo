@@ -3,7 +3,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 
 /*
   The marketplace client and the install-with-dependencies flow. The network, npm and the database are
-  all passed in, so nothing here reaches extensions.kempo.dev or installs anything.
+  all passed in, so nothing here reaches kempo.dev or installs anything.
 */
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

@@ -1,7 +1,7 @@
 # The extension marketplace
 
 **Admin > Extensions > Browse extensions** is a storefront for the Kempo extension marketplace at
-<https://extensions.kempo.dev>. You can search it, sort by installs or rating, open an extension to read
+<https://kempo.dev>. You can search it, sort by installs or rating, open an extension to read
 its README and see what it requires and adds, and install it. The marketplace today lists first-party
 extensions only, all free.
 
@@ -32,7 +32,7 @@ Your site's **server** talks to the marketplace; your browser never does.
   or its address.
 
 To use a different marketplace, or none, set the `system:extensions_catalog_url` setting to its API
-address (default `https://extensions.kempo.dev/api/v1`). An empty value turns the marketplace off: the
+address (default `https://kempo.dev/api/v1`). An empty value turns the marketplace off: the
 Browse page then says so and nothing is sent. It is not one of the seeded default settings (seeding
 rewrites those on every run), so create it only if you want to change it.
 

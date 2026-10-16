@@ -1,5 +1,5 @@
 /*
-  The extension marketplace (https://extensions.kempo.dev), as this site's SERVER sees it. The browser
+  The extension marketplace (https://kempo.dev), as this site's SERVER sees it. The browser
   only ever talks to this site's own API, which calls this.
 
     list      a page of cards: search, sort, limit, offset
@@ -15,7 +15,7 @@
   Every function returns [error, data] and never throws.
 */
 
-export const DEFAULT_CATALOG_URL = 'https://extensions.kempo.dev/api/v1';
+export const DEFAULT_CATALOG_URL = 'https://kempo.dev/api/v1';
 
 export const NAME_PATTERN = /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/;
 
