@@ -37,5 +37,9 @@ export const decryptSecret = encoded => {
   const ciphertext = data.subarray(28);
   const decipher = crypto.createDecipheriv('aes-256-gcm', getKey(), iv);
   decipher.setAuthTag(authTag);
-  return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
+  try {
+    return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString('utf8');
+  } catch {
+    throw new Error('A stored secret could not be decrypted: SETTINGS_ENCRYPTION_KEY is not the key it was saved with. Restore the original key, or enter the credential again');
+  }
 };

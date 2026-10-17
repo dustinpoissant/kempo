@@ -2,24 +2,18 @@ import { getTableConfig } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import db from '../../db/index.js';
 
-const TYPE_MAP = {
-  PgText: 'text',
-  PgVarchar: 'varchar',
-  PgChar: 'char',
-  PgBoolean: 'boolean',
-  PgInteger: 'integer',
-  PgBigInt53: 'bigint',
-  PgSerial: 'serial',
-  PgSmallInt: 'smallint',
-  PgDoublePrecision: 'double precision',
-  PgReal: 'real',
-  PgNumeric: 'numeric',
-  PgTimestamp: 'timestamp',
-  PgDate: 'date',
-  PgTime: 'time',
-  PgJsonb: 'jsonb',
-  PgJson: 'json',
-  PgUUID: 'uuid',
+/*
+  A column's SQL type is whatever Drizzle says it is (`bigserial`, `varchar(255)`, `timestamp`, `text[]`), never a
+  guess. A hand-kept map of types once sent `bigserial` to `text` with no sequence, which made a table that could
+  not take an insert. An enum has a type of its own that does not exist here yet, so it is stored as text.
+*/
+const sqlTypeOf = column => {
+  if(column.columnType === 'PgEnumColumn') return 'text';
+  try {
+    return column.getSQLType();
+  } catch {
+    return 'text';
+  }
 };
 
 const serializeDefault = (value) => {
@@ -33,8 +27,7 @@ const tableToSql = (table) => {
   const config = getTableConfig(table);
   const primaryKeys = config.columns.filter(c => c.primary).map(c => c.name);
   const cols = config.columns.map(c => {
-    const type = TYPE_MAP[c.columnType] || 'text';
-    let def = `"${c.name}" ${type}`;
+    let def = `"${c.name}" ${sqlTypeOf(c)}`;
     if(c.notNull) def += ' NOT NULL';
     if(c.hasDefault && c.default !== undefined) def += ` DEFAULT ${serializeDefault(c.default)}`;
     if(c.primary && primaryKeys.length === 1) def += ' PRIMARY KEY';

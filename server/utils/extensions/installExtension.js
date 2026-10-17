@@ -14,6 +14,11 @@ import createTablesFromSchema from './createTablesFromSchema.js';
 import readKempoConfig from './readKempoConfig.js';
 import { invalidateScopeCache } from './scopeCache.js';
 import { getUnmetDependencies } from './dependencies.js';
+import registerJobs from '../scheduler/registerJobs.js';
+import { normalizeJobs } from '../scheduler/helpers.js';
+import { normalizeAliases } from './aliases.js';
+import { normalizeScopes, scopeNames } from './scopes.js';
+import checkClaims from './checkClaims.js';
 
 export default async ({ name }) => {
   if(!name){
@@ -47,6 +52,22 @@ export default async ({ name }) => {
   if(unmet.length){
     return [{ code: 409, msg: `Requires ${unmet.join(', ')} to be installed and enabled first` }, null];
   }
+
+  const [jobsError] = normalizeJobs(kempoConfig.jobs);
+  if(jobsError) return [jobsError, null];
+
+  const [scopesError] = normalizeScopes(kempoConfig);
+  if(scopesError) return [scopesError, null];
+
+  const [aliasesError] = normalizeAliases(kempoConfig.aliases, scopeNames(kempoConfig));
+  if(aliasesError) return [aliasesError, null];
+
+  /*
+    An address can belong to one extension only. Installing a second one that claims it would leave
+    it with no public pages and no error, so it is refused here and the first has to be disabled.
+  */
+  const [claimsError] = await checkClaims({ names: [name], verb: 'install', kempo: { [name]: kempoConfig } });
+  if(claimsError) return [claimsError, null];
 
   /*
     Create tables from declarative schema
@@ -128,6 +149,17 @@ export default async ({ name }) => {
     const [widgetError] = await registerDashboardWidget({ ...widget, owner: name });
     if(widgetError){
       console.warn(`[${name}] dashboard widget "${widget.key}" was not registered: ${widgetError.msg}`);
+    }
+  }
+
+  /*
+    Register declarative scheduled jobs. Like a widget, a job that cannot be registered (a site that has
+    not applied the scheduledJob table yet) is reported and skipped rather than failing the install.
+  */
+  if((kempoConfig.jobs || []).length){
+    const [registerError] = await registerJobs({ owner: name, jobs: kempoConfig.jobs });
+    if(registerError){
+      console.warn(`[${name}] scheduled jobs were not registered: ${registerError.msg}`);
     }
   }
 

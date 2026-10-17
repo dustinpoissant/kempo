@@ -47,8 +47,7 @@ The server configuration file. The most important sections:
     "/kempo/**": "../node_modules/kempo/dist/kempo/**"
   },
   "middleware": [
-    "../node_modules/kempo/middleware/auth.js",
-    "../node_modules/kempo/middleware/extension-scope-router.js"
+    "../node_modules/kempo/middleware/kempo.js"
   ]
 }
 ```
@@ -85,8 +84,7 @@ node_modules/kempo/
 │   ├── api/           # REST API route handlers (/kempo/api/**)
 │   └── admin/         # Admin panel pages (/kempo/admin/**)
 ├── middleware/
-│   ├── auth.js        # Session + permission middleware
-│   └── extension-scope-router.js
+│   └── kempo.js       # Sessions, permission gating, extension pages and routes
 ├── server/
 │   ├── db/
 │   │   ├── schema.js  # Built-in database tables

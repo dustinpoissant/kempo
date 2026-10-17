@@ -179,6 +179,7 @@ Kempo provides these tables out of the box:
 | `notification` | Notifications raised by core or extensions: title, message, level, actions, dedupe key |
 | `notificationRecipient` | One row per person a notification was sent to, with their own read, handled and dismissed state |
 | `dashboardWidget` | Widgets extensions add to the admin dashboard: element, module script, size limits, permission |
+| `scheduledJob` | Recurring jobs extensions declare with `jobs`: interval, next run, and the lease that stops two processes running one |
 
 ## Frontend SDK
 
@@ -364,6 +365,10 @@ The admin home page is a grid of widgets one to four blocks wide and one to thre
 ## Notifications
 
 Core and extensions can notify users with `createNotification`: to specific users, everyone holding a permission, or a group. Each person has their own read state and history, a notification can carry buttons that link somewhere or call an API as the signed-in user, and a `dedupeKey` keeps a repeating event to one notification. The admin has a bell with an unread count and a Notifications page; a public site can use `<k-notification-bell>`. Existing sites need `npx drizzle-kit push` to add the two new tables. See [docs/notifications.md](docs/notifications.md).
+
+## Scheduled Jobs, Aliases and Email Templates for Extensions
+
+Extensions can declare `jobs` in `kempo-config.json` and kempo runs them on a timer (several processes sharing a database run each once per interval), `aliases` to answer on a short address such as `/cart`, and ship their own email templates as `owner/name`. Existing sites need `npx drizzle-kit push` to add the `scheduledJob` table. See [docs/extensions/creating-extensions.md](docs/extensions/creating-extensions.md).
 
 ## Email
 

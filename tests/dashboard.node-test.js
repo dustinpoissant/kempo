@@ -131,6 +131,11 @@ const pure = {
       expect(result === null && error?.code === 400, `${why} should be refused`);
     }
     const [error, clean] = normalizeWidget(base);
+    const [, withSrc] = normalizeWidget({ ...base, iconSrc: '/my-ext/icons/orders.svg' });
+    expect(withSrc?.iconSrc === '/my-ext/icons/orders.svg' && clean.iconSrc === null, 'iconSrc is kept, and is null when not given');
+    for(const bad of ['https://evil.example/x.svg', '//evil.example/x.svg', 'orders.svg', `/${'a'.repeat(200)}.svg`]){
+      expect(normalizeWidget({ ...base, iconSrc: bad })[0]?.code === 400, `iconSrc ${bad.slice(0, 20)} should be refused`);
+    }
     const [, withActions] = normalizeWidget({ ...base, actions: [{ label: ' New ', href: '/a/new', icon: 'add', permission: 'x:y', extra: 'dropped' }] });
     expect(JSON.stringify(withActions.actions) === JSON.stringify([{ label: 'New', href: '/a/new', icon: 'add', permission: 'x:y' }]), `actions are reduced to the known fields, got ${JSON.stringify(withActions.actions)}`);
     expect(error === null && clean.defaultWidth === 2 && clean.defaultHeight === 1 && clean.minWidth === 1 && clean.maxHeight === 3 && clean.defaultVisible === true, 'the defaults fill in');

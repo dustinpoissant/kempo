@@ -56,7 +56,7 @@ Widgets are registered on install, refreshed on update (and removed when no long
 | `title` | Required, up to 100 characters. The default header shows it. |
 | `element` | Required. The custom element to create, e.g. `my-ext-orders-widget`. |
 | `module` | Required. A site path (starting with a single `/`) to the script that defines the element. |
-| `description`, `icon` | Optional. Shown when the user adds the widget back. `icon` is a `k-icon` name. |
+| `description`, `icon`, `iconSrc` | Optional. Shown in the widget's header and when the user customizes the dashboard. `icon` is a `k-icon` name from the shared icon set; `iconSrc` is the site path to an SVG your extension ships (`/my-ext/icons/orders.svg`), and wins when both are given. |
 | `defaultWidth`, `defaultHeight` | Initial size in blocks. Default 2 × 1. |
 | `minWidth`, `maxWidth`, `minHeight`, `maxHeight` | What a user may resize to. Default 1–4 and 1–3. |
 | `permission` | Optional. Only people who hold it see the widget. |
@@ -113,7 +113,7 @@ Declare links in the registration:
 ]
 ```
 
-`label` and a site path `href` are required; `icon` is a `k-icon` name; `permission` hides that one action from people who do not hold it (the widget's own `permission` is separate). In a one-block-wide tile an action with an icon shows only the icon.
+`label` and a site path `href` are required; `icon` is a `k-icon` name (an icon your extension ships goes in `iconSrc` on the objects `actions()` and `cta` return, as the path to the file); `permission` hides that one action from people who do not hold it (the widget's own `permission` is separate). In a one-block-wide tile an action with an icon shows only the icon.
 
 For anything that is not a plain link (open a dialog, call an API, then redirect), override `actions()` in the element and return `{ label, icon, onClick, primary }` objects. They are drawn after the declared ones:
 

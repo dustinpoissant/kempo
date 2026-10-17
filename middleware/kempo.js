@@ -5,11 +5,16 @@ import { renderExternalPage } from 'kempo-server/templating';
 import getSession from '../server/utils/auth/getSession.js';
 import currentUserHasPermission from '../server/utils/permissions/currentUserHasPermission.js';
 import { LEXICAL_BASE, bundleFileName as lexicalBundleFileName } from '../server/utils/lexical/packages.js';
-import { getEnabledExtensions } from '../server/utils/extensions/scopeCache.js';
+import { getEnabledExtensions, onExtensionsChanged } from '../server/utils/extensions/scopeCache.js';
+import { resyncMenus } from '../server/utils/menus/store.js';
 import readKempoConfig from '../server/utils/extensions/readKempoConfig.js';
 import { extensionAdminDirs, extensionPublicDirs } from '../server/utils/extensions/contentDirs.js';
 import triggerHook from '../server/utils/hooks/triggerHook.js';
 import { ADMIN_GLOBALS_DIR } from '../server/utils/admin-global-content/helpers.js';
+import { startScheduler } from '../server/utils/scheduler/scheduler.js';
+import { ensureEncryptionKey } from '../server/utils/settings/ensureEncryptionKey.js';
+import { resolveAlias } from '../server/utils/extensions/aliases.js';
+import { normalizeScopes } from '../server/utils/extensions/scopes.js';
 
 const MIME_TYPES = {
   '.js': 'application/javascript',
@@ -177,10 +182,30 @@ const serveDir = async (dirPath, method, request, response, resolveDir, rootDir,
 };
 
 export default config => {
+  startScheduler();
+
+  /*
+    The key that encrypts stored credentials exists before any request needs it, generated into .env the
+    first time when the site has none. Opt out with `autoEncryptionKey: false` in the server config or
+    KEMPO_AUTO_ENCRYPTION_KEY=off, and never in the in-memory test database.
+  */
+  const encryptionKeyReady = config.autoEncryptionKey === false || process.env.KEMPO_AUTO_ENCRYPTION_KEY === 'off' || process.env.KEMPO_DB === 'pglite'
+    ? Promise.resolve()
+    : ensureEncryptionKey().then(([error]) => {
+      if(error) console.error(`[kempo] ${error.msg}`);
+    });
   const PROJECT_PUBLIC = config.rootPath || join(process.cwd(), 'public');
   const ADMIN_ROOT = resolveAdminRoot(config.adminRoot);
 
+  /*
+    A menu holds a copy of what an extension supplied, so it is brought up to date whenever extensions are
+    installed, enabled, disabled or removed: what an extension supplied leaves the site with it. Not at
+    start, when the database may not be answering yet and every extension would look absent.
+  */
+  onExtensionsChanged(() => resyncMenus(PROJECT_PUBLIC));
+
   return async (request, response, next) => {
+    await encryptionKeyReady;
     const { path } = request;
     const url = request.url.split('?')[0];
 
@@ -394,23 +419,34 @@ export default config => {
     */
     const publicContentDirs = await extensionPublicDirs();
 
+    const loaded = [];
     for(const ext of extensions){
       const extRoot = join(NODE_MODULES, ext.name);
-      let kempo;
       try {
-        ({ kempo } = await readKempoConfig(extRoot));
-      } catch {
-        continue;
-      }
+        loaded.push({ extRoot, kempo: (await readKempoConfig(extRoot)).kempo });
+      } catch { /* not readable: nothing to route */ }
+    }
 
-      const scope = kempo['public-scope'];
-      if(!scope) continue;
+    /*
+      An extension may answer on a short address it declares in `aliases` (`/cart` for `/commerce/cart`);
+      the routing below then treats the request as if it had arrived at the real address. A page the
+      site has of its own at that address always wins (see server/utils/extensions/aliases.js).
+    */
+    const routedUrl = await resolveAlias(url, loaded, PROJECT_PUBLIC);
 
-      const scopePrefix = `/${scope}`;
-      if(url !== scopePrefix && !url.startsWith(`${scopePrefix}/`)) continue;
+    for(const { extRoot, kempo } of loaded){
+      /*
+        An extension may claim several scopes, each serving a folder of its package ("public-scope" serves
+        public/, "public-scopes" names others). Installing or enabling one that claims an address another
+        enabled extension has is refused, so at most one extension matches any request.
+      */
+      const [, scopes] = normalizeScopes(kempo);
+      const claimed = scopes.find(({ scope }) => routedUrl === `/${scope}` || routedUrl.startsWith(`/${scope}/`));
+      if(!claimed) continue;
 
-      const publicDir = join(extRoot, 'public');
-      const subPath = url.slice(scopePrefix.length) || '/';
+      const scopePrefix = `/${claimed.scope}`;
+      const publicDir = join(extRoot, claimed.dir);
+      const subPath = routedUrl.slice(scopePrefix.length) || '/';
       const method = request.method?.toUpperCase() || 'GET';
       const resolveDir = buildResolveDir(PROJECT_PUBLIC, url);
       const segments = subPath.replace(/^\//, '').split('/').filter(Boolean);

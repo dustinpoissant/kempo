@@ -1,70 +1,41 @@
 # Middleware
 
 ## Description
-Request interceptors that run before route handlers. Kempo ships two middleware modules: `kempo-auth` for authentication/authorization gating and `extension-scope-router` for serving extension content.
+Request interceptors that run before route handlers. Kempo ships one middleware module, `middleware/kempo.js`, which gates `/admin/**` and `/account/**` behind a session and permissions, serves extensions' `admin/` and `public/` directories, and starts the scheduler.
 
 ## Dependencies
 - kempo-server — middleware signature: `export default (config) => async (request, response, next) => { ... }`
-- [Auth](auth.md) — `kempo-auth` uses session and permission utils
-- [Extensions](../resources/extensions.md) — `extension-scope-router` queries enabled extensions
+- [Auth](auth.md) — it uses session and permission utils
+- [Extensions](../resources/extensions.md) — it queries the enabled extensions for their scopes and aliases
 
 ## Context
-Middleware is registered in `app-public/.config.json` under `middleware.custom`. kempo-server loads and executes them in order before matching route handlers.
+Middleware is registered in the server config (`app-public/.config.json`) under `middleware`. kempo-server loads and runs them in order before matching route handlers.
 
 ### Decisions
-- **Config-factory pattern**: Each middleware file exports a function that receives the server config and returns the actual middleware function. This allows middleware to access server settings.
-- **Order matters**: `kempo-auth` runs before `extension-scope-router`. Auth must be checked first.
-- **Extension scope router is static-only (currently)**: It only serves static files from extension `public/` directories. It does NOT execute route handlers or render templated pages. This is a known limitation that needs to be addressed.
+- **Config-factory pattern**: the file exports a function that receives the server config and returns the middleware function, so it can read server settings (`middleware.adminRoot`).
+- **One file**: authentication and extension serving are in the same module. The older `kempo-auth` and `extension-scope-router` files were unused and have been removed.
+- **Extensions are served fully**: `.page.html` templates are rendered, route handlers (`GET.js`, `POST.js`, ..., `CATCH.js`) run with `(request, response)`, `[param]` directories fill `request.params`, and anything else is served as a static file with its MIME type.
 
 ## Implementation
 
 ### Location
-`middleware/` — registered in `app-public/.config.json` → `middleware.custom`.
+`middleware/kempo.js`, registered as `"../node_modules/kempo/middleware/kempo.js"`.
 
-### kempo-auth.js
-Protects `/account/**` and `/admin/**` routes:
-- All protected routes require a valid session (via `session_token` cookie)
-- `/admin/**` additionally requires `system:admin:access` permission
-- `/admin/pages/edit/**` additionally requires `system:pages:update` permission
-- Unauthenticated users are redirected to `/login`
-- Unauthorized admin access redirects to `/account`
+### Authentication
+- `/account/**` and `/admin/**` need a valid session (the `session_token` cookie).
+- `/admin/**` also needs `system:admin:access`.
+- Unauthenticated users are redirected to `/login`; an authenticated user without admin access is sent to `/account`.
 
-### extension-scope-router.js
-Handles two routing concerns:
-
-**1. Admin extension routing: `/admin/extension/{name}/**`**
-- Matched before the enabled-extensions loop; no DB check needed (kempo-auth already protects all `/admin/**` routes)
-- Maps to the extension's `admin/` directory in `node_modules`
-- Renders `.page.html` files using `renderExternalPage` with `dist/admin/` as the root
-- Falls back to static file serving
-- Supports scoped packages (`@author/package`)
-
-**2. Public scope routing: `/{scope}/**`**
-- Calls `getEnabledExtensions()` from `server/utils/extensions/scopeCache.js` (in-memory cache, invalidated on install/enable/disable/uninstall)
-- For each enabled extension, reads its `package.json` from `node_modules` to find `kempo.public-scope`
-- If the request URL starts with `/{scope}/`, renders a `.page.html` file from the extension's `public/` directory using `renderExternalPage` with the project's template system
-- Falls back to static file serving
-- Falls through to `next()` if no extension matches
-
-`pathToRoot` is computed correctly for extension pages by building a virtual `resolveDir` based on URL depth relative to the root.
-
-**Known limitations**:
-- Does not execute `.js` route handlers (GET.js, POST.js, etc.)
-- Does not support dynamic path parameters (`[id]`)
-- Does not support `CATCH.js` fallback handlers
+### Extension routing
+- **Admin**: `/admin/extension/{name}/**` maps to the extension's `admin/` directory. Supports scoped packages (`@author/package`).
+- **Public**: `/{scope}/**` maps to the `public/` directory of the enabled extension that claims that scope (`public-scope`, or `public-scopes` for several folders). The enabled extensions are cached in memory and invalidated on install, enable, disable and uninstall. When the file is not in the extension, the request falls through to the site's own pages.
+- **Aliases**: an extension's `aliases` map extra addresses onto its files.
 
 ### Config
 ```json
 {
-  "middleware": {
-    "custom": [
-      "../middleware/kempo-auth.js",
-      "../middleware/extension-scope-router.js"
-    ]
-  }
+  "middleware": [
+    "../node_modules/kempo/middleware/kempo.js"
+  ]
 }
 ```
-
-## Notes
-- kempo-server passes `rootPath` to custom middleware via `config.rootPath` so middleware can locate templates.
-- The scope router uses `renderExternalPage` from `kempo-server/templating` to render extension pages with the project's template system.

@@ -37,6 +37,7 @@ The login and register forms are the `<k-login>` and `<k-register>` components, 
 |---|---|
 | `/login` | `login-form-after` |
 | `/register` | `register-form-after` |
+| `/account` | `account-details` (after the profile lines, for things like a balance) and `account-links` (among the buttons, for a link to a page of the extension's own) |
 
 An extension fills one with a `*.global.html` file in its `public/` directory (see [Creating Extensions](extensions/creating-extensions.md#push-globalhtml)). An empty slot renders nothing.
 

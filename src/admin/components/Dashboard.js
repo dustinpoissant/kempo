@@ -206,7 +206,7 @@ export default class Dashboard extends LightComponent {
     <k-sortable-item class="mbh" data-widget-id=${widget.id}>
       <div style="display: flex; flex-wrap: nowrap; align-items: center; gap: var(--spacer); width: ${ROW_WIDTH}; min-height: 3.5rem;">
         <div class="flex" style="display: flex; flex-wrap: nowrap; align-items: center; gap: var(--spacer_h); min-width: 0;">
-          ${widget.icon ? html`<k-icon class=${visible ? '' : 'tc-muted'} name=${widget.icon}></k-icon>` : nothing}
+          ${widget.iconSrc ? html`<k-icon class=${visible ? '' : 'tc-muted'} src=${widget.iconSrc}></k-icon>` : widget.icon ? html`<k-icon class=${visible ? '' : 'tc-muted'} name=${widget.icon}></k-icon>` : nothing}
           <strong class=${visible ? '' : 'tc-muted'}>${widget.title}</strong>
         </div>
         <select style="width: 4.5rem;" aria-label="${widget.title} width" ?disabled=${!visible} @change=${event => this.changeDraft(widget.id, { width: Number(event.target.value) })}>

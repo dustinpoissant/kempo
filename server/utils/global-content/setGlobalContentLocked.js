@@ -1,22 +1,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { GLOBAL_FILE, parseEntries } from './helpers.js';
-
-const serializeEntries = entries => entries.map(e => {
-  const attrs = [
-    `id="${e.id}"`,
-    `name="${e.name}"`,
-    `owner="${e.owner}"`,
-    `author="${e.author}"`,
-    `created="${e.createdAt}"`,
-    `updated="${e.updatedAt}"`,
-    `locked="${e.locked}"`,
-    `location="${e.location}"`,
-    `priority="${e.priority}"`
-  ].join(' ');
-  return `<content ${attrs}>\n${e.markup}\n</content>`;
-}).join('\n');
+import { GLOBAL_FILE, parseEntries, serializeEntries } from './helpers.js';
 
 export default async ({ rootDir, id, locked }) => {
   if(!rootDir) return [{ code: 400, msg: 'Root directory is required' }, null];

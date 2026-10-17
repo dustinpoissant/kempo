@@ -2,8 +2,8 @@ import { join } from 'path';
 import { readFile } from 'fs/promises';
 
 /*
-  What an installed extension declares to kempo: its `public-scope`, `docs`, `git`, `schema`, `hooks`,
-  `permissions`, `settings`, `groups`, `dependencies` and `widgets`.
+  What an installed extension declares to kempo: its `public-scope` and `public-scopes`, `docs`, `git`, `schema`, `hooks`,
+  `permissions`, `settings`, `groups`, `dependencies`, `widgets`, `jobs` and `aliases`.
 
   It lives in the extension's kempo-config.json, which is the one place it is written. package.json's own
   `kempo` field is still read, as the fallback for an older extension that put everything there, and

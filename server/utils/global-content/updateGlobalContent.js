@@ -1,23 +1,8 @@
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { GLOBAL_FILE, parseEntries } from './helpers.js';
+import { GLOBAL_FILE, parseEntries, serializeEntries } from './helpers.js';
 import triggerHook from '../hooks/triggerHook.js';
-
-const serializeEntries = entries => entries.map(e => {
-  const attrs = [
-    `id="${e.id}"`,
-    `name="${e.name}"`,
-    `owner="${e.owner}"`,
-    `author="${e.author}"`,
-    `created="${e.createdAt}"`,
-    `updated="${e.updatedAt}"`,
-    `locked="${e.locked}"`,
-    `location="${e.location}"`,
-    `priority="${e.priority}"`
-  ].join(' ');
-  return `<content ${attrs}>\n${e.markup}\n</content>`;
-}).join('\n');
 
 export default async ({ rootDir, id, name, location, priority, markup }) => {
   if(!rootDir){

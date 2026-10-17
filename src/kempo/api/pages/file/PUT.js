@@ -1,9 +1,10 @@
+import { existsSync } from 'fs';
 import { resolve, join } from 'path';
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
 import getPageMetadata from '../../../../../server/utils/pages/getPageMetadata.js';
 import updatePage from '../../../../../server/utils/pages/updatePage.js';
 
-const rootDir = import.meta.dirname.includes('node_modules') ? join(process.cwd(), 'public') : resolve(import.meta.dirname, '../../../../../app-public');
+const rootDir = existsSync(join(process.cwd(), 'public')) ? join(process.cwd(), 'public') : resolve(import.meta.dirname, '../../../../../app-public');
 
 export default async (request, response) => {
 	const token = request.cookies.session_token;

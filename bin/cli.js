@@ -397,6 +397,9 @@ DATABASE_URL=${databaseUrl}
 RESEND_API_KEY=${emailApiKey || 'your_resend_api_key_here'}
 EMAIL_FROM=${emailFrom}
 
+# Encrypts the API credentials saved in the admin. Back this up with your database: if it is lost they cannot be recovered.
+SETTINGS_ENCRYPTION_KEY=${crypto.randomBytes(32).toString('hex')}
+
 # Server
 PORT=9876
 NODE_ENV=development

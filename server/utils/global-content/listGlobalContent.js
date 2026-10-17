@@ -3,7 +3,7 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import { GLOBAL_FILE, GLOBAL_DISABLED_FILE, parseEntries } from './helpers.js';
 
-export default async ({ rootDir }) => {
+export default async ({ rootDir, includeMenu = true }) => {
   if(!rootDir){
     return [{ code: 400, msg: 'Root directory is required' }, null];
   }
@@ -19,6 +19,6 @@ export default async ({ rootDir }) => {
     ? parseEntries(await readFile(disabledPath, 'utf-8')).map(e => ({ ...e, disabled: true }))
     : [];
 
-  const entries = [...activeEntries, ...disabledEntries];
+  const entries = [...activeEntries, ...disabledEntries].filter(e => includeMenu || !e.menu);
   return [null, { entries, total: entries.length }];
 };

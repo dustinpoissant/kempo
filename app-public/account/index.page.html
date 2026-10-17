@@ -28,10 +28,12 @@
 			<div class="mb">
 				<strong>Member Since:</strong> <k-user-created-at></k-user-created-at>
 			</div>
+			<location name="account-details" label="After the Account Details" />
 			<div class="mt-lg">
 				<k-permission has="system:admin:access">
 					<a href="{{pathToRoot}}admin" class="btn primary">Admin Panel</a>
 				</k-permission>
+				<location name="account-links" label="Account Links" />
 				<button id="changePasswordBtn" class="btn">Change Password</button>
 				<k-logout-btn redirect="{{pathToRoot}}login" button-class="btn danger">Logout</k-logout-btn>
 			</div>

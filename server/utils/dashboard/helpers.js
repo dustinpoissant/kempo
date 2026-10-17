@@ -24,6 +24,7 @@ export const normalizeWidget = ({
   title,
   description = null,
   icon = null,
+  iconSrc = null,
   element,
   module,
   defaultWidth = 2,
@@ -55,6 +56,10 @@ export const normalizeWidget = ({
 
   if(icon !== null && !isText(icon, 60)){
     return [{ code: 400, msg: 'Icon must be an icon name' }, null];
+  }
+
+  if(iconSrc !== null && !(isLocalPath(iconSrc) && iconSrc.length <= 200)){
+    return [{ code: 400, msg: 'iconSrc must be the path to an icon file on this site, beginning with a single "/"' }, null];
   }
 
   if(typeof element !== 'string' || !ELEMENT_PATTERN.test(element)){
@@ -128,6 +133,7 @@ export const normalizeWidget = ({
     title: title.trim(),
     description,
     icon,
+    iconSrc,
     element,
     module,
     defaultWidth,

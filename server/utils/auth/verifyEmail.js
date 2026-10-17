@@ -1,6 +1,7 @@
 import db from '../../db/index.js';
 import { verificationToken, user } from '../../db/schema.js';
 import { eq, and, gt } from 'drizzle-orm';
+import triggerHook from '../hooks/triggerHook.js';
 
 export default async ({ token }) => {
   if(!token){
@@ -36,7 +37,15 @@ export default async ({ token }) => {
       .delete(verificationToken)
       .where(eq(verificationToken.token, token));
 
-    return [null, { 
+    /*
+      Someone has just proved they own this address, which is what an extension needs before it hands
+      them something that was only ever tied to the address (guest orders, say). Fires
+      `user:email_verified` with `{ userId, email }`.
+    */
+    const [verified] = await db.select({ email: user.email }).from(user).where(eq(user.id, tokenRecord.userId)).limit(1);
+    await triggerHook('user:email_verified', { userId: tokenRecord.userId, email: verified?.email ?? null });
+
+    return [null, {
       success: true,
       userId: tokenRecord.userId
     }];

@@ -113,7 +113,7 @@ const [error, session] = await registerEmail({
 });
 ```
 
-### `requestPasswordReset({ email })`
+### `requestPasswordReset({ email, subject, template })`
 
 Request a password reset link (sends email).
 
@@ -124,6 +124,8 @@ const [error] = await requestPasswordReset({
   email: 'user@example.com'
 });
 ```
+
+`subject` and `template` (a name for `sendEmailFromTemplate`, including an extension's `'owner/name'`) replace the default wording while keeping the same link. The template receives `name` and `resetLink`. An extension that creates an account for someone at checkout uses this, with `createUser({ name, email })` (which generates a password nobody knows), to email them a link to set their own.
 
 ### `resetPassword({ token, newPassword })`
 
@@ -1119,9 +1121,9 @@ Sitewide content blocks managed via ID. All global content objects include:
 
 Global content can be marked as `locked: true` to prevent editing outside of extension admin interfaces. Locked entries cannot be updated or deleted through the standard utils. Extensions that own a locked entry can still modify it using `force: true` in `updateGlobalContent`, or manage the lock state via `setGlobalContentLocked`.
 
-### `listGlobalContent({ rootDir })`
+### `listGlobalContent({ rootDir, includeMenu })`
 
-List all global content entries.
+List all global content entries. Menus, their items and the copies the site renders (see [Menus](../content-management.md#menus)) are included unless `includeMenu: false`.
 
 ```javascript
 import { listGlobalContent } from 'kempo/server/sdk.js';
@@ -1129,7 +1131,8 @@ import { listGlobalContent } from 'kempo/server/sdk.js';
 const [error, { entries, total }] = await listGlobalContent({
   rootDir: './app-public'
 });
-// Each entry includes: { id, name, owner, locked, author, location, priority, createdAt, updatedAt }
+// Each entry includes: { id, name, owner, locked, menu, menuLocations, menuCopyOf, author, location, priority, createdAt, updatedAt, extra }
+// `extra` holds any other attribute on the <content> tag; it is kept when the entry is saved.
 ```
 
 ### `getGlobalContent({ rootDir, id })`
@@ -1238,6 +1241,42 @@ const [error, entry] = await enableGlobalContent({
   id: 'content-id-123'
 });
 ```
+
+## Menus
+
+The [Menus page](../content-management.md#menus) over global content. A menu is a named list of links; a location is a `<location ... menu="true" />` in the site's templates, fragments or pages, and each shows one menu. Menus, their items and the per-location copies are all global content entries, so use these rather than the generic global content functions to change them: the copies are rebuilt on every write here.
+
+### `listMenus({ rootDir, extensionDirs })`
+
+```javascript
+import { listMenus } from 'kempo/server/sdk.js';
+
+const [error, { menus, locations }] = await listMenus({ rootDir: './app-public' });
+// menus[0]     -> { id, name, locations: ['main-nav-links', ...], items }
+// locations[0] -> { location, label, declared, menuId, extensionItems, candidates }
+```
+
+`pages` is every page a link can go to, as `{ url, title, owner }`: the site's own, then those its extensions serve under each of their scopes (a page with a `[param]` in its address is left out). An item is `{ id, label, href, icon, newTab, editable, priority, owner, disabled }`, listed highest priority first (the order they render). `extensionItems` are what extensions add to a location themselves; `candidates` are plain links already placed there that could be moved into a menu. `declared` is false for a place the theme no longer has.
+
+### Items extensions offer
+
+`findNavItems({ extensionDirs })` returns `[null, items]`: kempo's own items (`kempo:spacer`, a flexible gap) and the items enabled extensions offer through `*.menu-item.html` files, each `{ key, extension, id, label, description, icon, markup }` with `key` being `<extension>:<id>`. `listMenus` returns the same, without `markup`, as `navItems`, and marks each menu item `navItem` and `available`.
+
+### Menus
+
+- `saveMenu({ rootDir, id, name, author })` creates a menu, or renames one when `id` is given. A new menu is not shown anywhere yet.
+- `deleteMenu({ rootDir, id })` deletes a menu and its items.
+- `assignMenuLocation({ rootDir, location, menuId })` chooses the menu shown in a location, or none when `menuId` is empty. It takes the location from whichever menu had it, and only a place the theme marks as a menu can be newly chosen.
+
+### Items
+
+- `saveMenuItem({ rootDir, id, menuId, location, navItem, label, href, icon, newTab, author })` adds an item to the end of a menu, or edits one when `id` is given. A new item names its `menuId`, or just the `location`: it joins the menu shown there, and when there is none one is made, named after the location, and shown there. Pass `navItem` (a `findNavItems` key) instead of `label`, `href`, `icon` and `newTab` to add an extension's item; one from an extension cannot be edited. Refuses a `javascript:` or `data:` link and a locked item.
+- `setMenuItemEnabled({ rootDir, id, enabled })` hides an item or shows it again.
+- `deleteMenuItems({ rootDir, ids })`
+- `reorderMenuItems({ rootDir, menuId, ids })`: `ids` are the menu's items in their new order; they exchange the priorities they already held.
+- `adoptMenuItem({ rootDir, id, menuId, menuName })` moves an existing single-link global content entry into a menu: `menuId`, else the menu shown in its location, else a new menu called `menuName` shown there.
+
+`listGlobalContent` leaves these out when called with `includeMenu: false`.
 
 ## Admin Global Content
 
@@ -1350,7 +1389,11 @@ const [error] = await sendEmail({
 
 ### `sendEmailFromTemplate({ to, subject, template, data })`
 
-Send an email using a template with variable substitution.
+Send an email using a template with variable substitution. `template` is a plain name (`'verify-email'`) for kempo's and the site's templates, or `'your-extension/name'` for an extension's own, which the site can override; see [Email Templates](creating-extensions.md#email-templates).
+
+### `renderEmailTemplate({ template, data })`
+
+The same rendering without sending. Returns `[null, html]`.
 
 ```javascript
 import { sendEmailFromTemplate } from 'kempo/server/sdk.js';
@@ -1362,6 +1405,30 @@ const [error] = await sendEmailFromTemplate({
   data: { name: 'John', email: 'john@example.com' }
 });
 ```
+
+## Scheduled Jobs
+
+Recurring work declared in an extension's `jobs` (see [Scheduled Jobs](creating-extensions.md#scheduled-jobs)). All return `[error, result]`. Needs the `scheduledJob` table (`npx drizzle-kit push` on an existing site).
+
+### `listJobs()`
+
+Every registered job with `owner`, `name`, `everyMs`, `nextRunAt`, `lockedUntil`, `lastRunAt`, `lastStatus` (`'ok'` or `'error'`) and `lastError`.
+
+### `runJob({ owner, name })`
+
+Runs one job now, whatever its schedule says. Returns `[null, { status, error }]`. `404` for an unknown job, `409` while another process is running it or when the extension is disabled.
+
+### `runDueJobs()`
+
+Runs every job that is due and not held by another process, and returns what this process ran. The scheduler calls this every 15 seconds; call it yourself in a test.
+
+### `registerJobs({ owner, jobs })`, `unregisterJobs({ owner })`
+
+What install, update and uninstall do for you: make an owner's schedule match `jobs`, or remove it.
+
+### `startScheduler({ tickMs })`, `stopScheduler()`
+
+The ticker. kempo's middleware starts it; a second `startScheduler` does nothing. `KEMPO_SCHEDULER=off` keeps a process from running jobs.
 
 ## Filesystem Utilities
 

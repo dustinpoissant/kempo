@@ -1,0 +1,15 @@
+{
+  "public-scope": "scheduler-fixture",
+  "jobs": [
+    {
+      "name": "tick",
+      "every": "1m",
+      "callback": "./jobs/tick.js"
+    },
+    {
+      "name": "boom",
+      "every": "1m",
+      "callback": "./jobs/boom.js"
+    }
+  ]
+}

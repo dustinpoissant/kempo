@@ -185,15 +185,15 @@ export default class DashboardWidget extends LightComponent {
   */
 
   renderTitle = () => html`
-    ${this.definition?.icon ? html`<k-icon class="mr" name=${this.definition.icon}></k-icon>` : nothing}
+    ${this.definition?.iconSrc ? html`<k-icon class="mr" src=${this.definition.iconSrc}></k-icon>` : this.definition?.icon ? html`<k-icon class="mr" name=${this.definition.icon}></k-icon>` : nothing}
     <strong class="flex">${this.definition?.title ?? ''}</strong>
   `;
 
   renderActions = () => {
     const compact = this.width < 2;
-    return [...(this.definition?.actions ?? []), ...this.actions()].map(({ label, icon, href, onClick, primary }) => {
-      const content = icon
-        ? html`<k-icon name=${icon}></k-icon>${compact ? nothing : html` ${label}`}`
+    return [...(this.definition?.actions ?? []), ...this.actions()].map(({ label, icon, iconSrc, href, onClick, primary }) => {
+      const content = iconSrc || icon
+        ? html`${iconSrc ? html`<k-icon src=${iconSrc}></k-icon>` : html`<k-icon name=${icon}></k-icon>`}${compact ? nothing : html` ${label}`}`
         : label;
       const classes = `btn ml ${primary ? 'primary' : ''}`;
       return href
@@ -226,7 +226,7 @@ export default class DashboardWidget extends LightComponent {
 
     if(!cta || !this.ctaAllowed || this.failure) return nothing;
 
-    const content = html`${cta.icon ? html`<k-icon name=${cta.icon}></k-icon> ` : nothing}${cta.label}`;
+    const content = html`${cta.iconSrc ? html`<k-icon src=${cta.iconSrc}></k-icon> ` : cta.icon ? html`<k-icon name=${cta.icon}></k-icon> ` : nothing}${cta.label}`;
 
     return html`
       <footer class="d-f px pyh bt" style="justify-content: flex-end;">

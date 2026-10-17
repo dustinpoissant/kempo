@@ -7,7 +7,13 @@ import getSetting from '../settings/getSetting.js';
 
 const generateToken = () => crypto.randomBytes(32).toString('hex');
 
-export default async ({ email }) => {
+/*
+  `subject` and `template` let a caller send its own wording with the same link, for example an
+  extension that creates an account for someone at checkout and wants the email to say "set your
+  password". `template` is a name for sendEmailFromTemplate, including an extension's "owner/name".
+  The template receives `name` and `resetLink`.
+*/
+export default async ({ email, subject = 'Reset Your Password', template = 'reset-password' }) => {
   if(!email){
     return [{ code: 400, msg: 'Email is required' }, null];
   }
@@ -42,8 +48,8 @@ export default async ({ email }) => {
 
     const [emailError] = await sendEmailFromTemplate({
       to: email,
-      subject: 'Reset Your Password',
-      template: 'reset-password',
+      subject,
+      template,
       data: {
         name,
         resetLink,

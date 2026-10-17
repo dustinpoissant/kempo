@@ -116,6 +116,29 @@ export const extension = pgTable('extension', {
 });
 
 /*
+  Scheduled jobs: recurring work an extension declares in its kempo-config.json `jobs`. A row per job
+  is the schedule and the lease: `nextRunAt` is when it is next due and `lockedUntil` is held while a
+  process runs it, so several server processes sharing one database run each job once per interval.
+  `lastStatus` is 'ok' or 'error'.
+*/
+export const scheduledJob = pgTable('scheduledJob', {
+  id: text('id').primaryKey(),
+  owner: text('owner').notNull(),
+  name: text('name').notNull(),
+  everyMs: integer('everyMs').notNull(),
+  callback: text('callback').notNull(),
+  nextRunAt: timestamp('nextRunAt').notNull(),
+  lockedUntil: timestamp('lockedUntil'),
+  lastRunAt: timestamp('lastRunAt'),
+  lastStatus: text('lastStatus'),
+  lastError: text('lastError'),
+  createdAt: timestamp('createdAt').notNull(),
+}, table => [
+  index('scheduledJob_owner_idx').on(table.owner),
+  index('scheduledJob_next_idx').on(table.nextRunAt),
+]);
+
+/*
   Realtime System
 */
 
@@ -203,6 +226,7 @@ export const dashboardWidget = pgTable('dashboardWidget', {
   title: text('title').notNull(),
   description: text('description'),
   icon: text('icon'),
+  iconSrc: text('iconSrc'),
   element: text('element').notNull(),
   module: text('module').notNull(),
   defaultWidth: integer('defaultWidth').notNull().default(2),

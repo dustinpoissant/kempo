@@ -2,25 +2,10 @@ import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
 import crypto from 'crypto';
-import { GLOBAL_FILE, parseEntries } from './helpers.js';
+import { GLOBAL_FILE, parseEntries, serializeEntries } from './helpers.js';
 import triggerHook from '../hooks/triggerHook.js';
 
-const serializeEntries = entries => entries.map(e => {
-  const attrs = [
-    `id="${e.id}"`,
-    `name="${e.name}"`,
-    `owner="${e.owner}"`,
-    `author="${e.author}"`,
-    `created="${e.createdAt}"`,
-    `updated="${e.updatedAt}"`,
-    `locked="${e.locked}"`,
-    `location="${e.location}"`,
-    `priority="${e.priority}"`
-  ].join(' ');
-  return `<content ${attrs}>\n${e.markup}\n</content>`;
-}).join('\n');
-
-export default async ({ rootDir, name, location, priority, author, owner = 'custom' }) => {
+export default async ({ rootDir, name, location, priority, author, owner = 'custom', markup = '' }) => {
   if(!rootDir){
     return [{ code: 400, msg: 'Root directory is required' }, null];
   }
@@ -45,11 +30,16 @@ export default async ({ rootDir, name, location, priority, author, owner = 'cust
     owner,
     author: author || '',
     locked: false,
+    menu: '',
+    menuLocations: null,
+    menuCopyOf: '',
+    navItem: '',
+    extra: {},
     location,
     priority: parseInt(priority || '0', 10),
     createdAt: now,
     updatedAt: now,
-    markup: ''
+    markup
   };
 
   entries.push(entry);

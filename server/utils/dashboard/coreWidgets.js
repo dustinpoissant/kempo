@@ -4,6 +4,7 @@ const core = widget => ({
   owner: CORE_OWNER,
   description: null,
   icon: null,
+  iconSrc: null,
   defaultWidth: 2,
   defaultHeight: 1,
   minWidth: 1,

@@ -3,6 +3,7 @@ import { extension } from '../../db/schema.js';
 import { eq, inArray } from 'drizzle-orm';
 import { invalidateScopeCache } from './scopeCache.js';
 import getRequirementTree from './getRequirementTree.js';
+import checkClaims from './checkClaims.js';
 
 /*
   Switches an extension on. It cannot run without what it requires, so any of that which is installed
@@ -40,6 +41,13 @@ export default async ({ name, cascade = false }) => {
     }
 
     const names = [name, ...disabled.map(requirement => requirement.name)];
+
+    /* Switching on what claims an address another enabled extension already has would silently break one of them. */
+    const [claimsError] = await checkClaims({ names, verb: 'enable' });
+    if(claimsError){
+      return [claimsError, null];
+    }
+
     await db.update(extension)
       .set({ enabled: true, updatedAt: new Date() })
       .where(inArray(extension.name, names));

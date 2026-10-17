@@ -271,6 +271,37 @@ export const setGlobalContentLocked = async ({ id, locked }) =>
   put(`${API_BASE}/globals/lock`, { id, locked });
 
 /*
+  Menus
+*/
+
+export const listMenus = async () =>
+  get(`${API_BASE}/menus`);
+
+export const saveMenu = async ({ id, name }) =>
+  post(`${API_BASE}/menus`, { id, name });
+
+export const deleteMenu = async (id) =>
+  del(`${API_BASE}/menus`, { id });
+
+export const assignMenuLocation = async ({ location, menuId }) =>
+  put(`${API_BASE}/menus/location`, { location, menuId });
+
+export const saveMenuItem = async ({ id, menuId, location, navItem, label, href, icon, newTab }) =>
+  post(`${API_BASE}/menus/items`, { id, menuId, location, navItem, label, href, icon, newTab });
+
+export const deleteMenuItems = async (ids) =>
+  del(`${API_BASE}/menus/items`, { ids });
+
+export const setMenuItemEnabled = async ({ id, enabled }) =>
+  put(`${API_BASE}/menus/items/enabled`, { id, enabled });
+
+export const reorderMenuItems = async ({ menuId, ids }) =>
+  put(`${API_BASE}/menus/items/order`, { menuId, ids });
+
+export const adoptMenuItem = async ({ id, menuId, menuName }) =>
+  put(`${API_BASE}/menus/adopt`, { id, menuId, menuName });
+
+/*
   Extensions
 */
 

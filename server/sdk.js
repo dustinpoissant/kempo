@@ -144,6 +144,16 @@ export { default as enableGlobalContent } from './utils/global-content/enableGlo
 export { default as getGlobalContent } from './utils/global-content/getGlobalContent.js';
 export { default as listGlobalContent } from './utils/global-content/listGlobalContent.js';
 export { default as setGlobalContentLocked } from './utils/global-content/setGlobalContentLocked.js';
+export { default as listMenus } from './utils/menus/listMenus.js';
+export { default as findNavItems } from './utils/menus/findNavItems.js';
+export { default as saveMenu } from './utils/menus/saveMenu.js';
+export { default as deleteMenu } from './utils/menus/deleteMenu.js';
+export { default as assignMenuLocation } from './utils/menus/assignMenuLocation.js';
+export { default as saveMenuItem } from './utils/menus/saveMenuItem.js';
+export { default as deleteMenuItems } from './utils/menus/deleteMenuItems.js';
+export { default as setMenuItemEnabled } from './utils/menus/setMenuItemEnabled.js';
+export { default as reorderMenuItems } from './utils/menus/reorderMenuItems.js';
+export { default as adoptMenuItem } from './utils/menus/adoptMenuItem.js';
 export { default as updateGlobalContent } from './utils/global-content/updateGlobalContent.js';
 
 /*
@@ -160,11 +170,22 @@ export { default as listAdminGlobalContent } from './utils/admin-global-content/
 export { default as updateAdminGlobalContent } from './utils/admin-global-content/updateAdminGlobalContent.js';
 
 /*
+  Scheduled Jobs
+*/
+
+export { default as listJobs } from './utils/scheduler/listJobs.js';
+export { default as registerJobs } from './utils/scheduler/registerJobs.js';
+export { default as unregisterJobs } from './utils/scheduler/unregisterJobs.js';
+export { runDueJobs, runJob } from './utils/scheduler/runJobs.js';
+export { startScheduler, stopScheduler } from './utils/scheduler/scheduler.js';
+
+/*
   Email
 */
 
 export { default as sendEmail } from './utils/email/sendEmail.js';
 export { default as sendEmailFromTemplate } from './utils/email/sendEmailFromTemplate.js';
+export { default as renderEmailTemplate } from './utils/email/renderEmailTemplate.js';
 
 /*
   Filesystem Utilities

@@ -9,10 +9,14 @@ import triggerHook, { clearHandlerCache } from '../hooks/triggerHook.js';
 import createHook from '../hooks/createHook.js';
 import registerDashboardWidget from '../dashboard/registerDashboardWidget.js';
 import unregisterDashboardWidget from '../dashboard/unregisterDashboardWidget.js';
+import registerJobs from '../scheduler/registerJobs.js';
 import setSetting from '../settings/setSetting.js';
 import declaredValue from '../settings/declaredValue.js';
 import createTablesFromSchema from './createTablesFromSchema.js';
 import readKempoConfig from './readKempoConfig.js';
+import { normalizeAliases } from './aliases.js';
+import { normalizeScopes, scopeNames } from './scopes.js';
+import checkClaims from './checkClaims.js';
 
 const requireFromProject = createRequire(join(process.cwd(), 'package.json'));
 
@@ -54,6 +58,27 @@ export default async ({ name, version = 'latest' }) => {
     ({ pkg, kempo: newKempo } = await readKempoConfig(extRoot));
   } catch {
     return [{ code: 404, msg: `Updated package "${name}" not found` }, null];
+  }
+
+  /*
+    The new version may claim addresses the old one did not. If it is on and another extension has one
+    of them, put the old version back before anything else changes: leaving the new one would break
+    one of the two, silently.
+  */
+  const [scopesError] = normalizeScopes(newKempo);
+  const [aliasesError] = scopesError ? [null] : normalizeAliases(newKempo.aliases, scopeNames(newKempo));
+  const [claimsError] = scopesError || aliasesError || !oldRecord.enabled
+    ? [null]
+    : await checkClaims({ names: [name], verb: 'update', kempo: { [name]: newKempo } });
+  const refusal = scopesError || aliasesError || claimsError;
+  if(refusal){
+    let msg = refusal.msg;
+    try {
+      if(oldVersion) execSync(`npm install ${name}@${oldVersion}`, { cwd: process.cwd(), stdio: 'pipe' });
+    } catch {
+      msg += ` The previous version could not be put back automatically: run npm install ${name}@${oldVersion}.`;
+    }
+    return [{ ...refusal, msg }, null];
   }
 
   /*
@@ -158,6 +183,16 @@ export default async ({ name, version = 'latest' }) => {
   for(const { key } of oldKempo.widgets || []){
     if(!newWidgetKeys.has(key)){
       await unregisterDashboardWidget({ owner: name, key });
+    }
+  }
+
+  /*
+    Sync scheduled jobs: the schedule becomes exactly what is declared now
+  */
+  if((newKempo.jobs || []).length || (oldKempo.jobs || []).length){
+    const [jobsError] = await registerJobs({ owner: name, jobs: newKempo.jobs || [] });
+    if(jobsError){
+      console.warn(`[${name}] scheduled jobs were not registered: ${jobsError.msg}`);
     }
   }
 

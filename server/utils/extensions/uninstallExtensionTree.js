@@ -1,5 +1,5 @@
 import db from '../../db/index.js';
-import { extension, hook, permission, setting, group, groupPermission, userGroup, dashboardWidget } from '../../db/schema.js';
+import { extension, hook, permission, setting, group, groupPermission, userGroup, dashboardWidget, scheduledJob } from '../../db/schema.js';
 import { eq, inArray, like } from 'drizzle-orm';
 import { join } from 'path';
 import { pathToFileURL } from 'url';
@@ -105,6 +105,7 @@ const uninstallOne = async ({ name, purgeData = false }) => {
   try {
     await db.delete(hook).where(eq(hook.owner, name));
     await db.delete(dashboardWidget).where(eq(dashboardWidget.owner, name));
+    await db.delete(scheduledJob).where(eq(scheduledJob.owner, name)).catch(() => {});
     await db.delete(extension).where(eq(extension.name, name));
   } catch(error) {
     return [{ code: 500, msg: 'Failed to remove extension' }, null];

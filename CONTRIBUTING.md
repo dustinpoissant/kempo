@@ -419,3 +419,92 @@ Create utility functions for shared logic:
 - If used in a single file: define it in that file
 - If used across multiple files: create a module in `server/utils/` (backend) or the appropriate location (frontend)
 
+
+## Web Components: Compose, Don't Inject
+
+How components and extensions fit together. The full guide, with examples from the products extensions, is in
+[docs/extensions/creating-extensions.md](docs/extensions/creating-extensions.md#designing-for-other-extensions-slots-templates-and-locations).
+
+### The principle
+
+**Say where things may go, and let others put things only there.** A component declares *slots*. A page
+declares *locations*. Extensions contribute into those places with plain markup. Nobody finds a spot in
+somebody else's DOM and puts something in it from JavaScript.
+
+Imperative injection (`appendChild`, `innerHTML`, `insertAdjacentElement`, `createElement` into a
+component that renders itself) is fragile and does not scale: Lit re-renders and the added node is gone,
+two extensions fight over one spot, and nothing says what is allowed where. Composition has rules, so it
+holds up as more extensions are added.
+
+### Rules
+
+- **Use slots.** A component exposes named `<slot>`s for what others may add. Content goes in as light DOM
+  children. Never reach into another component's shadow root, and do not append to your own component's DOM
+  from its own script.
+- **Composition over inheritance.** Build bigger things by placing components inside components. Extend a
+  class only to make a *variation* of a component, never to add a feature (a feature is another component
+  in a slot).
+- **A repeated thing uses one `<template>`.** Many buttons, badges or panels on every item of a list means one
+  `<template>` on the page, cloned by the component that repeats the items into each item as slotted children
+  (`document.importNode(template.content, true)`), once per item and kept (a `WeakMap`), so a re-render does
+  not rebuild it. The item itself does not know about templates.
+- **Use `closest()` freely to find your context.** A component placed in a slot finds the exact parent it is
+  inside of with `this.closest('parent-tag')` and reads its contract. This is why slots beat injecting into a
+  shadow root: `closest()` stops at a shadow root, but it finds a slotted child's parent.
+- **Give a parent a small public contract.** An attribute naming what it is for (`product-id`), properties for
+  data it already has (`product`, so children do not fetch it again), methods that cause actions, and bubbling,
+  composed events that report that something happened.
+- **Locations are the insertion points.** Pages, templates and fragments declare `<location name="…" />` and
+  extensions fill them with `*.global.html`. Prefix names with the owner (`products-card-actions`), document
+  them as public API, and put each component's `<script type="module">` in a scripts location outside any
+  `<template>`.
+- **A contribution names its own slot, and there is no wrapper.** Put the location directly among the
+  component's children and give the contributed element `slot="actions"`. A slot takes any number of elements,
+  and a wrapper `<div slot="…">` would always occupy the slot and hide its default content.
+- **Lay out the slot in the component, not in the contribution.** To put the slotted elements in a row or give
+  them a gap, wrap the `<slot>` in an element in the component's own shadow DOM and style that wrapper. The
+  styles live with the component, and contributors never have to wrap anything.
+- **A default that an extension might replace is the slot's default content.** `<slot name="price">…the normal
+  price…</slot>` shows the normal price until an extension puts `<k-sales-price slot="price">` in the slot, and
+  the component never changes. The default must be real, working content. Use this for something to be
+  *replaced* (one owner); leave a slot that holds *several* things (actions) with no default.
+- **Extensions can declare locations too**, giving other extensions places to add. A location stacks every
+  contribution by `priority`; a `<fragment>` has one winner, so use a fragment for one replaceable block.
+- **Logic belongs in the component.** The contributed component fetches and renders its own data when it is
+  upgraded. Do not write a script that hunts the DOM for places to put things.
+
+### Worked example
+
+kempo-products puts one `<template>` on its list page and a location in its product page. kempo-commerce
+fills them; neither edits the other.
+
+```html
+<!-- kempo-products: the page -->
+<fragment name="products-card-template" />          <!-- the one template, with locations in it -->
+<k-products-list></k-products-list>
+
+<k-products-detail>
+  <location name="products-detail-price" />
+  <location name="products-detail-actions" />
+</k-products-detail>
+
+<!-- kempo-commerce: public/product-actions.global.html -->
+<content location="products-scripts"><script type="module" src="/commerce/components/AddToCart.js"></script></content>
+<content location="products-card-actions"><k-commerce-add-to-cart slot="actions"></k-commerce-add-to-cart></content>
+<content location="products-detail-actions"><k-commerce-add-to-cart slot="actions"></k-commerce-add-to-cart></content>
+
+<!-- a sale extension replaces the price, which is the slot's default content -->
+<content location="products-card-price"><k-sales-price slot="price"></k-sales-price></content>
+```
+
+```javascript
+// k-commerce-add-to-cart finds which card or product page it is in, and follows it
+this.host = this.closest('k-products-card, k-products-detail');
+this.product = this.host.product;
+```
+
+### Server templating pitfalls
+
+The server resolves `{{ }}`, `<if>`, `<foreach>`, `<fragment>` and `<location>` across a page's whole text,
+including inside a `<template>` and inside HTML comments. So: no `{{name}}` placeholders for an item's data
+(the component renders that), and never write a literal `<fragment …>` or `<location …>` tag in a comment.

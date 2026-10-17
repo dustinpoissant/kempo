@@ -42,7 +42,8 @@ my-extension/
 └── public/
     ├── ...               # Public-facing pages and assets
     ├── *.global.html     # Content pushed into site page slots
-    └── *.fragment.html   # Fragments offered to site pages
+    ├── *.fragment.html   # Fragments offered to site pages
+    └── *.menu-item.html  # Items an admin can add to the site's menus
 ```
 
 ## The `kempo-config.json` File
@@ -80,12 +81,15 @@ All extension capabilities are declared in `kempo-config.json`. Older extensions
 |---|---|
 | `git` | GitHub URL used to detect available updates |
 | `public-scope` | URL prefix for the extension's `public/` directory |
+| `public-scopes` | More URL prefixes, each serving its own folder: `{ "categories": "public-categories" }`. See *Public Routes* |
 | `schema` | Path to a Drizzle schema file |
 | `permissions` | Permissions to create on install |
 | `settings` | Settings to create on install |
 | `groups` | Groups to create on install, with their assigned permissions |
 | `hooks` | Event hooks to register (`{ "event-name": "path/to/handler.js" }`) |
 | `widgets` | Widgets to add to the admin dashboard, see [Admin Dashboard](../dashboard.md) |
+| `jobs` | Recurring work kempo runs for you, see [Scheduled Jobs](#scheduled-jobs) |
+| `aliases` | Short addresses for your public pages, see [Address Aliases](#address-aliases) |
 | `dependencies` | Names of other extensions that must be installed and enabled first |
 
 ## Database Tables
@@ -265,6 +269,7 @@ Handlers are **awaited one at a time, in registration order**. That means slow w
 | `page-created` | `{ page }` | After a page is created |
 | `notification:created` | `{ notification, recipientIds, refreshed }` | A notification reached at least one person |
 | `route:unmatched` | `{ url, method, request, draft }` | A request matched no file, page or route anywhere on the site |
+| `user:email_verified` | `{ userId, email }` | Someone followed their verification link, so they have proved they own the address |
 
 ### Answering a Request Nothing Else Claimed
 
@@ -294,6 +299,52 @@ export default async ({ url, request, draft }) => {
 
 Because nothing is sent until every handler has run, claiming a request never silences the handlers after you — an extension that logs 404s still sees requests you answered, and a later handler can add to a response already in progress. Check `draft.handled` if you want to defer to whoever got there first. If no handler claims the request, the site's `CATCH.page.html` renders as a normal 404.
 
+## Scheduled Jobs
+
+Declare recurring work in `kempo-config.json` and kempo runs it for you, with no cron and no timer of your own:
+
+```json
+{
+  "jobs": [
+    { "name": "expire-orders", "every": "1m", "callback": "./jobs/expire-orders.js" }
+  ]
+}
+```
+
+`every` is a number of milliseconds or a string such as `"30s"`, `"15m"` or `"6h"` (at least a second). The callback is relative to your package and its default export is called with `{ owner, name }`:
+
+```javascript
+export default async ({ owner, name }) => {
+  await expireStaleOrders();
+};
+```
+
+- A new job is due straight away, then every interval after that. The server checks every 15 seconds, so an interval is the least time between runs, not an exact one.
+- A job that throws is logged and recorded (`lastStatus`, `lastError`) and is tried again next interval; it never stops other jobs.
+- **Several server processes sharing one database run each job once per interval.** A job holds a lease on its row while it runs; a process that dies mid-run loses the lease after five minutes. Still write jobs so that running twice is harmless.
+- A disabled extension's jobs stay registered but do not run, the same as its hooks. Uninstalling removes them. Updating makes the schedule match what the new version declares.
+- Needs the `scheduledJob` table (`npx drizzle-kit push` on an existing site). Without it a job is reported as not registered and your extension otherwise works.
+- Set `KEMPO_SCHEDULER=off` in a process's environment to keep that process from running jobs.
+
+From code: `listJobs`, `runJob({ owner, name })` (run one now) and `runDueJobs` are in the [Server SDK](sdk.md#scheduled-jobs).
+
+## Address Aliases
+
+An extension's public pages live under its `public-scope` (`/commerce/cart/`). To answer on a shorter address as well, declare `aliases`:
+
+```json
+{
+  "public-scope": "commerce",
+  "aliases": { "/cart": "/commerce/cart", "/checkout": "/commerce/checkout" }
+}
+```
+
+`/cart`, `/cart/` and anything under it are then served from `/commerce/cart`; the address in the browser stays `/cart/`, so use absolute links inside the page. An alias must point inside one of your own scopes, cannot be under `/admin` or `/api`, and **never replaces a page the site has of its own at that address**: a site that already has `public/cart/` keeps it. An invalid alias is refused when the extension is installed.
+
+## Email Templates
+
+Send your extension's emails with `sendEmailFromTemplate` and a template name of `your-extension/name`. The page lives in your package at `emails/name.page.html`, uses `<page template="email">`, and is laid out with the site's `templates/emails/email.template.html` when it has one and kempo's otherwise, so every email a site sends looks alike. A site can reword yours by adding `templates/emails/your-extension/name.page.html`.
+
 ## Dependencies
 
 If your extension requires another extension to be installed and enabled first, declare it in `kempo.dependencies`:
@@ -317,6 +368,50 @@ With this, `public/index.page.html` is served at `/blog/`, `public/posts.page.ht
 The kempo middleware serves these, and your `public/` directory gets the same capabilities the
 site's own does: static files, dynamic route handlers (`GET.js`, `POST.js`, `[param]/` directories,
 `CATCH.js`), and server-side templated `.page.html` pages with fragments and global content.
+
+### More than one scope
+
+An extension can answer on several top-level addresses, each serving its own folder of the package. `public-scope`
+is the shorthand for the first, serving `public/`; `public-scopes` adds the rest as `scope: folder`:
+
+```json
+{
+  "public-scope": "products",
+  "public-scopes": { "categories": "public-categories" }
+}
+```
+
+With this, `public/index.page.html` is `/products/` and `public-categories/index.page.html` is `/categories/`.
+Each folder gets everything described above. Add every folder to your package's `files`, or an installed copy
+will not have it. Folders other than `public/` are for pages and routes: fragments, global content and menu
+items are still read from `public/`.
+
+A scope is lowercase letters, numbers, dashes and underscores (`products`, not `Products` or `a/b`). A folder
+must be inside the package (no `..`, not absolute). `admin`, `api`, `kempo`, `kempo-css`, `kempo-ui` and
+`monaco-editor` belong to kempo itself and cannot be used. An invalid declaration is refused when the extension is
+installed.
+
+### An address belongs to one extension
+
+Every scope, and every alias address, is a **claim**, and the router can give an address to only one extension.
+Two enabled extensions may not claim the same address, or one inside the other (`/shop` and `/shop/cart`
+collide; `/products` and `/products-inventory` do not). Without that, the router would hand every request to
+whichever it reached first, and the other extension's pages, scripts and API routes would answer 404 with no error
+anywhere, and which one won could change when any extension was enabled, disabled or updated.
+
+So kempo checks, and refuses with the reason:
+
+- **Installing** an extension that claims an address another enabled extension has: *Cannot install kempo-b:
+  kempo-a already uses /shop. Disable or uninstall kempo-a first.*
+- **Enabling** one the same way. An extension that was switched off while another took its address stays off.
+- **Updating** to a version that newly claims an address in use. The update is refused and the previous version is put
+  back.
+
+Nothing is changed when a check refuses. Disable (or uninstall) the extension that holds the address, then install or
+enable the other. A page the **site** has of its own at an alias address still wins over the alias, as before.
+
+So pick scopes that say what the extension is (`my-ext-shop`, not `shop`) and treat a short alias like `/cart` as
+something only one extension on a site can have.
 
 ## Contributing Content to Pages You Don't Own
 
@@ -406,6 +501,166 @@ This is how one extension deliberately replaces another's markup — a commerce 
 "add to cart" block swapped for one that handles out-of-stock items — with the extension being
 overridden knowing nothing about it.
 
+### Menu items: `*.menu-item.html`
+
+Do not place your own link or button in the site's navigation with a script. Offer it as a **menu
+item** and the admin adds it on **Admin → Content → Menus**, where **Add item** has a first choice of
+*A link* or one of the items extensions offer. It is then placed, ordered, hidden and deleted like any
+other item of that menu, and it leaves the site when your extension is disabled or removed.
+
+```html
+<!-- public/cart.menu-item.html -->
+<menu-item id="cart" label="Cart" description="The shopping cart button, with the number of items in it." icon-src="/shop/icons/cart.svg">
+  <k-shop-cart-button></k-shop-cart-button>
+  <script type="module" src="/shop/components/CartButton.js"></script>
+</menu-item>
+```
+
+- `id` and `label` are required; `description` (one line, shown when the item is chosen), `icon` (the name of an icon in kempo's shared set) and `icon-src` (the path to an icon file your extension ships, which wins over `icon`) are optional. The item is named `<your package name>:<id>`. A file without a `<menu-item>` wrapper, or without both, is skipped.
+- The wrapper's content is what is rendered where the admin puts the item. It is plain markup, so if it uses a custom element, include the `<script>` that defines it (a module that is loaded twice runs once).
+- One file per item, anywhere under `public/`.
+- The admin's menu holds a copy of your markup, refreshed when extensions are installed, enabled, disabled or removed. Changing the file in an update reaches menus on the next such change or the next time that menu is edited.
+- It can only be used in a menu the site's theme has (a `<location menu="true" />`). A site with no menu can still place your element itself, so document it.
+
+## Designing for Other Extensions: Slots, Templates and Locations
+
+Extensions add to each other. The pattern that scales is **composition**: the owner of a page or a
+component says exactly where others may add things, and everyone else adds only there. Nobody reaches
+into anybody's DOM from JavaScript. This is the pattern kempo-products uses for its product cards and
+product page, and kempo-commerce uses to add "Add to cart" to them without either one editing the
+other.
+
+### The rules
+
+1. **Slots, not injection.** A component declares where outside content may go with named `<slot>`s.
+   The content is that component's ordinary (light DOM) children, placed there by whoever uses it. Do not
+   `append`, `innerHTML` or `createElement` your content into someone else's component, do not reach
+   into its shadow root, and do not append to your own component's DOM from its own script. Lit owns
+   what a component renders: the next render removes what was added by hand, and nothing says where
+   things may go, so two extensions end up fighting over the same spot.
+
+2. **Composition over inheritance.** Build bigger things by placing components inside components. Extend
+   a class only to make a *variation* of that component (a card that lays itself out differently). A new
+   feature is another component placed in a slot, not a subclass.
+
+3. **A repeated thing uses one `<template>`.** When every item in a list needs the same added content (a
+   button on each product card), the page carries **one** `<template>`, and the component that repeats
+   the items clones its content into each item as slotted children. The item never knows about
+   templates:
+
+   ```javascript
+   // in the list, which repeats the cards
+   html`<k-products-card .product=${product}>${document.importNode(template.content, true)}</k-products-card>`
+   ```
+
+   Make the clone once per item and keep it (a `WeakMap` keyed by the item), or the next render builds
+   a fresh one and the components inside lose their state.
+
+4. **Find your context with `closest()`.** A component placed in someone else's slot finds the exact
+   parent it is inside of, and reads that parent's public contract:
+
+   ```javascript
+   const card = this.closest('k-products-card');
+   card.getAttribute('product-id');   // which product this instance is for
+   card.product;                      // what the parent already loaded: do not fetch it again
+   ```
+
+   A parent's contract is an attribute that names what it is for, properties for data it already has,
+   methods that cause actions, and bubbling, composed events that say something happened. This works
+   because slotted children are light DOM descendants. It does **not** work for content injected into a
+   shadow root (`closest()` stops at the root), which is one more reason to use slots. Do not be afraid
+   to call `closest()`: it is what makes a card with ten different extensions' components in it work,
+   with each one knowing exactly which card it is in.
+
+5. **Locations are the insertion points.** A page, template or fragment declares a place with
+   `<location name="…" />`, and any extension fills it with a `*.global.html` file (see *Push* above).
+   When the place is a component's slot, put the location **directly among the component's children**,
+   with no wrapper. The element an extension contributes names the slot it fills itself, with
+   `slot="…"`, like any child of a web component:
+
+   ```html
+   <k-products-detail>
+     <location name="products-detail-price" />
+     <location name="products-detail-actions" />
+     <location name="products-detail-extra" />
+   </k-products-detail>
+   ```
+
+   A slot takes any number of elements, so a wrapper `<div slot="actions">` adds nothing: it is one more
+   thing to style, and, because it would always be assigned to the slot, it would hide the slot's default
+   content (rule 8) even when nobody contributed.
+
+6. **Ship the script with the contribution.** Your contribution is the custom element plus the
+   `<script type="module">` that defines it, and the script goes in a *scripts* location **outside** any
+   `<template>`, so it loads once, and only on the pages that have the location. The element upgrades
+   when the module defines it. All the behaviour (fetching, rendering) belongs in that component, not in
+   a script that goes looking for places to inject into.
+
+   ```html
+   <!-- public/product-actions.global.html -->
+   <content location="products-scripts"><script type="module" src="/shop/components/AddToCart.js"></script></content>
+   <content location="products-card-actions"><k-shop-add-to-cart slot="actions"></k-shop-add-to-cart></content>
+   <content location="products-detail-actions"><k-shop-add-to-cart slot="actions"></k-shop-add-to-cart></content>
+   ```
+
+7. **Put the layout in the component, around the slot.** If the elements in a slot should be laid out
+   together (a row of buttons, a gap), style that in the component's own shadow DOM: wrap the `<slot>`
+   in an element there and give the wrapper the styles (`display: flex; gap: …`). The styles live with
+   the component that owns the layout, and contributors never need to know about them. Do not ask
+   contributors to wrap their elements in a styled `<div>`.
+
+8. **If there is a default way of doing it that an extension may want to replace, make it the slot's
+   default content.** Content inside a `<slot>` shows only while nothing is assigned to the slot:
+
+   ```javascript
+   render(){
+     return html`<slot name="price"><div class="tc-muted">${this.priceText}</div></slot>`;
+   }
+   ```
+
+   A site with no extensions shows the normal price. An extension such as a sale extension puts its own
+   element in the slot (`<k-sales-price slot="price">`, a struck-through price with the new one in
+   green), and the default is replaced, with the component and its default left unchanged. The default must
+   be real, working content, not a placeholder. The replacing element reads what it needs from the parent
+   with `closest()` (the product, the config, a `money()` formatter). A slot meant to be *replaced* should
+   have one owner: two contributors would both be shown. A slot meant to hold *several* things (actions)
+   has no default content, and takes as many elements as are contributed.
+
+### Giving other extensions somewhere to add
+
+If your extension has a page or a component that others might add to, **declare the places**: put
+`<location name="…" />` in your own pages, templates and fragments, and document each one as part of
+your public API, as a table of name, where it appears and what belongs in it.
+
+- **Name it with your extension's prefix** (`products-card-actions`, `checkout-after-total`), so names
+  from different extensions never collide.
+- **Locations stack; fragments pick one.** Any number of extensions fill a location and everything is
+  merged and ordered by `priority` (highest first). A `<fragment>` has exactly one winner. Use a
+  location for a list of things (buttons, badges, panels) and a fragment for one replaceable block.
+- **An unfilled location renders nothing**, so a page works with none of its extensions installed.
+- **Declare a scripts location** next to the markup locations, outside any `<template>`.
+- **Offer a place per purpose**, not one big "extras". `…-actions` (controls), `…-extra` (more
+  content) and `…-scripts` are easy for others to choose between and easy for you to restyle.
+
+Extensions can both declare locations and fill locations that others declare.
+
+### Pitfalls with the server templating
+
+The server resolves `{{ }}` variables, `<if>`, `<foreach>`, `<fragment>` and `<location>` across a
+page's whole text, including inside a `<template>` and inside HTML comments:
+
+- **No `{{product.name}}`-style placeholders for data that belongs to an item.** The server replaces an
+  unknown variable with nothing before the browser sees the page. Item data comes from the component
+  (it reads the parent with `closest()` and renders itself), not from the template.
+- **Never write a literal `<fragment …>` or `<location …>` tag in a comment** inside a fragment or page.
+  It is resolved like any other, and a fragment that names itself in a comment recurses until it fails.
+
+### Menu items
+
+Navigation is the same idea with a built-in picker: see *Menu items* above. Offer a nav item with a
+`*.menu-item.html` file and the admin adds it from the Menus page, instead of your script finding the
+nav and putting something into it.
+
 ## Admin Pages
 
 Place `.page.html` files in your `admin/` directory. They are accessible at `/admin/extensions/my-extension/`:
@@ -417,6 +672,24 @@ admin/
 ```
 
 Admin pages can use kempo-ui components and the frontend SDK.
+
+## Icons Your Extension Ships
+
+An icon that belongs to your extension goes with it, and is named by path, not by name. Where the SVG lives depends on who uses it:
+
+- **Used by more than one extension, or by kempo itself** (a plus, a trash can, a file-kind glyph): kempo's shared set, `src/kempo/icons/`. Use it by name: `<k-icon name="add">`.
+- **Used only in the admin** (a menu link, a settings page): `admin/icons/`, served at `/admin/extension/<your package name>/icons/`, to signed-in admins.
+- **Used on the live site** (a button in a storefront component, a menu item): `public/icons/`, served at `/<your scope>/icons/`, to everyone. An icon used by both the admin and the site goes here too, since the admin can load it from there.
+
+```html
+<k-aside-item icon-src="/admin/extension/my-extension/icons/report.svg" href="…">Reports</k-aside-item>
+<k-aside-item icon-src="/products/icons/products.svg" group="Products" group-icon-src="/products/icons/products.svg" href="…">Products</k-aside-item>
+<k-icon src="/products/icons/products.svg"></k-icon>
+```
+
+`icon-src` and `group-icon-src` are for admin nav links (`group-icon-src` is the icon of the group's menu), and a `<menu-item>` takes `icon-src` too. The `icon` and `group-icon` attributes, and the aside's `group-icons` map, are icon *names* looked up in kempo's shared set. A dashboard widget takes `iconSrc` in `kempo-config.json` (and `iconSrc` on its call to action) for the same thing.
+
+The icon is drawn by `<k-icon>`, which removes its `width` and `height` and fills it with the current text colour, so it takes the colour of the link it is in. Author it like the Material Symbols icons: one filled `<path>` and `viewBox="0 -960 960 960"`. An outlined (stroked) icon will not look right.
 
 ## Admin Component Overrides
 
@@ -602,11 +875,22 @@ An extension can tell users about something that needs them, such as a failed ba
 {
   "git": "string — GitHub repo URL for update detection",
   "public-scope": "string — URL prefix for public/ files",
+  "public-scopes": { "scope": "folder — more prefixes, each serving a folder of the package" },
   "schema": "string — relative path to Drizzle schema file",
   "hooks": {
     "event-name": "string — relative path to handler file"
   },
   "dependencies": ["array of extension names — must be installed and enabled first"],
+  "jobs": [
+    {
+      "name": "string — lowercase letters, numbers and dashes",
+      "every": "string or number — \"30s\", \"15m\", \"6h\" or milliseconds (at least one second)",
+      "callback": "string — relative path to the handler file, starting with ./"
+    }
+  ],
+  "aliases": {
+    "/short-address": "/your-public-scope/real-address"
+  },
   "permissions": [
     {
       "name": "string — owner:resource:action",

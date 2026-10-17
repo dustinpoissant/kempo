@@ -7,7 +7,7 @@ A plugin system that allows third-party npm packages to extend kempo with new ro
 - [Database](../concepts/db.md) â€” `extension` and `hook` tables
 - [Hooks](hooks.md) â€” extensions register event callbacks
 - [Admin UI](../concepts/admin-ui.md) â€” extensions management page
-- [Middleware](../concepts/middleware.md) â€” `extension-scope-router` serves extension public files
+- [Middleware](../concepts/middleware.md) â€” `kempo` middleware serves extension public files
 - [Settings](settings.md) â€” extensions can create their own settings
 - [Permissions](permissions.md) â€” extensions can create their own permissions
 - [Groups](groups.md) â€” extensions can create their own groups
@@ -47,7 +47,7 @@ Extensions enable third-party developers to add features to a kempo site without
 - **`permissions`/`settings`/`groups`**: Declared in kempo config. On install, all are created. On update, new ones are added and removed ones are left in place (user data may depend on them). On uninstall, all are deleted.
 - **`hooks`**: On update, new hooks are registered and hooks removed from config are deleted.
 - **`dependencies` field**: An array of other extension names that must already be installed and enabled. Checked on install and enable (fails with 409 if unmet); enforced in reverse on disable and uninstall (fails with 409 if another enabled extension still depends on this one). Version constraints are not checked, only presence and enabled state. See `server/utils/extensions/dependencies.js`.
-- **`public-scope`**: On update, scope change is applied automatically. The scope determines the URL prefix under which the extension's `public/` directory is served by `extension-scope-router`. The enabled extensions list is cached in-memory (`server/utils/extensions/scopeCache.js`) and invalidated on every install/enable/disable/uninstall.
+- **`public-scope`**: On update, scope change is applied automatically. The scope determines the URL prefix under which the extension's `public/` directory is served by the `kempo` middleware. The enabled extensions list is cached in-memory (`server/utils/extensions/scopeCache.js`) and invalidated on every install/enable/disable/uninstall.
 - **Display metadata from `package.json`**: `description`, `author`, `license`, and `kempo.docs` are not stored in the DB. They are read live from the installed package's `package.json` by `getExtension` and `listExtensions` and appended to the returned objects. The DB only stores what's needed for runtime behavior and update diffing.
 - **Stored kempo config snapshot**: The full `kempo` config from `package.json` is stored as JSON in the `extension` DB record at install/update time. This allows diffing old vs new config during updates even after `npm install` overwrites the package.
 - **Lifecycle scripts**: `install.js` and `uninstall.js` run for custom logic not covered by the declarative config. `update.js` receives `{ oldVersion, newVersion, oldKempo, newKempo }` for custom migration logic (e.g. column additions, data transforms).
@@ -197,8 +197,8 @@ When listing extensions, kempo can check for updates by:
 - **Manager**: `/admin/extensions/` â€” two tables: installed extensions and available extensions; installed rows show "Update available" badge when a newer version is detected
 - **Extension pages**: `/admin/extensions/{name}/` â€” served via `CATCH.js` which uses `renderExternalPage` to render the extension's admin pages
 
-### Extension Scope Router (Middleware)
-The `extension-scope-router` middleware serves enabled extensions' `public/` directories based on their `public-scope` config. Supports:
+### Extension Routing (Middleware)
+The `kempo` middleware serves enabled extensions' `public/` directories based on their `public-scope` config. Supports:
 - **`.page.html` templates** — rendered server-side via `renderExternalPage`
 - **JS route handlers** — `GET.js`, `POST.js`, `PUT.js`, `DELETE.js`, `PATCH.js`, etc. are dynamically imported and executed with `(request, response)`
 - **Dynamic path params** — `[param]` directory segments are matched and injected into `request.params`
@@ -209,7 +209,6 @@ The `extension-scope-router` middleware serves enabled extensions' `public/` dir
 - Extensions can access the full server SDK (`kempo/server/sdk.js`) for database operations, user management, etc.
 - The admin nav item for extensions uses the `extension` icon.
 - `kempo-blog` is the reference implementation extension.
-- The scope router's static-only limitation means extension pages with `.page.html` templates and API routes need the kempo-server routing/templating integration to work fully.
 - Column-level schema migrations (adding/removing columns, changing types) are intentionally left to `update.js`. Only table-level creation/deletion is handled automatically â€” this keeps automatic behavior safe and predictable.
 # Extensions
 
@@ -220,7 +219,7 @@ A plugin system that allows third-party npm packages to extend kempo with new ro
 - [Database](../concepts/db.md) â€” `extension` and `hook` tables
 - [Hooks](hooks.md) â€” extensions register event callbacks
 - [Admin UI](../concepts/admin-ui.md) â€” extensions management page
-- [Middleware](../concepts/middleware.md) â€” `extension-scope-router` serves extension public files
+- [Middleware](../concepts/middleware.md) â€” `kempo` middleware serves extension public files
 - [Settings](settings.md) â€” extensions can create their own settings
 - [Permissions](permissions.md) â€” extensions can create their own permissions
 - [Groups](groups.md) â€” extensions can create their own groups
@@ -314,8 +313,8 @@ kempo-blog/
 - **Manager**: `/admin/extensions/` â€” two tables: installed extensions and available extensions
 - **Extension pages**: `/admin/extensions/{name}/` â€” served via `CATCH.js` which uses `renderExternalPage` to render the extension's admin pages
 
-### Extension Scope Router (Middleware)
-The `extension-scope-router` middleware serves enabled extensions' `public/` directories based on their `public-scope` config. Supports:
+### Extension Routing (Middleware)
+The `kempo` middleware serves enabled extensions' `public/` directories based on their `public-scope` config. Supports:
 - **`.page.html` templates** — rendered server-side via `renderExternalPage`
 - **JS route handlers** — `GET.js`, `POST.js`, `PUT.js`, `DELETE.js`, `PATCH.js`, etc. are dynamically imported and executed with `(request, response)`
 - **Dynamic path params** — `[param]` directory segments are matched and injected into `request.params`

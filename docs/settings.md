@@ -44,8 +44,20 @@ webhook signing secrets, OAuth client secrets:
 await setSetting('my-ext', 'stripe_secret_key', 'sk_live_...', 'secret', false, 'Stripe API key');
 ```
 
-- It's encrypted at rest with AES-256-GCM. `SETTINGS_ENCRYPTION_KEY` (a 64-character hex string, i.e.
-  32 bytes) must be set in the environment, or saving/reading a secret throws.
+- It's encrypted at rest with AES-256-GCM, with the key in `SETTINGS_ENCRYPTION_KEY` (a 64-character hex
+  string, i.e. 32 bytes). You do not have to make one: when the server starts without it, kempo
+  generates one and saves it to the site's `.env` (owner-only; `.env` is added to `.gitignore` when there
+  is one), and `npx kempo init` writes one into the `.env` it creates. Anyone with shell access to the
+  server can read it there.
+  - **Back it up with the database.** Losing it makes every stored secret unreadable. Nothing else is
+    lost; the credentials can be typed in again.
+  - **It is never replaced.** When the database already holds encrypted settings and no key is set, kempo
+    does not make a new one (it would orphan them). It logs an error saying so and secrets stay
+    unavailable until the original key is restored.
+  - **A key you set always wins.** Put `SETTINGS_ENCRYPTION_KEY` in the environment or a secret manager
+    when you run more than one server (each would otherwise make its own) or on a host whose disk is
+    wiped on deploy. Turn generation off with `KEMPO_AUTO_ENCRYPTION_KEY=off`, or `autoEncryptionKey: false`
+    in the server config.
 - `isPublic` is forced to `false` no matter what you pass — a secret can never be exposed through
   `getPublicSettings`.
 - `getSetting`/`getSettingsByOwner` still return the real decrypted value, since server-side code
