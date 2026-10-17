@@ -1,0 +1,21 @@
+<!--
+	owner: system
+-->
+<page template="email" title="Test Email">
+<content>
+<div style="background-color: #007bff; color: white; padding: 20px; text-align: center; border-radius: 5px;">
+	<h1>Test Email</h1>
+</div>
+<div style="padding: 20px; background-color: #f9f9f9; border-radius: 5px; margin-top: 20px;">
+	<p>Hello<if condition="name"> {{name}}</if>!</p>
+	<p>This is a test email from your Kempo application.</p>
+	<p>If you received this, the templating system is working correctly!</p>
+	<if condition="timestamp">
+	<p><strong>Sent at:</strong> {{timestamp}}</p>
+	</if>
+</div>
+<div style="margin-top: 20px; text-align: center; color: #666; font-size: 12px;">
+	<p>This is an automated test message from Kempo.</p>
+</div>
+</content>
+</page>
