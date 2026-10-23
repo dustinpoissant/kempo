@@ -37,6 +37,8 @@ const sender = async (name, body) => {
   globalThis.emailLogCalls ??= {};
   globalThis.emailLogCalls[name] = [];
   await writeFile(file, `export default async ({ email }) => { globalThis.emailLogCalls[${JSON.stringify(name)}].push(email); ${body} };`);
+  /* Hooks run in the order they were registered, by the millisecond: a pause keeps two of them from sharing one on a fast machine. */
+  await new Promise(resolve => setTimeout(resolve, 5));
   const [error] = await createHook({ owner: OWNER, event: 'email:send', callback: file });
   if(error) throw new Error(error.msg);
   handlerCount++;

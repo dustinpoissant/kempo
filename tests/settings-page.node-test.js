@@ -7,6 +7,9 @@ import { seedDatabase } from './helpers/db.js';
   listing the settings of one owner (by plain prefix, in name order, with secrets masked).
 */
 
+/* A secret setting is stored encrypted, so the suite needs a key even where the environment has none (CI). It protects nothing. */
+process.env.SETTINGS_ENCRYPTION_KEY ||= '0'.repeat(64);
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const load = async relative => (await import(pathToFileURL(path.join(root, relative)).href)).default;
 
