@@ -105,7 +105,8 @@ export default {
     const [error, result] = await ensureSystemSettings();
     if(error) return fail(error.msg);
     if(!result.added.includes('email_from')) return fail('the setting was not added');
-    const [row] = (await db.execute(sql`select value from setting where name = 'system:site_name'`)).rows ?? [];
+    const found = await db.execute(sql`select value from setting where name = 'system:site_name'`);
+    const [row] = found.rows ?? found;
     if(row?.value !== 'My Own Name') return fail('an existing setting was overwritten');
     const [, again] = await ensureSystemSettings();
     if(again.added.length) return fail('a second run added something');
