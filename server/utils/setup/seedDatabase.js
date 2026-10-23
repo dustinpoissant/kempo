@@ -22,7 +22,7 @@ const DEFAULT_GROUPS = {
       'system:fragments:read', 'system:fragments:create', 'system:fragments:update', 'system:fragments:delete',
       'system:globals:read', 'system:globals:create', 'system:globals:update', 'system:globals:delete',
       'system:extensions:read', 'system:extensions:install', 'system:extensions:uninstall', 'system:extensions:manage',
-      'system:realtime:read', 'system:emails:read', 'system:emails:manage'
+      'system:realtime:read', 'system:emails:read', 'system:emails:manage', 'system:updates:manage'
     ]
   }
 };

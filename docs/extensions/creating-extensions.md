@@ -114,7 +114,7 @@ Kempo generates `CREATE TABLE IF NOT EXISTS` from your Drizzle table definitions
 
 ### Column Migrations
 
-Kempo only creates and drops whole tables. If you need to add a column in a new version, do it in `update.js`:
+Kempo creates your tables on install and drops them on uninstall. When a new version of your extension is installed, kempo compares your `schema` with the database when the server starts and **adds** what is missing: new tables (with their indexes and foreign keys), new columns, new indexes. It never changes or drops an existing column. So a new column in your schema file needs nothing else. Changing a column's type, making one required, renaming one or moving data is not additive: do it in `update.js`:
 
 ```javascript
 // update.js
@@ -122,9 +122,9 @@ import db from 'kempo/server/db/index.js';
 import { sql } from 'drizzle-orm';
 
 export default async ({ oldVersion, newVersion, oldKempo, newKempo }) => {
-  // Add a column that was added in v1.2.0
+  // Fill the column that v1.2.0 added, from the one it replaces
   if(semverLt(oldVersion, '1.2.0')){
-    await db.execute(sql`ALTER TABLE "myExtPost" ADD COLUMN IF NOT EXISTS "slug" text`);
+    await db.execute(sql`UPDATE "myExtPost" SET "slug" = lower("title") WHERE "slug" IS NULL`);
   }
 };
 ```
@@ -287,6 +287,7 @@ Handlers are **awaited one at a time, in registration order**. That means slow w
 | `extension:installed` | `{ name, version }` | After any extension is installed |
 | `extension:uninstalled` | `{ name }` | After any extension is uninstalled |
 | `extension:updated` | `{ name, oldVersion, newVersion }` | After any extension is updated |
+| `kempo:updated` | `{ oldVersion, newVersion, packages }` | Kempo itself was updated from the admin (on a Docker volume site, at the moment the owner switches); the server restarts a second later |
 | `page-created` | `{ page }` | After a page is created |
 | `notification:created` | `{ notification, recipientIds, refreshed }` | A notification reached at least one person |
 | `route:unmatched` | `{ url, method, request, draft }` | A request matched no file, page or route anywhere on the site |
@@ -808,7 +809,9 @@ export default async () => {
 
 ### `update.js`
 
-Runs after all declarative diffs have been applied. Receives the old and new config for comparison:
+Runs when the server starts after a new version of your extension is installed, however it got there (the Updates screen, `npm update`, a rebuilt image), once for each server that finds the database on an older version of your extension, after your tables have been brought up to date and before your new permissions, settings, groups, hooks, widgets and jobs are registered. Receives the old and new config for comparison. **It must be safe to run again**: if it fails, the extension keeps its old version in the database and it runs again at the next start.
+
+A new **major** version of your extension, or while your major is still 0 a new **minor** version (0.1.x to 0.2.0), or a new version whose `kempo-config.json` says `"breaking": true`, is treated as one that changes data: the admin is warned, the database is backed up first and the owner has to confirm. Put a change that older versions of your code cannot run against in a major release (a minor one while you are 0.x). Extensions are brought up to date in the order of their `dependencies`, so your `update.js` can rely on the extensions you depend on being current. When a site goes back to an older version, `update.js` is not run again.
 
 ```javascript
 export default async ({ oldVersion, newVersion, oldKempo, newKempo }) => {
@@ -898,13 +901,22 @@ Extensions are standard npm packages. Publish to npm:
 npm publish
 ```
 
-The `git` field in your `kempo-config.json` enables update detection:
+Kempo finds updates by asking the npm registry for the latest version of every installed extension, so publishing a new version to npm is how a site learns of it: the admin gets a notification and the Updates screen lists it. Use semver honestly: a **major** version (a new minor one while you are 0.x) is shown to the owner as one that may change their data, with a backup and a confirmation.
 
-```json
-"git": "https://github.com/yourname/my-extension"
+If your extension needs a newer kempo, say so in `peerDependencies` (`"kempo": ">=4.9.0"`). The Updates screen then only offers it together with that kempo, and a site on an older one is told to update kempo first.
+
+The `git` field in `kempo-config.json` is a link shown on the extension's page; it is not used to find updates.
+
+### Files your extension writes into the site
+
+Your extension's `public/` is served from its package, so nothing of it is copied into the site and an update just replaces it. If your extension has to generate a file into the site (a template, a starter page), use `writeSiteFile` so an update never overwrites what the owner changed:
+
+```javascript
+import { writeSiteFile } from 'kempo/server/sdk.js';
+
+const [, { status }] = writeSiteFile({ owner: 'my-extension', path: 'public/blog/template.html', content });
+// "written", "current", "kept" (the owner edited it) or "deleted" (the owner removed it, so it stays removed)
 ```
-
-When users check for updates in the admin panel, kempo fetches the latest `package.json` from the `main` branch of this repository and compares the version. Only GitHub URLs are currently supported.
 
 ## Realtime Channels
 
@@ -997,15 +1009,17 @@ An extension can tell users about something that needs them, such as a failed ba
 7. Run `install.js` (custom logic)
 8. Save `kempo` config snapshot to DB
 
-**Update:**
-1. `npm install name@latest`
-2. `CREATE TABLE IF NOT EXISTS` for any new tables
+**Update** (the new version is installed by the Updates screen, which stages it and switches to it, or by `npm install`; the rest happens when the server starts and finds the version on disk newer than the one in the database):
+1. Add what is missing from `schema`: new tables, columns, indexes (never anything that exists)
+2. Run `update.js` with `{ oldVersion, newVersion, oldKempo, newKempo }`
 3. Add any new permissions (never remove)
 4. Add any new settings (never overwrite changed values)
 5. Add any new groups
 6. Add new hooks, remove deleted hooks
-7. Run `update.js` with `{ oldVersion, newVersion, oldKempo, newKempo }`
-8. Save new `kempo` config snapshot to DB
+7. Register the widgets and jobs it declares now, remove the ones it no longer declares
+8. Save the new version and `kempo` config snapshot to the DB, then fire `extension:updated`
+
+A failed step leaves the old version recorded, is reported on the Updates screen, and is tried again at the next start.
 
 **Enable:** checks `kempo.dependencies` (fails with 409 if any named extension isn't currently enabled), then flips `enabled` to `true`.
 

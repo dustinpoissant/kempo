@@ -156,6 +156,27 @@ export const sendTestEmail = async (to) =>
   post(`${API_BASE}/emails/test`, { to });
 
 /*
+  Updates
+*/
+export const getUpdateStatus = async () =>
+  get(`${API_BASE}/updates`);
+
+export const checkForUpdate = async () =>
+  post(`${API_BASE}/updates/check`, {});
+
+export const prepareUpdate = async ({ version, extensions } = {}) =>
+  post(`${API_BASE}/updates/prepare`, { version, extensions });
+
+export const applyUpdate = async ({ version, extensions, confirm } = {}) =>
+  post(`${API_BASE}/updates/apply`, { version, extensions, confirm });
+
+export const rollbackUpdate = async (confirm) =>
+  post(`${API_BASE}/updates/rollback`, { confirm });
+
+export const discardUpdate = async () =>
+  post(`${API_BASE}/updates/discard`, {});
+
+/*
   Pages
 */
 

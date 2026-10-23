@@ -116,6 +116,18 @@ export const extension = pgTable('extension', {
 });
 
 /*
+  Which of kempo's own data migrations (server/db/upgrades/*.js) have run on this database. The additive changes to its
+  tables need no record, they are found by comparing; a migration that restructures data runs once and is recorded here.
+  The row with id 'baseline' marks the database as already holding what the shipped migrations produce.
+*/
+export const upgrade = pgTable('upgrade', {
+  id: text('id').primaryKey(),
+  description: text('description'),
+  breaking: boolean('breaking').notNull().default(false),
+  appliedAt: timestamp('appliedAt').notNull().defaultNow(),
+});
+
+/*
   Scheduled jobs: recurring work an extension declares in its kempo-config.json `jobs`. A row per job
   is the schedule and the lease: `nextRunAt` is when it is next due and `lockedUntil` is held while a
   process runs it, so several server processes sharing one database run each job once per interval.

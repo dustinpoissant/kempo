@@ -25,6 +25,8 @@ const EMAIL = 'checkout-flow@example.test';
 
 const purge = async () => {
   await db.delete(hook).where(eq(hook.event, 'user:email_verified')).catch(() => {});
+  const [stale] = await db.select({ id: user.id }).from(user).where(eq(user.email, EMAIL)).catch(() => []);
+  if(stale) await db.delete(verificationToken).where(eq(verificationToken.userId, stale.id)).catch(() => {});
   await db.delete(user).where(eq(user.email, EMAIL)).catch(() => {});
   clearHandlerCache();
 };

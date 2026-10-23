@@ -20,7 +20,7 @@ const dedupFetch = async (url, options) => {
         } catch(e) {
           return [{ code: response.status, msg: 'Service temporarily unavailable. Please try again later.' }, null];
         }
-        return [{ code: response.status, msg: errorData.error || errorData.message || 'An error occurred' }, null];
+        return [{ code: response.status, msg: errorData.error || errorData.message || 'An error occurred', ...(errorData.details ? { details: errorData.details } : {}) }, null];
       }
       try {
         return [null, await response.json()];
@@ -51,7 +51,7 @@ const dedupFetch = async (url, options) => {
       } catch(e) {
         return [{ code: response.status, msg: 'Service temporarily unavailable. Please try again later.' }, null];
       }
-      return [{ code: response.status, msg: errorData.error || errorData.message || 'An error occurred' }, null];
+      return [{ code: response.status, msg: errorData.error || errorData.message || 'An error occurred', ...(errorData.details ? { details: errorData.details } : {}) }, null];
     }
     try {
       return [null, await response.json()];

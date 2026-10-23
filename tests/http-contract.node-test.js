@@ -131,6 +131,24 @@ const CONTRACT = [
   ['GET', '/kempo/api/admin-globals', 'member', 403],
   ['GET', '/kempo/api/admin-globals', 'admin', 200],
 
+  /* Updating kempo restarts the server, so it needs system:updates:manage, which only Administrators hold. */
+  ['GET', '/admin/updates', 'member', 302],
+  ['GET', '/admin/updates', 'admin', 200],
+  ['GET', '/kempo/api/updates?offline=true', null, 401],
+  ['GET', '/kempo/api/updates?offline=true', 'invalid', 401],
+  ['GET', '/kempo/api/updates?offline=true', 'member', 403],
+  ['GET', '/kempo/api/updates?offline=true', 'admin', 200],
+  ['POST', '/kempo/api/updates/check', null, 401],
+  ['POST', '/kempo/api/updates/check', 'member', 403],
+  ['POST', '/kempo/api/updates/apply', null, 401],
+  ['POST', '/kempo/api/updates/apply', 'member', 403],
+  ['POST', '/kempo/api/updates/prepare', null, 401],
+  ['POST', '/kempo/api/updates/prepare', 'member', 403],
+  ['POST', '/kempo/api/updates/rollback', null, 401],
+  ['POST', '/kempo/api/updates/rollback', 'member', 403],
+  ['POST', '/kempo/api/updates/discard', null, 401],
+  ['POST', '/kempo/api/updates/discard', 'member', 403],
+
   ['GET', '/kempo/api/auth/session', null, 200],
   ['GET', '/kempo/api/settings/public', null, 200],
 

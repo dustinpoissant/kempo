@@ -12,5 +12,6 @@ Kempo is a fullstack CMS framework. Install it into a project, scaffold the star
 - [Extensions](extensions/README.md) — installing and managing extensions
 - [Creating Extensions](extensions/creating-extensions.md) — guide for building your own extension
 - [Notifications](notifications.md) — telling users something happened, with history, read state and action buttons
+- [Updates](updates.md) — checking npm for a newer kempo, installing it from the admin and restarting the server
 - [Admin Dashboard](dashboard.md) — the widget grid on `/admin`, and how extensions add widgets
 - [Realtime](realtime.md) — pushing live updates to browsers with channels, replay and a browser client

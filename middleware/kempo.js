@@ -13,9 +13,16 @@ import triggerHook from '../server/utils/hooks/triggerHook.js';
 import { ADMIN_GLOBALS_DIR } from '../server/utils/admin-global-content/helpers.js';
 import { startScheduler } from '../server/utils/scheduler/scheduler.js';
 import { ensureEncryptionKey } from '../server/utils/settings/ensureEncryptionKey.js';
+import syncCoreSchema from '../server/utils/setup/syncCoreSchema.js';
+import runUpgrades from '../server/utils/setup/runUpgrades.js';
+import seedIfNew from '../server/utils/setup/seedIfNew.js';
+import reconcileExtensions from '../server/utils/extensions/reconcileExtensions.js';
+import { flagFailed, markHealthy } from '../server/utils/updates/siteLayout.js';
+import notifySchemaAttention from '../server/utils/updates/notifySchemaAttention.js';
 import { ensureSystemSettings } from '../server/utils/settings/systemSettings.js';
 import { ensureSystemPermissions } from '../server/utils/setup/systemPermissions.js';
 import registerJobs from '../server/utils/scheduler/registerJobs.js';
+import '../server/utils/updates/runtime.js';
 import { resolveAlias } from '../server/utils/extensions/aliases.js';
 import { normalizeScopes } from '../server/utils/extensions/scopes.js';
 
@@ -187,6 +194,11 @@ const serveDir = async (dirPath, method, request, response, resolveDir, rootDir,
 export default config => {
   startScheduler();
 
+  /* A site that runs from a Docker volume has just switched to new code: once it has stayed up a minute the switch is final. */
+  if(process.env.KEMPO_SITE_ROOT && process.env.KEMPO_DB !== 'pglite'){
+    setTimeout(() => markHealthy(process.env.KEMPO_SITE_ROOT), 60000).unref();
+  }
+
   /*
     The key that encrypts stored credentials exists before any request needs it, generated into .env the
     first time when the site has none. Opt out with `autoEncryptionKey: false` in the server config or
@@ -198,17 +210,55 @@ export default config => {
       if(error) console.error(`[kempo] ${error.msg}`);
     });
   /*
-    What kempo added in a later version appears on an older site at start: its settings (so they show on the settings screen and can be
-    edited), its permissions, and its own scheduled job (the email retries and cleanup). Only what is missing is added, and never in
+    What kempo added in a later version appears on an older site at start: its tables and columns (additive only, see syncCoreSchema), its settings (so they show on the settings screen and can be
+    edited), its permissions, and its own scheduled jobs (the email retries and cleanup, and the check for a newer kempo). Only what is missing is added, and never in
     the in-memory test database (nothing is set up there yet).
   */
   const systemSettingsReady = process.env.KEMPO_DB === 'pglite'
     ? Promise.resolve()
     : (async () => {
       for(const [step, run] of [
+        ['schema', async () => {
+          const [error, result] = await syncCoreSchema();
+          if(result?.applied.length) console.log(`[kempo] Database brought up to date: ${result.applied.join('; ')}`);
+          for(const { change, reason } of result?.failed ?? []) console.error(`[kempo] Database change failed: ${change}: ${reason}`);
+          return [error];
+        }],
+        ['seed', async () => {
+          const [error, result] = await seedIfNew();
+          if(result?.seeded) console.log('[kempo] New database: its groups, permissions and settings were set up. Open /setup to create the first administrator.');
+          return [error];
+        }],
+        ['upgrades', async () => {
+          const [error, result] = await runUpgrades();
+          if(result?.ran.length) console.log(`[kempo] Data migrations run: ${result.ran.join(', ')}`);
+          if(error){
+            console.error(`[kempo] ${error.msg}`);
+            if(error.breaking && process.env.KEMPO_SITE_ROOT){
+              flagFailed({ siteRoot: process.env.KEMPO_SITE_ROOT, reason: error.msg });
+              process.exit(1);
+            }
+          }
+          return [null];
+        }],
         ['settings', ensureSystemSettings],
         ['permissions', ensureSystemPermissions],
-        ['jobs', () => registerJobs({ owner: 'kempo', jobs: [{ name: 'email-maintenance', every: '1m', callback: './server/utils/email/maintainEmails.js' }] })],
+        ['extensions', async () => {
+          const [error, result] = await reconcileExtensions();
+          for(const { name, from, to } of result?.upgraded ?? []) console.log(`[kempo] Extension ${name} brought up to date: ${from} -> ${to}`);
+          for(const { name, from, to } of result?.reverted ?? []) console.log(`[kempo] Extension ${name} is back on ${to} (was ${from})`);
+          for(const { name, reason } of result?.failed ?? []) console.error(`[kempo] Extension ${name} could not be brought up to date: ${reason}`);
+          if(result?.failed.some(item => item.major) && process.env.KEMPO_SITE_ROOT){
+            flagFailed({ siteRoot: process.env.KEMPO_SITE_ROOT, reason: result.failed.filter(item => item.major).map(item => `${item.name}: ${item.reason}`).join('; ') });
+            process.exit(1);
+          }
+          return [error];
+        }],
+        ['schema notice', notifySchemaAttention],
+        ['jobs', () => registerJobs({ owner: 'kempo', jobs: [
+          { name: 'email-maintenance', every: '1m', callback: './server/utils/email/maintainEmails.js' },
+          { name: 'update-check', every: '12h', callback: './server/utils/updates/runUpdateCheck.js' },
+        ] })],
       ]){
         const [error] = await run();
         if(error) console.error(`[kempo] System ${step}: ${error.msg}`);

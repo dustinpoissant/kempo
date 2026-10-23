@@ -31,6 +31,7 @@ Architectural patterns and cross-cutting systems.
 - [Frontend UI](concepts/frontend-ui.md) — Consumer-facing public website (scaffolded from app-public/)
 - [Admin UI](concepts/admin-ui.md) — Admin portal with tables, editors, and navigation
 - [Email](concepts/email.md) — Email log and queue, sent by an email extension, with kempo-server templating
+- [Updates](concepts/updates.md) — Checking npm for a newer kempo, installing it from the admin and restarting the server
 - [Realtime](concepts/realtime.md) — WebSocket push with channels, a Postgres NOTIFY bus, persisted replay and a browser client
 - [CLI](concepts/cli.md) — Project scaffolding via `npx kempo init`
 - [Build](concepts/build.md) — Minification and optimization of source files for distribution

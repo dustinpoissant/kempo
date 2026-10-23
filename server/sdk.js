@@ -221,6 +221,9 @@ export { default as installExtension } from './utils/extensions/installExtension
 export { default as listExtensions } from './utils/extensions/listExtensions.js';
 export { default as uninstallExtension } from './utils/extensions/uninstallExtension.js';
 export { default as updateExtension } from './utils/extensions/updateExtension.js';
+export { default as upgradeExtension } from './utils/extensions/upgradeExtension.js';
+export { default as reconcileExtensions } from './utils/extensions/reconcileExtensions.js';
+export { default as writeSiteFile } from './utils/extensions/writeSiteFile.js';
 
 /*
   Notifications

@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
-import { existsSync, cpSync, mkdirSync, writeFileSync, rmSync } from 'fs';
+import { existsSync, cpSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { join, dirname, basename } from 'path';
 import { execSync, spawnSync } from 'child_process';
 import crypto from 'crypto';
 import inquirer from 'inquirer';
+import { recordShipped } from '../server/utils/updates/starterFiles.js';
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -284,6 +285,17 @@ if(!useDefaults){
 }
 
 /*
+  The Docker files run the site and its database on a server, with everything the admin does kept on a volume so that
+  installing and updating Kempo from the admin survives replacing the container.
+*/
+const addDockerFiles = useDefaults ? true : (await inquirer.prompt([{
+  type: 'confirm',
+  name: 'addDocker',
+  message: 'Add a Dockerfile and docker-compose.prod.yml for running this site on a server?',
+  default: true
+}])).addDocker;
+
+/*
   Step 3: Scaffold project files
 */
 
@@ -331,6 +343,16 @@ const templatesSource = join(moduleRoot, 'app-templates');
 if(!existsSync(templatesDir) && existsSync(templatesSource)){
   cpSync(templatesSource, templatesDir, { recursive: true });
   console.log('Scaffolded templates/');
+}
+
+/* Remembers what was copied, so an update later can tell a starter file nobody edited from one that was. */
+recordShipped({ cwd: projectDir, packageRoot: moduleRoot, version: JSON.parse(readFileSync(join(moduleRoot, 'package.json'), 'utf8')).version });
+
+if(addDockerFiles){
+  for(const [source, target] of [['Dockerfile', 'Dockerfile'], ['docker-compose.prod.yml', 'docker-compose.prod.yml'], ['.dockerignore', '.dockerignore']]){
+    if(!existsSync(join(projectDir, target))) cpSync(join(moduleRoot, 'docker', source), join(projectDir, target));
+  }
+  console.log('Added Dockerfile, docker-compose.prod.yml and .dockerignore');
 }
 
 const drizzleConfigPath = join(projectDir, 'drizzle.config.js');

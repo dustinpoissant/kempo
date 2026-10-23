@@ -20,6 +20,7 @@ export const SYSTEM_SETTINGS = [
   { owner: 'system', name: 'email_retention_days', value: 30, type: 'number', isPublic: false, description: 'Days to keep the log of sent emails before it is deleted (0 keeps it forever)' },
   { owner: 'system', name: 'email_retention_by_type', value: {}, type: 'json', isPublic: false, description: 'Days to keep a particular kind of email, instead of the number above, as { "verify-email": 7, "kempo-commerce/order-processing": 365 } (0 keeps that kind forever)' },
   { owner: 'system', name: 'email_from', value: '', type: 'string', isPublic: false, description: 'The address emails are sent from, as name@example.com or Shop Name <name@example.com>. It must be on a domain verified with the email provider. Empty uses EMAIL_FROM from the server environment' },
+  { owner: 'system', name: 'update_check_enabled', value: true, type: 'boolean', isPublic: false, description: 'Check npm every 12 hours for a newer kempo and tell the people who can install it' },
 ];
 
 /* Resolves to [error, { added: [names] }]. */

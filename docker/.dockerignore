@@ -1,0 +1,9 @@
+node_modules
+.git
+.env
+.env.*
+docker-compose*.yml
+Dockerfile
+.dockerignore
+.kempo
+files

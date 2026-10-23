@@ -1,0 +1,39 @@
+# Runs the site and its database. Put DB_PASSWORD and SETTINGS_ENCRYPTION_KEY in a file called .env next to this one
+# (SETTINGS_ENCRYPTION_KEY is 64 hex characters; back it up with the database, the credentials saved in the admin cannot be
+# read without it), then:  docker compose -f docker-compose.prod.yml up -d --build
+#
+# Everything the admin does (pages, templates, uploads, installing and updating Kempo and extensions) is kept on the `site`
+# volume, and the data on the `db` volume. Back both up. `docker compose down -v` deletes them.
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://kempo:${DB_PASSWORD:?Put DB_PASSWORD in .env}@db:5432/kempo
+      SETTINGS_ENCRYPTION_KEY: ${SETTINGS_ENCRYPTION_KEY:?Put SETTINGS_ENCRYPTION_KEY in .env}
+    volumes:
+      - site:/site
+    ports:
+      - "9876:9876"
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kempo
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Put DB_PASSWORD in .env}
+      POSTGRES_DB: kempo
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kempo -d kempo"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  site:
+  db:

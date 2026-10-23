@@ -1,0 +1,2 @@
+import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../../server/utils/updates/discardUpdate.js";export default async(r,t)=>{const[i,o]=await s(r.cookies.session_token,"system:updates:manage");if(i)return t.status(i.code).json({error:i.msg});if(!o)return t.status(403).json({error:"Insufficient permissions"});const[a,n]=await e();if(a)return t.status(a.code).json({error:a.msg,...a.details?{details:a.details}:{}});t.json(n)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\updates\discard\POST.js.map
