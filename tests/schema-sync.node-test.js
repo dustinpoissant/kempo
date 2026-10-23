@@ -27,6 +27,9 @@ const getUpdateStatus = (await load('server/utils/updates/getUpdateStatus.js')).
 
 const databaseReachable = await reachable(db);
 
+/* An update time that is recent, so the hourly cleanup of old notifications does not delete the row it is set on. */
+const MARKER = new Date(Date.now() - 60000);
+
 const expect = (condition, message) => {
   if(!condition) throw new Error(message);
 };
@@ -152,10 +155,10 @@ const buildTests = () => ({
     const [notice] = await notices();
     expect(notice && notice.level === 'error' && notice.message.includes('duplicate key') && notice.actions[0].href === '/admin/updates', 'a failed change raises an error that links to the Updates screen');
 
-    await db.update(notification).set({ updatedAt: new Date(0) }).where(eq(notification.id, notice.id));
+    await db.update(notification).set({ updatedAt: MARKER }).where(eq(notification.id, notice.id));
     await notifySchemaAttention({ result });
     const after = await notices();
-    expect(after.length === 1 && after[0].updatedAt.getTime() === 0, 'the same problem is not raised again at the next start');
+    expect(after.length === 1 && after[0].updatedAt.getTime() === MARKER.getTime(), 'the same problem is not raised again at the next start');
     pass();
   },
 

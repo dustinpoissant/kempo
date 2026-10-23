@@ -31,6 +31,9 @@ const runUpdateCheck = (await load('server/utils/updates/runUpdateCheck.js')).de
 
 const databaseReachable = await reachable(db);
 
+/* An update time that is recent, so the hourly cleanup of old notifications does not delete the row it is set on. */
+const MARKER = new Date(Date.now() - 60000);
+
 const expect = (condition, message) => {
   if(!condition) throw new Error(message);
 };
@@ -260,10 +263,10 @@ const buildTests = () => ({
     expect(notice && notice.dedupeKey === `update:${NEXT_MINOR}` && notice.title.includes(NEXT_MINOR), 'a newer version raises a notification');
     expect(notice.actions[0].href === '/admin/updates', 'that links to the updates screen');
 
-    await db.update(notification).set({ updatedAt: new Date(0) }).where(eq(notification.id, notice.id));
+    await db.update(notification).set({ updatedAt: MARKER }).where(eq(notification.id, notice.id));
     await runUpdateCheck({ fetcher: registry(NEXT_MINOR), install });
     const [after] = await notices();
-    expect(after.updatedAt.getTime() === 0, 'the same version is not raised again');
+    expect(after.updatedAt.getTime() === MARKER.getTime(), 'the same version is not raised again');
 
     await runUpdateCheck({ fetcher: registry(NEXT_MAJOR), install });
     const next = await notices();

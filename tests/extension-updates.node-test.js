@@ -39,6 +39,9 @@ const { resetUpdateStatus } = await load('server/utils/updates/getUpdateStatus.j
 
 const databaseReachable = await reachable(db);
 
+/* An update time that is recent, so the hourly cleanup of old notifications does not delete the row it is set on. */
+const MARKER = new Date(Date.now() - 60000);
+
 const expect = (condition, message) => {
   if(!condition) throw new Error(message);
 };
@@ -450,10 +453,10 @@ export const thing = pgTable('xu_upgrade_table', { id: text('id').primaryKey()${
       const [first] = await notices();
       expect(first && /xu-a 2\.0\.0 is available/.test(first.title) && first.message.includes('(major)') && first.actions[0].href === '/admin/updates', `one update is named: ${first?.title}`);
 
-      await db.update(notification).set({ updatedAt: new Date(0) }).where(eq(notification.id, first.id));
+      await db.update(notification).set({ updatedAt: MARKER }).where(eq(notification.id, first.id));
       resetExtensionUpdates();
       await runUpdateCheck({ fetcher: answer({ [`${PREFIX}a`]: { version: '2.0.0' } }), install });
-      expect((await notices()).length === 1 && (await notices())[0].updatedAt.getTime() === 0, 'the same set is not raised again');
+      expect((await notices()).length === 1 && (await notices())[0].updatedAt.getTime() === MARKER.getTime(), 'the same set is not raised again');
 
       resetExtensionUpdates();
       await runUpdateCheck({ fetcher: answer({ [`${PREFIX}a`]: { version: '2.0.0' }, [`${PREFIX}b`]: { version: '1.1.0' } }), install });
