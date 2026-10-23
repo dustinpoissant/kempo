@@ -1373,23 +1373,35 @@ const [error, content] = await enableAdminGlobalContent('content_id');
 
 Email sending utilities.
 
-### `sendEmail({ to, subject, html })`
+### `sendEmail({ to, subject, html, template })`
 
-Send a raw email.
+Ask for an email to be sent. Kempo does not send it itself: it is saved in the email log (**Admin > Emails**) and handed to the installed email extension (kempo-resend, kempo-smtp...) through the `email:send` hook. `template` is optional and names what kind of email it is in the log (the retention settings go by it).
 
 ```javascript
 import { sendEmail } from 'kempo/server/sdk.js';
 
-const [error] = await sendEmail({
+const [error, result] = await sendEmail({
   to: 'user@example.com',
   subject: 'Hello',
   html: '<p>Email content</p>'
 });
+// result: { id, status: 'sent' }
+// error:  { code, msg, emailId }. 503 means no email extension is installed, 502 that one tried and could not send it.
 ```
+
+A success means a sender sent it. A failure is still in the log and is tried again (the `email_max_retries` setting); `emailId` is its id there.
+
+### `listEmails({ status, type, search, limit, offset })`, `getEmail(id)`, `retryEmail(id)`, `pruneEmails()`
+
+Read the log (`status` is `queued`, `sending`, `sent` or `failed`), try a waiting or failed email again, and delete the ones older than the retention settings.
 
 ### `sendEmailFromTemplate({ to, subject, template, data })`
 
 Send an email using a template with variable substitution. `template` is a plain name (`'verify-email'`) for kempo's and the site's templates, or `'your-extension/name'` for an extension's own, which the site can override; see [Email Templates](creating-extensions.md#email-templates).
+
+### `getSenderEmail()`
+
+The bare address kempo sends its emails from (`orders@example.com`, out of `Shop <orders@example.com>`), for an extension that needs an address for the site, such as the sender of a shipping label. It is the address emails go out from: the `system:email_from` setting (admin **Settings**), else `EMAIL_FROM` (or the older `SMTP_FROM`) in the environment, else the placeholder `noreply@example.com`. Async. Returns the address, or `null` if there is none to find. Check `typeof getSenderEmail === 'function'` (or `import * as kempo`) if your extension supports kempo versions without it.
 
 ### `renderEmailTemplate({ template, data })`
 

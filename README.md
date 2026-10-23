@@ -372,7 +372,9 @@ Extensions can declare `jobs` in `kempo-config.json` and kempo runs them on a ti
 
 ## Email
 
-Kempo uses [Resend](https://resend.com/) for sending emails. Set `RESEND_API_KEY` and `EMAIL_FROM` in your `.env` file.
+Kempo does not send email itself. It renders the email, saves it in a log (**Admin > Emails** shows every one, with whether it was sent and why not), and hands it to an **email extension**: `kempo-resend` sends through Resend, `kempo-smtp` through any SMTP server (a Hostinger or Google mailbox, Amazon SES, a Postfix of your own). Install one from Admin > Extensions and enter its settings on the Settings screen; with none installed, emails are logged and fail with "No email extension is installed".
+
+The address emails are sent from is the **Email from** setting (`system:email_from`); until it is set, `EMAIL_FROM` from `.env` is used, and it must be on a domain your email service allows. A failed email is tried again (`email_max_retries`, 1 by default) and the log is kept for `email_retention_days` (30 by default; `email_retention_by_type` sets it per kind of email). See [docs/extensions/creating-extensions.md](docs/extensions/creating-extensions.md) to write an email extension.
 
 Built-in email templates (in `templates/emails/`):
 - `verify-email.html` — Email verification link

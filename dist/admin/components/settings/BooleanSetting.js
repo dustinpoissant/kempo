@@ -1,0 +1,2 @@
+import{html as e}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Toggle.js";import t from"./SettingEditor.js";export default class i extends t{render(){return e`<div class="mb"><k-toggle ?disabled=${this.disabled} .value=${!0===this.value||"true"===this.value} @change=${e=>this.announce(!0===e.target.value)}>${this.heading}</k-toggle>${this.renderHint()}</div>`}}customElements.define("k-setting-boolean",i);
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\settings\BooleanSetting.js.map

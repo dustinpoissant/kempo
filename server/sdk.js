@@ -186,6 +186,11 @@ export { startScheduler, stopScheduler } from './utils/scheduler/scheduler.js';
 export { default as sendEmail } from './utils/email/sendEmail.js';
 export { default as sendEmailFromTemplate } from './utils/email/sendEmailFromTemplate.js';
 export { default as renderEmailTemplate } from './utils/email/renderEmailTemplate.js';
+export { default as getSenderEmail } from './utils/email/getSenderEmail.js';
+export { default as listEmails } from './utils/email/listEmails.js';
+export { default as getEmail } from './utils/email/getEmail.js';
+export { default as retryEmail } from './utils/email/retryEmail.js';
+export { default as pruneEmails } from './utils/email/pruneEmails.js';
 
 /*
   Filesystem Utilities

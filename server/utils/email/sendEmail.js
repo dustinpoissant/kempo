@@ -1,48 +1,38 @@
-import { Resend } from 'resend';
+import crypto from 'crypto';
+import db from '../../db/index.js';
+import { email } from '../../db/schema.js';
+import getSenderFrom from './getSenderFrom.js';
+import dispatchEmail from './dispatchEmail.js';
 
 /*
-  Constructed on first send, not at import. The Resend constructor throws when the key is missing,
-  and this module is reachable from the server SDK, so building it at module scope made an unset
-  RESEND_API_KEY fail every route that transitively imports it rather than just disabling email.
+  Asks for an email to be sent. Kempo does not send email itself: this saves the email in the log (the `email` table) and hands it to
+  whichever email extension is installed (kempo-resend, kempo-smtp...) through the `email:send` hook; see dispatchEmail.js.
+
+  `template` is the name of the template the email was made from, if any, and is its type in the log. It resolves to
+  `[null, { id, status: 'sent' }]` when a sender sent it, or `[{ code, msg, emailId }, null]` when none did: 503 when there is no email
+  extension installed, 502 when one tried and failed. Either way the email is in the log, and a failed one is tried again (see the
+  `email_max_retries` setting).
 */
-let resend = null;
-const client = () => (resend ??= new Resend(process.env.RESEND_API_KEY));
-
-export default async ({ to, subject, html }) => {
-  if(!process.env.RESEND_API_KEY){
-    return [{ code: 500, msg: 'RESEND_API_KEY not configured' }, null];
-  }
-
+export default async ({ to, subject, html, template = null } = {}) => {
   if(!to){
     return [{ code: 400, msg: 'Recipient email is required' }, null];
   }
-  
+
   if(!subject){
     return [{ code: 400, msg: 'Email subject is required' }, null];
   }
-  
+
   if(!html){
     return [{ code: 400, msg: 'Email content is required' }, null];
   }
 
-  const from = process.env.SMTP_FROM || 'onboarding@resend.dev';
-
+  const id = crypto.randomUUID();
+  const now = new Date();
   try {
-    const { data, error } = await client().emails.send({
-      from,
-      to,
-      subject,
-      html,
-    });
-
-    if(error){
-      console.error('Email send error:', error);
-      return [{ code: 500, msg: error.message || 'Failed to send email' }, null];
-    }
-
-    return [null, { success: true, messageId: data.id }];
-  } catch(error){
-    console.error('Email send error:', error);
-    return [{ code: 500, msg: 'Failed to send email' }, null];
+    await db.insert(email).values({ id, type: template || 'other', recipient: String(to), sender: await getSenderFrom(), subject: String(subject), html: String(html), status: 'queued', attempts: 0, createdAt: now, updatedAt: now });
+  } catch(error) {
+    return [{ code: 500, msg: 'The email could not be saved to send' }, null];
   }
+
+  return dispatchEmail(id);
 };

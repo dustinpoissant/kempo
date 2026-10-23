@@ -307,6 +307,15 @@ export default class MyComponent extends HybridComponent {
 
 Before working on any UI, read the full kempo-css reference to understand what's available: https://raw.githubusercontent.com/dustinpoissant/kempo-css/refs/heads/main/llms.txt
 
+## Emails and printable pages use kempo-css too
+
+Kempo's email system (`renderEmailTemplate` and `sendEmailFromTemplate` from `kempo/server/sdk.js`) runs every template through `kempo-css/shake`: it keeps only the kempo-css rules the rendered HTML uses (tags, classes, ids), turns the `var()` and `light-dark()` values into plain ones using the site's theme (`public/styles.css`), and embeds the result in a `<style>` in the `<head>`. So an email template is styled with kempo-css like any page: **use its elements and utility classes, never inline `style` attributes or `<style>` blocks.**
+
+ - A plain `<table>`, `<blockquote>`, `<h2>` and `<p>` are already styled. Use `<a class="btn primary" href="...">` for a button, `.ta-center` / `.ta-right` for alignment, `.mb` for spacing and `.tc-muted` for secondary text.
+ - Anything rendered with `renderEmailTemplate` follows the same rule, such as kempo-commerce's packing slip (`emails/packing-slip.page.html`). Extension templates live in the extension's `emails/` directory (`<page template="email">`), and a site overrides one at `templates/emails/<extension>/<name>.page.html`.
+ - Keep it to elements and classes that work in a mail client: tables and text, no flex or grid layouts, no scripts and no `<k-*>` components (their styles are not in the shaken CSS). The shaken CSS is whatever kempo-css contains for the classes used, so look at the result in the mail clients that matter before relying on a newer CSS feature.
+ - Everything that came from a customer or from staff is escaped (`{{var}}` is inserted as it is).
+
 ## Icons with kempo-ui
 
 **DO NOT use HTML entities, Unicode characters, or emoji for icons** (e.g. no `&larr;`, `&#x2715;`, `→`, `✕`). Use `<k-icon>` from kempo-ui instead.

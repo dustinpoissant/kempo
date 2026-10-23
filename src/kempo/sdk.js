@@ -141,6 +141,21 @@ export const deleteSetting = async (owner, name) =>
   del(`${API_BASE}/settings/${encodeURIComponent(owner)}/${encodeURIComponent(name)}`);
 
 /*
+  Emails
+*/
+export const listEmails = async ({ status, type, search, limit, offset } = {}) =>
+  get(`${API_BASE}/emails`, { status, type, search, limit, offset });
+
+export const getEmail = async (id) =>
+  get(`${API_BASE}/emails/${encodeURIComponent(id)}`);
+
+export const retryEmail = async (id) =>
+  post(`${API_BASE}/emails/${encodeURIComponent(id)}/retry`, {});
+
+export const sendTestEmail = async (to) =>
+  post(`${API_BASE}/emails/test`, { to });
+
+/*
   Pages
 */
 
@@ -198,6 +213,18 @@ export const updateTemplate = async ({ file, name, author, markup }) =>
 
 export const deleteTemplates = async (files) =>
   del(`${API_BASE}/templates`, { files });
+
+export const listEmailTemplates = async (owner) =>
+  get(`${API_BASE}/email-templates`, owner ? { owner } : {});
+
+export const getEmailTemplate = async (template) =>
+  get(`${API_BASE}/email-templates/file`, { template });
+
+export const saveEmailTemplate = async ({ template, source }) =>
+  put(`${API_BASE}/email-templates/file`, { template, source });
+
+export const resetEmailTemplate = async (template) =>
+  del(`${API_BASE}/email-templates/file`, { template });
 
 export const disableTemplate = async (file) =>
   put(`${API_BASE}/templates/disable`, { file });

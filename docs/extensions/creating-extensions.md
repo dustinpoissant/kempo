@@ -192,7 +192,28 @@ const [, sizes] = await getSetting('my-ext', 'sizes', []);   // a real array, no
 Values come back converted to the setting's declared type, so a `json` setting is an array or object
 rather than a string you have to parse.
 
-Settings appear in the admin panel at `/admin/settings` grouped by owner. Site admins can change them without a code deploy.
+An extension's settings are not listed on `/admin/settings` by themselves: the extension either adds a tab there (below) or manages its own settings on a screen of its own. Either way each setting is edited with the editor for its type, under a readable name made from its name, so site admins can change them without a code deploy. Write a `description`: it is shown under the name.
+
+### Settings tabs
+
+An extension that wants its settings on a tab of their own adds a `k-settings-tab` to the Settings page by filling its `admin-settings-tabs` location (an `*.global.html` file in the extension, like any global content), and loads what the tab uses from `admin-settings-scripts`:
+
+```html
+<content id="my-extension-settings-script" name="My Extension settings script" owner="my-extension" enabled="true" locked="true" location="admin-settings-scripts" priority="10"><script type="module" src="/admin/components/settings/SettingsPanel.js"></script></content>
+<content id="my-extension-settings-tab" name="My Extension settings tab" owner="my-extension" enabled="true" locked="true" location="admin-settings-tabs" priority="10">
+  <k-settings-tab name="my-extension" label="My Extension" position="500">
+    <k-settings-panel owner="my-extension"></k-settings-panel>
+  </k-settings-tab>
+</content>
+```
+
+`position` orders the tabs (Custom is 100, System 200, 500 when left out). The tab holds anything. `<k-settings-panel owner="...">` lists all of the extension's settings with their editors and a Save button, and needs no code. To edit only some settings, or mix them with your own controls, use the editors directly:
+
+```html
+<k-setting .setting=${{ name: 'cache_minutes', value: 60, type: 'number', description: 'How long a price is kept' }}></k-setting>
+```
+
+`k-setting` picks the editor for the type and fires a bubbling `setting-change` event with `{ name, value, valid }`; the single-type editors (`k-setting-string`, `-number`, `-boolean`, `-json`, `-secret`) are served from `/admin/components/settings/`. Saving is yours to do with `setSetting` from `/kempo/sdk.js`.
 
 ### Secret Settings
 
@@ -270,6 +291,7 @@ Handlers are **awaited one at a time, in registration order**. That means slow w
 | `notification:created` | `{ notification, recipientIds, refreshed }` | A notification reached at least one person |
 | `route:unmatched` | `{ url, method, request, draft }` | A request matched no file, page or route anywhere on the site |
 | `user:email_verified` | `{ userId, email }` | Someone followed their verification link, so they have proved they own the address |
+| `email:send` | `{ email: { id, to, from, subject, html, type, attempt } }` | An email is waiting to be sent: an email extension sends it and answers, see [Writing an Email Extension](#writing-an-email-extension) |
 
 ### Answering a Request Nothing Else Claimed
 
@@ -341,9 +363,47 @@ An extension's public pages live under its `public-scope` (`/commerce/cart/`). T
 
 `/cart`, `/cart/` and anything under it are then served from `/commerce/cart`; the address in the browser stays `/cart/`, so use absolute links inside the page. An alias must point inside one of your own scopes, cannot be under `/admin` or `/api`, and **never replaces a page the site has of its own at that address**: a site that already has `public/cart/` keeps it. An invalid alias is refused when the extension is installed.
 
+## Writing an Email Extension
+
+Kempo logs every email and leaves sending to an extension, so a provider (Resend, SMTP, a mail API of your own) is one hook handler. Register `email:send` and answer with whether you sent it:
+
+```json
+{ "hooks": { "email:send": "./hooks/send.js" } }
+```
+
+```javascript
+// hooks/send.js
+export default async ({ email }) => {
+  // email: { id, to, from, fromIsDefault, subject, html, type, attempt }
+  const response = await fetch('https://mail.example.com/send', { method: 'POST', body: JSON.stringify({ from: email.from, to: email.to, subject: email.subject, html: email.html }) });
+  if(!response.ok) return { sent: false, error: `The mail service answered ${response.status}` };
+  return { sent: true, provider: 'my-mail-service', messageId: (await response.json()).id };
+};
+```
+
+- **Say when you are not set up.** With no key or host saved, return `{ sent: false, skipped: true, error: 'No key is saved' }`: kempo does not count that as a try, and only shows the reason when no extension got as far as trying, so a failure of the one that is set up is not buried under it.
+- **`email.fromIsDefault`** is true when the site has not set its own sender, so `email.from` is only the placeholder `noreply@example.com`. A sender that knows a better one (an SMTP extension's mailbox) should use that instead.
+- **Return `{ sent: true }` only when it really went.** The first handler to do so ends the chain, so with several email extensions installed only one sends. A handler that returns `{ sent: false, error }` (or throws) leaves the email for the next handler, and for a retry later (the `email_max_retries` setting); the error is shown in **Admin > Emails**.
+- **Never touch the log.** Kempo records the status, the attempts, `provider` and `messageId`.
+- **Do not send what you did not get.** Handlers run in the order they were registered; the email is yours to send once, not to inspect and pass on. A "log only" extension should return `{ sent: false }` and let a real sender run after it, but kempo already logs everything.
+- **Settings.** Keep credentials (an API key, a password) in `secret` settings and put a tab on the admin Settings screen for them (see [Settings tabs](#settings-tabs)). `from` is already the address the site sends from; do not read your own copy.
+
 ## Email Templates
 
 Send your extension's emails with `sendEmailFromTemplate` and a template name of `your-extension/name`. The page lives in your package at `emails/name.page.html`, uses `<page template="email">`, and is laid out with the site's `templates/emails/email.template.html` when it has one and kempo's otherwise, so every email a site sends looks alike. A site can reword yours by adding `templates/emails/your-extension/name.page.html`.
+
+Style a template with kempo-css classes and no inline styles: kempo runs it through `kempo-css/shake`, which embeds only the rules it uses.
+
+**Let the site edit them.** Put the editor on your extension's settings page, with a tab if the page has them. It lists your templates, opens one in a code editor in a dialog, saves the site's copy to `templates/emails/your-extension/` (so an update of your extension does not undo it), and offers **Reset to default**:
+
+```html
+<script type="module" src="/admin/components/EmailTemplates.js"></script>
+<k-email-templates owner="your-extension"></k-email-templates>
+```
+
+Each row has a **Preview** that opens the saved template in one named tab. By default that is kempo's preview, which draws it with no data; to preview with your own data (an order, a user), serve a route that renders the template and give its address as `preview-url`.
+
+It needs the `system:pages:read` permission to list and read and `system:pages:update` to save. A template that does not render is not saved. Without `owner` it lists kempo's own templates. The same actions are in the client SDK (`listEmailTemplates`, `getEmailTemplate`, `saveEmailTemplate`, `resetEmailTemplate` in `/kempo/sdk.js`) and under `/kempo/api/email-templates`.
 
 ## Dependencies
 

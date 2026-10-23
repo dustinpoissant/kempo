@@ -1,0 +1,2 @@
+import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import r from"../../../../../server/utils/email/getEmail.js";export default async(e,t)=>{const[i,o]=await s(e.cookies.session_token,"system:emails:read");if(i)return t.status(i.code).json({error:i.msg});if(!o)return t.status(403).json({error:"Insufficient permissions"});const[n,a]=await r(e.params.id);if(n)return t.status(n.code).json({error:n.msg});t.json(a)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\emails\[id]\GET.js.map

@@ -88,7 +88,7 @@
 				? myPerms.has('system:settings:update')
 				: owner === 'custom'
 					? myPerms.has('system:custom-settings:manage')
-					: myPerms.has('system:extension:configure');
+					: myPerms.has('system:extensions:manage');
 			const canEditMetadata = owner === 'custom' && myPerms.has('system:custom-settings:manage');
 			const canDelete = owner === 'custom' && myPerms.has('system:custom-settings:manage');
 

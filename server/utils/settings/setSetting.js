@@ -3,11 +3,15 @@ import { setting } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
 import { serializeValue } from './helpers.js';
 import { SECRET_MASK } from './secretCrypto.js';
+import settingRule from './settingRules.js';
 
 export default async (owner, name, value, type = null, isPublic = false, description = null) => {
   if(!owner || !name){
     return [{ code: 400, msg: 'Both owner and name are required' }, null];
   }
+
+  const ruleError = settingRule(owner, name, value);
+  if(ruleError) return [ruleError, null];
 
   try {
     const fullName = `${owner}:${name}`;

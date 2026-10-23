@@ -13,7 +13,7 @@ Kempo is installed as an npm package (`npm install kempo`). The init script crea
 
 ### Decisions
 - **Single command**: `npx kempo init` handles all setup. `npx kempo upgrade` (separate command) handles future updates.
-- **`-y` / `--yes` flag**: Skips all prompts and uses sensible defaults (container name `kempo-postgres`, generated admin password, Resend as email service placeholder).
+- **`-y` / `--yes` flag**: Skips all prompts and uses sensible defaults (container name `kempo-postgres`, generated admin password, a placeholder sender address).
 - **Existing setup detection**: If `public/` exists, the user is prompted to start over, run upgrade, or cancel. Starting over deletes scaffolded files.
 - **Copies `app-public/` → `public/`**: Sample content is already in `app-public/` so users see a working site immediately.
 - **Docker-first database**: Docker Desktop + a Postgres container is required and managed automatically.
@@ -51,9 +51,8 @@ All prompts run before any files are written or commands executed.
 - Email (default: `admin@example.com`)
 - Password (default: auto-generated 16-char secure password)
 
-**Email service:**
-- Choice: Resend (recommended) or Skip for now
-- If Resend: prompt for API key and from-address
+**Email:**
+- The address emails are sent from (kempo does not send email itself; an email extension is installed from the admin later)
 
 ### 3. File Scaffolding
 | File/Dir | Source |
@@ -72,7 +71,6 @@ All prompts run before any files are written or commands executed.
 Generated with comments explaining each variable:
 ```
 DATABASE_URL=postgresql://kempo:kempo_dev_password@localhost:5433/kempo
-RESEND_API_KEY=<value or placeholder>
 EMAIL_FROM=<value or placeholder>
 PORT=9876
 NODE_ENV=development

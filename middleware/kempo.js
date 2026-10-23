@@ -13,6 +13,9 @@ import triggerHook from '../server/utils/hooks/triggerHook.js';
 import { ADMIN_GLOBALS_DIR } from '../server/utils/admin-global-content/helpers.js';
 import { startScheduler } from '../server/utils/scheduler/scheduler.js';
 import { ensureEncryptionKey } from '../server/utils/settings/ensureEncryptionKey.js';
+import { ensureSystemSettings } from '../server/utils/settings/systemSettings.js';
+import { ensureSystemPermissions } from '../server/utils/setup/systemPermissions.js';
+import registerJobs from '../server/utils/scheduler/registerJobs.js';
 import { resolveAlias } from '../server/utils/extensions/aliases.js';
 import { normalizeScopes } from '../server/utils/extensions/scopes.js';
 
@@ -194,6 +197,23 @@ export default config => {
     : ensureEncryptionKey().then(([error]) => {
       if(error) console.error(`[kempo] ${error.msg}`);
     });
+  /*
+    What kempo added in a later version appears on an older site at start: its settings (so they show on the settings screen and can be
+    edited), its permissions, and its own scheduled job (the email retries and cleanup). Only what is missing is added, and never in
+    the in-memory test database (nothing is set up there yet).
+  */
+  const systemSettingsReady = process.env.KEMPO_DB === 'pglite'
+    ? Promise.resolve()
+    : (async () => {
+      for(const [step, run] of [
+        ['settings', ensureSystemSettings],
+        ['permissions', ensureSystemPermissions],
+        ['jobs', () => registerJobs({ owner: 'kempo', jobs: [{ name: 'email-maintenance', every: '1m', callback: './server/utils/email/maintainEmails.js' }] })],
+      ]){
+        const [error] = await run();
+        if(error) console.error(`[kempo] System ${step}: ${error.msg}`);
+      }
+    })();
   const PROJECT_PUBLIC = config.rootPath || join(process.cwd(), 'public');
   const ADMIN_ROOT = resolveAdminRoot(config.adminRoot);
 
@@ -206,6 +226,7 @@ export default config => {
 
   return async (request, response, next) => {
     await encryptionKeyReady;
+    await systemSettingsReady;
     const { path } = request;
     const url = request.url.split('?')[0];
 

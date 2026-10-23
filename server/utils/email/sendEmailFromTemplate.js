@@ -3,7 +3,7 @@ import sendEmail from './sendEmail.js';
 
 /*
   `template` is a plain name for kempo's and the site's templates, or "owner/name" for an extension's;
-  see renderEmailTemplate.js.
+  see renderEmailTemplate.js. It is also the email's type in the log, which the retention settings go by.
 */
 export default async ({ to, subject, template, data = {} }) => {
   if(!to){
@@ -23,5 +23,5 @@ export default async ({ to, subject, template, data = {} }) => {
     return [error, null];
   }
 
-  return await sendEmail({ to, subject, html });
+  return await sendEmail({ to, subject, html, template });
 };

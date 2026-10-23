@@ -267,40 +267,20 @@ if(adminSetupChoice === 'browser'){
   adminPassword = adminAnswers.adminPassword || generatedAdminPassword;
 }
 
-let emailApiKey = '';
 let emailFrom = 'noreply@example.com';
-let emailServiceSkipped = false;
 
+/*
+  Kempo does not send email itself: an email extension (kempo-resend, kempo-smtp...) does, and is installed from the admin once the
+  site is running. Only the address emails are sent from is asked here; it can be changed later on the admin Settings screen.
+*/
 if(!useDefaults){
-  const { emailService } = await inquirer.prompt([{
-    type: 'select',
-    name: 'emailService',
-    message: 'Email service:',
-    choices: [
-      { name: 'Resend (recommended — https://resend.com)', value: 'resend' },
-      { name: 'Skip for now', value: 'skip' }
-    ]
+  const { fromEmail } = await inquirer.prompt([{
+    type: 'input',
+    name: 'fromEmail',
+    message: 'The address emails are sent from:',
+    default: 'noreply@example.com'
   }]);
-
-  if(emailService === 'resend'){
-    const emailAnswers = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'apiKey',
-        message: 'Resend API key:'
-      },
-      {
-        type: 'input',
-        name: 'fromEmail',
-        message: 'From email address:',
-        default: 'noreply@example.com'
-      }
-    ]);
-    emailApiKey = emailAnswers.apiKey;
-    emailFrom = emailAnswers.fromEmail;
-  } else {
-    emailServiceSkipped = true;
-  }
+  emailFrom = fromEmail;
 }
 
 /*
@@ -393,8 +373,7 @@ writeFileSync(join(projectDir, '.env'),
 `# Database
 DATABASE_URL=${databaseUrl}
 
-# Email${emailServiceSkipped ? '\n# Configure your email service — update the values below' : ''}
-RESEND_API_KEY=${emailApiKey || 'your_resend_api_key_here'}
+# Email: the address emails are sent from (also a setting on the admin Settings screen). Sending needs an email extension such as kempo-resend or kempo-smtp.
 EMAIL_FROM=${emailFrom}
 
 # Encrypts the API credentials saved in the admin. Back this up with your database: if it is lost they cannot be recovered.
@@ -524,7 +503,10 @@ ${adminSetupChoice === 'browser' ? `Create your admin user in the browser:
 ` : `Admin credentials:
   Email:    ${adminEmail}
   Password: ${adminPassword}
-`}${emailServiceSkipped ? '\n  Note: Email is not configured. Update RESEND_API_KEY in .env when ready.\n' : ''}
+`}
+  Note: Kempo does not send email itself. Install an email extension (kempo-resend or kempo-smtp)
+  from Admin > Extensions when you want the site to send email.
+
 Next steps:
   npm run dev
 

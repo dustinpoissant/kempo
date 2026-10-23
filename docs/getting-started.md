@@ -67,7 +67,7 @@ The `.env` file created during init contains:
 | Variable | Purpose |
 |---|---|
 | `DATABASE_URL` | PostgreSQL connection string |
-| `RESEND_API_KEY` | (Optional) Resend API key for transactional email |
+| `EMAIL_FROM` | (Optional) The address emails are sent from. Also a setting on the admin Settings screen, which wins |
 | `PORT` | Server port (default: 3000) |
 
 ## Scaffolded Pages

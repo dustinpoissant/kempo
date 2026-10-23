@@ -86,10 +86,32 @@ console.log(settings['system:site_name']); // "My Site"
 | `system:session_duration_days` | 7 | number | No | Session token lifetime in days |
 | `system:allow_registration` | true | boolean | Yes | Allow new user registrations |
 | `system:require_email_verification` | false | boolean | No | Require verified email to log in |
+| `system:email_max_retries` | 1 | number | No | How many times a failed email is tried again after the first try (0 never retries) |
+| `system:email_retention_days` | 30 | number | No | Days the email log is kept (0 keeps it forever) |
+| `system:email_retention_by_type` | {} | json | No | Days to keep a kind of email instead, like `{ "verify-email": 7 }` (0 keeps that kind forever) |
+| `system:email_from` | "" | string | No | The address emails are sent from (`name@example.com` or `Shop Name <name@example.com>`, on a domain verified with the email provider). Empty uses `EMAIL_FROM` from the environment. Checked when saved |
+
+Settings added in a later version of kempo are added to an older site, with their defaults, when the server starts. Only missing ones are added; nothing already there is changed.
 
 ## Admin Panel
 
-Settings are managed at `/admin/settings`, grouped by owner. Each setting has an editor appropriate for its type.
+Settings are managed at `/admin/settings`, in tabs:
+
+- **Custom**: the site's own settings. Create one with **Create a setting** (name, type, value, description, public), and delete one with its trash button.
+- **System**: kempo's own settings.
+- Then a tab for each extension that chooses to add one (see [Settings tabs](extensions/creating-extensions.md#settings-tabs)). An extension that does not add a tab has nothing on this page and manages its own settings wherever it likes.
+
+Every setting is edited with the editor for its **type**, under a readable name made from the setting name (`session_duration_days` is "Session Duration Days", `verification_url` is "Verification URL") and its description as a hint:
+
+| Type | Editor |
+|---|---|
+| `string` | A text field (a larger box for a long value or one with several lines) |
+| `number` | A number field; text that is not a number cannot be saved |
+| `boolean` | A toggle |
+| `json` | A box with the formatted JSON; text that is not JSON cannot be saved |
+| `secret` | A password field, replace-only: the saved value is never shown, and an empty field keeps it |
+
+Press **Save settings** to save what was changed on that tab (only the changed settings are sent). Who can change what is unchanged: `system:settings:update` for System, `system:custom-settings:manage` for Custom and `system:extensions:manage` for an extension's settings; without it the fields are read-only. The type, whether a setting is public and its description are edited on the setting's own page, `/admin/settings/<owner>/<name>/`.
 
 ## Creating App Settings
 

@@ -7,6 +7,13 @@ import { pathToFileURL } from 'url';
 
 const handlerCache = new Map();
 
+/*
+  kempo-server's dev reload (`dev.reload`) counts how many times a server file has changed in
+  `globalThis.kempoDevGeneration`. A handler is loaded again when the count has moved on, so editing a hook file
+  in development needs no restart. In production it is never set, and a handler is loaded once.
+*/
+const generation = () => globalThis.kempoDevGeneration ?? 0;
+
 export const clearHandlerCache = () => handlerCache.clear();
 
 const resolveHandler = (owner, callback) => {
@@ -33,11 +40,15 @@ const resolveHandler = (owner, callback) => {
   write a response mid-flight. That needs no special mode here — only that ordering be predictable,
   hence the explicit `orderBy` below, since without it row order is whatever the database returns.
 
+  **Claiming** (`stopWhen`) — a function given each handler's result. When it returns true the chain stops there and the handlers
+  after it do not run. This is how only one of several handlers does a job: an email sender returns `{ sent: true }` and the
+  other senders never see that email, while one that failed returns something else and the next one gets its turn.
+
   Note that "notification" governs error handling, not timing: handlers are still awaited in
   sequence, so a handler doing slow work holds up whatever triggered the event. Such a handler
   should start its work and return rather than awaiting it here.
 */
-export default async (event, data = {}, { bail = false } = {}) => {
+export default async (event, data = {}, { bail = false, stopWhen = null } = {}) => {
   if(!event){
     return [{ code: 400, msg: 'Event is required' }, null];
   }
@@ -59,12 +70,13 @@ export default async (event, data = {}, { bail = false } = {}) => {
       const handlerPath = resolveHandler(h.owner, h.callback);
       if(!handlerPath) continue;
 
-      let handler = handlerCache.get(handlerPath);
+      const cacheKey = `${handlerPath}:${generation()}`;
+      let handler = handlerCache.get(cacheKey);
       if(!handler){
         try {
-          const mod = await import(pathToFileURL(handlerPath).href);
+          const mod = await import(pathToFileURL(handlerPath).href + (generation() ? `?dev=${generation()}` : ''));
           handler = mod.default || mod;
-          handlerCache.set(handlerPath, handler);
+          handlerCache.set(cacheKey, handler);
         } catch(err) {
           /*
             Never fail silently: a hook that cannot load is indistinguishable from one that
@@ -80,6 +92,7 @@ export default async (event, data = {}, { bail = false } = {}) => {
       try {
         const result = await handler(data);
         results.push({ hookId: h.id, owner: h.owner, result });
+        if(stopWhen && stopWhen(result)) break;
       } catch(err) {
         if(bail) throw err;
         /* A notification handler's failure stops nothing, but it must not vanish: nobody would ever know the extension broke. */

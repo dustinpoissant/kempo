@@ -23,7 +23,7 @@ export default async (request, response) => {
       return response.status(403).json({ error: 'Forbidden: Cannot manage custom settings' });
     }
   } else {
-    const [permError, hasPermission] = await currentUserHasPermission(sessionToken, 'system:extension:configure');
+    const [permError, hasPermission] = await currentUserHasPermission(sessionToken, 'system:extensions:manage');
     if(permError || !hasPermission){
       return response.status(403).json({ error: 'Forbidden: Cannot modify extension settings' });
     }

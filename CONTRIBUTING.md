@@ -508,3 +508,35 @@ this.product = this.host.product;
 The server resolves `{{ }}`, `<if>`, `<foreach>`, `<fragment>` and `<location>` across a page's whole text,
 including inside a `<template>` and inside HTML comments. So: no `{{name}}` placeholders for an item's data
 (the component renders that), and never write a literal `<fragment …>` or `<location …>` tag in a comment.
+
+## Email templates use kempo-css
+
+An email (or anything else drawn with `renderEmailTemplate`, such as a packing slip) is an HTML template, and kempo styles it with
+kempo-css automatically. `renderEmailTemplate` renders the template, then calls `shake` from `kempo-css/shake` on the result:
+only the kempo-css rules for the tags, classes and ids the HTML actually uses are kept, every `var()` and `light-dark()` is
+replaced by its value from the site's theme (`public/styles.css`, light mode), and the CSS is embedded in the `<head>`. Mail
+clients cannot load a stylesheet or resolve CSS variables, which is why this is done for you.
+
+So write the template the way you would write a page:
+
+```html
+<page template="email" title="A note about your order">
+<content>
+<h2>A note about your order</h2>
+<blockquote>{{note}}</blockquote>
+<table class="mb">
+<tr><th>Item</th><th class="ta-right">Total</th></tr>
+<foreach in="lines" as="line">
+<tr><td>{{line.name}} &times; {{line.quantity}}</td><td class="ta-right">{{line.total}}</td></tr>
+</foreach>
+</table>
+<p class="ta-center"><a class="btn primary" href="{{orderLink}}">View your order</a></p>
+</content>
+</page>
+```
+
+ - Use native elements and kempo-css classes. No `style` attributes and no `<style>` blocks (the same rule as everywhere else).
+ - Keep to what mail clients handle: tables and text, no flex or grid, no scripts, no `<k-*>` components.
+ - The shaken CSS is exactly what kempo-css has for the classes used, so check the result in the mail clients that matter before relying on a newer CSS feature.
+ - `{{var}}` is inserted as it is: escape everything that came from a customer or from staff before it reaches a template.
+ - An extension ships its templates in `emails/` (`<page template="email">`); a site overrides one at `templates/emails/<extension>/<name>.page.html`, and can replace the layout with `templates/emails/email.template.html`.

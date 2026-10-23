@@ -1,0 +1,7 @@
+import t from"/kempo-ui/components/ShadowComponent.js";import{html as e}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Tabs.js";import"./SettingsPanel.js";import s from"./humanize.js";export default class n extends t{static properties={extensionTabs:{state:!0}};constructor(){super(),this.extensionTabs=[]}connectedCallback(){super.connectedCallback(),this.extensionTabs=[...this.querySelectorAll(":scope > k-settings-tab")].map((t,e)=>{const n=t.getAttribute("name")||t.getAttribute("label")||`tab-${e}`;return t.slot=`tab-${n}`,t.style.display="block",{id:n,slotName:`tab-${n}`,label:t.getAttribute("label")||s(n),position:Number(t.getAttribute("position"))||500,extension:!0}})}render(){const t=[{id:"custom",label:"Custom",position:100,content:()=>e`<k-settings-panel owner="custom"></k-settings-panel>`},{id:"system",label:"System",position:200,content:()=>e`<k-settings-panel owner="system"></k-settings-panel>`},...this.extensionTabs].sort((t,e)=>t.position-e.position);return e`
+      <k-tabs>
+        ${t.map(t=>e`<k-tab for=${t.id}>${t.label}</k-tab>`)}
+        ${t.map(t=>e`<k-tab-content name=${t.id} class="pt">${t.extension?e`<slot name=${t.slotName}></slot>`:t.content()}</k-tab-content>`)}
+      </k-tabs>
+    `}}customElements.define("k-admin-settings",n);
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\settings\AdminSettings.js.map

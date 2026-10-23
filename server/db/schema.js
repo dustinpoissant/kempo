@@ -139,6 +139,38 @@ export const scheduledJob = pgTable('scheduledJob', {
 ]);
 
 /*
+  Email
+
+  Every email kempo is asked to send is a row here before anything is sent, so there is always a record of what was
+  sent, to whom, and what happened. Kempo itself sends nothing: it fires the `email:send` hook and an email extension
+  (kempo-resend, kempo-smtp...) sends it.
+
+  `status` is `queued` (waiting for a sender, or for a retry), `sending` (a sender is working on it now), `sent` or
+  `failed` (no attempts left). `type` is the template it was made from (`verify-email`, `kempo-commerce/order-processing`)
+  or `other`, and is what the retention settings are keyed by. `html` is the whole email, which can hold links that
+  sign someone in or set a password, so reading the log needs its own permission.
+*/
+export const email = pgTable('email', {
+  id: text('id').primaryKey(),
+  type: text('type').notNull().default('other'),
+  recipient: text('recipient').notNull(),
+  sender: text('sender').notNull(),
+  subject: text('subject').notNull(),
+  html: text('html').notNull(),
+  status: text('status').notNull().default('queued'),
+  attempts: integer('attempts').notNull().default(0),
+  lastError: text('lastError'),
+  provider: text('provider'),
+  providerRef: text('providerRef'),
+  createdAt: timestamp('createdAt').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
+  sentAt: timestamp('sentAt'),
+}, table => [
+  index('email_status_idx').on(table.status, table.updatedAt),
+  index('email_createdAt_idx').on(table.createdAt),
+]);
+
+/*
   Realtime System
 */
 

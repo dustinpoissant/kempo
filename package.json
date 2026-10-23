@@ -54,8 +54,7 @@
     "inquirer": "^14.0.2",
     "lexical": "0.43.0",
     "monaco-editor": "^0.56.0",
-    "postgres": "^3.4.7",
-    "resend": "^6.5.2"
+    "postgres": "^3.4.7"
   },
   "peerDependencies": {
     "kempo-css": ">=2.2.5",
