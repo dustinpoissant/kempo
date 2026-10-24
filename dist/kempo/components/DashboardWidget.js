@@ -15,4 +15,4 @@ import e from"/kempo-ui/components/LightComponent.js";import{html as t,nothing a
         ${this.renderFooter()}
       </div>
     `}}
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\DashboardWidget.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\DashboardWidget.js.map

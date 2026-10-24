@@ -18,4 +18,4 @@ import e from"/kempo-ui/components/LightComponent.js";import{html as t}from"/kem
       ${this.extra}
       <p class="mt">Already have an account? <a href="/login">Login</a></p>
     `}}customElements.define("k-register",a);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\Register.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\Register.js.map

@@ -1,2 +1,2 @@
 import{html as e}from"/kempo-ui/lit-all.min.js";import t from"./SettingEditor.js";export default class n extends t{change=e=>{const t=e.target.value,n=Number(t);""!==t.trim()&&Number.isFinite(n)?this.announce(n):this.announce(this.value,"Enter a number")};renderControl(){return e`<input type="number" step="any" ?disabled=${this.disabled} .value=${String(this.value??0)} @input=${this.change}>`}}customElements.define("k-setting-number",n);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\settings\NumberSetting.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\settings\NumberSetting.js.map

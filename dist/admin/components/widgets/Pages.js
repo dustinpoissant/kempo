@@ -20,4 +20,4 @@ import e from"/kempo/components/DashboardWidget.js";import{html as t,nothing as 
         `)}
       `:a}
     `}}customElements.define("k-widget-pages",d);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\widgets\Pages.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\widgets\Pages.js.map

@@ -1,2 +1,2 @@
 import t from"/kempo-ui/components/controls/ButtonControl.js";export default class o extends t{get table(){return this.host}get record(){const t=this.closest(".record"),o=t?.dataset?.index;return void 0===o?null:this.host?.records?.[o]??null}}
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\AdminTableControl.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\AdminTableControl.js.map

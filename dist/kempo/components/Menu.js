@@ -14,4 +14,4 @@ import e from"/kempo-ui/components/LightComponent.js";import{html as t}from"/kem
         <ul>${this.menuData.items.map(e=>this.renderItem(e))}</ul>
       </nav>
     `:t``}}customElements.define("k-menu",s);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\Menu.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\Menu.js.map

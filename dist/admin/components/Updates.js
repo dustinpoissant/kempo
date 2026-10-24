@@ -114,4 +114,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,nothing 
       `:s}
       ${this.renderDialog(e)}
     `}}customElements.define("k-admin-updates",u);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\Updates.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\Updates.js.map

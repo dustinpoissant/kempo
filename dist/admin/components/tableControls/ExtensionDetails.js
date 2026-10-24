@@ -1,2 +1,2 @@
 import e from"../AdminTableControl.js";import{html as n}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Icon.js";export default class t extends e{connectedCallback(){super.connectedCallback(),this.hasAttribute("title")||(this.title="View in Store")}handleAction(){this.record&&(window.location.href=`/admin/extensions/details/?name=${encodeURIComponent(this.record.name)}`)}render(){return n`<k-icon name="storefront"></k-icon>`}}customElements.define("admin-extension-details",t);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\tableControls\ExtensionDetails.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\tableControls\ExtensionDetails.js.map

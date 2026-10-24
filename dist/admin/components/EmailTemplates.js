@@ -22,4 +22,4 @@ import t from"/kempo-ui/components/ShadowComponent.js";import{html as e,nothing 
       </table>
       ${this.renderDialog()}
     `:e`<p class="tc-muted">There are no email templates here.</p>`:e`<k-spinner></k-spinner>`}}customElements.define("k-email-templates",l);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\EmailTemplates.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\EmailTemplates.js.map

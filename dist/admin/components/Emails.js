@@ -46,4 +46,4 @@ import t from"/kempo-ui/components/ShadowComponent.js";import{html as s,nothing 
       ${this.renderDetail()}
       ${this.renderTest()}
     `}}customElements.define("k-admin-emails",d);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\Emails.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\Emails.js.map
