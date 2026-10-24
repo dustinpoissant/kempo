@@ -33,6 +33,7 @@ export const verificationToken = pgTable('verificationToken', {
     .references(() => user.id),
   type: text('type').notNull(),
   expiresAt: timestamp('expiresAt').notNull(),
+  attempts: integer('attempts').notNull().default(0),
   createdAt: timestamp('createdAt').notNull(),
 });
 

@@ -39,7 +39,7 @@ Payload `{ email: { id, to, from, fromIsDefault, subject, html, type, attempt } 
 - A provider's own settings (API key, SMTP host...) belong to its extension, on a tab of the admin Settings screen.
 
 ### Admin
-`/admin/emails`: the log with status and search, each email with its body, **Try again** and **Send a test email**.
+`/admin/emails`: a **Log** tab (status and search, each email with its body, **Try again** and **Send a test email**) and a **Templates** tab (kempo's own templates and any the site added, each with **Preview** and an editor; a `<name>.sample.json` beside a template gives its preview made-up values).
 
 ### Email Templates
 Located in `app-templates/emails/`: `email.template.html` (the layout), `verify-email.page.html`, `reset-password.page.html`, `test.page.html`. Templates are copied to the consumer's `templates/emails/` during `npx kempo init`.

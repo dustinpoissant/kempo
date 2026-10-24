@@ -1,0 +1,2 @@
+import{requestAccountDeletion as t}from"../../../../../../server/utils/auth/accountDeletion.js";export default async(e,o)=>{const[r,s]=await t({email:e.body?.email});if(r)return o.status(r.code).json({error:r.msg});o.json(s)};
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\auth\account-deletion\request\POST.js.map

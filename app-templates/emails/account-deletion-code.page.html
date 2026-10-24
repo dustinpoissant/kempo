@@ -1,0 +1,13 @@
+<!--
+	owner: system
+-->
+<page template="email" title="Your code to delete your account">
+<content>
+<h2>Delete your account</h2>
+<if condition="name"><p>Hi {{name}},</p></if>
+<if condition="!name"><p>Hello,</p></if>
+<p>Enter this code to delete your account. Deleting it removes your name, email address, password and everything else this site keeps about you.</p>
+<h1 class="ta-center mb">{{code}}</h1>
+<p class="tc-muted">The code works for {{minutes}} minutes and only once. If you did not ask for it, ignore this email: nothing will be deleted.</p>
+</content>
+</page>

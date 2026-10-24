@@ -1,0 +1,95 @@
+<!--
+  owner: system
+  title: Delete your account
+  description: Delete your account and the data this site keeps about you
+-->
+<page title="Delete your account">
+<content>
+	<main class="p">
+		<div style="max-width: 600px; margin: 0 auto;">
+			<h2>Delete your account</h2>
+
+			<div id="done" class="card mb" hidden>
+				<h4>Your account has been deleted</h4>
+				<p>Your name, email address, password and sign-in details are gone, and so is everything else this site kept about you. Thank you for having been here.</p>
+				<a href="{{pathToRoot}}">Back to the home page</a>
+			</div>
+
+			<div id="form">
+				<p>This removes your account and everything this site keeps about you: your name, your email address, your password, your sign-in links to other providers, and your sessions. Other parts of this site that keep information about you are told, so they remove theirs too. It cannot be undone.</p>
+				<p class="tc-muted">We send a six-digit code to the email address on your account. Entering it proves that you control that address before anything is deleted.</p>
+
+				<label class="d-b mbq" for="email">Email address on your account</label>
+				<input id="email" type="email" autocomplete="email" class="full mb" />
+				<button id="send" class="primary" type="button">Send me a code</button>
+
+				<div id="codeStep" hidden class="mt">
+					<label class="d-b mbq" for="code">Code<small class="d-b tc-muted">Six digits. It works for 30 minutes.</small></label>
+					<input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" class="full mb" />
+					<div class="d-f">
+						<button id="delete" class="danger mr" type="button" disabled>Delete my account</button>
+						<button id="resend" class="link" type="button">Send a new code</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</main>
+</content>
+<content location="scripts">
+<script type="module">
+	import Toast from '{{pathToRoot}}kempo-ui/components/Toast.js';
+
+	const email = document.getElementById('email');
+	const code = document.getElementById('code');
+	const send = document.getElementById('send');
+	const resend = document.getElementById('resend');
+	const remove = document.getElementById('delete');
+	const post = async (path, body) => {
+		const response = await fetch(`{{pathToRoot}}kempo/api/auth/account-deletion/${path}`, {
+			method: 'POST',
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify(body)
+		});
+		return { ok: response.ok, body: await response.json().catch(() => ({})) };
+	};
+
+	const askForCode = async () => {
+		const result = await post('request', { email: email.value.trim() });
+		if(!result.ok){
+			Toast.error(result.body.error || 'The code could not be sent');
+			return;
+		}
+		document.getElementById('codeStep').hidden = false;
+		Toast.success('If an account uses that address, a code is on its way');
+		code.focus();
+	};
+
+	send.addEventListener('click', askForCode);
+	resend.addEventListener('click', askForCode);
+	code.addEventListener('input', () => {
+		code.value = code.value.replace(/\D/g, '');
+		remove.disabled = code.value.length !== 6;
+	});
+
+	remove.addEventListener('click', async () => {
+		remove.disabled = true;
+		const result = await post('confirm', { email: email.value.trim(), code: code.value });
+		if(!result.ok){
+			Toast.error(result.body.error || 'That did not work');
+			remove.disabled = code.value.length !== 6;
+			return;
+		}
+		document.getElementById('form').hidden = true;
+		document.getElementById('done').hidden = false;
+	});
+
+	try {
+		const response = await fetch('{{pathToRoot}}kempo/api/auth/session');
+		const data = await response.json();
+		if(data.user?.email) email.value = data.user.email;
+	} catch {
+		/* not signed in, or no session to read: the person types the address */
+	}
+</script>
+</content>
+</page>

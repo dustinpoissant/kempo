@@ -292,6 +292,7 @@ Handlers are **awaited one at a time, in registration order**. That means slow w
 | `notification:created` | `{ notification, recipientIds, refreshed }` | A notification reached at least one person |
 | `route:unmatched` | `{ url, method, request, draft }` | A request matched no file, page or route anywhere on the site |
 | `user:email_verified` | `{ userId, email }` | Someone followed their verification link, so they have proved they own the address |
+| `user:deleted` | `{ id, email, name }` | A user account was deleted, by an administrator or by the person themselves (with a code sent to their address). Kempo has removed the account; remove anything your extension keeps about `id`. A handler that fails does not undo the deletion |
 | `email:send` | `{ email: { id, to, from, subject, html, type, attempt } }` | An email is waiting to be sent: an email extension sends it and answers, see [Writing an Email Extension](#writing-an-email-extension) |
 
 ### Answering a Request Nothing Else Claimed
@@ -402,7 +403,9 @@ Style a template with kempo-css classes and no inline styles: kempo runs it thro
 <k-email-templates owner="your-extension"></k-email-templates>
 ```
 
-Each row has a **Preview** that opens the saved template in one named tab. By default that is kempo's preview, which draws it with no data; to preview with your own data (an order, a user), serve a route that renders the template and give its address as `preview-url`.
+Each row has a **Preview** that opens the saved template in one named tab. By default that is kempo's preview, which fills the template in with the made-up values in a `<name>.sample.json` beside it (`emails/hello.sample.json` next to `emails/hello.page.html`, or the site's own under `templates/emails/`), and with no data when there is none. To preview with real data (an order, a user), serve a route that renders the template and give its address as `preview-url`.
+
+Kempo's own admin already has this editor for kempo's templates and the site's own, on the **Templates** tab of **Admin > Emails**; the one on your settings page is only for your extension's.
 
 It needs the `system:pages:read` permission to list and read and `system:pages:update` to save. A template that does not render is not saved. Without `owner` it lists kempo's own templates. The same actions are in the client SDK (`listEmailTemplates`, `getEmailTemplate`, `saveEmailTemplate`, `resetEmailTemplate` in `/kempo/sdk.js`) and under `/kempo/api/email-templates`.
 
