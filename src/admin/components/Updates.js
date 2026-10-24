@@ -369,7 +369,7 @@ export default class Updates extends ShadowComponent {
     return html`
       <div class="b r p mb" role="alert">
         <h2 class="h5 mb tc-danger">The last update did not work</h2>
-        <p>The update of ${last.packages?.length ? last.packages.join(', ') : 'Kempo'} on ${when(last.at)} did not stay running (${last.reason}), so the site went back to how it was.${last.breaking ? ' Your data was restored from the backup taken before it.' : ''}</p>
+        <p>The update${last.packages?.length ? ` of ${last.packages.join(', ')}` : ''} on ${when(last.at)} did not stay running (${last.reason}), so the site went back to how it was.${last.breaking ? ' Your data was restored from the backup taken before it.' : ''}</p>
       </div>
     `;
   }

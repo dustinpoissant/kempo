@@ -162,7 +162,8 @@ export default {
     const result = layout.rollBack({ siteRoot, reason: 'it stopped too many times' });
     expect(result.ok && appVersion(siteRoot) === '4.8.0', 'the old code is back');
     expect(read(path.join(siteRoot, 'app', 'public', 'login.html')) === 'login as it was' && !existsSync(path.join(siteRoot, 'app', 'public', 'new.html')), 'files it replaced are restored and files it added are removed');
-    expect(layout.readState(siteRoot, 'switch') === null && layout.readState(siteRoot, 'last').ok === false, 'the failure is recorded for the admin to see');
+    const recorded = layout.readState(siteRoot, 'last');
+    expect(layout.readState(siteRoot, 'switch') === null && recorded.ok === false && recorded.kind === 'rollback', 'the failure is recorded for the admin to see, as a rollback');
     pass();
   },
 

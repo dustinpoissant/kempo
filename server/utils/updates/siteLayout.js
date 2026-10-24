@@ -176,7 +176,7 @@ export const rollBack = ({ siteRoot, reason }) => {
 
   swapIn({ siteRoot, sw: { id: previous.id, version: previous.version, source, from: { id: current.id, version: current.version } } });
   restoreFiles({ siteRoot, backup: sw?.filesBackup });
-  writeState(siteRoot, 'last', { ok: false, from: current.version, to: previous.version, reason, at: new Date().toISOString(), dbBackup: sw?.dbBackup ?? null });
+  writeState(siteRoot, 'last', { ok: false, kind: 'rollback', from: current.version, to: previous.version, packages: sw?.packages ?? [], breaking: Boolean(sw?.breaking), reason, at: new Date().toISOString(), dbBackup: sw?.dbBackup ?? null });
   clearState(siteRoot, 'switch');
   return { ok: true, from: current.version, to: previous.version, dbBackup: sw?.dbBackup ?? null };
 };

@@ -34,6 +34,8 @@ An extension's code has to be in `node_modules` first, but its **database work h
 | **The `site` volume** (`/site`) | The site itself. `app/` holds your files (`public`, `templates`, uploads, `.env`) and the code (`node_modules`, `package.json`, the lockfile). `releases/` holds the version before the last update, `staging/` a version being prepared, `state/` what the startup script and the site tell each other. |
 | **The `db` volume** | The database. |
 
+**The startup script is part of the image, not the volume.** `entrypoint.mjs` and `siteLayout.js` are copied into the image from the kempo that was installed when it was built, because they must be able to run (and put the previous code back) even when the site's own code is broken. So updating kempo from the screen does not change them: rebuild the image (`docker compose build`, or a deploy) to pick up a newer startup script. The records they share with the site (`state/*.json`) are kept readable by both older and newer versions, and the screen copes with what an older startup script writes.
+
 Everything the admin does (pages, templates, uploads, installing and updating kempo and extensions) is written to the volume, so replacing or rebuilding the container loses nothing. The first time a container starts it copies the image's site onto the volume; after that **the volume is the site**, and rebuilding the image does not change it (rebuild to change Node). Back up both volumes. `docker compose down -v` deletes them.
 
 ### Updating
@@ -45,9 +47,9 @@ Everything the admin does (pages, templates, uploads, installing and updating ke
    - files you edited that the new version must replace anyway (a security fix); your version is saved first
    - a change to your data, if it carries one
 3. **Switch.** One click (with a confirmation where you are being asked to accept something). Kempo replaces the starter files, backs the database up first if data changes, and restarts. The startup script moves the new code into place while nothing is running, and the site is only down for the restart.
-4. **Proving itself.** The new version has a minute to stay up. If it stops more than three times, or says its data migration failed, the startup script puts the previous code back, the starter files the update replaced, and the database too when the update changed data. The Updates page says what happened.
+4. **Proving itself.** The new version has a minute to stay up (the screen waits it out: "Switch now" and "Go back" are held back with a note, and look again every few seconds). A download is a copy of the site's code from when you clicked "Get ready", so if the code changes in between (another update, an extension installed) it is refused and thrown away, and you get it ready again. If it stops more than three times, or says its data migration failed, the startup script puts the previous code back, the starter files the update replaced, and the database too when the update changed data. The Updates page says what happened.
 
-**Go back** puts the site on the version it had before the last update. If that update changed data, going back also restores the database from the backup taken before it, which loses whatever was entered since (the page says so and asks first). If it only added to the database, which is the usual case, nothing is lost.
+**Go back** puts the site on the version it had before the last update. It is not offered while the last switch is still being checked, nor right after the site went back (by hand or because the new version failed): the earlier version is then the one just left, and moving forward is an update. The screen and the server work this out in one place, so the warning that going back restores the database appears exactly when it will. If that update changed data, going back also restores the database from the backup taken before it, which loses whatever was entered since (the page says so and asks first). If it only added to the database, which is the usual case, nothing is lost.
 
 ### Starter files
 

@@ -58,7 +58,7 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,nothing 
     `}renderLast(e){const a=e.lastUpdate;return!a||a.ok?s:t`
       <div class="b r p mb" role="alert">
         <h2 class="h5 mb tc-danger">The last update did not work</h2>
-        <p>The update of ${a.packages?.length?a.packages.join(", "):"Kempo"} on ${d(a.at)} did not stay running (${a.reason}), so the site went back to how it was.${a.breaking?" Your data was restored from the backup taken before it.":""}</p>
+        <p>The update${a.packages?.length?` of ${a.packages.join(", ")}`:""} on ${d(a.at)} did not stay running (${a.reason}), so the site went back to how it was.${a.breaking?" Your data was restored from the backup taken before it.":""}</p>
       </div>
     `}renderGoBack(e){const a=e.goBack;return a?e.switching?t`<p class="tc-muted mb">The last switch is still being checked, which takes about a minute. Going back is available after that.</p>`:a.available?t`<p class="mb"><button @click=${()=>this.openConfirm("back")}>Go back</button> <span class="tc-muted">Puts the site back on what it ran before the last update${a.packages.length?` (${a.packages.join(", ")})`:""}.${a.restoresData?" That update changed your data, so this also restores the database from before it.":""}</span></p>`:s:s}renderDatabase(e){const{applied:a=[],failed:n=[]}=e.database??{},{upgraded:i=[],failed:r=[]}=e.extensionsRun??{};return t`
       ${n.length?t`

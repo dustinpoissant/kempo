@@ -50,6 +50,7 @@ const goBack = async reason => {
     try {
       say('Restoring the database from the backup taken before the update.');
       await restoreDatabase(result.dbBackup);
+      say('The database was restored.');
     } catch(error) {
       say(`The database could not be restored (${error.message}). The backup is at ${result.dbBackup}.`);
     }
@@ -67,6 +68,7 @@ if(switched){
       try {
         say('Restoring the database from the backup taken before the update.');
         await restoreDatabase(switched.dbBackup);
+        say('The database was restored.');
       } catch(error) {
         say(`The database could not be restored (${error.message}). The backup is at ${switched.dbBackup}.`);
       }

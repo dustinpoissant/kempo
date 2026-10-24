@@ -279,6 +279,23 @@ const buildTests = () => ({
     pass();
   },
 
+  'after the site put itself back, Go back is not offered, including for a record an older startup script wrote': async ({ pass }) => {
+    const { siteRoot, cwd, oldRoot } = makeSite();
+    await prepareUpdate({ siteRoot, cwd, oldRoot, install, run: fakeNpm(), fetcher: registry(NEXT) });
+    await applyStagedUpdate({ siteRoot, cwd, restart: () => {} });
+    layout.performSwitch(siteRoot);
+    layout.flagFailed({ siteRoot, reason: 'an update script failed' });
+    layout.rollBack({ siteRoot, reason: 'an update script failed' });
+    const last = layout.readState(siteRoot, 'last');
+    expect(last.ok === false && last.kind === 'rollback', 'the record says what happened');
+    expect(getReleaseStatus(siteRoot).goBack.available === false, 'so the screen does not offer to go back past a rollback');
+
+    /* what an earlier startup script wrote: no `kind` at all */
+    layout.writeState(siteRoot, 'last', { ok: false, from: NEXT, to: RUNNING_VERSION, reason: 'old record', at: new Date().toISOString() });
+    expect(getReleaseStatus(siteRoot).goBack.available === false, 'and the same for a record that has only ok: false');
+    pass();
+  },
+
   'a site with no earlier version has nothing to go back to': async ({ pass }) => {
     const { siteRoot } = makeSite();
     const [error] = await rollbackUpdate({ siteRoot, restart: () => {} });
