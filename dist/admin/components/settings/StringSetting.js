@@ -1,2 +1,2 @@
 import{html as t}from"/kempo-ui/lit-all.min.js";import e from"./SettingEditor.js";export default class i extends e{renderControl(){const e=String(this.value??"");return e.length>120||e.includes("\n")?t`<textarea rows="4" ?disabled=${this.disabled} .value=${e} @input=${t=>this.announce(t.target.value)}></textarea>`:t`<input type="text" ?disabled=${this.disabled} .value=${e} @input=${t=>this.announce(t.target.value)}>`}}customElements.define("k-setting-string",i);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\settings\StringSetting.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\settings\StringSetting.js.map

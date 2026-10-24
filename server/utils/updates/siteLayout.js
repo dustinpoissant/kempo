@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'fs';
 import { dirname, join } from 'path';
 
@@ -82,8 +83,22 @@ export const seedSite = ({ siteRoot, seed }) => {
 export const getCurrent = siteRoot => readState(siteRoot, 'current') ?? { id: null, version: versionIn(paths(siteRoot).app), previous: null };
 
 /*
+  A fingerprint of the code the site is running: which release it is, and the manifests that say what is installed. A
+  staged copy is made from this code, so it is only good while the fingerprint is the same. If the site's code changes in
+  between (another switch, an extension installed from the admin), switching to the copy would silently undo that change.
+*/
+export const basisOf = siteRoot => {
+  const { app } = paths(siteRoot);
+  const hash = createHash('sha256').update(String(getCurrent(siteRoot).id));
+  for(const name of MANIFESTS){
+    if(existsSync(join(app, name))) hash.update(readFileSync(join(app, name)));
+  }
+  return hash.digest('hex');
+};
+
+/*
   Staging a new version: a copy of the code the site has now, which the caller then installs into. The running site is
-  not touched. Only one is kept: staging again replaces the one before.
+  not touched. Only one is kept: staging again replaces the one before. `basis` is the fingerprint it was made from.
 */
 export const stage = ({ siteRoot, version }) => {
   const { app, staging } = paths(siteRoot);
@@ -93,7 +108,7 @@ export const stage = ({ siteRoot, version }) => {
   mkdirSync(dir, { recursive: true });
   copyManifests(app, dir);
   cpSync(join(app, 'node_modules'), join(dir, 'node_modules'), { recursive: true, verbatimSymlinks: true });
-  return { id, dir };
+  return { id, dir, basis: basisOf(siteRoot) };
 };
 
 /*

@@ -21,4 +21,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,nothing 
       ${this.settings.length?this.settings.map(e=>this.renderSetting(e)):t`<p class="tc-muted mb">${"custom"===this.owner?"There are no custom settings yet.":"There are no settings here."}</p>`}
       ${this.canEdit&&this.settings.length?t`<button class="primary" ?disabled=${!this.dirty||this.blocked||this.busy} @click=${this.save}>${this.busy?"Saving…":"Save settings"}</button>`:s}
     `}firstUpdated(){this.renderRoot.addEventListener("setting-change",this.record)}}customElements.define("k-settings-panel",p);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\settings\SettingsPanel.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\settings\SettingsPanel.js.map

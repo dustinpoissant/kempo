@@ -1,2 +1,2 @@
 import e from"./AdminTableControl.js";import{html as t}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Icon.js";export default class o extends e{connectedCallback(){super.connectedCallback(),this.hasAttribute("title")||(this.title="Remove from Group")}handleAction(){this.record&&"system:Users"!==this.record.name&&this.table.deleteRecord(this.record)}render(){return"system:Users"===this.record?.name?t``:t`<k-icon name="delete"></k-icon>`}}customElements.define("admin-group-remove-record",o);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\GroupRemoveRecord.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\GroupRemoveRecord.js.map

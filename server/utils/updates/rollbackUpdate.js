@@ -1,8 +1,7 @@
-import { existsSync } from 'fs';
-import { join } from 'path';
 import { RUNNING_VERSION } from './runtime.js';
+import goBackPlan from './goBackPlan.js';
 import { restartMode, scheduleRestart } from './restart.js';
-import { getCurrent, paths, readState, requestSwitch } from './siteLayout.js';
+import { requestSwitch } from './siteLayout.js';
 
 let going = false;
 
@@ -10,7 +9,8 @@ let going = false;
   Puts a site that runs from a Docker volume back on the version it had before the last update: the code, and the
   starter files the update replaced. If that update changed data, going back also restores the database from the backup
   taken before it, which loses whatever was entered since, so that needs `confirm.data`. Otherwise (the usual case: an
-  update only added to the database) the earlier version runs on the database as it is and nothing is lost.
+  update only added to the database) the earlier version runs on the database as it is and nothing is lost. What it
+  would do, and whether it is allowed now, is goBackPlan, the same answer the Updates screen shows.
 
   Resolves to [error, { from, to, restart, restoresData }].
 */
@@ -21,19 +21,12 @@ export default async ({ confirm = {}, siteRoot = process.env.KEMPO_SITE_ROOT, re
   if(going){
     return [{ code: 409, msg: 'A switch is already under way' }, null];
   }
-  if(readState(siteRoot, 'switch')){
-    return [{ code: 409, msg: 'The last switch has not finished proving itself yet' }, null];
-  }
 
-  const { previous, version } = getCurrent(siteRoot);
-  const source = previous?.id ? join(paths(siteRoot).releases, previous.id) : null;
-  if(!source || !existsSync(join(source, 'node_modules'))){
-    return [{ code: 409, msg: 'There is no earlier version to go back to' }, null];
+  const plan = goBackPlan(siteRoot);
+  if(!plan.available){
+    return [{ code: 409, msg: plan.reason }, null];
   }
-
-  const last = readState(siteRoot, 'last');
-  const restoresData = Boolean(last?.ok && last.breaking && last.to === version && last.dbBackup && existsSync(last.dbBackup));
-  if(restoresData && !confirm.data){
+  if(plan.restoresData && !confirm.data){
     return [{ code: 409, msg: 'Going back restores the database from before the update and loses what was entered since', details: { confirm: 'data' } }, null];
   }
 
@@ -41,15 +34,15 @@ export default async ({ confirm = {}, siteRoot = process.env.KEMPO_SITE_ROOT, re
   try {
     requestSwitch({
       siteRoot,
-      id: previous.id,
-      version: previous.version,
-      source,
+      id: plan.previous.id,
+      version: plan.previous.version,
+      source: plan.source,
       kind: 'rollback',
-      filesBackup: last?.ok && last.to === version ? last.filesBackup : null,
-      dbBackup: restoresData ? last.dbBackup : null
+      filesBackup: plan.last?.ok && plan.last.to === plan.version ? plan.last.filesBackup : null,
+      dbBackup: plan.restoresData ? plan.last.dbBackup : null
     });
     restart();
-    return [null, { from: RUNNING_VERSION, to: previous.version, restart: restartMode(), restoresData }];
+    return [null, { from: RUNNING_VERSION, to: plan.previous.version, restart: restartMode(), restoresData: plan.restoresData }];
   } finally {
     going = false;
   }

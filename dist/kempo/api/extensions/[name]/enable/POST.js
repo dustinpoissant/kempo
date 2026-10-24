@@ -1,2 +1,2 @@
 import s from"../../../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../../../server/utils/extensions/enableExtensionTree.js";export default async(r,n)=>{const i=r.cookies.session_token,[t,o]=await s(i,"system:extensions:manage");if(t)return n.status(t.code).json({error:t.msg});if(!o)return n.status(403).json({error:"Insufficient permissions"});const a=r.params.name,[m,u]=await e({name:a,cascade:!0===r.body?.cascade});if(m)return n.status(m.code).json({error:m.msg,requirements:m.requirements,missing:m.missing});n.json(u)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\extensions\[name]\enable\POST.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\[name]\enable\POST.js.map

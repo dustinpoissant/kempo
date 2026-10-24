@@ -1,2 +1,2 @@
 const s=new Set(["api","css","html","id","ip","js","json","seo","smtp","sms","sql","ssl","tls","ui","uri","url","utc","uuid","xml"]);export default e=>String(e??"").replace(/([a-z0-9])([A-Z])/g,"$1 $2").split(/[\s_\-.:]+/).filter(Boolean).map(e=>s.has(e.toLowerCase())?e.toUpperCase():e[0].toUpperCase()+e.slice(1)).join(" ");
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\settings\humanize.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\settings\humanize.js.map

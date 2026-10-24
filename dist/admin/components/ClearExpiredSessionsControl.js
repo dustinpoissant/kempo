@@ -1,2 +1,2 @@
 import e from"./AdminTableControl.js";import{html as t}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Icon.js";export default class i extends e{connectedCallback(){super.connectedCallback(),this.hasAttribute("title")||(this.title="Clear Expired Sessions")}render(){return t`<k-icon name="timer_off"></k-icon>`}}customElements.define("admin-clear-expired-sessions",i);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\ClearExpiredSessionsControl.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\ClearExpiredSessionsControl.js.map

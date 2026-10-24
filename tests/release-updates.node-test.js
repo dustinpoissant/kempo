@@ -221,6 +221,64 @@ const buildTests = () => ({
     pass();
   },
 
+  'a download made from code that has since changed is refused and thrown away, not switched to': async ({ pass }) => {
+    const { siteRoot, cwd, oldRoot } = makeSite();
+    await prepareUpdate({ siteRoot, cwd, oldRoot, install, run: fakeNpm(), fetcher: registry(NEXT) });
+    expect(layout.readState(siteRoot, 'staged'), 'a download is waiting');
+
+    /* an extension installed from the admin after the download: the manifests the download was copied from no longer match */
+    write(path.join(cwd, 'package.json'), '{"name":"site","dependencies":{"some-extension":"1.0.0"}}');
+    const restarts = [];
+    const [error] = await applyStagedUpdate({ siteRoot, cwd, restart: () => restarts.push(1) });
+    expect(error?.code === 409 && /changed after this update was downloaded/.test(error.msg) && /get the update ready again/.test(error.msg), `refused, with the way forward: ${JSON.stringify(error)}`);
+    expect(restarts.length === 0 && !layout.readState(siteRoot, 'switch'), 'nothing was switched or restarted');
+    expect(!layout.readState(siteRoot, 'staged') && !existsSync(path.join(siteRoot, 'staging')), 'the stale copy is gone, so the screen offers the update again');
+    expect(read(path.join(cwd, 'package.json')).includes('some-extension'), 'and the change that would have been undone is still there');
+    pass();
+  },
+
+  'a switch is refused with a plain reason while the last one is still being checked, then allowed': async ({ pass }) => {
+    const { siteRoot, cwd, oldRoot } = makeSite();
+    await prepareUpdate({ siteRoot, cwd, oldRoot, install, run: fakeNpm(), fetcher: registry(NEXT) });
+    layout.writeState(siteRoot, 'switch', { status: 'switched', kind: 'update', attempts: 1, from: { id: 'x', version: '1.0.0' } });
+    const [error] = await applyStagedUpdate({ siteRoot, cwd, restart: () => {} });
+    expect(error?.code === 409 && /still being checked/.test(error.msg) && /about a minute/.test(error.msg), `says what is happening and for how long: ${error?.msg}`);
+    expect(getReleaseStatus(siteRoot).switching === 'switched', 'and the screen is told, so it can disable the button');
+    layout.clearState(siteRoot, 'switch');
+    const [ok] = await applyStagedUpdate({ siteRoot, cwd, restart: () => {} });
+    expect(!ok, 'once the trial is over the same download switches');
+    pass();
+  },
+
+  'the screen and the server agree on what Go back does: not on trial, not after a rollback, and the data warning only when data would be restored': async ({ pass }) => {
+    const { siteRoot, cwd, oldRoot } = makeSite();
+    expect(getReleaseStatus(siteRoot).goBack.available === false && /no earlier version/.test(getReleaseStatus(siteRoot).goBack.reason), 'nothing to go back to at first');
+
+    await prepareUpdate({ siteRoot, cwd, oldRoot, install, run: fakeNpm({ upgrades: { '9.1.0-test.js': breakingMigration } }), fetcher: registry(NEXT) });
+    await applyStagedUpdate({ siteRoot, cwd, confirm: { breaking: true }, restart: () => {}, backup: async ({ file }) => { write(file, 'dump'); return [null, { file }]; } });
+    layout.performSwitch(siteRoot);
+
+    const onTrial = getReleaseStatus(siteRoot);
+    expect(onTrial.switching === 'switched' && onTrial.goBack.available === false && /still being checked/.test(onTrial.goBack.reason), 'not offered while the new version is still proving itself');
+    const [early] = await rollbackUpdate({ siteRoot, restart: () => {} });
+    expect(early?.code === 409 && early.msg === onTrial.goBack.reason, 'and the server refuses with the same words');
+
+    layout.markHealthy(siteRoot);
+    const settled = getReleaseStatus(siteRoot);
+    expect(settled.goBack.available === true && settled.goBack.restoresData === true, 'once it has settled, going back is offered and the screen says it restores the database');
+
+    const [, plain] = [null, await rollbackUpdate({ siteRoot, confirm: { data: true }, restart: () => {} })];
+    expect(!plain[0] && plain[1].restoresData === true, 'the server restores the database, which is what the screen said');
+    layout.performSwitch(siteRoot);
+    layout.markHealthy(siteRoot);
+
+    const afterRollback = getReleaseStatus(siteRoot);
+    expect(afterRollback.goBack.available === false && /just gone back/.test(afterRollback.goBack.reason), 'straight after a rollback it is not offered: the earlier version is the one just left');
+    const [again] = await rollbackUpdate({ siteRoot, restart: () => {} });
+    expect(again?.code === 409 && again.msg === afterRollback.goBack.reason, 'and the server refuses with the same words');
+    pass();
+  },
+
   'a site with no earlier version has nothing to go back to': async ({ pass }) => {
     const { siteRoot } = makeSite();
     const [error] = await rollbackUpdate({ siteRoot, restart: () => {} });

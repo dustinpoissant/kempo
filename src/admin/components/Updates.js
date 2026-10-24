@@ -78,6 +78,13 @@ export default class Updates extends ShadowComponent {
     this.status = status;
     this.selectNew(status);
     this.reportOutcome();
+    /* A switch that is still being checked blocks the buttons below for about a minute: look again until it is done. */
+    if(status.switching && !this.recheck){
+      this.recheck = setTimeout(() => {
+        this.recheck = null;
+        this.load();
+      }, 5000);
+    }
   };
 
   /* Everything that can be updated, as { key, name, from, to, major, needs }: Kempo first, then the extensions. */
@@ -177,7 +184,7 @@ export default class Updates extends ShadowComponent {
   };
 
   confirmed = async () => {
-    const { staged, bootId, mode, lastUpdate } = this.status;
+    const { staged, bootId, mode, goBack } = this.status;
     this.stalled = false;
     let error;
     let result;
@@ -185,7 +192,7 @@ export default class Updates extends ShadowComponent {
 
     if(this.action === 'back'){
       this.phase = 'going-back';
-      [error, result] = await rollbackUpdate({ data: Boolean(lastUpdate?.breaking) });
+      [error, result] = await rollbackUpdate({ data: Boolean(goBack?.restoresData) });
       message = 'The site is back on what it ran before the last update';
     } else if(mode === 'release'){
       this.phase = 'switching';
@@ -309,7 +316,8 @@ export default class Updates extends ShadowComponent {
         <p class="tc-muted mb">${staged.packages.join(', ')}. ${staged.packages.length === 1 ? 'It is' : 'They are'} downloaded next to your running site, which has not changed. Switching will:</p>
         ${this.renderPlan(staged.plan)}
         <p class="tc-muted mb">${this.renderRestartNote(status)}</p>
-        <button class="primary mr" @click=${() => this.openConfirm('update')}>Switch now</button>
+        ${status.switching ? html`<p class="tc-muted mb">The last switch is still being checked, which takes about a minute after the restart. You can switch when that is done.</p>` : nothing}
+        <button class="primary mr" ?disabled=${Boolean(status.switching)} @click=${() => this.openConfirm('update')}>Switch now</button>
         <button @click=${this.discard}>Not now</button>
       </div>
     `;
@@ -367,9 +375,11 @@ export default class Updates extends ShadowComponent {
   }
 
   renderGoBack(status){
-    if(!status.canGoBack) return nothing;
-    const last = status.lastUpdate;
-    return html`<p class="mb"><button @click=${() => this.openConfirm('back')}>Go back</button> <span class="tc-muted">Puts the site back on what it ran before the last update${last?.ok && last.packages?.length ? ` (${last.packages.join(', ')})` : ''}.</span></p>`;
+    const back = status.goBack;
+    if(!back) return nothing;
+    if(status.switching) return html`<p class="tc-muted mb">The last switch is still being checked, which takes about a minute. Going back is available after that.</p>`;
+    if(!back.available) return nothing;
+    return html`<p class="mb"><button @click=${() => this.openConfirm('back')}>Go back</button> <span class="tc-muted">Puts the site back on what it ran before the last update${back.packages.length ? ` (${back.packages.join(', ')})` : ''}.${back.restoresData ? ' That update changed your data, so this also restores the database from before it.' : ''}</span></p>`;
   }
 
   renderDatabase(status){
@@ -417,7 +427,7 @@ export default class Updates extends ShadowComponent {
           <p class="mb">${back ? 'This puts the site back on what it ran before the last update.' : `This updates ${items.join(', ')}.`} ${this.renderRestartNote(status)}</p>
           ${forced.length ? html`<p class="tc-warning mb"><k-icon name="warning"></k-icon> Your edits to ${forced.join(', ')} will be replaced. Your version is saved first.</p>` : nothing}
           ${breaking ? html`<p class="tc-warning mb"><k-icon name="warning"></k-icon> This update changes your data. A backup is taken first, and going back later restores it, which loses anything entered after the update.</p>` : nothing}
-          ${back && status.lastUpdate?.breaking ? html`<p class="tc-warning mb"><k-icon name="warning"></k-icon> The update changed your data, so going back restores the database from before it. Anything entered since is lost.</p>` : nothing}
+          ${back && status.goBack?.restoresData ? html`<p class="tc-warning mb"><k-icon name="warning"></k-icon> The update changed your data, so going back restores the database from before it. Anything entered since is lost.</p>` : nothing}
           <p class="tc-muted">Anyone using the site meanwhile will not be able to reach it. This page reloads when the server is back.</p>
         </div>
       </k-dialog>

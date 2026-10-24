@@ -4,4 +4,4 @@ import t from"/kempo-ui/components/ShadowComponent.js";import{html as e}from"/ke
         ${t.map(t=>e`<k-tab-content name=${t.id} class="pt">${t.extension?e`<slot name=${t.slotName}></slot>`:t.content()}</k-tab-content>`)}
       </k-tabs>
     `}}customElements.define("k-admin-settings",n);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\settings\AdminSettings.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\settings\AdminSettings.js.map

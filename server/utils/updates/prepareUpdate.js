@@ -101,7 +101,7 @@ export default async ({ version = 'latest', extensions = [], siteRoot = process.
       return [{ code: 500, msg: `What this update would change could not be worked out: ${error.message}` }, null];
     }
 
-    writeState(siteRoot, 'staged', { id: staged.id, dir: staged.dir, version: kempoVersion, kempoUpdate: Boolean(manifest), from: RUNNING_VERSION, packages: targets, plan, preparedAt: new Date().toISOString() });
+    writeState(siteRoot, 'staged', { id: staged.id, dir: staged.dir, basis: staged.basis, version: kempoVersion, kempoUpdate: Boolean(manifest), from: RUNNING_VERSION, packages: targets, plan, preparedAt: new Date().toISOString() });
     return [null, { version: kempoVersion, kempoUpdate: Boolean(manifest), packages: targets, plan }];
   } finally {
     preparing = false;

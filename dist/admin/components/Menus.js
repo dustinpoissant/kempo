@@ -100,4 +100,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,nothing 
         <p class="tc-muted">Mark a place in your navigation, for example <code>&lt;location name="main-nav-links" label="Main menu" menu="true" /&gt;</code> in your navigation fragment, and it will be listed here.</p>
       `}
     `}}customElements.define("admin-menus",b);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\Menus.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\Menus.js.map

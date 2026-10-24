@@ -1,2 +1,2 @@
 import t from"../../../../../server/utils/settings/getPublicSettings.js";export default async(s,e)=>{const[r,o]=await t();if(r)return e.status(r.code).json({error:r.msg});e.json(o)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\settings\public\GET.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\settings\public\GET.js.map

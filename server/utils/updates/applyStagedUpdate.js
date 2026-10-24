@@ -1,4 +1,4 @@
-import { existsSync } from 'fs';
+import { existsSync, rmSync } from 'fs';
 import { join } from 'path';
 import { and, eq, like } from 'drizzle-orm';
 import db from '../../db/index.js';
@@ -6,7 +6,7 @@ import { notification } from '../../db/schema.js';
 import { RUNNING_VERSION } from './runtime.js';
 import backupDatabase from './backupDatabase.js';
 import { restartMode, scheduleRestart } from './restart.js';
-import { clearState, paths, readState, requestSwitch } from './siteLayout.js';
+import { basisOf, clearState, paths, readState, requestSwitch } from './siteLayout.js';
 import { applyStarterFiles } from './starterFiles.js';
 import { PACKAGE } from './helpers.js';
 import triggerHook from '../hooks/triggerHook.js';
@@ -46,7 +46,12 @@ export default async ({ confirm = {}, siteRoot = process.env.KEMPO_SITE_ROOT, cw
     return [{ code: 409, msg: 'No update is ready: prepare one first' }, null];
   }
   if(readState(siteRoot, 'switch')){
-    return [{ code: 409, msg: 'The last switch has not finished proving itself yet' }, null];
+    return [{ code: 409, msg: 'The last switch is still being checked, which takes about a minute after the restart. Try again shortly.' }, null];
+  }
+  if(staged.basis && staged.basis !== basisOf(siteRoot)){
+    rmSync(paths(siteRoot).staging, { recursive: true, force: true });
+    clearState(siteRoot, 'staged');
+    return [{ code: 409, msg: 'The site changed after this update was downloaded (another update, or an extension was installed), so switching to it would undo that. It has been thrown away: get the update ready again.' }, null];
   }
 
   const { plan } = staged;
