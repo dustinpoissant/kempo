@@ -207,6 +207,16 @@ export default {
     pass();
   },
 
+  'the startup script says what was switched to: the packages, not a version that did not change': async ({ pass }) => {
+    const { siteRoot, seed } = newSite();
+    await runEntrypoint(siteRoot, seed);
+    const staged = makeStaged(siteRoot, '4.8.0');
+    layout.requestSwitch({ siteRoot, id: staged.id, version: '4.8.0', source: staged.dir, packages: ['kempo-payments@0.4.1'] });
+    const result = await runEntrypoint(siteRoot, seed);
+    expect(/Switched to kempo-payments@0\.4\.1/.test(result.output) && !/4\.8\.0 -> 4\.8\.0/.test(result.output), `an extension-only update names the extension: ${result.output}`);
+    pass();
+  },
+
   'the startup script puts the old version back after a new one keeps failing': async ({ pass }) => {
     const { siteRoot, seed } = newSite();
     await runEntrypoint(siteRoot, seed);

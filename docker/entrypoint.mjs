@@ -60,7 +60,7 @@ if(seedSite({ siteRoot, seed })) say('First start: the site was copied onto the 
 
 const switched = performSwitch(siteRoot);
 if(switched){
-  say(`Kempo ${switched.from.version} -> ${switched.version}.`);
+  say(switched.kind === 'update' && switched.packages?.length ? `Switched to ${switched.packages.join(', ')}.` : `Kempo ${switched.from.version} -> ${switched.version}.`);
   if(switched.kind === 'rollback'){
     restoreFiles({ siteRoot, backup: switched.filesBackup });
     if(switched.dbBackup){
