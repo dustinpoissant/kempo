@@ -5,6 +5,7 @@
 <content>
 <script type="module" src="/kempo-ui/components/Toggle.js"></script>
 <script type="module" src="/kempo-ui/components/Icon.js"></script>
+<script type="module" src="/kempo-ui/components/Tabs.js"></script>
 <script type="module" src="/kempo-ui/components/Table.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcFirstPage.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcPrevPage.js"></script>
@@ -38,68 +39,70 @@
 			<a href="/admin/accounts/users">Back to Users</a>
 		</div>
 		<div id="content" style="display: none;">
+			<k-tabs id="userTabs" active="information" hash-routing>
+				<k-tab for="information">Information</k-tab>
+				<k-tab for="groups">Groups</k-tab>
+				<k-tab for="sessions">Sessions</k-tab>
 
-			<!-- User Information -->
-			<div class="card">
-				<h2>Information</h2>
-				<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
-					<label for="userName" style="min-width: 120px;"><strong>Name</strong></label>
-					<input type="text" id="userName" style="max-width: 400px;">
-				</div>
-				<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
-					<label for="userEmail" style="min-width: 120px;"><strong>Email</strong></label>
-					<input type="email" id="userEmail" style="max-width: 400px;">
-				</div>
-				<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
-					<label style="min-width: 120px;"><strong>Verified</strong></label>
-					<k-toggle id="emailVerified"></k-toggle>
-				</div>
-				<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
-					<label style="min-width: 120px;"><strong>Created</strong></label>
-					<span id="userCreatedAt"></span>
-				</div>
-			</div>
-
-			<!-- Groups -->
-			<div class="card">
-				<h2>Groups</h2>
-				<k-table id="groupsTable" request-delete placeholder="Not a member of any groups.">
-					<admin-table-row-link slot="before" url-pattern="/admin/accounts/groups/{name}" field-name="name"></admin-table-row-link>
-					<kc-tc-delete-record slot="after"></kc-tc-delete-record>
-					<div slot="top" id="groupsTableTop" class="d-f full" style="display:none; align-items: center;">
-						<div><admin-group-delete-selected></admin-group-delete-selected></div>
-						<div class="flex"></div>
-						<div><admin-add-group-control id="addGroupBtn"></admin-add-group-control></div>
+				<k-tab-content name="information">
+					<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+						<label for="userName" style="min-width: 120px;"><strong>Name</strong></label>
+						<input type="text" id="userName" style="max-width: 400px;">
 					</div>
-				</k-table>
-			</div>
-
-			<!-- Sessions -->
-			<div class="card">
-				<h2>Sessions</h2>
-				<k-table id="sessionsTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No active sessions.">
-					<kc-tc-delete-record slot="after"></kc-tc-delete-record>
-					<div slot="top" class="d-f full" style="align-items: center;">
-						<div><kc-tc-delete-selected></kc-tc-delete-selected></div>
-						<div class="flex"></div>
-						<div><admin-clear-expired-sessions id="clearExpiredBtn" style="display:none;"></admin-clear-expired-sessions></div>
+					<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+						<label for="userEmail" style="min-width: 120px;"><strong>Email</strong></label>
+						<input type="email" id="userEmail" style="max-width: 400px;">
 					</div>
-					<div class="d-f full" style="align-items: center;">
-						<div>
-							<kc-tc-first-page></kc-tc-first-page>
-							<kc-tc-prev-page></kc-tc-prev-page>
-							<kc-tc-next-page></kc-tc-next-page>
-							<kc-tc-last-page></kc-tc-last-page>
+					<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+						<label style="min-width: 120px;"><strong>Verified</strong></label>
+						<k-toggle id="emailVerified"></k-toggle>
+					</div>
+					<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+						<label style="min-width: 120px;"><strong>Created</strong></label>
+						<span id="userCreatedAt"></span>
+					</div>
+				</k-tab-content>
+
+				<k-tab-content name="groups">
+					<k-table id="groupsTable" request-delete placeholder="Not a member of any groups.">
+						<admin-table-row-link slot="before" url-pattern="/admin/accounts/groups/{name}" field-name="name"></admin-table-row-link>
+						<kc-tc-delete-record slot="after"></kc-tc-delete-record>
+						<div slot="top" id="groupsTableTop" class="d-f full" style="display:none; align-items: center;">
+							<div><admin-group-delete-selected></admin-group-delete-selected></div>
+							<div class="flex"></div>
+							<div><admin-add-group-control id="addGroupBtn"></admin-add-group-control></div>
 						</div>
-						<div class="flex"></div>
-						<div><kc-tc-page-select></kc-tc-page-select></div>
-						<div class="flex"></div>
-						<div><kc-tc-page-size></kc-tc-page-size></div>
-					</div>
-				</k-table>
-			</div>
+					</k-table>
+				</k-tab-content>
 
+				<k-tab-content name="sessions">
+					<k-table id="sessionsTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No active sessions.">
+						<kc-tc-delete-record slot="after"></kc-tc-delete-record>
+						<div slot="top" class="d-f full" style="align-items: center;">
+							<div><kc-tc-delete-selected></kc-tc-delete-selected></div>
+							<div class="flex"></div>
+							<div><admin-clear-expired-sessions id="clearExpiredBtn" style="display:none;"></admin-clear-expired-sessions></div>
+						</div>
+						<div class="d-f full" style="align-items: center;">
+							<div>
+								<kc-tc-first-page></kc-tc-first-page>
+								<kc-tc-prev-page></kc-tc-prev-page>
+								<kc-tc-next-page></kc-tc-next-page>
+								<kc-tc-last-page></kc-tc-last-page>
+							</div>
+							<div class="flex"></div>
+							<div><kc-tc-page-select></kc-tc-page-select></div>
+							<div class="flex"></div>
+							<div><kc-tc-page-size></kc-tc-page-size></div>
+						</div>
+					</k-table>
+				</k-tab-content>
+
+				<location name="admin-user-tabs" />
+			</k-tabs>
 		</div>
+
+		<location name="admin-user-scripts" />
 
 		<script type="module">
 			import {
@@ -347,8 +350,6 @@
 					});
 				});
 
-				loadGroups();
-
 				/*
 					Sessions
 				*/
@@ -420,7 +421,23 @@
 					});
 				};
 
-				loadSessions();
+				/*
+					Each tab loads its data the first time it is opened, so a visit that never leaves Information makes no queries.
+				*/
+
+				const $userTabs = document.getElementById('userTabs');
+				const shownTabs = new Set();
+				const loaders = { groups: loadGroups, sessions: loadSessions };
+
+				$userTabs.addEventListener('tabfirstshown', ({ detail }) => {
+					shownTabs.add(detail.tab);
+					loaders[detail.tab]?.();
+				});
+
+				// The tab the address opened on was chosen before this listener existed, so it is loaded here.
+				await $userTabs.updateComplete;
+				const opening = $userTabs.active;
+				if(loaders[opening] && !shownTabs.has(opening)) loaders[opening]();
 			}
 		</script>
 

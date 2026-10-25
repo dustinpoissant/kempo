@@ -61,7 +61,7 @@
   "peerDependencies": {
     "kempo-css": ">=2.2.5",
     "kempo-server": ">=3.4.0",
-    "kempo-ui": ">=0.6.0"
+    "kempo-ui": ">=0.6.2"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.9",

@@ -201,13 +201,14 @@ An extension that wants its settings on a tab of their own adds a `k-settings-ta
 ```html
 <content id="my-extension-settings-script" name="My Extension settings script" owner="my-extension" enabled="true" locked="true" location="admin-settings-scripts" priority="10"><script type="module" src="/admin/components/settings/SettingsPanel.js"></script></content>
 <content id="my-extension-settings-tab" name="My Extension settings tab" owner="my-extension" enabled="true" locked="true" location="admin-settings-tabs" priority="10">
-  <k-settings-tab name="my-extension" label="My Extension" position="500">
+  <k-tab for="my-extension">My Extension</k-tab>
+  <k-tab-content name="my-extension" class="pt">
     <k-settings-panel owner="my-extension"></k-settings-panel>
-  </k-settings-tab>
+  </k-tab-content>
 </content>
 ```
 
-`position` orders the tabs (Custom is 100, System 200, 500 when left out). The tab holds anything. `<k-settings-panel owner="...">` lists all of the extension's settings with their editors and a Save button, and needs no code. To edit only some settings, or mix them with your own controls, use the editors directly:
+The tab is a `k-tab` and a `k-tab-content` with the same name, placed at the location, so tabs appear in the order of the location's `priority`. The tab holds anything. `<k-settings-panel owner="...">` lists all of the extension's settings with their editors and a Save button, and needs no code. To edit only some settings, or mix them with your own controls, use the editors directly:
 
 ```html
 <k-setting .setting=${{ name: 'cache_minutes', value: 60, type: 'number', description: 'How long a price is kept' }}></k-setting>

@@ -3,13 +3,23 @@
 -->
 <page title="Settings - Admin">
 <content>
-<script type="module" src="/admin/components/settings/AdminSettings.js"></script>
+<script type="module" src="/kempo-ui/components/Tabs.js"></script>
+<script type="module" src="/admin/components/settings/SettingsPanel.js"></script>
 
 		<h1>Settings</h1>
 
-		<k-admin-settings>
+		<k-tabs active="custom" hash-routing>
+			<k-tab for="custom">Custom</k-tab>
+			<k-tab for="system">System</k-tab>
 			<location name="admin-settings-tabs" />
-		</k-admin-settings>
+
+			<k-tab-content name="custom" class="pt">
+				<k-settings-panel owner="custom"></k-settings-panel>
+			</k-tab-content>
+			<k-tab-content name="system" class="pt">
+				<k-settings-panel owner="system"></k-settings-panel>
+			</k-tab-content>
+		</k-tabs>
 		<location name="admin-settings-scripts" />
 
 </content>
