@@ -257,6 +257,7 @@ export default config => {
         ['schema notice', notifySchemaAttention],
         ['jobs', () => registerJobs({ owner: 'kempo', jobs: [
           { name: 'email-maintenance', every: '1m', callback: './server/utils/email/maintainEmails.js' },
+          { name: 'session-cleanup', every: '1h', callback: './server/utils/sessions/pruneExpiredSessions.js' },
           { name: 'update-check', every: '12h', callback: './server/utils/updates/runUpdateCheck.js' },
         ] })],
       ]){

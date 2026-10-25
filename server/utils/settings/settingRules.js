@@ -12,6 +12,7 @@ const RULES = {
   'system:email_retention_by_type': value => (value && typeof value === 'object' && !Array.isArray(value) && Object.values(value).every(days => whole(days, 0, 3650))
     ? null
     : { code: 400, msg: 'Give each kind of email a whole number of days from 0 to 3650, like { "verify-email": 7 }' }),
+  'system:session_cleanup_hours': value => (whole(value, 0, 8760) ? null : { code: 400, msg: 'Hours must be a whole number from 0 to 8760 (one year)' }),
   'system:email_from': value => (value === '' || isValidSender(value) ? null : { code: 400, msg: 'The sender must look like name@example.com or Shop Name <name@example.com>' }),
 };
 
