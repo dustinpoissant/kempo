@@ -32,7 +32,7 @@
 	</div>
 
 	<div id="notice" class="tc-danger mb" hidden></div>
-	<div id="cards" class="d-g cols-3 t-cols-2 m-cols-1"></div>
+	<div id="cards" class="d-g cols-3 t-cols-2 m-cols-1" style="gap: var(--spacer);"></div>
 	<p id="empty" class="tc-muted" hidden>No extensions match that search.</p>
 	<k-pagination id="pagination" controls="simple" items-per-page="12" total-items="0" page="1"></k-pagination>
 
@@ -40,6 +40,7 @@
 <content location="scripts">
 <script type="module">
 	import { listKnownExtensions } from '/kempo/sdk.js';
+	import badgesOf from '/admin/components/marketplaceBadges.js';
 
 	const PAGE = 12;
 	const cards = document.getElementById('cards');
@@ -59,7 +60,7 @@
 
 		const title = document.createElement('h3');
 		title.className = 'mb0';
-		title.textContent = item.name;
+		title.replaceChildren(...badgesOf(item), item.name);
 
 		const text = document.createElement('p');
 		text.textContent = item.description || 'No description.';

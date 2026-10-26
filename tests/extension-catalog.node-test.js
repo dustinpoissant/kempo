@@ -9,7 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const load = file => import(pathToFileURL(path.join(root, file)).href);
 
-const { createCatalogClient, normalizeDetails, normalizePage } = await load('server/utils/extensions/marketplaceClient.js');
+const { createCatalogClient, normalizeCard, normalizeDetails, normalizePage } = await load('server/utils/extensions/marketplaceClient.js');
 const { default: installFromCatalog } = await load('server/utils/extensions/installFromCatalog.js');
 const { default: installPackage } = await load('server/utils/extensions/installPackage.js');
 
@@ -126,6 +126,12 @@ export default {
     if(normalized.readme.length > 200 * 1024) return fail('README not capped');
     if(normalized.dependencies.extensions.length !== 1 || normalized.dependencies.unresolved.join() !== 'ok-name') return fail(`tree: ${JSON.stringify(normalized.dependencies)}`);
     if(normalizePage({ items: 'nope' }) !== null) return fail('a non-list page was accepted');
+    pass('');
+  },
+
+  'the marks a card carries are kept as true or false, and anything else is false': async ({ pass, fail }) => {
+    const marked = normalizeCard({ name: 'kempo-files', official: true, featured: 'yes' });
+    if(marked.official !== true || marked.featured !== false) return fail(JSON.stringify(marked));
     pass('');
   },
 

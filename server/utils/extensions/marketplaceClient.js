@@ -54,6 +54,8 @@ export const normalizeCard = raw => {
     rating: rating(raw.rating),
     source: text(raw.source, 50) || 'catalogue',
     pricing: { type: text(raw.pricing?.type, 50) || 'free' },
+    official: raw.official === true,
+    featured: raw.featured === true,
   };
 };
 

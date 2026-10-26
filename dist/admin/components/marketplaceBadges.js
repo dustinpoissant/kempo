@@ -1,0 +1,2 @@
+const e=(e,t)=>{const r=document.createElement("k-icon");return r.setAttribute("name",e),r.setAttribute("title",t),r.setAttribute("aria-label",t),r.className="tc-success mr",r};export default t=>[t.official&&e("verified","Official"),t.featured&&e("workspace_premium","Featured")].filter(Boolean);
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\marketplaceBadges.js.map
