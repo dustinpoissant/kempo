@@ -4,6 +4,10 @@
 <page title="Extensions - Admin">
 <content>
 <script type="module" src="/kempo-ui/components/Table.js"></script>
+<script type="module" src="/kempo-ui/components/Tabs.js"></script>
+<script type="module" src="/kempo-ui/components/Icon.js"></script>
+<script type="module" src="/kempo-ui/components/Rating.js"></script>
+<script type="module" src="/kempo-ui/components/Pagination.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcFirstPage.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcPrevPage.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcNextPage.js"></script>
@@ -16,53 +20,82 @@
 <script type="module" src="/admin/components/tableControls/UninstallExtension.js"></script>
 <script type="module" src="/kempo/components/Permission.js"></script>
 
-	<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
-		<h1 class="flex mb0">Extensions</h1>
-		<a href="/admin/extensions/browse/" class="no-link"><button class="primary"><k-icon name="extension"></k-icon> Browse extensions</button></a>
-	</div>
+	<h1>Extensions</h1>
 
-	<h2>Installed Extensions</h2>
-	<k-table open-on-click id="installedTable" enable-pages page-size="25" placeholder="No extensions are currently installed.">
-		<kc-tc-open slot="after" title="View in Store"><k-icon name="storefront"></k-icon></kc-tc-open>
-		<admin-toggle-extension slot="after"></admin-toggle-extension>
-		<admin-uninstall-extension slot="after"></admin-uninstall-extension>
-		<div class="d-f full" style="align-items: center;">
-			<div>
-				<kc-tc-first-page></kc-tc-first-page>
-				<kc-tc-prev-page></kc-tc-prev-page>
-				<kc-tc-next-page></kc-tc-next-page>
-				<kc-tc-last-page></kc-tc-last-page>
-			</div>
-			<div class="flex"></div>
-			<div><kc-tc-page-select></kc-tc-page-select></div>
-			<div class="flex"></div>
-			<div><kc-tc-page-size></kc-tc-page-size></div>
-		</div>
-	</k-table>
+	<k-tabs active="installed" hash-routing>
+		<k-tab for="installed">Installed</k-tab>
+		<k-tab for="downloaded">Downloaded</k-tab>
+		<k-tab for="browse">Browse</k-tab>
 
-	<h2>Downloaded, Not Installed</h2>
-	<p class="tc-muted">Extension packages already in this site. To find and download more, <a href="/admin/extensions/browse/">browse the marketplace</a>.</p>
-	<k-table open-on-click id="availableTable" enable-pages page-size="25" placeholder="Every downloaded extension is installed.">
-		<admin-install-extension slot="after"></admin-install-extension>
-		<kc-tc-open slot="after" title="View in Store"><k-icon name="storefront"></k-icon></kc-tc-open>
-		<div class="d-f full" style="align-items: center;">
-			<div>
-				<kc-tc-first-page></kc-tc-first-page>
-				<kc-tc-prev-page></kc-tc-prev-page>
-				<kc-tc-next-page></kc-tc-next-page>
-				<kc-tc-last-page></kc-tc-last-page>
+		<k-tab-content name="installed">
+			<k-table open-on-click id="installedTable" enable-pages page-size="25" placeholder="No extensions are currently installed.">
+				<kc-tc-open slot="after" title="View in Store"><k-icon name="storefront"></k-icon></kc-tc-open>
+				<admin-toggle-extension slot="after"></admin-toggle-extension>
+				<admin-uninstall-extension slot="after"></admin-uninstall-extension>
+				<div class="d-f full" style="align-items: center;">
+					<div>
+						<kc-tc-first-page></kc-tc-first-page>
+						<kc-tc-prev-page></kc-tc-prev-page>
+						<kc-tc-next-page></kc-tc-next-page>
+						<kc-tc-last-page></kc-tc-last-page>
+					</div>
+					<div class="flex"></div>
+					<div><kc-tc-page-select></kc-tc-page-select></div>
+					<div class="flex"></div>
+					<div><kc-tc-page-size></kc-tc-page-size></div>
+				</div>
+			</k-table>
+		</k-tab-content>
+
+		<k-tab-content name="downloaded">
+			<p class="tc-muted">Extension packages already in this site. To find and download more, <a href="#browse">browse the marketplace</a>.</p>
+			<k-table open-on-click id="availableTable" enable-pages page-size="25" placeholder="Every downloaded extension is installed.">
+				<admin-install-extension slot="after"></admin-install-extension>
+				<kc-tc-open slot="after" title="View in Store"><k-icon name="storefront"></k-icon></kc-tc-open>
+				<div class="d-f full" style="align-items: center;">
+					<div>
+						<kc-tc-first-page></kc-tc-first-page>
+						<kc-tc-prev-page></kc-tc-prev-page>
+						<kc-tc-next-page></kc-tc-next-page>
+						<kc-tc-last-page></kc-tc-last-page>
+					</div>
+					<div class="flex"></div>
+					<div><kc-tc-page-select></kc-tc-page-select></div>
+					<div class="flex"></div>
+					<div><kc-tc-page-size></kc-tc-page-size></div>
+				</div>
+			</k-table>
+		</k-tab-content>
+
+		<k-tab-content name="browse">
+			<p class="tc-muted">Extensions from the Kempo marketplace that are not installed here yet. Pick one to see what it does and what it needs before installing it. Installed ones are on the Installed tab, with a store button to see their page.</p>
+
+			<div class="row mb">
+				<div class="col mr">
+					<input id="search" type="search" placeholder="Search extensions" aria-label="Search extensions" class="full" />
+				</div>
+				<div>
+					<select id="sort" aria-label="Sort by">
+						<option value="installs">Most installed</option>
+						<option value="rating">Highest rated</option>
+						<option value="name">Name</option>
+						<option value="updated">Recently updated</option>
+					</select>
+				</div>
 			</div>
-			<div class="flex"></div>
-			<div><kc-tc-page-select></kc-tc-page-select></div>
-			<div class="flex"></div>
-			<div><kc-tc-page-size></kc-tc-page-size></div>
-		</div>
-	</k-table>
+
+			<div id="notice" class="tc-danger mb" hidden></div>
+			<div id="cards" class="d-g cols-3 t-cols-2 m-cols-1" style="gap: var(--spacer);"></div>
+			<p id="empty" class="tc-muted" hidden>No extensions match that search.</p>
+			<k-pagination id="pagination" controls="simple" items-per-page="12" total-items="0" page="1"></k-pagination>
+		</k-tab-content>
+	</k-tabs>
 
 </content>
 <content location="scripts">
 <script type="module">
-	import { listExtensions, listAvailableExtensions } from '/kempo/sdk.js';
+	import { listExtensions, listAvailableExtensions, listKnownExtensions } from '/kempo/sdk.js';
+	import badgesOf from '/admin/components/marketplaceBadges.js';
 
 	const installedTable = document.getElementById('installedTable');
 	const availableTable = document.getElementById('availableTable');
@@ -73,7 +106,7 @@
 		installedTable.setData({
 			records: installedData.items.map(withDetailsUrl),
 			fields: [
-				{ name: 'name', label: 'Name' },
+				{ name: 'name', label: 'Name', size: 300 },
 				{ name: 'version', label: 'Version' },
 				{ name: 'description', label: 'Description' },
 				{ name: 'enabled', label: 'Enabled' },
@@ -88,7 +121,7 @@
 		availableTable.setData({
 			records: notInstalled.map(withDetailsUrl),
 			fields: [
-				{ name: 'name', label: 'Name' },
+				{ name: 'name', label: 'Name', size: 300 },
 				{ name: 'version', label: 'Version' },
 				{ name: 'description', label: 'Description' },
 			]
@@ -100,7 +133,7 @@
 		if(!err) installedTable.setData({
 			records: data.items.map(withDetailsUrl),
 			fields: [
-				{ name: 'name', label: 'Name' },
+				{ name: 'name', label: 'Name', size: 300 },
 				{ name: 'version', label: 'Version' },
 				{ name: 'description', label: 'Description' },
 				{ name: 'enabled', label: 'Enabled' },
@@ -116,7 +149,7 @@
 			availableTable.setData({
 				records: availData.items.filter(e => !installedNames.has(e.name)).map(withDetailsUrl),
 				fields: [
-					{ name: 'name', label: 'Name' },
+					{ name: 'name', label: 'Name', size: 300 },
 					{ name: 'version', label: 'Version' },
 					{ name: 'description', label: 'Description' },
 				]
@@ -126,6 +159,91 @@
 
 	availableTable.addEventListener('recordDeleted', refreshInstalledTable);
 	installedTable.addEventListener('recordDeleted', refreshAvailableTable);
+
+	/*
+		Browse loads the first time its tab is opened, so the marketplace is not asked for until someone looks.
+	*/
+	const PAGE = 12;
+	const tabs = document.querySelector('k-tabs');
+	const browsePane = document.querySelector('k-tab-content[name="browse"]');
+	const cards = document.getElementById('cards');
+	const search = document.getElementById('search');
+	const sort = document.getElementById('sort');
+	const notice = document.getElementById('notice');
+	const empty = document.getElementById('empty');
+	const pagination = document.getElementById('pagination');
+
+	let timer;
+	let loading = false;
+
+	const card = item => {
+		const link = document.createElement('a');
+		link.className = 'card no-link d-b';
+		link.href = `/admin/extensions/details/?name=${encodeURIComponent(item.name)}`;
+
+		const title = document.createElement('h3');
+		title.className = 'mb0';
+		title.replaceChildren(...badgesOf(item), item.name);
+
+		const text = document.createElement('p');
+		text.textContent = item.description || 'No description.';
+
+		const rating = document.createElement('k-rating');
+		rating.setAttribute('disabled', '');
+		rating.value = Math.round(item.rating.average || 0);
+
+		const meta = document.createElement('p');
+		meta.className = 'tc-muted';
+		meta.textContent = `${item.rating.count ? `${item.rating.average} (${item.rating.count}) · ` : ''}${item.installs} install${item.installs === 1 ? '' : 's'}`;
+
+		link.append(title, text, rating, meta);
+		return link;
+	};
+
+	const loadBrowse = async page => {
+		loading = true;
+		const [error, data] = await listKnownExtensions({
+			search: search.value.trim() || undefined,
+			sort: sort.value,
+			limit: PAGE,
+			offset: (page - 1) * PAGE,
+		});
+
+		notice.hidden = !error;
+		if(error){
+			notice.textContent = error.msg;
+			cards.replaceChildren();
+			empty.hidden = true;
+			loading = false;
+			return;
+		}
+
+		cards.replaceChildren(...data.items.map(card));
+		empty.textContent = search.value.trim()
+			? 'No extensions match that search.'
+			: 'Everything in the marketplace is already installed on this site.';
+		empty.hidden = data.total > 0;
+		pagination.totalItems = data.total;
+		pagination.page = page;
+		pagination.classList.toggle('d-n', data.total <= PAGE);
+		loading = false;
+	};
+
+	pagination.addEventListener('page-change', event => {
+		if(!loading && event.detail.currentPage !== undefined) loadBrowse(event.detail.currentPage);
+	});
+
+	search.addEventListener('input', () => {
+		clearTimeout(timer);
+		timer = setTimeout(() => loadBrowse(1), 300);
+	});
+	sort.addEventListener('change', () => loadBrowse(1));
+
+	await customElements.whenDefined('k-tabs');
+	if(browsePane.active) loadBrowse(1);
+	else tabs.addEventListener('tabfirstshown', ({ detail }) => {
+		if(detail.tab === 'browse') loadBrowse(1);
+	});
 </script>
 </content>
 </page>
