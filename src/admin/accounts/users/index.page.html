@@ -49,7 +49,7 @@
 ></script>
 <script
 	type="module"
-	src="/admin/components/TableRowLink.js"
+	src="/kempo-ui/components/controls/TcOpen.js"
 ></script>
 <script
 	type="module"
@@ -74,12 +74,9 @@
 	page-size-options="[10,25,50]"
 	placeholder="No users found."
 	filtered-placeholder="No users match your search."
+		open-on-click
 >
-	<admin-table-row-link
-		slot="before"
-		url-pattern="/admin/accounts/users/{id}"
-		field-name="id"
-	></admin-table-row-link>
+	<kc-tc-open slot="before"></kc-tc-open>
 	<div
 		slot="top"
 		class="d-f full"
@@ -118,6 +115,7 @@
 	import Dialog from '/kempo-ui/components/Dialog.js';
 	await window.customElements.whenDefined('k-table');
 	const $table = document.getElementById('usersTable');
+	const withUrl = u => ({ ...u, _url: `/admin/accounts/users/${u.id}` });
 
 	const [, permData] = await getAllCurrentUserPermissions();
 	const myPerms = new Set(permData?.permissions ?? []);
@@ -141,9 +139,9 @@
 		const [error, data] = await getUsers({ limit: 10, offset: 0 });
 		if (error) return;
 		$table.setData({
-			records: data.users,
+			records: data.users.map(withUrl),
 			fields: [
-				{ name: 'name', label: 'Name', size: 352, editable: true },
+				{ name: 'name', label: 'Name', editable: true },
 				{ name: 'email', label: 'Email', size: 352, editable: true },
 				{
 					name: 'emailVerified',
@@ -170,7 +168,7 @@
 		$table.setupFetchRecords(data.total, async (start, count) => {
 			const [err, d] = await getUsers({ limit: count, offset: start });
 			if (err) return [];
-			return d.users;
+			return d.users.map(withUrl);
 		});
 	};
 

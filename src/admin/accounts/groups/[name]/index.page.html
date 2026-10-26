@@ -15,7 +15,7 @@
 <script type="module" src="/kempo-ui/components/controls/TcDeleteSelected.js"></script>
 <script type="module" src="/admin/components/tableControls/AddMember.js"></script>
 <script type="module" src="/admin/components/tableControls/AddPermission.js"></script>
-<script type="module" src="/admin/components/TableRowLink.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcOpen.js"></script>
 
 		<div class="mb d-f" style="align-items: flex-start; justify-content: space-between;">
 			<div>
@@ -63,8 +63,8 @@
 			<div class="card">
 				<h2>Members</h2>
 				<p id="usersMembersMsg" style="display:none">All users are automatically members of this group.</p>
-				<k-table id="membersTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="This group has no members.">
-					<admin-table-row-link slot="before" url-pattern="/admin/accounts/users/{id}" field-name="id"></admin-table-row-link>
+				<k-table id="membersTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="This group has no members." open-on-click>
+					<kc-tc-open slot="before"></kc-tc-open>
 					<kc-tc-delete-selected id="tcDeleteSelected" slot="top" style="display:none;"></kc-tc-delete-selected>
 					<admin-add-member id="tcAddMember" slot="top" style="display:none;"></admin-add-member>
 					<div class="d-f full" style="align-items: center;">
@@ -276,7 +276,7 @@
 							return;
 						}
 						$membersTable.setData({
-							records: data.members,
+							records: data.members.map(m => ({ ...m, _url: `/admin/accounts/users/${m.id}` })),
 							fields: [
 								{ name: 'name', label: 'Name' },
 								{ name: 'email', label: 'Email' },
@@ -290,7 +290,7 @@
 						$membersTable.setupFetchRecords(data.total, async (start, count) => {
 							const [err, d] = await getGroupMembers(groupName, { limit: count, offset: start });
 							if(err) return [];
-							return d.members;
+							return d.members.map(m => ({ ...m, _url: `/admin/accounts/users/${m.id}` }));
 						});
 					};
 

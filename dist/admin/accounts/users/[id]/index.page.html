@@ -18,7 +18,7 @@
 <script type="module" src="/admin/components/GroupDeleteSelected.js"></script>
 <script type="module" src="/admin/components/AddGroupControl.js"></script>
 <script type="module" src="/admin/components/ClearExpiredSessionsControl.js"></script>
-<script type="module" src="/admin/components/TableRowLink.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcOpen.js"></script>
 		<div class="d-f">
 			<div>
 				<a href="/admin/accounts/users" class="no-link mb">
@@ -64,8 +64,8 @@
 				</k-tab-content>
 
 				<k-tab-content name="groups">
-					<k-table id="groupsTable" request-delete placeholder="Not a member of any groups.">
-						<admin-table-row-link slot="before" url-pattern="/admin/accounts/groups/{name}" field-name="name"></admin-table-row-link>
+					<k-table id="groupsTable" request-delete placeholder="Not a member of any groups." open-on-click>
+						<kc-tc-open slot="before"></kc-tc-open>
 						<kc-tc-delete-record slot="after"></kc-tc-delete-record>
 						<div slot="top" id="groupsTableTop" class="d-f full" style="display:none; align-items: center;">
 							<div><admin-group-delete-selected></admin-group-delete-selected></div>
@@ -263,6 +263,7 @@
 
 				await customElements.whenDefined('k-table');
 				const $groupsTable = document.getElementById('groupsTable');
+				const toRecord = g => ({ ...g, _url: `/admin/accounts/groups/${g.name}` });
 
 				if(canEditGroups){
 					$groupsTable.setAttribute('enable-selection', '');
@@ -311,13 +312,13 @@
 						return;
 					}
 					$groupsTable.setData({
-						records: data.groups,
+						records: data.groups.map(toRecord),
 						fields: [{ name: 'name', label: 'Name' }]
 					});
 					$groupsTable.setupFetchRecords(data.total, async (start, count) => {
 						const [err, d] = await getUserGroups(userid, { limit: count, offset: start });
 						if(err) return [];
-						return d.groups;
+						return d.groups.map(toRecord);
 					});
 				};
 

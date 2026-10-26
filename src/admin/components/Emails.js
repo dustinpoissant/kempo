@@ -2,6 +2,14 @@ import ShadowComponent from '/kempo-ui/components/ShadowComponent.js';
 import { html, nothing } from '/kempo-ui/lit-all.min.js';
 import '/kempo-ui/components/Spinner.js';
 import '/kempo-ui/components/Dialog.js';
+import '/kempo-ui/components/Table.js';
+import '/kempo-ui/components/controls/TcFirstPage.js';
+import '/kempo-ui/components/controls/TcPrevPage.js';
+import '/kempo-ui/components/controls/TcNextPage.js';
+import '/kempo-ui/components/controls/TcLastPage.js';
+import '/kempo-ui/components/controls/TcPageSelect.js';
+import '/kempo-ui/components/controls/TcPageSize.js';
+import '/admin/components/tableControls/ViewEmail.js';
 import Toast from '/kempo-ui/components/Toast.js';
 import { listEmails, getEmail, retryEmail, sendTestEmail, getAllCurrentUserPermissions } from '/kempo/sdk.js';
 
@@ -19,11 +27,16 @@ const STATUS_CLASS = { sent: 'tc-success', failed: 'tc-danger', sending: 'tc-war
 
 const when = value => (value ? new Date(value).toLocaleString() : '');
 
+const fields = [
+  { name: 'status', label: 'Status', size: 110, editable: false },
+  { name: 'recipient', label: 'To', size: 240, editable: false },
+  { name: 'subject', label: 'Subject', editable: false, calculator: mail => mail.lastError ? `${mail.subject} — ${mail.lastError}` : mail.subject },
+  { name: 'type', label: 'Type', size: 140, editable: false },
+  { name: 'createdAt', label: 'Created', size: 190, editable: false, formatter: when },
+];
+
 export default class Emails extends ShadowComponent {
   static properties = {
-    emails: { state: true },
-    total: { state: true },
-    offset: { state: true },
     status: { state: true },
     search: { state: true },
     loading: { state: true },
@@ -36,9 +49,6 @@ export default class Emails extends ShadowComponent {
 
   constructor(){
     super();
-    this.emails = [];
-    this.total = 0;
-    this.offset = 0;
     this.status = '';
     this.search = '';
     this.loading = true;
@@ -67,26 +77,27 @@ const pane = this.closest('k-tab-content');
     Loading
   */
   load = async () => {
+    await this.updateComplete;
+    const $table = this.renderRoot.querySelector('#emails');
+    const query = { status: this.status || undefined, search: this.search || undefined };
     this.loading = true;
-    const [error, data] = await listEmails({ status: this.status || undefined, search: this.search || undefined, limit: PAGE_SIZE, offset: this.offset });
+    const [error, data] = await listEmails({ ...query, limit: PAGE_SIZE, offset: 0 });
     this.loading = false;
     if(error){
       this.error = error.msg || 'The emails could not be loaded';
       return;
     }
     this.error = '';
-    this.emails = data.emails;
-    this.total = data.total;
+    $table.setData({ records: data.emails, fields });
+    $table.setupFetchRecords(data.total, async (start, count) => {
+      const [fetchError, page] = await listEmails({ ...query, limit: count, offset: start });
+      return fetchError ? [] : page.emails;
+    });
   };
 
-  filter = async changes => {
-    Object.assign(this, changes, { offset: 0 });
-    await this.load();
-  };
-
-  page = async step => {
-    this.offset = Math.max(0, this.offset + step * PAGE_SIZE);
-    await this.load();
+  filter = changes => {
+    Object.assign(this, changes);
+    this.load();
   };
 
   /*
@@ -171,7 +182,6 @@ const pane = this.closest('k-tab-content');
   }
 
   render(){
-    const last = Math.min(this.offset + PAGE_SIZE, this.total);
     return html`
       <div class="d-f mb">
         <label class="mr">Status
@@ -185,19 +195,22 @@ const pane = this.closest('k-tab-content');
         ${this.canManage ? html`<button class="mb" @click=${this.openTest}>Send a test email</button>` : nothing}
       </div>
       ${this.error ? html`<p class="tc-danger" role="alert">${this.error}</p>` : nothing}
-      ${this.loading ? html`<k-spinner></k-spinner>` : this.emails.length ? html`
-        <table class="mb">
-          <thead><tr><th>Status</th><th>To</th><th>Subject</th><th>Type</th><th>Created</th></tr></thead>
-          <tbody>${this.emails.map(mail => html`<tr>
-            <td><strong class=${STATUS_CLASS[mail.status] ?? ''}>${mail.status}</strong></td>
-            <td>${mail.recipient}</td>
-            <td><a href="#" @click=${event => { event.preventDefault(); this.show(mail.id); }}>${mail.subject}</a>${mail.lastError ? html`<br><span class="tc-danger">${mail.lastError}</span>` : nothing}</td>
-            <td class="tc-muted">${mail.type}</td>
-            <td class="tc-muted">${when(mail.createdAt)}</td>
-          </tr>`)}</tbody>
-        </table>
-        <p class="d-f mb"><button ?disabled=${this.offset === 0} @click=${() => this.page(-1)}>Newer</button><span class="tc-muted ph">${this.offset + 1}–${last} of ${this.total}</span><button ?disabled=${last >= this.total} @click=${() => this.page(1)}>Older</button></p>
-      ` : html`<p class="tc-muted">No emails have been sent yet.</p>`}
+      ${this.loading ? html`<k-spinner></k-spinner>` : nothing}
+      <k-table id="emails" enable-pages page-size="25" page-size-options="[10,25,50]" placeholder="No emails have been sent yet." @emailView=${event => this.show(event.detail.record.id)}>
+        <admin-view-email slot="before"></admin-view-email>
+        <div class="d-f full" style="align-items: center;">
+          <div>
+            <kc-tc-first-page></kc-tc-first-page>
+            <kc-tc-prev-page></kc-tc-prev-page>
+            <kc-tc-next-page></kc-tc-next-page>
+            <kc-tc-last-page></kc-tc-last-page>
+          </div>
+          <div class="flex"></div>
+          <div><kc-tc-page-select></kc-tc-page-select></div>
+          <div class="flex"></div>
+          <div><kc-tc-page-size></kc-tc-page-size></div>
+        </div>
+      </k-table>
       ${this.renderDetail()}
       ${this.renderTest()}
     `;

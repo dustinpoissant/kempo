@@ -45,7 +45,7 @@
 		></script>
 		<script
 			type="module"
-			src="/admin/components/TableRowLink.js"
+			src="/kempo-ui/components/controls/TcOpen.js"
 		></script>
 		<script
 			type="module"
@@ -67,18 +67,14 @@
 		</div>
 
 		<h2>Custom Pages</h2>
-		<k-table
+		<k-table open-on-click
 			id="customTable"
 			enable-pages
 			page-size="25"
 			page-size-options="[10,25,50,100]"
 			placeholder="No custom pages have been created yet."
 		>
-			<admin-table-row-link
-				slot="before"
-				url-pattern="/admin/content/pages/edit?path={editPath}"
-				field-name="editPath"
-			></admin-table-row-link>
+			<kc-tc-open slot="before"></kc-tc-open>
 			<div
 				slot="top"
 				class="d-f full"
@@ -108,18 +104,14 @@
 		</k-table>
 
 		<h2>Extension Pages</h2>
-		<k-table
+		<k-table open-on-click
 			id="extensionTable"
 			enable-pages
 			page-size="25"
 			page-size-options="[10,25,50,100]"
 			placeholder="No extension pages installed."
 		>
-			<admin-table-row-link
-				slot="before"
-				url-pattern="/admin/content/pages/edit?path={editPath}"
-				field-name="editPath"
-			></admin-table-row-link>
+			<kc-tc-open slot="before"></kc-tc-open>
 			<div
 				class="d-f full"
 				style="align-items: center;"
@@ -138,18 +130,14 @@
 		</k-table>
 
 		<h2>System Pages</h2>
-		<k-table
+		<k-table open-on-click
 			id="systemTable"
 			enable-pages
 			page-size="25"
 			page-size-options="[10,25,50,100]"
 			placeholder="No system pages found."
 		>
-			<admin-table-row-link
-				slot="before"
-				url-pattern="/admin/content/pages/edit?path={editPath}"
-				field-name="editPath"
-			></admin-table-row-link>
+			<kc-tc-open slot="before"></kc-tc-open>
 			<div
 				class="d-f full"
 				style="align-items: center;"
@@ -183,7 +171,7 @@
 				{ name: 'name', label: 'Name', size: 200 },
 				{ name: 'url', label: 'URL', size: 250 },
 				{ name: 'author', label: 'Author', size: 150 },
-				{ name: 'description', label: 'Description', size: 300 },
+				{ name: 'description', label: 'Description' },
 				{ name: 'updatedAt', label: 'Updated', size: 190, formatter: v => v ? new Date(v).toLocaleString() : '' },
 				{ name: 'createdAt', label: 'Created', size: 190, formatter: v => v ? new Date(v).toLocaleString() : '' }
 			];
@@ -214,7 +202,7 @@
 
 			setInterval(updateScanInfo, 1000);
 
-			const toEditPath = p => ({ ...p, editPath: p.file.replace(/\.page\.html$/, '') });
+			const withEditUrl = p => ({ ...p, _url: `/admin/content/pages/edit?path=${encodeURIComponent(p.file.replace(/\.page\.html$/, ''))}` });
 
 			const initTable = async ($table, tableFields, owner) => {
 				const [error, data] = await listPages({ owner, showHidden: false, offset: 0, limit: 25 });
@@ -222,11 +210,11 @@
 					Toast.error(error.msg || 'Failed to load pages');
 					return null;
 				}
-				$table.setData({ records: data.pages.map(toEditPath), fields: tableFields });
+				$table.setData({ records: data.pages.map(withEditUrl), fields: tableFields });
 				if(data.total > data.pages.length){
 					$table.setupFetchRecords(data.total, async (start, count) => {
 						const [, d] = await listPages({ owner, showHidden: false, offset: start, limit: count });
-						return (d?.pages || []).map(toEditPath);
+						return (d?.pages || []).map(withEditUrl);
 					});
 				}
 				return data.scannedAt;

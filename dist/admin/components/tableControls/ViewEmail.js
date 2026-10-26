@@ -1,0 +1,2 @@
+import e from"../AdminTableControl.js";import{html as t}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Icon.js";export default class i extends e{connectedCallback(){super.connectedCallback(),this.hasAttribute("title")||(this.title="View")}handleAction(){this.record&&this.table.dispatchEvent(new CustomEvent("emailView",{detail:{record:this.record}}))}render(){return t`<slot><k-icon name="visibility"></k-icon></slot>`}}customElements.define("admin-view-email",i);
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\tableControls\ViewEmail.js.map

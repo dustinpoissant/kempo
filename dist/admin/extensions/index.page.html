@@ -11,7 +11,7 @@
 <script type="module" src="/kempo-ui/components/controls/TcPageSelect.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcPageSize.js"></script>
 <script type="module" src="/admin/components/tableControls/InstallExtension.js"></script>
-<script type="module" src="/admin/components/tableControls/ExtensionDetails.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcOpen.js"></script>
 <script type="module" src="/admin/components/tableControls/ToggleExtension.js"></script>
 <script type="module" src="/admin/components/tableControls/UninstallExtension.js"></script>
 <script type="module" src="/kempo/components/Permission.js"></script>
@@ -22,8 +22,8 @@
 	</div>
 
 	<h2>Installed Extensions</h2>
-	<k-table id="installedTable" enable-pages page-size="25" placeholder="No extensions are currently installed.">
-		<admin-extension-details slot="after"></admin-extension-details>
+	<k-table open-on-click id="installedTable" enable-pages page-size="25" placeholder="No extensions are currently installed.">
+		<kc-tc-open slot="after" title="View in Store"><k-icon name="storefront"></k-icon></kc-tc-open>
 		<admin-toggle-extension slot="after"></admin-toggle-extension>
 		<admin-uninstall-extension slot="after"></admin-uninstall-extension>
 		<div class="d-f full" style="align-items: center;">
@@ -42,9 +42,9 @@
 
 	<h2>Downloaded, Not Installed</h2>
 	<p class="tc-muted">Extension packages already in this site. To find and download more, <a href="/admin/extensions/browse/">browse the marketplace</a>.</p>
-	<k-table id="availableTable" enable-pages page-size="25" placeholder="Every downloaded extension is installed.">
+	<k-table open-on-click id="availableTable" enable-pages page-size="25" placeholder="Every downloaded extension is installed.">
 		<admin-install-extension slot="after"></admin-install-extension>
-		<admin-extension-details slot="after"></admin-extension-details>
+		<kc-tc-open slot="after" title="View in Store"><k-icon name="storefront"></k-icon></kc-tc-open>
 		<div class="d-f full" style="align-items: center;">
 			<div>
 				<kc-tc-first-page></kc-tc-first-page>
@@ -66,11 +66,12 @@
 
 	const installedTable = document.getElementById('installedTable');
 	const availableTable = document.getElementById('availableTable');
+	const withDetailsUrl = e => ({ ...e, _url: `/admin/extensions/details/?name=${encodeURIComponent(e.name)}` });
 
 	const [installedErr, installedData] = await listExtensions();
 	if(!installedErr){
 		installedTable.setData({
-			records: installedData.items,
+			records: installedData.items.map(withDetailsUrl),
 			fields: [
 				{ name: 'name', label: 'Name' },
 				{ name: 'version', label: 'Version' },
@@ -85,7 +86,7 @@
 		const installedNames = new Set((installedData?.items || []).map(e => e.name));
 		const notInstalled = availableData.items.filter(e => !installedNames.has(e.name));
 		availableTable.setData({
-			records: notInstalled,
+			records: notInstalled.map(withDetailsUrl),
 			fields: [
 				{ name: 'name', label: 'Name' },
 				{ name: 'version', label: 'Version' },
@@ -97,7 +98,7 @@
 	const refreshInstalledTable = async () => {
 		const [err, data] = await listExtensions();
 		if(!err) installedTable.setData({
-			records: data.items,
+			records: data.items.map(withDetailsUrl),
 			fields: [
 				{ name: 'name', label: 'Name' },
 				{ name: 'version', label: 'Version' },
@@ -113,7 +114,7 @@
 		if(!instErr && !availErr){
 			const installedNames = new Set((instData?.items || []).map(e => e.name));
 			availableTable.setData({
-				records: availData.items.filter(e => !installedNames.has(e.name)),
+				records: availData.items.filter(e => !installedNames.has(e.name)).map(withDetailsUrl),
 				fields: [
 					{ name: 'name', label: 'Name' },
 					{ name: 'version', label: 'Version' },

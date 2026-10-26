@@ -14,7 +14,7 @@
 		<script type="module" src="/kempo-ui/components/controls/TcDeleteSelected.js"></script>
 		<script type="module" src="/kempo-ui/components/Icon.js"></script>
 		<script type="module" src="/kempo-ui/components/Combobox.js"></script>
-		<script type="module" src="/admin/components/TableRowLink.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcOpen.js"></script>
 		<script type="module" src="/kempo/components/Permission.js"></script>
 
 		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
@@ -25,8 +25,8 @@
 		</div>
 
 		<h2>Custom</h2>
-		<k-table id="customTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No custom global content has been created yet.">
-			<admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link>
+		<k-table open-on-click id="customTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No custom global content has been created yet.">
+			<kc-tc-open slot="before"></kc-tc-open>
 			<div slot="top" class="d-f full" style="align-items: center;">
 				<div>
 					<k-permission has="system:globals:delete">
@@ -49,8 +49,8 @@
 		</k-table>
 
 		<h2>Extensions</h2>
-		<k-table id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension global content installed.">
-			<admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link>
+		<k-table open-on-click id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension global content installed.">
+			<kc-tc-open slot="before"></kc-tc-open>
 			<div class="d-f full" style="align-items: center;">
 				<div>
 					<kc-tc-first-page></kc-tc-first-page>
@@ -66,8 +66,8 @@
 		</k-table>
 
 		<h2>System</h2>
-		<k-table id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system global content found.">
-			<admin-table-row-link slot="before" url-pattern="/admin/content/globals/edit?id={id}" field-name="id"></admin-table-row-link>
+		<k-table open-on-click id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system global content found.">
+			<kc-tc-open slot="before"></kc-tc-open>
 			<div class="d-f full" style="align-items: center;">
 				<div>
 					<kc-tc-first-page></kc-tc-first-page>
@@ -95,7 +95,7 @@
 
 			const fields = [
 				{ name: 'locked', label: '', size: 40, calculator: r => r.locked ? html`<k-icon name="lock"></k-icon>` : html`` },
-				{ name: 'name', label: 'Name', size: 200 },
+				{ name: 'name', label: 'Name' },
 				{ name: 'location', label: 'Location', size: 150 },
 				{ name: 'priority', label: 'Priority', size: 80 },
 				{ name: 'author', label: 'Author', size: 150 },
@@ -118,9 +118,10 @@
 					Toast.error(error.msg || 'Failed to load global content');
 					return;
 				}
-				const custom = data.entries.filter(e => e.owner === 'custom');
-				const extension = data.entries.filter(e => e.owner !== 'custom' && e.owner !== 'system');
-				const system = data.entries.filter(e => e.owner === 'system');
+				const withEditUrl = e => ({ ...e, _url: `/admin/content/globals/edit?id=${encodeURIComponent(e.id)}` });
+				const custom = data.entries.filter(e => e.owner === 'custom').map(withEditUrl);
+				const extension = data.entries.filter(e => e.owner !== 'custom' && e.owner !== 'system').map(withEditUrl);
+				const system = data.entries.filter(e => e.owner === 'system').map(withEditUrl);
 				$customTable.setData({ records: custom, fields });
 				$extensionTable.setData({ records: extension, fields: extensionFields });
 				$systemTable.setData({ records: system, fields });

@@ -4,8 +4,17 @@ import '/kempo-ui/components/Spinner.js';
 import '/kempo-ui/components/Icon.js';
 import '/kempo-ui/components/Dialog.js';
 import '/kempo-ui/components/CodeEditor.js';
+import '/kempo-ui/components/Table.js';
+import '/kempo-ui/components/controls/TcOpen.js';
+import '/admin/components/tableControls/EditEmailTemplate.js';
 import Toast from '/kempo-ui/components/Toast.js';
 import { listEmailTemplates, getEmailTemplate, saveEmailTemplate, resetEmailTemplate } from '/kempo/sdk.js';
+
+const fields = [
+  { name: 'title', label: 'Email', editable: false, calculator: template => template.title || template.name },
+  { name: 'template', label: 'Template', size: 260, editable: false, calculator: template => template.template },
+  { name: 'status', label: 'Status', size: 130, editable: false, calculator: template => template.overridden ? 'Customized' : 'Default' },
+];
 
 /*
   The email templates of one extension, to edit, served at /admin/components/EmailTemplates.js:
@@ -132,23 +141,26 @@ const pane = this.closest('k-tab-content');
     `;
   }
 
+  /* Refills the table whenever the list or the preview address changes. */
+  updated(changed){
+    if(!changed.has('templates') && !changed.has('previewUrl')) return;
+    const $table = this.renderRoot.querySelector('k-table');
+    if(!$table || !this.templates) return;
+    $table.setData({
+      records: this.templates.map(template => ({ ...template, _url: `${this.previewUrl}?template=${encodeURIComponent(template.template)}` })),
+      fields,
+    });
+  }
+
   render(){
     if(this.error) return html`<p class="tc-danger" role="alert">${this.error}</p>`;
     if(!this.templates) return html`<k-spinner></k-spinner>`;
     if(!this.templates.length) return html`<p class="tc-muted">There are no email templates here.</p>`;
     return html`
-      <table class="mb">
-        <thead><tr><th>Email</th><th>Template</th><th>Status</th><th></th></tr></thead>
-        <tbody>${this.templates.map(template => html`<tr>
-          <td>${template.title || template.name}</td>
-          <td class="tc-muted">${template.template}</td>
-          <td>${template.overridden ? html`<span class="tc-warning">Customized</span>` : html`<span class="tc-muted">Default</span>`}</td>
-          <td class="ta-right">
-            <a class="btn" href=${`${this.previewUrl}?template=${encodeURIComponent(template.template)}`} target="email-preview">Preview</a>
-            <button aria-label="Edit" title="Edit" @click=${() => this.edit(template.template)}><k-icon name="edit"></k-icon></button>
-          </td>
-        </tr>`)}</tbody>
-      </table>
+      <k-table class="mb" placeholder="There are no email templates here." @editTemplate=${event => this.edit(event.detail.record.template)}>
+        <kc-tc-open slot="after" target="_blank" title="Preview"></kc-tc-open>
+        <admin-edit-email-template slot="after"></admin-edit-email-template>
+      </k-table>
       ${this.renderDialog()}
     `;
   }

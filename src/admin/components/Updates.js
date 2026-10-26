@@ -3,6 +3,9 @@ import { html, nothing } from '/kempo-ui/lit-all.min.js';
 import '/kempo-ui/components/Spinner.js';
 import '/kempo-ui/components/Dialog.js';
 import '/kempo-ui/components/Icon.js';
+import '/kempo-ui/components/Table.js';
+import '/admin/components/tableControls/UpdateItem.js';
+import '/admin/components/tableControls/UpdateSelected.js';
 import Toast from '/kempo-ui/components/Toast.js';
 import { getUpdateStatus, checkForUpdate, prepareUpdate, applyUpdate, rollbackUpdate, discardUpdate } from '/kempo/sdk.js';
 
@@ -35,6 +38,12 @@ const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 const older = (a, b) => a.split('.').map(Number).reduce((result, part, index) => result || (part - Number(b.split('.')[index])), 0) < 0;
 
+const UPDATE_FIELDS = [
+  { name: 'name', label: 'Name', editable: false, calculator: item => `${item.name}${item.needs ? ` · needs Kempo ${item.needs}` : ''}${item.major ? ' · breaking release' : ''}` },
+  { name: 'current', label: 'Current', size: 140, editable: false, calculator: item => item.from },
+  { name: 'next', label: 'New', size: 140, editable: false, calculator: item => item.to },
+];
+
 export default class Updates extends ShadowComponent {
   static properties = {
     status: { state: true },
@@ -43,7 +52,7 @@ export default class Updates extends ShadowComponent {
     phase: { state: true },
     stalled: { state: true },
     action: { state: true },
-    chosen: { state: true },
+    pending: { state: true },
   };
 
   constructor(){
@@ -54,7 +63,7 @@ export default class Updates extends ShadowComponent {
     this.phase = 'idle';
     this.stalled = false;
     this.action = 'update';
-    this.chosen = null;
+    this.pending = [];
   }
 
   /*
@@ -76,7 +85,6 @@ export default class Updates extends ShadowComponent {
     }
     this.error = '';
     this.status = status;
-    this.selectNew(status);
     this.reportOutcome();
     /* A switch that is still being checked blocks the buttons below for about a minute: look again until it is done. */
     if(status.switching && !this.recheck){
@@ -93,29 +101,41 @@ export default class Updates extends ShadowComponent {
     ...(status.extensionUpdates?.updates ?? []).map(update => ({ key: update.name, name: update.name, from: update.installedVersion, to: update.latestVersion, major: update.major, needs: update.kempoRequired })),
   ];
 
-  /* Everything that has just become available is ticked, once; what the person unticks stays unticked. */
-  selectNew = status => {
-    this.seen ??= new Set();
-    const chosen = new Set(this.chosen ?? []);
-    for(const { key } of this.updatable(status)){
-      if(!this.seen.has(key)){
-        this.seen.add(key);
-        chosen.add(key);
-      }
+  /* Refills the table when its list changes. A new list ticks everything on the page; otherwise the person's ticks stay. */
+  async renderTable(){
+    const $table = this.renderRoot.querySelector('#updates');
+    if(!$table || !this.status) return;
+    const items = this.updatable(this.status);
+    const signature = items.map(item => `${item.key}:${item.from}>${item.to}`).join('|');
+    if($table.dataset.signature === signature && $table.records?.length) return;
+    $table.dataset.signature = signature;
+    $table.setData({ records: items, fields: UPDATE_FIELDS });
+    await $table.updateComplete;
+    $table.selectAllOnPage();
+  }
+
+  updated(changed){
+    if(changed.has('status') || changed.has('phase')) this.renderTable();
+  }
+
+  /* What is ticked in the table. */
+  selectedItems = () => this.renderRoot.querySelector('#updates')?.getSelectedRecords() ?? [];
+
+  /* An extension that needs a newer Kempo than the one running has to go with the Kempo update that provides it. */
+  needsKempo = items => items.some(item => item.needs && older(this.status.runningVersion, item.needs)) && !items.some(item => item.key === 'kempo');
+
+  /* One row's update, or every ticked one. A Docker site gets them ready; any other site confirms first. */
+  updateItems = items => {
+    if(!items.length){
+      Toast.error('Tick at least one update first');
+      return;
     }
-    this.chosen = chosen;
-  };
-
-  /* An extension that needs a newer Kempo than the one running can only be chosen together with the Kempo update that provides it. */
-  blocked = (item, status) => Boolean(item.needs) && older(status.runningVersion, item.needs) && !(this.chosen.has('kempo') && status.updateAvailable && !older(status.latestVersion, item.needs));
-
-  chosenItems = () => this.updatable(this.status).filter(item => this.chosen.has(item.key) && !this.blocked(item, this.status));
-
-  toggle = key => {
-    const next = new Set(this.chosen);
-    if(next.has(key)) next.delete(key);
-    else next.add(key);
-    this.chosen = next;
+    if(this.needsKempo(items)){
+      Toast.error('An extension that needs a newer Kempo has to be updated together with Kempo');
+      return;
+    }
+    if(this.status.mode === 'release') this.prepare(items);
+    else this.openConfirm('update', items);
   };
 
   /* After the page reloads from an update: say whether the version that was asked for is the one now running. */
@@ -141,7 +161,6 @@ export default class Updates extends ShadowComponent {
       return;
     }
     this.status = status;
-    this.selectNew(status);
     const problem = status.checkError || status.extensionUpdates?.checkError;
     if(problem) Toast.error(problem);
     else if(!this.updatable(status).length && !status.staged) Toast.success('Everything is up to date');
@@ -150,14 +169,11 @@ export default class Updates extends ShadowComponent {
   /*
     Getting an update ready (Docker volume sites), or throwing it away
   */
-  selection = () => {
-    const items = this.chosenItems();
-    return { version: items.some(item => item.key === 'kempo') ? this.status.latestVersion : null, extensions: items.filter(item => item.key !== 'kempo').map(item => item.key) };
-  };
+  selection = items => ({ version: items.some(item => item.key === 'kempo') ? this.status.latestVersion : null, extensions: items.filter(item => item.key !== 'kempo').map(item => item.key) });
 
-  prepare = async () => {
+  prepare = async items => {
     this.phase = 'preparing';
-    const [error] = await prepareUpdate(this.selection());
+    const [error] = await prepareUpdate(this.selection(items));
     this.phase = 'idle';
     if(error){
       Toast.error(error.msg);
@@ -178,8 +194,9 @@ export default class Updates extends ShadowComponent {
   /*
     Switching, updating in place and going back
   */
-  openConfirm = action => {
+  openConfirm = (action, items = []) => {
     this.action = action;
+    this.pending = items;
     this.renderRoot.querySelector('#confirmDialog').open();
   };
 
@@ -200,9 +217,9 @@ export default class Updates extends ShadowComponent {
       message = `Updated: ${staged.packages.join(', ')}`;
     } else {
       this.phase = 'installing';
-      const { version, extensions } = this.selection();
+      const { version, extensions } = this.selection(this.pending);
       [error, result] = await applyUpdate({ version, extensions });
-      message = `Updated: ${this.chosenItems().map(item => `${item.name} ${item.to}`).join(', ')}`;
+      message = `Updated: ${this.pending.map(item => `${item.name} ${item.to}`).join(', ')}`;
     }
 
     if(error){
@@ -323,32 +340,21 @@ export default class Updates extends ShadowComponent {
     `;
   }
 
-  renderRow(item, status){
-    const blocked = this.blocked(item, status);
-    return html`
-      <label class="d-f mb">
-        <input type="checkbox" class="mr" ?checked=${this.chosen.has(item.key) && !blocked} ?disabled=${blocked || this.phase !== 'idle'} @change=${() => this.toggle(item.key)}>
-        <span><strong>${item.name}</strong> ${item.from} <k-icon name="arrow" direction="right"></k-icon> ${item.to}${item.major ? html` <span class="tc-warning">breaking release</span>` : nothing}
-          ${blocked ? html`<small class="d-b tc-muted">Needs Kempo ${item.needs} or newer: tick Kempo as well.</small>` : nothing}</span>
-      </label>
-    `;
-  }
-
   renderAvailable(status){
     const items = this.updatable(status);
-    const selected = this.chosenItems();
-    const majors = selected.filter(item => item.major);
+    const majors = items.filter(item => item.major);
     return html`
       <div class="b r p mb">
         <h2 class="h4 mb">${count(items.length, 'update is', 'updates are')} available</h2>
-        <div class="mb">${items.map(item => this.renderRow(item, status))}</div>
+        <k-table id="updates" enable-selection placeholder="No updates." @updateItem=${event => this.updateItems([event.detail.record])} @updateSelected=${() => this.updateItems(this.selectedItems())}>
+          <admin-update-item slot="after"></admin-update-item>
+          <admin-update-selected slot="bottom">${status.mode === 'release' ? 'Get selected ready' : 'Update selected'}</admin-update-selected>
+        </k-table>
         ${majors.length ? html`<p class="tc-warning mb" role="alert"><k-icon name="warning"></k-icon> ${majors.map(item => item.name).join(', ')} ${majors.length === 1 ? 'is a breaking release' : 'are breaking releases'} and may change how things work. Read ${majors.length === 1 ? 'its' : 'their'} release notes before updating.</p>` : nothing}
         ${status.canUpdate ? (status.mode === 'release' ? html`
-          <p class="tc-muted mb">Getting them ready downloads them without touching your site. You choose when to switch.</p>
-          <button class="primary" ?disabled=${!selected.length} @click=${this.prepare}>Get ${count(selected.length, 'update', 'updates')} ready</button>
+          <p class="tc-muted">Getting them ready downloads them without touching your site. You choose when to switch.</p>
         ` : html`
-          <p class="tc-muted mb">${this.renderRestartNote(status)}</p>
-          <button class="primary" ?disabled=${!selected.length} @click=${() => this.openConfirm('update')}>Update ${count(selected.length, 'item', 'items')}</button>
+          <p class="tc-muted">${this.renderRestartNote(status)}</p>
         `) : html`<p class="mb">${status.reason} Update where it is installed, then restart the server.</p>`}
       </div>
     `;
@@ -419,7 +425,7 @@ export default class Updates extends ShadowComponent {
     const back = this.action === 'back';
     const forced = status.staged?.plan.files.forced ?? [];
     const breaking = !back && (status.staged?.plan.breaking ?? false);
-    const items = status.mode === 'release' ? (status.staged?.packages ?? []) : this.chosen ? this.chosenItems().map(item => `${item.name} ${item.to}`) : [];
+    const items = status.mode === 'release' ? (status.staged?.packages ?? []) : this.pending.map(item => `${item.name} ${item.to}`);
     return html`
       <k-dialog id="confirmDialog" confirm-text=${back ? 'Go back and restart' : 'Update and restart'} confirm-classes="primary ml" cancel-text="Cancel" .confirmAction=${this.confirmed}>
         <h2 slot="title" class="h5 pyh px m0">${back ? 'Go back' : 'Update'}</h2>

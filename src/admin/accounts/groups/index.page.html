@@ -13,7 +13,7 @@
 <script type="module" src="/kempo-ui/components/controls/TcEdit.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcDeleteRecord.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcDeleteSelected.js"></script>
-<script type="module" src="/admin/components/TableRowLink.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcOpen.js"></script>
 <script type="module" src="/kempo/components/Permission.js"></script>
 
 		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
@@ -24,8 +24,8 @@
 		</div>
 
 		<h2>Custom Groups</h2>
-		<k-table id="customTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No custom groups have been created yet.">
-			<admin-table-row-link slot="before" url-pattern="/admin/accounts/groups/{name}" field-name="name"></admin-table-row-link>
+		<k-table id="customTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No custom groups have been created yet." open-on-click>
+			<kc-tc-open slot="before"></kc-tc-open>
 			<div slot="top" class="d-f full" style="align-items: center;">
 				<div>
 					<k-permission has="system:group:delete">
@@ -48,8 +48,8 @@
 		</k-table>
 
 		<h2>Extension Groups</h2>
-		<k-table id="extensionTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No extension groups found.">
-			<admin-table-row-link slot="before" url-pattern="/admin/accounts/groups/{name}" field-name="name"></admin-table-row-link>
+		<k-table id="extensionTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No extension groups found." open-on-click>
+			<kc-tc-open slot="before"></kc-tc-open>
 			<div class="d-f full" style="align-items: center;">
 				<div>
 					<kc-tc-first-page></kc-tc-first-page>
@@ -65,8 +65,8 @@
 		</k-table>
 
 		<h2>System Groups</h2>
-		<k-table id="systemTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No system groups found.">
-			<admin-table-row-link slot="before" url-pattern="/admin/accounts/groups/{name}" field-name="name"></admin-table-row-link>
+		<k-table id="systemTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No system groups found." open-on-click>
+			<kc-tc-open slot="before"></kc-tc-open>
 			<div class="d-f full" style="align-items: center;">
 				<div>
 					<kc-tc-first-page></kc-tc-first-page>
@@ -125,6 +125,8 @@
 			];
 
 			const addGroupName = r => ({ ...r, groupName: r.name.includes(':') ? r.name.split(':').slice(1).join(':') : r.name });
+
+			const withUrl = r => ({ ...r, _url: `/admin/accounts/groups/${r.name}` });
 
 			const setupTable = ($table, owner, loadFn) => {
 				if(canEdit && owner !== 'system') { // Prevent editor control for system groups
@@ -188,12 +190,12 @@
 					return;
 				}
 				const isCustom = owner === 'custom';
-				const records = isCustom ? data.groups.map(addGroupName) : data.groups;
-				$table.setData({ records, fields: isCustom ? customFields : fields });
+				const toRecord = isCustom ? r => withUrl(addGroupName(r)) : withUrl;
+				$table.setData({ records: data.groups.map(toRecord), fields: isCustom ? customFields : fields });
 				$table.setupFetchRecords(data.total, async (start, count) => {
 					const [err, d] = await listGroups({ limit: count, offset: start, owner });
 					if(err) return [];
-					return isCustom ? d.groups.map(addGroupName) : d.groups;
+					return d.groups.map(toRecord);
 				});
 			};
 

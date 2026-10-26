@@ -1,0 +1,2 @@
+import e from"../AdminTableControl.js";import{html as t}from"/kempo-ui/lit-all.min.js";export default class l extends e{handleAction(){this.table.dispatchEvent(new CustomEvent("updateSelected"))}render(){return t`<slot>Update selected</slot>`}}customElements.define("admin-update-selected",l);
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\tableControls\UpdateSelected.js.map
