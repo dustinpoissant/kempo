@@ -348,8 +348,9 @@ export default class Updates extends ShadowComponent {
         <h2 class="h4 mb">${count(items.length, 'update is', 'updates are')} available</h2>
         <k-table id="updates" enable-selection placeholder="No updates." @updateItem=${event => this.updateItems([event.detail.record])} @updateSelected=${() => this.updateItems(this.selectedItems())}>
           <admin-update-item slot="after"></admin-update-item>
-          <admin-update-selected slot="bottom">${status.mode === 'release' ? 'Get selected ready' : 'Update selected'}</admin-update-selected>
+          <admin-update-selected>${status.mode === 'release' ? 'Get selected ready' : 'Update selected'}</admin-update-selected>
         </k-table>
+        <button class="primary mb" ?disabled=${!status.canUpdate} @click=${() => this.updateItems(items)}>${status.mode === 'release' ? `Get ${count(items.length, 'update', 'updates')} ready` : `Update ${count(items.length, 'item', 'items')}`}</button>
         ${majors.length ? html`<p class="tc-warning mb" role="alert"><k-icon name="warning"></k-icon> ${majors.map(item => item.name).join(', ')} ${majors.length === 1 ? 'is a breaking release' : 'are breaking releases'} and may change how things work. Read ${majors.length === 1 ? 'its' : 'their'} release notes before updating.</p>` : nothing}
         ${status.canUpdate ? (status.mode === 'release' ? html`
           <p class="tc-muted">Getting them ready downloads them without touching your site. You choose when to switch.</p>
