@@ -36,8 +36,9 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,nothing 
         <h2 class="h4 mb">${m(a.length,"update is","updates are")} available</h2>
         <k-table id="updates" enable-selection placeholder="No updates." @updateItem=${e=>this.updateItems([e.detail.record])} @updateSelected=${()=>this.updateItems(this.selectedItems())}>
           <admin-update-item slot="after"></admin-update-item>
-          <admin-update-selected slot="bottom">${"release"===e.mode?"Get selected ready":"Update selected"}</admin-update-selected>
+          <admin-update-selected>${"release"===e.mode?"Get selected ready":"Update selected"}</admin-update-selected>
         </k-table>
+        <button class="primary mb" ?disabled=${!e.canUpdate} @click=${()=>this.updateItems(a)}>${"release"===e.mode?`Get ${m(a.length,"update","updates")} ready`:`Update ${m(a.length,"item","items")}`}</button>
         ${n.length?t`<p class="tc-warning mb" role="alert"><k-icon name="warning"></k-icon> ${n.map(e=>e.name).join(", ")} ${1===n.length?"is a breaking release":"are breaking releases"} and may change how things work. Read ${1===n.length?"its":"their"} release notes before updating.</p>`:s}
         ${e.canUpdate?"release"===e.mode?t`
           <p class="tc-muted">Getting them ready downloads them without touching your site. You choose when to switch.</p>
