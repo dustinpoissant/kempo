@@ -9,6 +9,10 @@
 		></script>
 		<script
 			type="module"
+			src="/kempo-ui/components/Tabs.js"
+		></script>
+		<script
+			type="module"
 			src="/kempo-ui/components/controls/TcFirstPage.js"
 		></script>
 		<script
@@ -57,103 +61,135 @@
 			<div>
 				<span id="scanInfo" class="muted"></span>
 				<button id="rescanBtn">Rescan</button>
-				<k-permission has="system:pages:create">
-					<button
-						id="createPageBtn"
-						class="primary"
-					>Create Page</button>
-				</k-permission>
 			</div>
 		</div>
 
-		<h2>Custom Pages</h2>
-		<k-table open-on-click
-			id="customTable"
-			enable-pages
-			page-size="25"
-			page-size-options="[10,25,50,100]"
-			placeholder="No custom pages have been created yet."
-		>
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div
-				slot="top"
-				class="d-f full"
-				style="align-items: center;"
-			>
-				<div>
-					<k-permission has="system:pages:delete">
-						<kc-tc-delete-selected></kc-tc-delete-selected>
-					</k-permission>
-				</div>
-			</div>
-			<div
-				class="d-f full"
-				style="align-items: center;"
-			>
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+		<k-tabs active="custom" hash-routing>
+			<k-tab for="custom">Custom</k-tab>
+			<k-tab for="extension">Extensions</k-tab>
+			<k-tab for="system">System</k-tab>
 
-		<h2>Extension Pages</h2>
-		<k-table open-on-click
-			id="extensionTable"
-			enable-pages
-			page-size="25"
-			page-size-options="[10,25,50,100]"
-			placeholder="No extension pages installed."
-		>
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div
-				class="d-f full"
-				style="align-items: center;"
-			>
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+			<k-tab-content name="custom">
+				<k-table open-on-click
+					id="customTable"
+					enable-pages
+					page-size="25"
+					page-size-options="[10,25,50,100]"
+					placeholder="No custom pages have been created yet."
+				>
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div
+						slot="top"
+						class="d-f full"
+						style="align-items: center; gap: var(--spacer);"
+					>
+						<div>
+							<k-permission has="system:pages:delete">
+								<kc-tc-delete-selected></kc-tc-delete-selected>
+							</k-permission>
+						</div>
+						<div class="flex"></div>
+						<div>
+							<input type="search" class="page-search" placeholder="Search custom pages" aria-label="Search custom pages">
+						</div>
+						<k-permission has="system:pages:create">
+							<button id="createPageBtn" class="primary mr"><k-icon name="add"></k-icon> Create Page</button>
+						</k-permission>
+					</div>
+					<div
+						class="d-f full"
+						style="align-items: center;"
+					>
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
 
-		<h2>System Pages</h2>
-		<k-table open-on-click
-			id="systemTable"
-			enable-pages
-			page-size="25"
-			page-size-options="[10,25,50,100]"
-			placeholder="No system pages found."
-		>
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div
-				class="d-f full"
-				style="align-items: center;"
-			>
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+			<k-tab-content name="extension">
+				<k-table open-on-click
+					id="extensionTable"
+					enable-pages
+					page-size="25"
+					page-size-options="[10,25,50,100]"
+					placeholder="No extension pages installed."
+				>
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div
+						slot="top"
+						class="d-f full"
+						style="align-items: center;"
+					>
+						<div class="flex"></div>
+						<div>
+							<input type="search" class="page-search" placeholder="Search extension pages" aria-label="Search extension pages">
+						</div>
+					</div>
+					<div
+						class="d-f full"
+						style="align-items: center;"
+					>
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
+
+			<k-tab-content name="system">
+				<k-table open-on-click
+					id="systemTable"
+					enable-pages
+					page-size="25"
+					page-size-options="[10,25,50,100]"
+					placeholder="No system pages found."
+				>
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div
+						slot="top"
+						class="d-f full"
+						style="align-items: center;"
+					>
+						<div class="flex"></div>
+						<div>
+							<input type="search" class="page-search" placeholder="Search system pages" aria-label="Search system pages">
+						</div>
+					</div>
+					<div
+						class="d-f full"
+						style="align-items: center;"
+					>
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
+
+			<location name="admin-pages-tabs" />
+		</k-tabs>
 
 		<script type="module">
 			import { listPages, rescanPages, listTemplates, listDirectories, createPage, deletePages, getAllCurrentUserPermissions } from '/kempo/sdk.js';
@@ -204,31 +240,54 @@
 
 			const withEditUrl = p => ({ ...p, _url: `/admin/content/pages/edit?path=${encodeURIComponent(p.file.replace(/\.page\.html$/, ''))}` });
 
-			const initTable = async ($table, tableFields, owner) => {
-				const [error, data] = await listPages({ owner, showHidden: false, offset: 0, limit: 25 });
+			const tables = [
+				{ $table: $customTable, owner: 'custom', fields, emptyText: 'No custom pages have been created yet.' },
+				{ $table: $extensionTable, owner: 'extension', fields: extensionFields, emptyText: 'No extension pages installed.' },
+				{ $table: $systemTable, owner: 'system', fields, emptyText: 'No system pages found.' }
+			];
+
+			const searchTerm = $table => $table.querySelector('.page-search').value.trim();
+
+			const loadTable = async ({ $table, owner, fields: tableFields, emptyText }) => {
+				const q = searchTerm($table);
+				const [error, data] = await listPages({ q, owner, showHidden: false, offset: 0, limit: $table.getPageSize() });
 				if(error){
 					Toast.error(error.msg || 'Failed to load pages');
 					return null;
 				}
-				$table.setData({ records: data.pages.map(withEditUrl), fields: tableFields });
-				if(data.total > data.pages.length){
-					$table.setupFetchRecords(data.total, async (start, count) => {
-						const [, d] = await listPages({ owner, showHidden: false, offset: start, limit: count });
-						return (d?.pages || []).map(withEditUrl);
-					});
-				}
+				$table.placeholder = q ? 'No pages match your search.' : emptyText;
+				$table.setData({ currentPage: 1, records: data.pages.map(withEditUrl), fields: tableFields });
+				$table.setupFetchRecords(data.total, async (start, count) => {
+					const [, d] = await listPages({ q: searchTerm($table), owner, showHidden: false, offset: start, limit: count });
+					return (d?.pages || []).map(withEditUrl);
+				});
 				return data.scannedAt;
 			};
 
-			const loadPages = async () => {
-				const results = await Promise.all([
-					initTable($customTable, fields, 'custom'),
-					initTable($extensionTable, extensionFields, 'extension'),
-					initTable($systemTable, fields, 'system')
-				]);
-				scannedAt = results.find(r => r != null) ?? null;
-				updateScanInfo();
+			/* Each tab loads its list the first time it is shown. The scan time comes from whichever list loaded. */
+			const loadWhenShown = table => {
+				const pane = table.$table.closest('k-tab-content');
+				const load = async () => {
+					const ts = await loadTable(table);
+					if(ts != null){
+						scannedAt = ts;
+						updateScanInfo();
+					}
+				};
+				if(pane.active) load();
+				else table.$table.closest('k-tabs').addEventListener('tabfirstshown', ({ detail }) => {
+					if(detail.tab === pane.name) load();
+				});
 			};
+			tables.forEach(loadWhenShown);
+
+			for(const table of tables){
+				let searchTimer;
+				table.$table.querySelector('.page-search').addEventListener('input', () => {
+					clearTimeout(searchTimer);
+					searchTimer = setTimeout(() => loadTable(table), 300);
+				});
+			}
 
 			$rescanBtn.addEventListener('click', async () => {
 				$rescanBtn.disabled = true;
@@ -249,7 +308,6 @@
 				$customTable.appendChild(del);
 			}
 
-			await loadPages();
 
 			$customTable.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
 				const locked = records.filter(r => r.locked);
@@ -330,7 +388,7 @@
 							<label class="d-b mb-sm">Location</label>
 							<input type="text" id="dlg-directory" class="full" list="dlg-dir-list" value="/" placeholder="/">
 							<datalist id="dlg-dir-list">
-								${directories.map(d => html`<option value="${d === '.' ? '/' : '/' + d}">`)} 
+								${directories.map(d => html`<option value="${d === '.' ? '/' : '/' + d}">`)}
 							</datalist>
 							<p id="dlg-dir-error" class="mt-sm tc-danger d-n"><small>Invalid path — use format: /path/to/directory</small></p>
 							<p class="mt-sm muted"><small>Supports dynamic segments e.g. <code>/blog/[slug]</code>. <button class="link" @click="${openLearnMore}">Learn more</button></small></p>

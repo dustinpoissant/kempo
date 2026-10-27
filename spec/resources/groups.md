@@ -40,7 +40,7 @@ userGroup:
 | `createGroup` | `({ name, description, owner })` | Create a group |
 | `deleteGroup` | `(name)` | Delete a group (blocked for system groups) |
 | `getGroup` | `(name)` | Get group by name |
-| `listGroups` | `({ limit, offset, owner })` | Paginated group list |
+| `listGroups` | `({ q, limit, offset, owner })` | Paginated group list, filtered by name or description when `q` is set |
 | `updateGroup` | `(name, updates)` | Update group fields |
 | `addUserToGroup` | `(userId, groupName)` | Add user to group |
 | `removeUserFromGroup` | `(userId, groupName)` | Remove user from group |

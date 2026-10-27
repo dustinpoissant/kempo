@@ -1,15 +1,19 @@
 import db from '../../db/index.js';
 import { group } from '../../db/schema.js';
-import { eq, sql, and, ne } from 'drizzle-orm';
+import { eq, sql, and, ne, or, ilike } from 'drizzle-orm';
 
-export default async ({ limit = 50, offset = 0, owner } = {}) => {
+export default async ({ q = '', limit = 50, offset = 0, owner } = {}) => {
   try {
-    let where;
+    const conditions = [];
     if(owner === 'extension'){
-      where = and(ne(group.owner, 'system'), ne(group.owner, 'custom'));
+      conditions.push(and(ne(group.owner, 'system'), ne(group.owner, 'custom')));
     } else if(owner !== undefined){
-      where = eq(group.owner, owner);
+      conditions.push(eq(group.owner, owner));
     }
+    if(q){
+      conditions.push(or(ilike(group.name, `%${q}%`), ilike(group.description, `%${q}%`)));
+    }
+    const where = conditions.length ? and(...conditions) : undefined;
     const baseQuery = db.select().from(group);
     const countQuery = db.select({ count: sql`count(*)` }).from(group);
     const groups = await (where ? baseQuery.where(where) : baseQuery).limit(limit).offset(offset);

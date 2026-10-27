@@ -65,7 +65,7 @@ export default class Emails extends ShadowComponent {
   connectedCallback(){
     super.connectedCallback();
     getAllCurrentUserPermissions().then(([, data]) => { this.canManage = (data?.permissions ?? []).includes('system:emails:manage'); });
-const pane = this.closest('k-tab-content');
+    const pane = this.closest('k-tab-content');
     // Loads when its tab is first opened, so a tab nobody opens makes no requests.
     if(!pane || pane.active) this.load();
     else this.closest('k-tabs')?.addEventListener('tabfirstshown', ({ detail }) => {

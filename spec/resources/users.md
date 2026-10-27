@@ -40,7 +40,7 @@ user:
 | `deleteUser` | `(id)` | Delete user by ID |
 | `getUserById` | `(id)` | Get user by ID |
 | `getUserByEmail` | `(email)` | Get user by email |
-| `getUsers` | `({ limit, offset })` | Paginated user list |
+| `getUsers` | `({ q, limit, offset })` | Paginated user list, filtered by name or email when `q` is set |
 | `updateUser` | `(id, updates)` | Update user fields |
 | `findUsersByEmail` | `(searchTerm, { limit, offset })` | Search users by email |
 | `findUsersByName` | `(searchTerm, { limit, offset })` | Search users by name |

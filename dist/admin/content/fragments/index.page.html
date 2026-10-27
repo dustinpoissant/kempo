@@ -4,6 +4,10 @@
 <page title="Fragments - Admin">
 	<content>
 		<script type="module" src="/kempo-ui/components/Table.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcSearch.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcFilters.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcFieldSortHide.js"></script>
+		<script type="module" src="/kempo-ui/components/Tabs.js"></script>
 		<script type="module" src="/kempo-ui/components/controls/TcFirstPage.js"></script>
 		<script type="module" src="/kempo-ui/components/controls/TcPrevPage.js"></script>
 		<script type="module" src="/kempo-ui/components/controls/TcNextPage.js"></script>
@@ -18,68 +22,83 @@
 
 		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
 			<h1 class="flex mb0">Fragments</h1>
-			<k-permission has="system:fragments:create">
-				<button id="createFragmentBtn" class="primary">Create Fragment</button>
-			</k-permission>
 		</div>
 
-		<h2>Custom Fragments</h2>
-		<k-table open-on-click id="customTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No custom fragments have been created yet.">
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div slot="top" class="d-f full" style="align-items: center;">
-				<div>
-					<k-permission has="system:fragments:delete">
-						<kc-tc-delete-selected></kc-tc-delete-selected>
-					</k-permission>
-				</div>
-			</div>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+		<k-tabs active="custom" hash-routing>
+			<k-tab for="custom">Custom</k-tab>
+			<k-tab for="extension">Extensions</k-tab>
+			<k-tab for="system">System</k-tab>
 
-		<h2>Extension Fragments</h2>
-		<k-table open-on-click id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension fragments installed.">
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+			<k-tab-content name="custom">
+				<k-table open-on-click id="customTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No custom fragments have been created yet.">
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div slot="top" class="d-f full" style="align-items: center; gap: var(--spacer);">
+				<kc-tc-search style="width: 16rem"></kc-tc-search><kc-tc-filters></kc-tc-filters><kc-tc-field-sort-hide></kc-tc-field-sort-hide>
+						<div>
+							<k-permission has="system:fragments:delete">
+								<kc-tc-delete-selected></kc-tc-delete-selected>
+							</k-permission>
+						</div>
+						<div class="flex"></div>
+						<k-permission has="system:fragments:create">
+							<button id="createFragmentBtn" class="primary mr"><k-icon name="add"></k-icon> Create Fragment</button>
+						</k-permission>
+					</div>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
 
-		<h2>System Fragments</h2>
-		<k-table open-on-click id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system fragments found.">
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+			<k-tab-content name="extension">
+				<k-table open-on-click id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension fragments installed.">
+			<div slot="top" class="d-f full" style="align-items: center;"><kc-tc-search style="width: 16rem"></kc-tc-search><kc-tc-filters></kc-tc-filters><kc-tc-field-sort-hide></kc-tc-field-sort-hide></div>
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
+
+			<k-tab-content name="system">
+				<k-table open-on-click id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system fragments found.">
+			<div slot="top" class="d-f full" style="align-items: center;"><kc-tc-search style="width: 16rem"></kc-tc-search><kc-tc-filters></kc-tc-filters><kc-tc-field-sort-hide></kc-tc-field-sort-hide></div>
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
+
+			<location name="admin-fragments-tabs" />
+		</k-tabs>
 
 		<script type="module">
 			import { listFragments, listDirectories, createFragment, deleteFragments, getAllCurrentUserPermissions } from '/kempo/sdk.js';

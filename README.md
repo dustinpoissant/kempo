@@ -228,7 +228,7 @@ All SDK methods return an `[error, data]` tuple. On failure, `error` is `{ code,
 
 | Method | Parameters |
 |---|---|
-| `getUsers` | `{ limit?, offset? }` |
+| `getUsers` | `{ q?, limit?, offset? }` |
 | `getUser` | `userid` |
 | `createUser` | `{ name, email, password, emailVerified? }` |
 | `updateUser` | `{ id, name?, email?, emailVerified?, createdAt? }` |
@@ -246,7 +246,7 @@ All SDK methods return an `[error, data]` tuple. On failure, `error` is `{ code,
 
 | Method | Parameters |
 |---|---|
-| `listGroups` | (none) |
+| `listGroups` | `{ q?, limit?, offset?, owner? }` |
 | `getUserGroups` | `userid` |
 | `addUserToGroup` | `userid, groupName` |
 | `removeUserFromGroup` | `userid, groupName` |

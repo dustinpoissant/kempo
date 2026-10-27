@@ -4,6 +4,7 @@
 <page title="Groups - Admin">
 <content>
 <script type="module" src="/kempo-ui/components/Table.js"></script>
+<script type="module" src="/kempo-ui/components/Tabs.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcFirstPage.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcPrevPage.js"></script>
 <script type="module" src="/kempo-ui/components/controls/TcNextPage.js"></script>
@@ -16,243 +17,292 @@
 <script type="module" src="/kempo-ui/components/controls/TcOpen.js"></script>
 <script type="module" src="/kempo/components/Permission.js"></script>
 
-		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
-			<h1 class="flex mb0">Groups</h1>
-			<k-permission has="system:group:create">
-				<button id="createGroupBtn" class="primary">Create Group</button>
-			</k-permission>
-		</div>
+	<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+		<h1 class="flex mb0">Groups</h1>
+		<k-permission has="system:group:create">
+			<button id="createGroupBtn" class="primary">Create Group</button>
+		</k-permission>
+	</div>
 
-		<h2>Custom Groups</h2>
-		<k-table id="customTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No custom groups have been created yet." open-on-click>
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div slot="top" class="d-f full" style="align-items: center;">
-				<div>
-					<k-permission has="system:group:delete">
-						<kc-tc-delete-selected></kc-tc-delete-selected>
-					</k-permission>
+	<k-tabs active="custom" hash-routing>
+		<k-tab for="custom">Custom</k-tab>
+		<k-tab for="extension">Extensions</k-tab>
+		<k-tab for="system">System</k-tab>
+
+		<k-tab-content name="custom">
+			<k-table id="customTable" enable-pages page-size="25" page-size-options="[10,25,50]" placeholder="No custom groups have been created yet." open-on-click>
+				<kc-tc-open slot="before"></kc-tc-open>
+				<div slot="top" class="d-f full" style="align-items: center;">
+					<div>
+						<k-permission has="system:group:delete">
+							<kc-tc-delete-selected></kc-tc-delete-selected>
+						</k-permission>
+					</div>
+					<div class="flex"></div>
+					<div>
+						<input type="search" class="group-search" placeholder="Search custom groups" aria-label="Search custom groups">
+					</div>
 				</div>
-			</div>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
+				<div class="d-f full" style="align-items: center;">
+					<div>
+						<kc-tc-first-page></kc-tc-first-page>
+						<kc-tc-prev-page></kc-tc-prev-page>
+						<kc-tc-next-page></kc-tc-next-page>
+						<kc-tc-last-page></kc-tc-last-page>
+					</div>
+					<div class="flex"></div>
+					<div><kc-tc-page-select></kc-tc-page-select></div>
+					<div class="flex"></div>
+					<div><kc-tc-page-size></kc-tc-page-size></div>
 				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+			</k-table>
+		</k-tab-content>
 
-		<h2>Extension Groups</h2>
-		<k-table id="extensionTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No extension groups found." open-on-click>
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
+		<k-tab-content name="extension">
+			<k-table id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50]" placeholder="No extension groups found." open-on-click>
+				<kc-tc-open slot="before"></kc-tc-open>
+				<div slot="top" class="d-f full" style="align-items: center;">
+					<div class="flex"></div>
+					<div>
+						<input type="search" class="group-search" placeholder="Search extension groups" aria-label="Search extension groups">
+					</div>
 				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
-
-		<h2>System Groups</h2>
-		<k-table id="systemTable" enable-pages page-size="10" page-size-options="[10,25,50]" placeholder="No system groups found." open-on-click>
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
+				<div class="d-f full" style="align-items: center;">
+					<div>
+						<kc-tc-first-page></kc-tc-first-page>
+						<kc-tc-prev-page></kc-tc-prev-page>
+						<kc-tc-next-page></kc-tc-next-page>
+						<kc-tc-last-page></kc-tc-last-page>
+					</div>
+					<div class="flex"></div>
+					<div><kc-tc-page-select></kc-tc-page-select></div>
+					<div class="flex"></div>
+					<div><kc-tc-page-size></kc-tc-page-size></div>
 				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+			</k-table>
+		</k-tab-content>
 
-		<script type="module">
-			import { listGroups, createGroup, updateGroup, deleteGroups, getAllCurrentUserPermissions } from '/kempo/sdk.js';
-			import { html } from '/kempo-ui/lit-all.min.js';
-			import Toast from '/kempo-ui/components/Toast.js';
-			import Dialog from '/kempo-ui/components/Dialog.js';
+		<k-tab-content name="system">
+			<k-table id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50]" placeholder="No system groups found." open-on-click>
+				<kc-tc-open slot="before"></kc-tc-open>
+				<div slot="top" class="d-f full" style="align-items: center;">
+					<div class="flex"></div>
+					<div>
+						<input type="search" class="group-search" placeholder="Search system groups" aria-label="Search system groups">
+					</div>
+				</div>
+				<div class="d-f full" style="align-items: center;">
+					<div>
+						<kc-tc-first-page></kc-tc-first-page>
+						<kc-tc-prev-page></kc-tc-prev-page>
+						<kc-tc-next-page></kc-tc-next-page>
+						<kc-tc-last-page></kc-tc-last-page>
+					</div>
+					<div class="flex"></div>
+					<div><kc-tc-page-select></kc-tc-page-select></div>
+					<div class="flex"></div>
+					<div><kc-tc-page-size></kc-tc-page-size></div>
+				</div>
+			</k-table>
+		</k-tab-content>
 
-			await window.customElements.whenDefined('k-table');
+		<location name="admin-groups-tabs" />
+	</k-tabs>
 
-			const [, permData] = await getAllCurrentUserPermissions();
-			const myPerms = new Set(permData?.permissions ?? []);
-			const canEdit = myPerms.has('system:group:update');
-			const canDelete = myPerms.has('system:group:delete');
+	<script type="module">
+		import { listGroups, createGroup, updateGroup, deleteGroups, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+		import { html } from '/kempo-ui/lit-all.min.js';
+		import Toast from '/kempo-ui/components/Toast.js';
+		import Dialog from '/kempo-ui/components/Dialog.js';
 
-			const fields = [
-				{
-					name: 'groupName',
-					label: 'Name',
-					size: 300,
-					editable: false,
-					calculator: r => r.name.includes(':') ? r.name.split(':').slice(1).join(':') : r.name
-				},
-				{ name: 'description', label: 'Description', editable: canEdit },
-				{
-					name: 'createdAt',
-					label: 'Created',
-					formatter: v => new Date(v).toLocaleString(),
-					size: 208,
-					editable: false
-				}
-			];
+		await window.customElements.whenDefined('k-table');
 
-			const customFields = [
-				{ name: 'groupName', label: 'Name', size: 300, editable: canEdit },
-				{ name: 'description', label: 'Description', editable: canEdit },
-				{
-					name: 'createdAt',
-					label: 'Created',
-					formatter: v => new Date(v).toLocaleString(),
-					size: 208,
-					editable: false
-				}
-			];
+		const [, permData] = await getAllCurrentUserPermissions();
+		const myPerms = new Set(permData?.permissions ?? []);
+		const canEdit = myPerms.has('system:group:update');
+		const canDelete = myPerms.has('system:group:delete');
 
-			const addGroupName = r => ({ ...r, groupName: r.name.includes(':') ? r.name.split(':').slice(1).join(':') : r.name });
+		const fields = [
+			{
+				name: 'groupName',
+				label: 'Name',
+				size: 300,
+				editable: false,
+				calculator: r => r.name.includes(':') ? r.name.split(':').slice(1).join(':') : r.name
+			},
+			{ name: 'description', label: 'Description', editable: canEdit },
+			{
+				name: 'createdAt',
+				label: 'Created',
+				formatter: v => new Date(v).toLocaleString(),
+				size: 208,
+				editable: false
+			}
+		];
 
-			const withUrl = r => ({ ...r, _url: `/admin/accounts/groups/${r.name}` });
+		const customFields = [
+			{ name: 'groupName', label: 'Name', size: 300, editable: canEdit },
+			{ name: 'description', label: 'Description', editable: canEdit },
+			{
+				name: 'createdAt',
+				label: 'Created',
+				formatter: v => new Date(v).toLocaleString(),
+				size: 208,
+				editable: false
+			}
+		];
 
-			const setupTable = ($table, owner, loadFn) => {
-				if(canEdit && owner !== 'system') { // Prevent editor control for system groups
-					$table.setAttribute('request-edit', '');
-					const edit = document.createElement('kc-tc-edit');
-					edit.setAttribute('slot', 'after');
-					$table.appendChild(edit);
-				}
+		const withUrl = r => ({ ...r, _url: `/admin/accounts/groups/${r.name}` });
 
-				if(canDelete && owner === 'custom'){
-					$table.setAttribute('request-delete', '');
-					$table.setAttribute('enable-selection', '');
-					const del = document.createElement('kc-tc-delete-record');
-					del.setAttribute('slot', 'after');
-					$table.appendChild(del);
-				}
+		const displayName = r => r.name.includes(':') ? r.name.split(':').slice(1).join(':') : r.name;
 
-				$table.addEventListener('requestSave', async ({ detail: { record, newData, approve, reject } }) => {
-					const patch = { name: record.name, description: newData.description };
-					if(owner === 'custom' && newData.groupName !== undefined && newData.groupName !== record.groupName){
-						patch.newName = `custom:${newData.groupName}`;
-					}
-					const [error] = await updateGroup(patch);
-					if(error){
-						reject();
-						Toast.error(error.msg || 'Failed to update group');
-						return;
-					}
-					approve();
-					if(patch.newName) loadFn();
-					Toast.success('Group updated');
-				});
+		const setupTable = ($table, owner, emptyText) => {
+			let query = '';
+			let searchTimer;
 
-				if(owner === 'custom'){
-					$table.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
-						const displayName = r => r.name.includes(':') ? r.name.split(':').slice(1).join(':') : r.name;
-						const count = records.length;
-						const msg = count === 1
-							? `<div class="p"><p>Delete "${displayName(records[0])}"? This action cannot be undone.</p></div>`
-							: `<div class="p"><p>Delete ${count} groups? This action cannot be undone.</p></div>`;
-						Dialog.confirm(msg, async (confirmed) => {
-							if(!confirmed){ reject(); return; }
-							const [error] = await deleteGroups(records.map(r => r.name));
-							if(error){
-								reject();
-								Toast.error(error.msg || 'Failed to delete');
-								return;
-							}
-							approve();
-							Toast.success(count === 1 ? 'Group deleted' : `${count} groups deleted`);
-							loadFn();
-						});
-					});
-				}
+			const toRecord = owner === 'custom' ? r => withUrl({ ...r, groupName: displayName(r) }) : withUrl;
+
+			const fetchGroups = async (start, count) => {
+				const [err, d] = await listGroups({ q: query, limit: count, offset: start, owner });
+				if(err) return [];
+				return d.groups.map(toRecord);
 			};
 
-			const loadTable = async ($table, owner) => {
-				const [error, data] = await listGroups({ owner });
+			const load = async () => {
+				const [error, data] = await listGroups({ q: query, limit: $table.getPageSize(), offset: 0, owner });
 				if(error){
 					Toast.error(error.msg || 'Failed to load groups');
 					return;
 				}
-				const isCustom = owner === 'custom';
-				const toRecord = isCustom ? r => withUrl(addGroupName(r)) : withUrl;
-				$table.setData({ records: data.groups.map(toRecord), fields: isCustom ? customFields : fields });
-				$table.setupFetchRecords(data.total, async (start, count) => {
-					const [err, d] = await listGroups({ limit: count, offset: start, owner });
-					if(err) return [];
-					return d.groups.map(toRecord);
+				$table.placeholder = query ? 'No groups match your search.' : emptyText;
+				$table.setData({
+					currentPage: 1,
+					records: data.groups.map(toRecord),
+					fields: owner === 'custom' ? customFields : fields
 				});
+				$table.setupFetchRecords(data.total, fetchGroups);
 			};
 
-			const $customTable = document.getElementById('customTable');
-			const $extensionTable = document.getElementById('extensionTable');
-			const $systemTable = document.getElementById('systemTable');
+			if(canEdit && owner !== 'system') { // Prevent editor control for system groups
+				$table.setAttribute('request-edit', '');
+				const edit = document.createElement('kc-tc-edit');
+				edit.setAttribute('slot', 'after');
+				$table.appendChild(edit);
+			}
 
-			setupTable($customTable, 'custom', () => loadTable($customTable, 'custom'));
-			setupTable($extensionTable, 'extension', () => loadTable($extensionTable, 'extension'));
-			setupTable($systemTable, 'system', () => loadTable($systemTable, 'system'));
+			if(canDelete && owner === 'custom'){
+				$table.setAttribute('request-delete', '');
+				$table.setAttribute('enable-selection', '');
+				const del = document.createElement('kc-tc-delete-record');
+				del.setAttribute('slot', 'after');
+				$table.appendChild(del);
+			}
 
-			await Promise.all([
-				loadTable($customTable, 'custom'),
-				loadTable($extensionTable, 'extension'),
-				loadTable($systemTable, 'system')
-			]);
+			$table.addEventListener('requestSave', async ({ detail: { record, newData, approve, reject } }) => {
+				const patch = { name: record.name, description: newData.description };
+				if(owner === 'custom' && newData.groupName !== undefined && newData.groupName !== record.groupName){
+					patch.newName = `custom:${newData.groupName}`;
+				}
+				const [error] = await updateGroup(patch);
+				if(error){
+					reject();
+					Toast.error(error.msg || 'Failed to update group');
+					return;
+				}
+				approve();
+				if(patch.newName) load();
+				Toast.success('Group updated');
+			});
 
-			if(myPerms.has('system:group:create')){
-				document.getElementById('createGroupBtn').addEventListener('click', () => {
-					const $dialog = Dialog.create(html`
-						<div class="p">
-							<div class="mb">
-								<label class="d-b mb-sm">Name</label>
-								<input type="text" id="dlg-name" class="full" required>
-							</div>
-							<div>
-								<label class="d-b mb-sm">Description</label>
-								<input type="text" id="dlg-description" class="full">
-							</div>
-						</div>
-					`, {
-						title: 'Create Group',
-						confirmText: 'Create',
-						confirmAction: async () => {
-							const name = $dialog.querySelector('#dlg-name').value.trim();
-							const description = $dialog.querySelector('#dlg-description').value.trim();
-							if(!name){
-								Toast.error('Group name is required');
-								return;
-							}
-							if(name.includes(':')){
-								Toast.error('Group name cannot contain ":"');
-								return;
-							}
-							const [error] = await createGroup({ name, description });
-							if(error){
-								Toast.error(error.msg || 'Failed to create group');
-								return;
-							}
-							Toast.success('Group created');
-							loadTable($customTable, 'custom');
-						},
-						cancelText: 'Cancel'
+			if(owner === 'custom'){
+				$table.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
+					const count = records.length;
+					const msg = count === 1
+						? `<div class="p"><p>Delete "${displayName(records[0])}"? This action cannot be undone.</p></div>`
+						: `<div class="p"><p>Delete ${count} groups? This action cannot be undone.</p></div>`;
+					Dialog.confirm(msg, async (confirmed) => {
+						if(!confirmed){ reject(); return; }
+						const [error] = await deleteGroups(records.map(r => r.name));
+						if(error){
+							reject();
+							Toast.error(error.msg || 'Failed to delete');
+							return;
+						}
+						approve();
+						Toast.success(count === 1 ? 'Group deleted' : `${count} groups deleted`);
+						load();
 					});
 				});
 			}
-		</script>
+
+			$table.querySelector('.group-search').addEventListener('input', ({ target }) => {
+				clearTimeout(searchTimer);
+				searchTimer = setTimeout(() => {
+					query = target.value.trim();
+					load();
+				}, 300);
+			});
+
+			return load;
+		};
+
+		const $customTable = document.getElementById('customTable');
+		const loadCustom = setupTable($customTable, 'custom', 'No custom groups have been created yet.');
+		const loadExtension = setupTable(document.getElementById('extensionTable'), 'extension', 'No extension groups found.');
+		const loadSystem = setupTable(document.getElementById('systemTable'), 'system', 'No system groups found.');
+
+		/* Each tab loads its list the first time it is shown, so a tab nobody opens makes no request. */
+		const loadWhenShown = (load, $table) => {
+			const pane = $table.closest('k-tab-content');
+			if(pane.active) load();
+			else $table.closest('k-tabs').addEventListener('tabfirstshown', ({ detail }) => {
+				if(detail.tab === pane.name) load();
+			});
+		};
+		loadWhenShown(loadCustom, $customTable);
+		loadWhenShown(loadExtension, document.getElementById('extensionTable'));
+		loadWhenShown(loadSystem, document.getElementById('systemTable'));
+
+		if(myPerms.has('system:group:create')){
+			document.getElementById('createGroupBtn').addEventListener('click', () => {
+				const $dialog = Dialog.create(html`
+					<div class="p">
+						<div class="mb">
+							<label class="d-b mb-sm">Name</label>
+							<input type="text" id="dlg-name" class="full" required>
+						</div>
+						<div>
+							<label class="d-b mb-sm">Description</label>
+							<input type="text" id="dlg-description" class="full">
+						</div>
+					</div>
+				`, {
+					title: 'Create Group',
+					confirmText: 'Create',
+					confirmAction: async () => {
+						const name = $dialog.querySelector('#dlg-name').value.trim();
+						const description = $dialog.querySelector('#dlg-description').value.trim();
+						if(!name){
+							Toast.error('Group name is required');
+							return;
+						}
+						if(name.includes(':')){
+							Toast.error('Group name cannot contain ":"');
+							return;
+						}
+						const [error] = await createGroup({ name, description });
+						if(error){
+							Toast.error(error.msg || 'Failed to create group');
+							return;
+						}
+						Toast.success('Group created');
+						loadCustom();
+					},
+					cancelText: 'Cancel'
+				});
+			});
+		}
+	</script>
 
 </content>
 </page>

@@ -52,7 +52,7 @@ groupPermission:
 |---|---|
 | `createPermission({ resource, action, description, owner })` | Create a permission |
 | `deletePermission(name)` | Delete (blocked for system) |
-| `getAllPermissions({ limit, offset, owner })` | List permissions |
+| `getAllPermissions({ q, limit, offset, owner })` | List permissions, filtered by name or description when `q` is set |
 | `updatePermission(name, updates)` | Update description |
 | `currentUserHasPermission(token, name)` | Check via session token |
 | `currentUserHasAllPermissions(token, names)` | Check all via token |

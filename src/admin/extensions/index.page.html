@@ -4,6 +4,9 @@
 <page title="Extensions - Admin">
 <content>
 <script type="module" src="/kempo-ui/components/Table.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcSearch.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcFilters.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcFieldSortHide.js"></script>
 <script type="module" src="/kempo-ui/components/Tabs.js"></script>
 <script type="module" src="/kempo-ui/components/Icon.js"></script>
 <script type="module" src="/kempo-ui/components/Rating.js"></script>
@@ -29,6 +32,7 @@
 
 		<k-tab-content name="installed">
 			<k-table open-on-click id="installedTable" enable-pages page-size="25" placeholder="No extensions are currently installed.">
+				<div slot="top" class="d-f full" style="align-items: center;"><kc-tc-search style="width: 16rem"></kc-tc-search><kc-tc-filters></kc-tc-filters><kc-tc-field-sort-hide></kc-tc-field-sort-hide></div>
 				<kc-tc-open slot="after" title="View in Store"><k-icon name="storefront"></k-icon></kc-tc-open>
 				<admin-toggle-extension slot="after"></admin-toggle-extension>
 				<admin-uninstall-extension slot="after"></admin-uninstall-extension>
@@ -50,6 +54,7 @@
 		<k-tab-content name="downloaded">
 			<p class="tc-muted">Extension packages already in this site. To find and download more, <a href="#browse">browse the marketplace</a>.</p>
 			<k-table open-on-click id="availableTable" enable-pages page-size="25" placeholder="Every downloaded extension is installed.">
+				<div slot="top" class="d-f full" style="align-items: center;"><kc-tc-search style="width: 16rem"></kc-tc-search><kc-tc-filters></kc-tc-filters><kc-tc-field-sort-hide></kc-tc-field-sort-hide></div>
 				<admin-install-extension slot="after"></admin-install-extension>
 				<kc-tc-open slot="after" title="View in Store"><k-icon name="storefront"></k-icon></kc-tc-open>
 				<div class="d-f full" style="align-items: center;">
@@ -89,6 +94,8 @@
 			<p id="empty" class="tc-muted" hidden>No extensions match that search.</p>
 			<k-pagination id="pagination" controls="simple" items-per-page="12" total-items="0" page="1"></k-pagination>
 		</k-tab-content>
+
+		<location name="admin-extensions-tabs" />
 	</k-tabs>
 
 </content>
@@ -110,20 +117,6 @@
 				{ name: 'version', label: 'Version' },
 				{ name: 'description', label: 'Description' },
 				{ name: 'enabled', label: 'Enabled' },
-			]
-		});
-	}
-
-	const [availableErr, availableData] = await listAvailableExtensions();
-	if(!availableErr){
-		const installedNames = new Set((installedData?.items || []).map(e => e.name));
-		const notInstalled = availableData.items.filter(e => !installedNames.has(e.name));
-		availableTable.setData({
-			records: notInstalled.map(withDetailsUrl),
-			fields: [
-				{ name: 'name', label: 'Name', size: 300 },
-				{ name: 'version', label: 'Version' },
-				{ name: 'description', label: 'Description' },
 			]
 		});
 	}
@@ -159,6 +152,16 @@
 
 	availableTable.addEventListener('recordDeleted', refreshInstalledTable);
 	installedTable.addEventListener('recordDeleted', refreshAvailableTable);
+
+	/*
+		Downloaded loads the first time its tab is opened, like Browse, so the package folder is not read until someone looks.
+	*/
+	const downloadedPane = document.querySelector('k-tab-content[name="downloaded"]');
+	await customElements.whenDefined('k-tabs');
+	if(downloadedPane.active) refreshAvailableTable();
+	else document.querySelector('k-tabs').addEventListener('tabfirstshown', ({ detail }) => {
+		if(detail.tab === 'downloaded') refreshAvailableTable();
+	});
 
 	/*
 		Browse loads the first time its tab is opened, so the marketplace is not asked for until someone looks.

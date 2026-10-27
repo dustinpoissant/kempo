@@ -70,10 +70,9 @@
 <k-table
 	id="usersTable"
 	enable-pages
-	page-size="10"
+	page-size="25"
 	page-size-options="[10,25,50]"
 	placeholder="No users found."
-	filtered-placeholder="No users match your search."
 		open-on-click
 >
 	<kc-tc-open slot="before"></kc-tc-open>
@@ -86,6 +85,10 @@
 			<k-permission has="system:user:delete">
 				<kc-tc-delete-selected></kc-tc-delete-selected>
 			</k-permission>
+		</div>
+		<div class="flex"></div>
+		<div>
+			<input type="search" id="search" placeholder="Search users" aria-label="Search users">
 		</div>
 	</div>
 	<div
@@ -135,10 +138,22 @@
 		$table.appendChild(del);
 	}
 
+	const $search = document.getElementById('search');
+	let query = '';
+	let searchTimer;
+
+	const fetchUsers = async (start, count) => {
+		const [err, d] = await getUsers({ q: query, limit: count, offset: start });
+		if (err) return [];
+		return d.users.map(withUrl);
+	};
+
 	const loadUsers = async () => {
-		const [error, data] = await getUsers({ limit: 10, offset: 0 });
+		const [error, data] = await getUsers({ q: query, limit: $table.getPageSize(), offset: 0 });
 		if (error) return;
+		$table.placeholder = query ? 'No users match your search.' : 'No users found.';
 		$table.setData({
+			currentPage: 1,
 			records: data.users.map(withUrl),
 			fields: [
 				{ name: 'name', label: 'Name', editable: true },
@@ -165,12 +180,16 @@
 				}
 			]
 		});
-		$table.setupFetchRecords(data.total, async (start, count) => {
-			const [err, d] = await getUsers({ limit: count, offset: start });
-			if (err) return [];
-			return d.users.map(withUrl);
-		});
+		$table.setupFetchRecords(data.total, fetchUsers);
 	};
+
+	$search.addEventListener('input', () => {
+		clearTimeout(searchTimer);
+		searchTimer = setTimeout(() => {
+			query = $search.value.trim();
+			loadUsers();
+		}, 300);
+	});
 
 	await loadUsers();
 

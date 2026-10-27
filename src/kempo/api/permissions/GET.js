@@ -16,7 +16,8 @@ export default async (request, response) => {
 	const limit = parseInt(request.query.limit) || 50;
 	const offset = parseInt(request.query.offset) || 0;
 	const owner = request.query.owner;
-	const [error, data] = await getAllPermissions({ limit, offset, owner });
+	const q = request.query.q || '';
+	const [error, data] = await getAllPermissions({ q, limit, offset, owner });
 
 	if(error){
 		return response.status(error.code).json({ error: error.msg });

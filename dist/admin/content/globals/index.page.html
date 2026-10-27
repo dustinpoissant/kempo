@@ -4,6 +4,7 @@
 <page title="Global Content - Admin">
 	<content>
 		<script type="module" src="/kempo-ui/components/Table.js"></script>
+		<script type="module" src="/kempo-ui/components/Tabs.js"></script>
 		<script type="module" src="/kempo-ui/components/controls/TcFirstPage.js"></script>
 		<script type="module" src="/kempo-ui/components/controls/TcPrevPage.js"></script>
 		<script type="module" src="/kempo-ui/components/controls/TcNextPage.js"></script>
@@ -19,68 +20,95 @@
 
 		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
 			<h1 class="flex mb0">Global Content</h1>
-			<k-permission has="system:globals:create">
-				<button id="createGlobalBtn" class="primary">Create Global Content</button>
-			</k-permission>
 		</div>
 
-		<h2>Custom</h2>
-		<k-table open-on-click id="customTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No custom global content has been created yet.">
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div slot="top" class="d-f full" style="align-items: center;">
-				<div>
-					<k-permission has="system:globals:delete">
-						<kc-tc-delete-selected></kc-tc-delete-selected>
-					</k-permission>
-				</div>
-			</div>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+		<k-tabs active="custom" hash-routing>
+			<k-tab for="custom">Custom</k-tab>
+			<k-tab for="extension">Extensions</k-tab>
+			<k-tab for="system">System</k-tab>
 
-		<h2>Extensions</h2>
-		<k-table open-on-click id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension global content installed.">
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+			<k-tab-content name="custom">
+				<k-table open-on-click id="customTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No custom global content has been created yet.">
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div slot="top" class="d-f full" style="align-items: center; gap: var(--spacer);">
+						<div>
+							<k-permission has="system:globals:delete">
+								<kc-tc-delete-selected></kc-tc-delete-selected>
+							</k-permission>
+						</div>
+						<div class="flex"></div>
+						<div>
+							<input type="search" class="global-search" placeholder="Search custom global content" aria-label="Search custom global content">
+						</div>
+						<k-permission has="system:globals:create">
+							<button id="createGlobalBtn" class="primary mr"><k-icon name="add"></k-icon> Create Global Content</button>
+						</k-permission>
+					</div>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
 
-		<h2>System</h2>
-		<k-table open-on-click id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system global content found.">
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+			<k-tab-content name="extension">
+				<k-table open-on-click id="extensionTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No extension global content installed.">
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div slot="top" class="d-f full" style="align-items: center;">
+						<div class="flex"></div>
+						<div>
+							<input type="search" class="global-search" placeholder="Search extension global content" aria-label="Search extension global content">
+						</div>
+					</div>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
+
+			<k-tab-content name="system">
+				<k-table open-on-click id="systemTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="No system global content found.">
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div slot="top" class="d-f full" style="align-items: center;">
+						<div class="flex"></div>
+						<div>
+							<input type="search" class="global-search" placeholder="Search system global content" aria-label="Search system global content">
+						</div>
+					</div>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
+
+			<location name="admin-globals-tabs" />
+		</k-tabs>
 
 		<script type="module">
 			import { listGlobalContent, listTemplates, listFragments, createGlobalContent, deleteGlobalContent, getAllCurrentUserPermissions } from '/kempo/sdk.js';
@@ -112,6 +140,23 @@
 			const $extensionTable = document.getElementById('extensionTable');
 			const $systemTable = document.getElementById('systemTable');
 
+			const tables = [
+				{ key: 'custom', $table: $customTable, emptyText: 'No custom global content has been created yet.', fields },
+				{ key: 'extension', $table: $extensionTable, emptyText: 'No extension global content installed.', fields: extensionFields },
+				{ key: 'system', $table: $systemTable, emptyText: 'No system global content found.', fields }
+			];
+
+			let lists = { custom: [], extension: [], system: [] };
+
+			const renderTables = () => {
+				for(const { key, $table, emptyText, fields: tableFields } of tables){
+					const q = $table.querySelector('.global-search').value.trim().toLowerCase();
+					const records = lists[key].filter(e => !q || [e.name, e.location, e.author].some(v => v?.toLowerCase().includes(q)));
+					$table.placeholder = q ? 'No global content matches your search.' : emptyText;
+					$table.setData({ records, fields: tableFields });
+				}
+			};
+
 			const loadEntries = async () => {
 				const [error, data] = await listGlobalContent();
 				if(error){
@@ -119,13 +164,21 @@
 					return;
 				}
 				const withEditUrl = e => ({ ...e, _url: `/admin/content/globals/edit?id=${encodeURIComponent(e.id)}` });
-				const custom = data.entries.filter(e => e.owner === 'custom').map(withEditUrl);
-				const extension = data.entries.filter(e => e.owner !== 'custom' && e.owner !== 'system').map(withEditUrl);
-				const system = data.entries.filter(e => e.owner === 'system').map(withEditUrl);
-				$customTable.setData({ records: custom, fields });
-				$extensionTable.setData({ records: extension, fields: extensionFields });
-				$systemTable.setData({ records: system, fields });
+				lists = {
+					custom: data.entries.filter(e => e.owner === 'custom').map(withEditUrl),
+					extension: data.entries.filter(e => e.owner !== 'custom' && e.owner !== 'system').map(withEditUrl),
+					system: data.entries.filter(e => e.owner === 'system').map(withEditUrl)
+				};
+				renderTables();
 			};
+
+			for(const { $table } of tables){
+				let searchTimer;
+				$table.querySelector('.global-search').addEventListener('input', () => {
+					clearTimeout(searchTimer);
+					searchTimer = setTimeout(renderTables, 300);
+				});
+			}
 
 			if(myPerms.has('system:globals:delete')){
 				$customTable.setAttribute('request-delete', '');

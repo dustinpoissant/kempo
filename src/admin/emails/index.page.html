@@ -10,7 +10,7 @@
 		<h1>Emails</h1>
 		<p class="tc-muted mb">Kempo does not send email itself: an email extension (such as kempo-resend or kempo-smtp) does. How long the log is kept, and how many times a failed email is tried again, are on the System tab of <a href="/admin/settings">Settings</a>.</p>
 
-		<k-tabs persistent-id="admin-emails" hash-routing>
+		<k-tabs hash-routing>
 			<k-tab for="log">Log</k-tab>
 			<k-tab for="templates">Templates</k-tab>
 			<k-tab-content name="log">
@@ -21,6 +21,8 @@
 				<p class="tc-muted mb">The emails this site sends: kempo's own and any the site has added. Preview draws one the way it would be sent, with made-up values when the template has a <code>.sample.json</code> beside it. Edit one to reword it; your copy is used from the next email on and Reset to default brings the packaged one back.</p>
 				<k-email-templates></k-email-templates>
 			</k-tab-content>
+
+			<location name="admin-emails-tabs" />
 		</k-tabs>
 
 </content>

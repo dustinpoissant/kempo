@@ -70,7 +70,7 @@ Global content entries are `.global.html` files that are injected into template 
 
 ## Menus
 
-**Admin → Content → Menus** lists every place in your theme that can show a menu, each with its links. To add a link to the main menu, open the page and click **Add item** on "Main menu": pick a page from the list (the site's own, and the pages extensions serve under their addresses, such as `/products/` or `/categories/`) or type any address, optionally add an icon or open it in a new tab. Drag links into order, hide one without deleting it, edit or delete it.
+**Admin → Content → Menus** lists the places in your theme that can show a menu, with a dropdown for each to pick the menu it shows, or **None**. Below it is a table of the menus on your site, with the places each one is shown in and how many links it has. **Create Menu** makes an empty menu and opens it. Open a menu to edit its links, and tick the places that should show it. To add a link to the main menu, open it and click **Add item**: pick a page from the list (the site's own, and the pages extensions serve under their addresses, such as `/products/` or `/categories/`) or type any address, optionally add an icon or open it in a new tab. Drag links into order, hide one without deleting it, edit or delete it.
 
 A place is a `<location>` with `menu="true"`:
 
@@ -78,7 +78,7 @@ A place is a `<location>` with `menu="true"`:
 <location name="main-nav-links" label="Main menu" menu="true" />
 ```
 
-`name` is how the theme refers to it and `label` is what the Menus page calls it. The page looks for these in your templates, fragments and pages, so to get another menu, such as a footer or a mobile menu, put one where you want the links, **wrapped in your own element** (the links are bare `<a>` tags, so your element sets the layout and spacing), and reload the page:
+`name` is how the theme refers to it and `label` is what the Menus page calls it. Each place is one row in the table until a link is added, and the page finds them in your templates, fragments and pages. So to get another menu, such as a footer or a mobile menu, put one where you want the links, **wrapped in your own element** (the links are bare `<a>` tags, so your element sets the layout and spacing), and reload the page. The default theme has a footer that does this (`footer.fragment.html`, rendered by the template after the main content):
 
 ```html
 <footer class="d-f px py" style="gap: var(--spacer);">
@@ -89,7 +89,7 @@ A place is a `<location>` with `menu="true"`:
 New sites have the main menu in the navigation fragment. On an older site, add the `<location … menu="true" />` to your navigation and it appears.
 
 - **No setup.** The first link added to a place makes the menu behind it, named after the place. You never have to create one.
-- **Same links in two places.** A place with other places' menus available shows a dropdown, "Show the links of another place here". Pick the main menu in the mobile place and both show the same links; editing either changes both. "This place's own links" separates them again.
+- **Same links in two places.** In a menu's **Locations** section, tick the same menu for two locations and both show the same links; editing either changes both. Unticking a location, or choosing **None**, takes the menu away from it.
 - **Spacer.** In **Add item**, choose **Spacer** (under *Built in*) to add a flexible gap. In a menu laid out in a row, like a navigation bar, it pushes the items after it to the far side, so the account link can sit on the right with your links on the left. It is kempo's own, so it is always offered, and it renders as `<div class="flex"></div>`, which needs the menu's parent to be a flex row (`d-f`). It does nothing in a menu stacked vertically.
 - **Items from extensions.** In **Add item**, the first choice is *A link*, *Spacer*, or an item an installed extension offers (a cart button, say). Choosing one adds it with nothing else to fill in. It is placed, ordered, hidden and deleted like a link, and its markup comes from the extension: it cannot be edited here, it disappears from the site if the extension is disabled or removed (and is marked on this page), and returns if the extension does. Extension authors offer one with a `*.menu-item.html` file; see [Creating Extensions](extensions/creating-extensions.md#menu-items-menu-itemhtml).
 - **Extensions' links.** What an extension adds to a place from its own `public/*.global.html` (a shop link, say) still appears there next to your links. The page lists it under the place, read-only, because it belongs to the extension.

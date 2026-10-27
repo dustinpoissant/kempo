@@ -13,9 +13,10 @@ export default async (request, response) => {
     return response.status(403).json({ error: 'You do not have permission to view users' });
   }
 
+  const q = request.query.q || '';
   const limit = parseInt(request.query.limit) || 50;
   const offset = parseInt(request.query.offset) || 0;
-  const [error, data] = await getUsers({ limit, offset });
+  const [error, data] = await getUsers({ q, limit, offset });
 
   if(error){
     return response.status(error.code).json({ error: error.msg });

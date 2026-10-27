@@ -4,6 +4,7 @@
 <page title="Templates - Admin">
 	<content>
 		<script type="module" src="/kempo-ui/components/Table.js"></script>
+		<script type="module" src="/kempo-ui/components/Tabs.js"></script>
 		<script type="module" src="/kempo-ui/components/controls/TcFirstPage.js"></script>
 		<script type="module" src="/kempo-ui/components/controls/TcPrevPage.js"></script>
 		<script type="module" src="/kempo-ui/components/controls/TcNextPage.js"></script>
@@ -18,86 +19,113 @@
 
 		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
 			<h1 class="flex mb0">Templates</h1>
-			<k-permission has="system:pages:create">
-				<button id="createTemplateBtn" class="primary">Create Template</button>
-			</k-permission>
 		</div>
 
-		<h2>Custom Templates</h2>
-		<k-table open-on-click
-			id="customTable"
-			enable-pages
-			page-size="25"
-			page-size-options="[10,25,50,100]"
-			placeholder="No custom templates have been created yet."
-		>
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div slot="top" class="d-f full" style="align-items: center;">
-				<div>
-					<k-permission has="system:pages:delete">
-						<kc-tc-delete-selected></kc-tc-delete-selected>
-					</k-permission>
-				</div>
-			</div>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+		<k-tabs active="custom" hash-routing>
+			<k-tab for="custom">Custom</k-tab>
+			<k-tab for="extension">Extensions</k-tab>
+			<k-tab for="system">System</k-tab>
 
-		<h2>Extension Templates</h2>
-		<k-table open-on-click
-			id="extensionTable"
-			enable-pages
-			page-size="25"
-			page-size-options="[10,25,50,100]"
-			placeholder="No extension templates installed."
-		>
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+			<k-tab-content name="custom">
+				<k-table open-on-click
+					id="customTable"
+					enable-pages
+					page-size="25"
+					page-size-options="[10,25,50,100]"
+					placeholder="No custom templates have been created yet."
+				>
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div slot="top" class="d-f full" style="align-items: center; gap: var(--spacer);">
+						<div>
+							<k-permission has="system:pages:delete">
+								<kc-tc-delete-selected></kc-tc-delete-selected>
+							</k-permission>
+						</div>
+						<div class="flex"></div>
+						<div>
+							<input type="search" class="template-search" placeholder="Search custom templates" aria-label="Search custom templates">
+						</div>
+						<k-permission has="system:pages:create">
+							<button id="createTemplateBtn" class="primary mr"><k-icon name="add"></k-icon> Create Template</button>
+						</k-permission>
+					</div>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
 
-		<h2>System Templates</h2>
-		<k-table open-on-click
-			id="systemTable"
-			enable-pages
-			page-size="25"
-			page-size-options="[10,25,50,100]"
-			placeholder="No system templates found."
-		>
-			<kc-tc-open slot="before"></kc-tc-open>
-			<div class="d-f full" style="align-items: center;">
-				<div>
-					<kc-tc-first-page></kc-tc-first-page>
-					<kc-tc-prev-page></kc-tc-prev-page>
-					<kc-tc-next-page></kc-tc-next-page>
-					<kc-tc-last-page></kc-tc-last-page>
-				</div>
-				<div class="flex"></div>
-				<div><kc-tc-page-select></kc-tc-page-select></div>
-				<div class="flex"></div>
-				<div><kc-tc-page-size></kc-tc-page-size></div>
-			</div>
-		</k-table>
+			<k-tab-content name="extension">
+				<k-table open-on-click
+					id="extensionTable"
+					enable-pages
+					page-size="25"
+					page-size-options="[10,25,50,100]"
+					placeholder="No extension templates installed."
+				>
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div slot="top" class="d-f full" style="align-items: center;">
+						<div class="flex"></div>
+						<div>
+							<input type="search" class="template-search" placeholder="Search extension templates" aria-label="Search extension templates">
+						</div>
+					</div>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
+
+			<k-tab-content name="system">
+				<k-table open-on-click
+					id="systemTable"
+					enable-pages
+					page-size="25"
+					page-size-options="[10,25,50,100]"
+					placeholder="No system templates found."
+				>
+					<kc-tc-open slot="before"></kc-tc-open>
+					<div slot="top" class="d-f full" style="align-items: center;">
+						<div class="flex"></div>
+						<div>
+							<input type="search" class="template-search" placeholder="Search system templates" aria-label="Search system templates">
+						</div>
+					</div>
+					<div class="d-f full" style="align-items: center;">
+						<div>
+							<kc-tc-first-page></kc-tc-first-page>
+							<kc-tc-prev-page></kc-tc-prev-page>
+							<kc-tc-next-page></kc-tc-next-page>
+							<kc-tc-last-page></kc-tc-last-page>
+						</div>
+						<div class="flex"></div>
+						<div><kc-tc-page-select></kc-tc-page-select></div>
+						<div class="flex"></div>
+						<div><kc-tc-page-size></kc-tc-page-size></div>
+					</div>
+				</k-table>
+			</k-tab-content>
+
+			<location name="admin-templates-tabs" />
+		</k-tabs>
 
 		<script type="module">
 			import { listTemplates, listDirectories, createTemplate, deleteTemplates, getAllCurrentUserPermissions } from '/kempo/sdk.js';
@@ -128,6 +156,23 @@
 			const $extensionTable = document.getElementById('extensionTable');
 			const $systemTable = document.getElementById('systemTable');
 
+			const tables = [
+				{ key: 'custom', $table: $customTable, emptyText: 'No custom templates have been created yet.', fields },
+				{ key: 'extension', $table: $extensionTable, emptyText: 'No extension templates installed.', fields: extensionFields },
+				{ key: 'system', $table: $systemTable, emptyText: 'No system templates found.', fields }
+			];
+
+			let lists = { custom: [], extension: [], system: [] };
+
+			const renderTables = () => {
+				for(const { key, $table, emptyText, fields: tableFields } of tables){
+					const q = $table.querySelector('.template-search').value.trim().toLowerCase();
+					const records = lists[key].filter(t => !q || [t.name, t.directory, t.author].some(v => v?.toLowerCase().includes(q)));
+					$table.placeholder = q ? 'No templates match your search.' : emptyText;
+					$table.setData({ records, fields: tableFields });
+				}
+			};
+
 			const loadTemplates = async () => {
 				const [error, data] = await listTemplates();
 				if(error){
@@ -139,13 +184,21 @@
 					directory: t.directory === '.' ? '/' : t.directory,
 					_url: `/admin/content/templates/edit?template=${encodeURIComponent(t.directory === '.' ? t.name : `${t.directory}/${t.name}`)}`
 				});
-				const custom = data.templates.filter(t => t.owner === 'custom').map(withEditUrl);
-				const extension = data.templates.filter(t => t.owner !== 'custom' && t.owner !== 'system').map(withEditUrl);
-				const system = data.templates.filter(t => t.owner === 'system').map(withEditUrl);
-				$customTable.setData({ records: custom, fields });
-				$extensionTable.setData({ records: extension, fields: extensionFields });
-				$systemTable.setData({ records: system, fields });
+				lists = {
+					custom: data.templates.filter(t => t.owner === 'custom').map(withEditUrl),
+					extension: data.templates.filter(t => t.owner !== 'custom' && t.owner !== 'system').map(withEditUrl),
+					system: data.templates.filter(t => t.owner === 'system').map(withEditUrl)
+				};
+				renderTables();
 			};
+
+			for(const { $table } of tables){
+				let searchTimer;
+				$table.querySelector('.template-search').addEventListener('input', () => {
+					clearTimeout(searchTimer);
+					searchTimer = setTimeout(renderTables, 300);
+				});
+			}
 
 			if(myPerms.has('system:pages:delete')){
 				$customTable.setAttribute('request-delete', '');

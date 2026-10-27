@@ -47,8 +47,8 @@ export const userHasSomePermissions = async ({ userid, permissions }) =>
 export const getAllUserPermissions = async ({ userid }) =>
   get(`${API_BASE}/user/${userid}/permissions/list`);
 
-export const getUsers = async ({ limit, offset } = {}) =>
-  get(`${API_BASE}/user`, { limit, offset });
+export const getUsers = async ({ q, limit, offset } = {}) =>
+  get(`${API_BASE}/user`, { q, limit, offset });
 
 export const searchUsers = async ({ q, limit, offset, inGroup, notInGroup } = {}) =>
   get(`${API_BASE}/user/search`, { q, limit, offset, inGroup, notInGroup });
@@ -83,8 +83,8 @@ export const addUserToGroup = async (userid, groupName) =>
 export const removeUserFromGroup = async (userid, groupName) =>
   del(`${API_BASE}/user/${userid}/groups`, { groupName });
 
-export const listGroups = async ({ limit, offset, owner } = {}) =>
-  get(`${API_BASE}/groups`, { limit, offset, owner });
+export const listGroups = async ({ q, limit, offset, owner } = {}) =>
+  get(`${API_BASE}/groups`, { q, limit, offset, owner });
 
 export const createGroup = async ({ name, description }) =>
   post(`${API_BASE}/groups`, { name, description });
@@ -116,8 +116,8 @@ export const addPermissionToGroup = async (name, permissionName) =>
 export const removePermissionFromGroup = async (name, permissionName) =>
   del(`${API_BASE}/groups/${encodeURIComponent(name)}/permissions`, { permissionName });
 
-export const listPermissions = async ({ limit, offset, owner } = {}) =>
-  get(`${API_BASE}/permissions`, { limit, offset, owner });
+export const listPermissions = async ({ q, limit, offset, owner } = {}) =>
+  get(`${API_BASE}/permissions`, { q, limit, offset, owner });
 
 export const createPermissions = async (permissions) =>
   post(`${API_BASE}/permissions`, { permissions });
@@ -180,8 +180,8 @@ export const discardUpdate = async () =>
   Pages
 */
 
-export const listPages = async ({ owner, showHidden, offset, limit } = {}) =>
-  get(`${API_BASE}/pages`, { owner, showHidden, offset, limit });
+export const listPages = async ({ q, owner, showHidden, offset, limit } = {}) =>
+  get(`${API_BASE}/pages`, { q, owner, showHidden, offset, limit });
 
 export const rescanPages = async () =>
   post(`${API_BASE}/pages/rescan`, {});

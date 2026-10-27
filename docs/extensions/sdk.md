@@ -200,14 +200,14 @@ import { getUserByEmail } from 'kempo/server/sdk.js';
 const [error, user] = await getUserByEmail('user@example.com');
 ```
 
-### `getUsers()`
+### `getUsers({ q, limit, offset })`
 
-List all users.
+List users, newest first. `q` matches part of the name or email, case-insensitively.
 
 ```javascript
 import { getUsers } from 'kempo/server/sdk.js';
 
-const [error, users] = await getUsers();
+const [error, users] = await getUsers({ q: 'alex', limit: 25, offset: 0 });
 ```
 
 ### `findUsersByEmail(email)`
@@ -476,14 +476,14 @@ const [error, permission] = await updatePermission('blog:posts:create', {
 });
 ```
 
-### `getAllPermissions()`
+### `getAllPermissions({ q, limit, offset, owner })`
 
-List all permissions in the system.
+List permissions. `q` matches part of the name or description, case-insensitively.
 
 ```javascript
 import { getAllPermissions } from 'kempo/server/sdk.js';
 
-const [error, permissions] = await getAllPermissions();
+const [error, permissions] = await getAllPermissions({ q: 'posts', limit: 25, offset: 0 });
 ```
 
 ### `getUserPermission(userId, permissionName)`
@@ -543,14 +543,14 @@ import { getGroup } from 'kempo/server/sdk.js';
 const [error, group] = await getGroup('group_id');
 ```
 
-### `listGroups()`
+### `listGroups({ q, limit, offset, owner })`
 
-List all groups.
+List groups. `q` matches part of the name or description, case-insensitively.
 
 ```javascript
 import { listGroups } from 'kempo/server/sdk.js';
 
-const [error, groups] = await listGroups();
+const [error, groups] = await listGroups({ q: 'editor', limit: 25, offset: 0 });
 ```
 
 ### `updateGroup(id, { name, description })`
@@ -700,7 +700,7 @@ A page can be marked as `locked: true` to prevent editing outside of extension a
 
 ### `listPages({ rootDir, owner })`
 
-List all pages in a directory, optionally filtered by owner.
+List all pages in a directory, optionally filtered by owner. `q` matches part of the name, title, URL, description or author, case-insensitively.
 
 ```javascript
 import { listPages } from 'kempo/server/sdk.js';

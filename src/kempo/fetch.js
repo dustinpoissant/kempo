@@ -1,5 +1,27 @@
 const pendingRequests = new Map();
 
+const CACHE_MS = 5000;
+const cache = new Map();
+
+/* A write may change any list it touches, so every cached read is dropped before and after it. */
+const mutate = async (url, options) => {
+  cache.clear();
+  try {
+    return await dedupFetch(url, options);
+  } finally {
+    cache.clear();
+  }
+};
+
+/* A read that succeeded is kept for a few seconds, and each caller gets its own copy so a table can change what it is given. */
+const cachedGet = async url => {
+  const hit = cache.get(url);
+  if(hit && Date.now() - hit.at < CACHE_MS) return structuredClone(hit.result);
+  const result = await dedupFetch(url, { method: 'GET' });
+  if(!result[0]) cache.set(url, { at: Date.now(), result: structuredClone(result) });
+  return result;
+};
+
 const createRequestKey = (url, options = {}) => {
   const method = options.method || 'GET';
   const body = options.body || '';
@@ -78,31 +100,31 @@ export const get = (url, params) => {
           return `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
         })
         .join('&');
-      return dedupFetch(`${url}?${queryString}`, { method: 'GET' });
+      return cachedGet(`${url}?${queryString}`);
     }
   }
-  return dedupFetch(url, { method: 'GET' });
+  return cachedGet(url);
 };
 
-export const post = (url, data) => dedupFetch(url, {
+export const post = (url, data) => mutate(url, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(data)
 });
 
-export const put = (url, data) => dedupFetch(url, {
+export const put = (url, data) => mutate(url, {
   method: 'PUT',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(data)
 });
 
-export const patch = (url, data) => dedupFetch(url, {
+export const patch = (url, data) => mutate(url, {
   method: 'PATCH',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(data)
 });
 
-export const del = (url, data) => dedupFetch(url, {
+export const del = (url, data) => mutate(url, {
   method: 'DELETE',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(data)

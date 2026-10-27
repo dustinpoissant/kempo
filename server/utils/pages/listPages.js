@@ -50,7 +50,7 @@ const scan = async (rootDir) => {
   return scannedAt;
 };
 
-export default async ({ rootDir, owner, forceRescan = false, showHidden = true, offset = 0, limit = 0 }) => {
+export default async ({ rootDir, q = '', owner, forceRescan = false, showHidden = true, offset = 0, limit = 0 }) => {
   if(!rootDir){
     return [{ code: 400, msg: 'Root directory is required' }, null];
   }
@@ -59,16 +59,21 @@ export default async ({ rootDir, owner, forceRescan = false, showHidden = true, 
   const cached = cache.get(rootDir);
 
   if(!forceRescan && cached && (Date.now() - cached.scannedAt < cacheTtl)){
-    return [null, buildResult(cached.pages, cached.scannedAt, { owner, showHidden, offset, limit })];
+    return [null, buildResult(cached.pages, cached.scannedAt, { q, owner, showHidden, offset, limit })];
   }
 
   const scannedAt = await scan(rootDir);
   const { pages } = cache.get(rootDir);
-  return [null, buildResult(pages, scannedAt, { owner, showHidden, offset, limit })];
+  return [null, buildResult(pages, scannedAt, { q, owner, showHidden, offset, limit })];
 };
 
-const buildResult = (allPages, scannedAt, { owner, showHidden, offset, limit }) => {
+const buildResult = (allPages, scannedAt, { q, owner, showHidden, offset, limit }) => {
   let filtered = showHidden ? allPages : allPages.filter(p => !p.hidden);
+
+  if(q){
+    const term = q.toLowerCase();
+    filtered = filtered.filter(p => [p.name, p.title, p.url, p.description, p.author].some(v => v.toLowerCase().includes(term)));
+  }
 
   if(owner === 'extension'){
     filtered = filtered.filter(p => p.owner !== 'custom' && p.owner !== 'system');

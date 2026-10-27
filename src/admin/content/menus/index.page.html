@@ -3,9 +3,116 @@
 -->
 <page title="Menus - Admin">
 	<content>
-		<admin-menus></admin-menus>
+		<script type="module" src="/kempo-ui/components/Table.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcSearch.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcFilters.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcFieldSortHide.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcFirstPage.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcPrevPage.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcNextPage.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcLastPage.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcPageSelect.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcPageSize.js"></script>
+		<script type="module" src="/kempo-ui/components/controls/TcOpen.js"></script>
+		<script type="module" src="/kempo-ui/components/Icon.js"></script>
+		<script type="module" src="/kempo/components/Permission.js"></script>
+
+		<h1 class="mb">Menus</h1>
+
+		<admin-menu-places></admin-menu-places>
+
+		<div class="d-f mb" style="align-items: center; gap: var(--spacer);">
+			<h2 class="flex mb0">Menus</h2>
+			<k-permission has="system:globals:create">
+				<button id="createMenuBtn" class="primary"><k-icon name="add"></k-icon> Create Menu</button>
+			</k-permission>
+		</div>
+		<k-table open-on-click id="menuTable" enable-pages page-size="25" page-size-options="[10,25,50,100]" placeholder="Your theme has no places for a menu yet.">
+				<div slot="top" class="d-f full" style="align-items: center;"><kc-tc-search style="width: 16rem"></kc-tc-search><kc-tc-filters></kc-tc-filters><kc-tc-field-sort-hide></kc-tc-field-sort-hide></div>
+			<kc-tc-open slot="before"></kc-tc-open>
+			<div class="d-f full" style="align-items: center;">
+				<div>
+					<kc-tc-first-page></kc-tc-first-page>
+					<kc-tc-prev-page></kc-tc-prev-page>
+					<kc-tc-next-page></kc-tc-next-page>
+					<kc-tc-last-page></kc-tc-last-page>
+				</div>
+				<div class="flex"></div>
+				<div><kc-tc-page-select></kc-tc-page-select></div>
+				<div class="flex"></div>
+				<div><kc-tc-page-size></kc-tc-page-size></div>
+			</div>
+		</k-table>
+
+		<p class="tc-muted mt">Open a menu to change its links.</p>
+
+		<script type="module">
+			import { listMenus, saveMenu } from '/kempo/sdk.js';
+			import { html } from '/kempo-ui/lit-all.min.js';
+			import Dialog from '/kempo-ui/components/Dialog.js';
+			import Toast from '/kempo-ui/components/Toast.js';
+
+			await window.customElements.whenDefined('k-table');
+
+			const $table = document.getElementById('menuTable');
+			const fields = [
+				{ name: 'name', label: 'Name' },
+				{ name: 'shownIn', label: 'Shown in' },
+				{ name: 'items', label: 'Links', size: 80 }
+			];
+
+			const loadTable = async () => {
+				const [error, data] = await listMenus();
+				if(error){
+					Toast.error(error.msg || 'Failed to load menus');
+					return;
+				}
+				const menuRecords = data.menus.map(menu => ({
+					name: menu.name,
+					shownIn: data.locations.filter(l => l.menuId === menu.id).map(l => l.label).join(', ') || 'Not shown anywhere',
+					items: menu.items.length,
+					_url: `/admin/content/menus/${encodeURIComponent(menu.id)}/`
+				}));
+				const placeRecords = data.locations.filter(l => l.declared && !l.menuId).map(l => ({
+					name: l.label,
+					shownIn: 'Nothing yet',
+					items: 0,
+					_url: `/admin/content/menus/${encodeURIComponent(l.location)}/`
+				}));
+				$table.setData({ records: [...menuRecords, ...placeRecords], fields });
+			};
+
+			document.getElementById('createMenuBtn')?.addEventListener('click', () => {
+				const $dialog = Dialog.create(html`
+					<div class="p">
+						<label class="d-b mbq" for="menu-name">Name<small class="d-b tc-muted">What the menu is called here, such as Footer links.</small></label>
+						<input type="text" id="menu-name" class="full" placeholder="Footer links">
+					</div>
+				`, {
+					title: 'Create Menu',
+					confirmText: 'Create',
+					cancelText: 'Cancel',
+					confirmAction: async () => {
+						const name = $dialog.querySelector('#menu-name').value.trim();
+						if(!name){
+							Toast.error('Give the menu a name');
+							return;
+						}
+						const [error, data] = await saveMenu({ name });
+						if(error){
+							Toast.error(error.msg || 'Failed to create menu');
+							return;
+						}
+						window.location.href = `/admin/content/menus/${encodeURIComponent(data.id)}/`;
+					}
+				});
+			});
+
+			await loadTable();
+			document.querySelector('admin-menu-places').addEventListener('placesChanged', loadTable);
+		</script>
 	</content>
 	<content location="head">
-		<script type="module" src="/admin/components/Menus.js"></script>
+		<script type="module" src="/admin/components/MenuPlaces.js"></script>
 	</content>
 </page>

@@ -1,5 +1,5 @@
 import ShadowComponent from '/kempo-ui/components/ShadowComponent.js';
-import { html, nothing, live } from '/kempo-ui/lit-all.min.js';
+import { html, nothing, live, repeat } from '/kempo-ui/lit-all.min.js';
 import {
   listMenus, deleteMenu, assignMenuLocation,
   saveMenuItem, deleteMenuItems, setMenuItemEnabled, reorderMenuItems, adoptMenuItem,
@@ -12,12 +12,11 @@ import '/kempo-ui/components/Sortable.js';
 import '/kempo-ui/components/Combobox.js';
 
 /*
-  The places in the theme that show a menu (marked `menu="true"`, see Menus in the docs), each with
-  its links. Adding a link to a place is the whole job: the menu behind it is made on the first one.
-  A place can show another place's links instead, and a menu that no place shows is listed at the end.
-  Both are saved as ordinary global content, so nothing here needs the theme to know about menus.
+  One menu and the places that show it, served at /admin/content/menus/[id]/. The id is a menu's id, or a place's name for a place with no menu yet,
+  and that menu is made on the first link added. Adding a link to a place is the whole job: the menu
+  behind it is made on the first one. Both the links and the places are saved as ordinary global content.
 */
-export default class Menus extends ShadowComponent {
+export default class MenuEditor extends ShadowComponent {
   static properties = {
     loading: { state: true },
     failed: { state: true },
@@ -34,8 +33,9 @@ export default class Menus extends ShadowComponent {
     this.menus = [];
     this.locations = [];
     this.navItems = [];
-    this.can = { create: false, update: false, delete: false };
     this.pages = [];
+    this.can = { create: false, update: false, delete: false };
+    this.id = decodeURIComponent(location.pathname.split('/admin/content/menus/')[1]?.replace(/\/$/, '') ?? '');
   }
 
   /*
@@ -89,13 +89,25 @@ export default class Menus extends ShadowComponent {
     return this.pages.map(page => ({ value: page.url, label: `${page.title} (${page.url})` }));
   }
 
+  get menu(){
+    const menu = this.menus.find(m => m.id === this.id);
+    if(menu) return menu;
+    return this.place?.menuId ? this.menus.find(m => m.id === this.place.menuId) ?? null : null;
+  }
+
+  get place(){
+    return this.locations.find(l => l.location === this.id) ?? null;
+  }
+
+  /* The places this menu is shown in, or the one place when it has no menu yet. */
+  get shownHere(){
+    if(this.menu) return this.locations.filter(l => l.menuId === this.menu.id);
+    return this.place ? [this.place] : [];
+  }
+
   iconOf = item => item.navItem ? this.navItems.find(n => n.key === item.navItem)?.icon : item.icon;
 
   iconSrcOf = item => item.navItem ? this.navItems.find(n => n.key === item.navItem)?.iconSrc : '';
-
-  menuAt = place => this.menus.find(m => m.id === place.menuId);
-
-  otherPlaces = place => this.locations.filter(l => l.menuId && l.menuId === place.menuId && l !== place);
 
   /*
     Event Handlers
@@ -116,11 +128,20 @@ export default class Menus extends ShadowComponent {
   handleDeleteMenu = menu => Dialog.confirm(
     `Delete the unused "${menu.name}" menu and its ${menu.items.length} item${menu.items.length === 1 ? '' : 's'}? This cannot be undone.`,
     async confirmed => {
-      if(confirmed) await this.run(deleteMenu(menu.id), 'Menu deleted');
+      if(!confirmed) return;
+      const [error] = await deleteMenu(menu.id);
+      if(error){
+        Toast.error(error.msg || 'That did not work');
+        return;
+      }
+      window.location.href = '/admin/content/menus/';
     }
   );
 
-  handleMenuChange = (place, e) => this.run(assignMenuLocation({ location: place.location, menuId: e.target.value }));
+  handleShowHere = (menu, place, e) => this.run(
+    assignMenuLocation({ location: place.location, menuId: e.target.checked ? menu.id : '' }),
+    e.target.checked ? `${place.label} now shows ${menu.name}` : `${place.label} no longer shows ${menu.name}`
+  );
 
   handleAdopt = (place, item) => this.run(adoptMenuItem({ id: item.id, menuName: place.label }), `"${item.label}" can now be reordered and edited here`);
 
@@ -201,7 +222,7 @@ export default class Menus extends ShadowComponent {
 
   renderLink(place, item){
     const body = html`
-      <div class="d-f" style="align-items: center; gap: var(--spacer_h);">
+      <div class="d-f full" style="align-items: center; gap: var(--spacer_h);">
         <div class="flex">
           <strong class=${item.disabled || !item.available ? 'tc-muted' : ''}>${this.iconSrcOf(item) ? html`<k-icon src=${this.iconSrcOf(item)}></k-icon> ` : this.iconOf(item) ? html`<k-icon name=${this.iconOf(item)}></k-icon> ` : nothing}${item.label}</strong>
           <span class="tc-muted"> ${item.navItem ? (item.navItem.startsWith('kempo:') ? 'built in' : `from ${item.navItem.split(':')[0]}`) : item.href}</span>
@@ -211,7 +232,7 @@ export default class Menus extends ShadowComponent {
         </div>
         ${this.can.update ? html`
           <div>
-            ${item.editable ? html`<button class="btn" title="Edit" @click=${() => this.openLinkEditor(place, item)}><k-icon name="edit"></k-icon></button>` : nothing}
+            ${item.editable && place ? html`<button class="btn" title="Edit" @click=${() => this.openLinkEditor(place, item)}><k-icon name="edit"></k-icon></button>` : nothing}
             <button class="btn" title=${item.disabled ? 'Show on the site' : 'Hide from the site'} @click=${() => this.handleToggle(item)}><k-icon name=${item.disabled ? 'show' : 'hide'}></k-icon></button>
             ${this.can.delete ? html`<button class="btn danger" title="Delete" @click=${() => this.handleDeleteItem(item)}><k-icon name="delete"></k-icon></button>` : nothing}
           </div>
@@ -223,56 +244,31 @@ export default class Menus extends ShadowComponent {
       : html`<div class="b p mbq">${body}</div>`;
   }
 
-  renderPlace(place){
-    const menu = this.menuAt(place);
-    const shared = this.otherPlaces(place);
+  renderPlaces(menu){
+    const places = this.locations.filter(l => l.declared);
     return html`
-      <div class="mb">
-        <div class="d-f mb" style="align-items: center; gap: var(--spacer_h);">
-          <div class="flex">
-            <h2 class="mb0">${place.label}</h2>
-            ${place.declared ? nothing : html`<span class="tc-danger">The theme no longer has this place (<strong>${place.location}</strong>), so nothing shows there.</span>`}
-            ${shared.length ? html`<span class="tc-muted">Shows the same links as ${shared.map(l => l.label).join(', ')}.</span>` : nothing}
-          </div>
-          ${this.can.create && place.declared ? html`<button class="primary" @click=${() => this.openLinkEditor(place)}><k-icon name="add"></k-icon> Add item</button>` : nothing}
-        </div>
-        ${menu?.items.length ? html`
-          <k-sortable data-menu=${menu.id} @sort=${this.handleSort}>
-            ${menu.items.map(item => this.renderLink(place, item))}
-          </k-sortable>
-        ` : nothing}
-        ${place.extensionItems.map(item => html`
-          <div class="b p mbq"><strong>${item.label}</strong> <span class="tc-muted">${item.href} · added by ${item.owner}</span></div>
-        `)}
-        ${place.candidates.map(item => html`
-          <div class="b p mbq d-f" style="align-items: center; gap: var(--spacer_h);">
-            <div class="flex"><strong>${item.label}</strong> <span class="tc-muted">${item.href} · added as global content</span></div>
-            ${this.can.update ? html`<button class="btn" @click=${() => this.handleAdopt(place, item)}>Manage here</button>` : nothing}
-          </div>
-        `)}
-        ${!menu?.items.length && !place.extensionItems.length && !place.candidates.length ? html`<p class="tc-muted">Nothing here yet.</p>` : nothing}
-        ${this.can.update && this.menus.length > 1 ? html`
-          <label class="d-b mtq tc-muted">Show the links of another place here
-            <select @change=${e => this.handleMenuChange(place, e)}>
-              <option value="" .selected=${live(!place.menuId)}>This place's own links</option>
-              ${this.menus.map(m => html`<option value=${m.id} .selected=${live(place.menuId === m.id)}>${m.name}</option>`)}
-            </select>
+      <h2>Locations</h2>
+      ${places.length ? html`
+        <p class="tc-muted mb">Tick the locations in your theme that show this menu. A location shows one menu at a time, so ticking one replaces the menu it showed.</p>
+        ${places.map(place => html`
+          <label class="checkbox mb">
+            <input type="checkbox" ?disabled=${!this.can.update} .checked=${live(place.menuId === menu.id)} @change=${e => this.handleShowHere(menu, place, e)}> ${place.label}
+            ${place.menuId && place.menuId !== menu.id ? html`<span class="tc-muted">(now shows ${this.menus.find(m => m.id === place.menuId)?.name})</span>` : nothing}
           </label>
-        ` : nothing}
-      </div>
+        `)}
+      ` : html`<p class="tc-muted">Your theme has no locations for a menu yet.</p>`}
     `;
   }
 
-  renderUnused(){
-    const unused = this.menus.filter(m => !m.locations.length);
-    if(!unused.length) return nothing;
+  renderPlaceExtras(place){
     return html`
-      <h2>Not shown anywhere</h2>
-      <p class="tc-muted">These menus are not shown in any place. Pick one in a place's dropdown above to use it again, or delete it.</p>
-      ${unused.map(menu => html`
+      ${place.extensionItems.map(item => html`
+        <div class="b p mbq"><strong>${item.label}</strong> <span class="tc-muted">${item.href} · added by ${item.owner}</span></div>
+      `)}
+      ${place.candidates.map(item => html`
         <div class="b p mbq d-f" style="align-items: center; gap: var(--spacer_h);">
-          <div class="flex"><strong>${menu.name}</strong> <span class="tc-muted">${menu.items.length} item${menu.items.length === 1 ? '' : 's'}</span></div>
-          ${this.can.delete ? html`<button class="btn danger" title="Delete menu" @click=${() => this.handleDeleteMenu(menu)}><k-icon name="delete"></k-icon></button>` : nothing}
+          <div class="flex"><strong>${item.label}</strong> <span class="tc-muted">${item.href} · added as global content in ${place.label}</span></div>
+          ${this.can.update ? html`<button class="btn" @click=${() => this.handleAdopt(place, item)}>Manage here</button>` : nothing}
         </div>
       `)}
     `;
@@ -280,18 +276,37 @@ export default class Menus extends ShadowComponent {
 
   render(){
     if(this.loading) return html`<p>Loading...</p>`;
-    if(this.failed) return html`<h1>Menus</h1><p class="tc-danger">The menus could not be loaded.</p>`;
+    if(this.failed) return html`<p class="tc-danger">The menus could not be loaded.</p>`;
+    const { menu, place } = this;
+    if(!menu && !place) return html`<p>That menu was not found.</p>`;
+
+    const shownHere = this.shownHere;
+    const items = menu?.items ?? [];
+    const addPlace = shownHere.find(p => p.declared);
     return html`
-      <h1>Menus</h1>
-      ${this.locations.length ? html`
-        ${this.locations.map(place => this.renderPlace(place))}
-        ${this.renderUnused()}
-      ` : html`
-        <p>Your theme does not have a place for a menu yet.</p>
-        <p class="tc-muted">Mark a place in your navigation, for example <code>&lt;location name="main-nav-links" label="Main menu" menu="true" /&gt;</code> in your navigation fragment, and it will be listed here.</p>
-      `}
+      <p><a class="btn mb" href="/admin/content/menus/"><k-icon name="arrow" direction="left"></k-icon> Menus</a></p>
+      <div class="d-f mb" style="align-items: center; gap: var(--spacer_h);">
+        <h1 class="flex mb0">${menu?.name ?? place.label}</h1>
+        ${this.can.create && addPlace ? html`<button class="primary" @click=${() => this.openLinkEditor(addPlace)}><k-icon name="add"></k-icon> Add item</button>` : nothing}
+      </div>
+
+      ${menu ? this.renderPlaces(menu) : nothing}
+
+      <h2>Links</h2>
+      ${items.length ? html`
+        <k-sortable data-menu=${menu.id} @sort=${this.handleSort}>
+          ${repeat(items, item => item.id, item => this.renderLink(shownHere[0], item))}
+        </k-sortable>
+      ` : nothing}
+      ${shownHere.map(p => this.renderPlaceExtras(p))}
+      ${!items.length && !shownHere.some(p => p.extensionItems.length || p.candidates.length) ? html`<p class="tc-muted">Nothing here yet.</p>` : nothing}
+      ${!shownHere.length && menu ? html`<p class="tc-muted">This menu is not shown anywhere, so its links cannot be added to. Tick a place above to show it.</p>` : nothing}
+
+      ${this.can.delete && menu && !shownHere.length ? html`
+        <p class="mt"><button class="danger" @click=${() => this.handleDeleteMenu(menu)}><k-icon name="delete"></k-icon> Delete this menu</button></p>
+      ` : nothing}
     `;
   }
 }
 
-customElements.define('admin-menus', Menus);
+customElements.define('admin-menu-editor', MenuEditor);

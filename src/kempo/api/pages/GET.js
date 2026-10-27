@@ -17,9 +17,10 @@ export default async (request, response) => {
 		return response.status(403).json({ error: 'Insufficient permissions' });
 	}
 
-	const { owner, showHidden, offset, limit } = request.query;
+	const { q, owner, showHidden, offset, limit } = request.query;
 	const [error, data] = await listPages({
 		rootDir,
+		q: q || '',
 		owner: owner || undefined,
 		showHidden: showHidden !== 'false',
 		offset: offset ? parseInt(offset, 10) : 0,
