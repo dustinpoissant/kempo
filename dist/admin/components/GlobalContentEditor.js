@@ -1,4 +1,4 @@
-import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/kempo-ui/lit-all.min.js";import{getGlobalContent as n,updateGlobalContent as a,deleteGlobalContent as i}from"/kempo/sdk.js";import s from"/kempo-ui/components/Dialog.js";import o from"/kempo-ui/components/Toast.js";import"/kempo-ui/components/Icon.js";import"/kempo-ui/components/Accordion.js";import"/kempo-ui/components/CodeEditor.js";export default class r extends e{static properties={loading:{state:!0},error:{state:!0},saving:{state:!0},entry:{state:!0}};constructor(){super(),this.loading=!0,this.error=!1,this.saving=!1,this.entry=null,this.entryId=""}async connectedCallback(){if(super.connectedCallback(),document.addEventListener("keydown",this.handleKeyDown),this.entryId=new URLSearchParams(window.location.search).get("id")||"",!this.entryId)return this.loading=!1,void(this.error=!0);const[e,t]=await n(this.entryId);this.loading=!1,e?this.error=!0:(this.entry=t,document.title=`Edit: ${t.name||this.entryId} - Admin`)}disconnectedCallback(){super.disconnectedCallback(),document.removeEventListener("keydown",this.handleKeyDown)}handleKeyDown=e=>{(e.ctrlKey||e.metaKey)&&"s"===e.key&&(e.preventDefault(),this.saving||this.entry?.locked||this.handleSave())};handleSave=async()=>{this.saving=!0;const e=this.shadowRoot,t=e.querySelector("#metaName").value,n=e.querySelector("#metaLocation").value,i=e.querySelector("#metaPriority").value,s=e.querySelector("k-code-editor"),r=s?s.getValue():this.entry.markup,[l,d]=await a({id:this.entryId,name:t,location:n,priority:i,markup:r});this.saving=!1,l?o.error(l.msg||"Failed to save global content"):(this.entry={...this.entry,name:t,location:n,priority:i,markup:r,updatedAt:d.updatedAt},document.title=`Edit: ${t||this.entryId} - Admin`,o.success("Global content saved"))};handleReset=()=>{s.confirm("Reset this entry? Any unsaved changes will be lost.",e=>{e&&(this.entry={...this.entry})})};handleDelete=()=>{s.confirm("Delete this global content entry? This action cannot be undone.",async e=>{if(!e)return;const[t]=await i([this.entryId]);t?o.error(t.msg||"Failed to delete global content"):(o.success("Global content deleted"),setTimeout(()=>{window.location.href="/admin/content/globals"},1e3))})};render(){if(this.loading)return t`<div>Loading global content...</div>`;if(this.error)return t`
+import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/kempo-ui/lit-all.min.js";import{getGlobalContent as n,updateGlobalContent as a,deleteGlobalContent as s}from"/kempo/sdk.js";import i from"/kempo-ui/components/Dialog.js";import o from"/kempo-ui/components/Toast.js";import"/kempo-ui/components/Icon.js";import"/kempo-ui/components/Tabs.js";import"/kempo-ui/components/CodeEditor.js";export default class l extends e{static properties={loading:{state:!0},error:{state:!0},saving:{state:!0},entry:{state:!0}};constructor(){super(),this.loading=!0,this.error=!1,this.saving=!1,this.entry=null,this.entryId=""}async connectedCallback(){if(super.connectedCallback(),document.addEventListener("keydown",this.handleKeyDown),this.entryId=new URLSearchParams(window.location.search).get("id")||"",!this.entryId)return this.loading=!1,void(this.error=!0);const[e,t]=await n(this.entryId);this.loading=!1,e?this.error=!0:(this.entry=t,document.title=`Edit: ${t.name||this.entryId} - Admin`)}disconnectedCallback(){super.disconnectedCallback(),document.removeEventListener("keydown",this.handleKeyDown)}handleKeyDown=e=>{(e.ctrlKey||e.metaKey)&&"s"===e.key&&(e.preventDefault(),this.saving||this.entry?.locked||this.handleSave())};handleSave=async()=>{this.saving=!0;const e=this.shadowRoot,t=e.querySelector("#metaName").value,n=e.querySelector("#metaLocation").value,s=e.querySelector("#metaPriority").value,i=e.querySelector("k-code-editor"),l=i?i.getValue():this.entry.markup,[r,d]=await a({id:this.entryId,name:t,location:n,priority:s,markup:l});this.saving=!1,r?o.error(r.msg||"Failed to save global content"):(this.entry={...this.entry,name:t,location:n,priority:s,markup:l,updatedAt:d.updatedAt},document.title=`Edit: ${t||this.entryId} - Admin`,o.success("Global content saved"))};handleReset=()=>{i.confirm("Reset this entry? Any unsaved changes will be lost.",e=>{e&&(this.entry={...this.entry})})};handleDelete=()=>{i.confirm("Delete this global content entry? This action cannot be undone.",async e=>{if(!e)return;const[t]=await s([this.entryId]);t?o.error(t.msg||"Failed to delete global content"):(o.success("Global content deleted"),setTimeout(()=>{window.location.href="/admin/content/globals"},1e3))})};render(){if(this.loading)return t`<div>Loading global content...</div>`;if(this.error)return t`
       <div>
         <p>Global content entry not found.</p>
         <a href="/admin/content/globals">Back to Global Content</a>
@@ -32,9 +32,9 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/ke
       </div>
       <h1 class="mb">Global Content: ${e.name||this.entryId}</h1>
 
-      <k-accordion>
-        <k-accordion-header for-panel="metadata">Metadata</k-accordion-header>
-        <k-accordion-panel name="metadata">
+      <k-tabs active="content">
+        <k-tab for="metadata">Metadata</k-tab>
+        <k-tab-content name="metadata">
           <div class="p">
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Name</strong></label>
@@ -67,9 +67,9 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/ke
               <span class="muted">${e.updatedAt?new Date(e.updatedAt).toLocaleString():""}</span>
             </div>
           </div>
-        </k-accordion-panel>
-        <k-accordion-header for-panel="content" active>Content</k-accordion-header>
-        <k-accordion-panel name="content" active>
+        </k-tab-content>
+        <k-tab for="content">Content</k-tab>
+        <k-tab-content name="content">
           <div class="p">
             <k-code-editor
               class="r b"
@@ -79,7 +79,7 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/ke
               ?disabled="${a}"
             ></k-code-editor>
           </div>
-        </k-accordion-panel>
-      </k-accordion>
-    `}}customElements.define("admin-global-content-editor",r);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\GlobalContentEditor.js.map
+        </k-tab-content>
+      </k-tabs>
+    `}}customElements.define("admin-global-content-editor",l);
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\GlobalContentEditor.js.map

@@ -2,7 +2,10 @@ import { existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { renderPage, renderExternalPage } from 'kempo-server/templating';
-import shake from 'kempo-css/shake';
+import { filterCss } from './mailClientView.js';
+import treeShake from './treeShake.js';
+import inlineStyles from './inlineStyles.js';
+import { getStylesheet, stylesheetFor } from './stylesheets.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -46,15 +49,14 @@ export default async ({ template, data = {} } = {}) => {
     return [{ code: 404, msg: `Email template not found: ${template}` }, null];
   }
 
-  const themePath = join(process.cwd(), 'public/styles.css');
-  const themeOpts = existsSync(themePath) ? { theme: themePath } : {};
 
   try {
     let html = owner
       ? await renderExternalPage(pagePath, rootDir, rootDir, {}, data)
       : await renderPage(pagePath, rootDir, {}, data);
-    const css = shake(html, { ...themeOpts, colorMode: 'light' });
-    html = html.replace('</head>', `<style>${css}</style></head>`);
+    const [, sheet] = await getStylesheet(await stylesheetFor(template));
+    const css = treeShake(filterCss(sheet.css), html);
+    html = inlineStyles(html, css);
     return [null, html];
   } catch(error){
     console.error('Email render error:', error);

@@ -12,10 +12,19 @@ import dispatchEmail from './dispatchEmail.js';
   `[null, { id, status: 'sent' }]` when a sender sent it, or `[{ code, msg, emailId }, null]` when none did: 503 when there is no email
   extension installed, 502 when one tried and failed. Either way the email is in the log, and a failed one is tried again (see the
   `email_max_retries` setting).
+
+  `replyTo` is optional: the address a reply goes to, as `name@example.com` or `Name <name@example.com>`. One address on one line, so
+  nothing in it can add a header of its own.
 */
-export default async ({ to, subject, html, template = null } = {}) => {
+const ADDRESS = /^(?:[^<>\r\n@,;"]+<[^<>\s@,;]+@[^<>\s@,;]+\.[^<>\s@,;]+>|[^<>\s@,;"]+@[^<>\s@,;]+\.[^<>\s@,;]+)$/;
+
+export default async ({ to, subject, html, template = null, replyTo = null } = {}) => {
   if(!to){
     return [{ code: 400, msg: 'Recipient email is required' }, null];
+  }
+
+  if(replyTo && (typeof replyTo !== 'string' || replyTo.length > 320 || !ADDRESS.test(replyTo.trim()))){
+    return [{ code: 400, msg: 'Reply-to must be one email address' }, null];
   }
 
   if(!subject){
@@ -29,7 +38,7 @@ export default async ({ to, subject, html, template = null } = {}) => {
   const id = crypto.randomUUID();
   const now = new Date();
   try {
-    await db.insert(email).values({ id, type: template || 'other', recipient: String(to), sender: await getSenderFrom(), subject: String(subject), html: String(html), status: 'queued', attempts: 0, createdAt: now, updatedAt: now });
+    await db.insert(email).values({ id, type: template || 'other', recipient: String(to), sender: await getSenderFrom(), replyTo: replyTo ? replyTo.trim() : null, subject: String(subject), html: String(html), status: 'queued', attempts: 0, createdAt: now, updatedAt: now });
   } catch(error) {
     return [{ code: 500, msg: 'The email could not be saved to send' }, null];
   }

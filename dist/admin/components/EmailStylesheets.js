@@ -1,0 +1,26 @@
+import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,nothing as s}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Spinner.js";import"/kempo-ui/components/Icon.js";import"/kempo-ui/components/Dialog.js";import"/kempo-ui/components/CodeEditor.js";import"/kempo-ui/components/Table.js";import"/kempo-ui/components/controls/TcOpen.js";import"/kempo-ui/components/controls/TcDeleteRecord.js";import"/admin/components/tableControls/EditEmailTemplate.js";import i from"/kempo-ui/components/Toast.js";import a from"/kempo-ui/components/Dialog.js";import{listEmailStylesheets as l,getEmailStylesheet as o,createEmailStylesheet as r,updateEmailStylesheet as n,deleteEmailStylesheet as c}from"/kempo/sdk.js";const m=[{name:"name",label:"Name",size:220,editable:!1},{name:"description",label:"Description",editable:!1},{name:"updatedAt",label:"Updated",size:190,editable:!1,formatter:e=>new Date(e).toLocaleString()}];export default class d extends e{static properties={stylesheets:{state:!0},error:{state:!0},editing:{state:!0},saving:{state:!0}};constructor(){super(),this.stylesheets=null,this.error="",this.editing=null,this.saving=!1}connectedCallback(){super.connectedCallback();const e=this.closest("k-tab-content");!e||e.active?this.load():this.closest("k-tabs")?.addEventListener("tabfirstshown",({detail:t})=>{t.tab===e.name&&this.load()})}load=async()=>{const[e,t]=await l();e?this.error=e.msg:(this.error="",this.stylesheets=t.stylesheets)};open=async(e=null)=>{if(e){const[t,s]=await o(e.name);if(t)return void i.error(t.msg);this.editing=s.stylesheet}else this.editing={name:"",description:"",css:""};await this.updateComplete,this.renderRoot.querySelector("#stylesheetDialog").open()};confirmSave=e=>{e.keepDialogOpen=!0,this.save()};save=async()=>{const e=!this.editing.name,t=(this.renderRoot.querySelector("#stylesheetName")?.value??this.editing.name).trim(),s=this.renderRoot.querySelector("#stylesheetDescription").value.trim(),a=this.renderRoot.querySelector("#stylesheetCss").value;if(e&&!t)return i.error("Give the stylesheet a name");this.saving=!0;const[l]=e?await r({name:t,description:s,css:a}):await n(this.editing.name,{description:s,css:a});this.saving=!1,l?i.error(l.msg):(this.renderRoot.querySelector("#stylesheetDialog").close(),i.success(e?"Email stylesheet made":"Email stylesheet saved"),await this.load())};requestDelete=({detail:{records:e,approve:t,reject:s}})=>{const[l]=e;if(e.some(e=>e.builtIn))return s(),void i.error("The default email stylesheet cannot be deleted");a.confirm(`<div class="p"><p>Delete the stylesheet "${l.name}"? Emails that use it go back to the default. This cannot be undone.</p></div>`,async e=>{if(!e)return void s();const[a]=await c(l.name);if(a)return s(),void i.error(a.msg);t(),i.success("Email stylesheet deleted"),await this.load()})};renderDialog(){const e=this.editing;if(!e)return s;const i=!e.name;return t`
+      <k-dialog id="stylesheetDialog" style="--width: 60rem;" confirm-text=${this.saving?"Saving…":"Save"} confirm-classes="primary ml" cancel-text="Cancel" .confirmAction=${this.confirmSave}>
+        <h2 slot="title" class="h5 pyh px m0">${i?"New email stylesheet":e.name}</h2>
+        <div class="p">
+          ${i?t`
+            <label class="d-b mbq" for="stylesheetName">Name<small class="d-b tc-muted">Lowercase letters, digits and dashes. It cannot be changed later.</small></label>
+            <input id="stylesheetName" type="text" class="full mb" .value=${e.name}>
+          `:s}
+          <label class="d-b mbq" for="stylesheetDescription">Description<small class="d-b tc-muted">What it is for, shown in the table.</small></label>
+          <input id="stylesheetDescription" type="text" class="full mb" .value=${e.description??""}>
+          <label class="d-b mbq">CSS<small class="d-b tc-muted">Only what mail clients keep is used. Pseudo-classes, page-level rules, animation and colour functions are dropped.</small></label>
+          <k-code-editor id="stylesheetCss" class="r b" language="css" .value=${e.css??""} style="height: 50vh; min-height: 260px;"></k-code-editor>
+        </div>
+      </k-dialog>
+    `}updated(e){if(!e.has("stylesheets"))return;const t=this.renderRoot.querySelector("k-table");t&&this.stylesheets&&t.setData({records:this.stylesheets,fields:m})}render(){return this.error?t`<p class="tc-danger" role="alert">${this.error}</p>`:this.stylesheets?t`
+      <div class="d-f mb" style="align-items: center; gap: var(--spacer_h); flex-wrap: wrap;">
+        <p class="tc-muted m0 flex">Each email is drawn with one of these. An email with no choice uses the default.</p>
+        <button class="primary" @click=${()=>this.open()}><k-icon name="add"></k-icon> New stylesheet</button>
+      </div>
+      <k-table class="mb" placeholder="There are no email stylesheets." request-delete enable-selection @requestDelete=${this.requestDelete} @editTemplate=${e=>this.open(e.detail.record)}>
+        <admin-edit-email-template slot="after"></admin-edit-email-template>
+        <kc-tc-delete-record slot="after"></kc-tc-delete-record>
+      </k-table>
+      ${this.renderDialog()}
+    `:t`<k-spinner></k-spinner>`}}customElements.define("k-email-stylesheets",d);
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\EmailStylesheets.js.map

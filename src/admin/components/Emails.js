@@ -160,10 +160,10 @@ export default class Emails extends ShadowComponent {
         <h2 slot="title" class="h5 pyh px m0">${mail.subject}</h2>
         <div class="p">
           <p class="mb"><strong class=${STATUS_CLASS[mail.status] ?? ''}>${mail.status}</strong>${mail.attempts ? html` · ${mail.attempts} ${mail.attempts === 1 ? 'try' : 'tries'}` : nothing}${mail.provider ? html` · sent by ${mail.provider}` : nothing}</p>
-          <p class="mb">To <strong>${mail.recipient}</strong>, from ${mail.sender}<br><span class="tc-muted">${mail.type} · created ${when(mail.createdAt)}${mail.sentAt ? ` · sent ${when(mail.sentAt)}` : ''}</span></p>
+          <p class="mb">To <strong>${mail.recipient}</strong>, from ${mail.sender}${mail.replyTo ? html`, replies to ${mail.replyTo}` : nothing}<br><span class="tc-muted">${mail.type} · created ${when(mail.createdAt)}${mail.sentAt ? ` · sent ${when(mail.sentAt)}` : ''}</span></p>
           ${mail.lastError ? html`<p class="tc-danger mb" role="alert">${mail.lastError}</p>` : nothing}
           ${this.canManage && ['queued', 'failed'].includes(mail.status) ? html`<p class="mb"><button class="primary" ?disabled=${this.busy} @click=${this.retry}>${this.busy ? 'Trying…' : 'Try again'}</button></p>` : nothing}
-          <iframe title="The email" sandbox="" .srcdoc=${mail.html} class="full b r" height="420"></iframe>
+          <iframe title="The email" sandbox="" .srcdoc=${mail.clientHtml ?? mail.html} class="full b r" height="420"></iframe>
         </div>
       </k-dialog>
     `;

@@ -5,21 +5,28 @@
 <content>
 <script type="module" src="/admin/components/Emails.js"></script>
 <script type="module" src="/admin/components/EmailTemplates.js"></script>
+<script type="module" src="/admin/components/EmailStylesheets.js"></script>
 <script type="module" src="/kempo-ui/components/Tabs.js"></script>
+<script type="module" src="/admin/components/settings/SettingsPanel.js"></script>
 
 		<h1>Emails</h1>
-		<p class="tc-muted mb">Kempo does not send email itself: an email extension (such as kempo-resend or kempo-smtp) does. How long the log is kept, and how many times a failed email is tried again, are on the System tab of <a href="/admin/settings">Settings</a>.</p>
+		<p class="tc-muted mb">Kempo does not send email itself: an email extension (such as kempo-resend or kempo-smtp) does, and its settings are on its own tab here. How long the log is kept, and how many times a failed email is tried again, are on the System tab of <a href="/admin/settings">Settings</a>.</p>
 
 		<k-tabs hash-routing>
 			<k-tab for="log">Log</k-tab>
 			<k-tab for="templates">Templates</k-tab>
+			<k-tab for="styles">Styles</k-tab>
 			<k-tab-content name="log">
 				<p class="tc-muted mb">Every email the site was asked to send, and what happened to it.</p>
 				<k-admin-emails></k-admin-emails>
 			</k-tab-content>
 			<k-tab-content name="templates">
-				<p class="tc-muted mb">The emails this site sends: kempo's own and any the site has added. Preview draws one the way it would be sent, with made-up values when the template has a <code>.sample.json</code> beside it. Edit one to reword it; your copy is used from the next email on and Reset to default brings the packaged one back.</p>
+				<p class="tc-muted mb">Every email the site sends: kempo's own, and each extension's. Open one to see the variables it can use, choose the stylesheet it is drawn with, and reword it. Your copy is used from the next email on, and Reset to default brings the packaged one back.</p>
 				<k-email-templates></k-email-templates>
+			</k-tab-content>
+
+			<k-tab-content name="styles">
+				<k-email-stylesheets></k-email-stylesheets>
 			</k-tab-content>
 
 			<location name="admin-emails-tabs" />

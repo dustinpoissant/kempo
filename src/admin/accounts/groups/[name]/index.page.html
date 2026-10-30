@@ -307,7 +307,7 @@
 					document.getElementById('adminPermsMsg').style.display = '';
 					$permissionsTable.style.display = 'none';
 				} else if(canReadPerms){
-					if(canEdit){
+					if(canEdit && isCustom){
 						$permissionsTable.setAttribute('request-delete', '');
 						$permissionsTable.setAttribute('enable-selection', '');
 

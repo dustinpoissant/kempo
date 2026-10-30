@@ -294,7 +294,7 @@ Handlers are **awaited one at a time, in registration order**. That means slow w
 | `route:unmatched` | `{ url, method, request, draft }` | A request matched no file, page or route anywhere on the site |
 | `user:email_verified` | `{ userId, email }` | Someone followed their verification link, so they have proved they own the address |
 | `user:deleted` | `{ id, email, name }` | A user account was deleted, by an administrator or by the person themselves (with a code sent to their address). Kempo has removed the account; remove anything your extension keeps about `id`. A handler that fails does not undo the deletion |
-| `email:send` | `{ email: { id, to, from, subject, html, type, attempt } }` | An email is waiting to be sent: an email extension sends it and answers, see [Writing an Email Extension](#writing-an-email-extension) |
+| `email:send` | `{ email: { id, to, from, fromIsDefault, replyTo, subject, html, type, attempt } }` | An email is waiting to be sent: an email extension sends it and answers, see [Writing an Email Extension](#writing-an-email-extension) |
 
 ### Answering a Request Nothing Else Claimed
 
@@ -377,8 +377,8 @@ Kempo logs every email and leaves sending to an extension, so a provider (Resend
 ```javascript
 // hooks/send.js
 export default async ({ email }) => {
-  // email: { id, to, from, fromIsDefault, subject, html, type, attempt }
-  const response = await fetch('https://mail.example.com/send', { method: 'POST', body: JSON.stringify({ from: email.from, to: email.to, subject: email.subject, html: email.html }) });
+  // email: { id, to, from, fromIsDefault, replyTo, subject, html, type, attempt }
+  const response = await fetch('https://mail.example.com/send', { method: 'POST', body: JSON.stringify({ from: email.from, to: email.to, replyTo: email.replyTo, subject: email.subject, html: email.html }) });
   if(!response.ok) return { sent: false, error: `The mail service answered ${response.status}` };
   return { sent: true, provider: 'my-mail-service', messageId: (await response.json()).id };
 };
@@ -386,6 +386,7 @@ export default async ({ email }) => {
 
 - **Say when you are not set up.** With no key or host saved, return `{ sent: false, skipped: true, error: 'No key is saved' }`: kempo does not count that as a try, and only shows the reason when no extension got as far as trying, so a failure of the one that is set up is not buried under it.
 - **`email.fromIsDefault`** is true when the site has not set its own sender, so `email.from` is only the placeholder `noreply@example.com`. A sender that knows a better one (an SMTP extension's mailbox) should use that instead.
+- **`email.replyTo`** is the address a reply should go to, or `null` (kempo-forms sets it to the person who filled in a form). Send it as the Reply-To header when it is set. It has already been checked to be one address on one line.
 - **Return `{ sent: true }` only when it really went.** The first handler to do so ends the chain, so with several email extensions installed only one sends. A handler that returns `{ sent: false, error }` (or throws) leaves the email for the next handler, and for a retry later (the `email_max_retries` setting); the error is shown in **Admin > Emails**.
 - **Never touch the log.** Kempo records the status, the attempts, `provider` and `messageId`.
 - **Do not send what you did not get.** Handlers run in the order they were registered; the email is yours to send once, not to inspect and pass on. A "log only" extension should return `{ sent: false }` and let a real sender run after it, but kempo already logs everything.
@@ -784,6 +785,26 @@ A replacement for `page-content-editor` must, at minimum: accept a `.value` prop
 </script>
 </content>
 ```
+
+## Adding to the Content Editor
+
+Where an override replaces the page editor, any number of extensions can add to it. `registerEditorExtension` (from `/admin/component-overrides.js`, registered the same way as an override, after `init.js`) takes:
+
+- **`nodes`**: URLs of custom Lexical node modules. They are loaded through `k-html-editor`'s `nodes` attribute, which accepts a URL starting with `/`. A node module's default export has a static `lexicalNode`, as kempo-ui's `HtmlComment` does, and may define `isVisualCompatible(domNode)` so the element is kept in the visual editor instead of forcing code mode.
+- **`controls`**: tag names of toolbar controls (kempo-ui `ButtonControl`s). They are put in the editor's `toolbar-top-extra` slot, after the built-in controls.
+
+```html
+<!-- admin/editor.global.html -->
+<content id="my-extension-editor" name="Editor" owner="my-extension" enabled="true" locked="true" location="head" priority="0">
+<script type="module">
+  import { registerEditorExtension } from '/admin/component-overrides.js';
+  import '/admin/extension/my-extension/components/InsertThing.js';
+  registerEditorExtension({ nodes: ['/my-extension/components/ThingNode.js'], controls: ['my-ext-insert-thing'] });
+</script>
+</content>
+```
+
+This applies to the Content editors, not the Head and Scripts ones, which are code editors. kempo-forms uses it to place a form in a page: a placeholder card in the editor that saves as `<k-forms-form slug="...">`.
 
 ## Lifecycle Scripts
 

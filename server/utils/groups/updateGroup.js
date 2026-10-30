@@ -1,7 +1,6 @@
 import db from '../../db/index.js';
 import { group, userGroup, groupPermission } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
-
 export default async (name, updates) => {
   if(!name){
     return [{ code: 400, msg: 'Group name is required' }, null];

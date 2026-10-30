@@ -130,7 +130,7 @@
 				editable: false,
 				calculator: r => r.name.includes(':') ? r.name.split(':').slice(1).join(':') : r.name
 			},
-			{ name: 'description', label: 'Description', editable: canEdit },
+			{ name: 'description', label: 'Description', editable: false },
 			{
 				name: 'createdAt',
 				label: 'Created',
@@ -183,7 +183,7 @@
 				$table.setupFetchRecords(data.total, fetchGroups);
 			};
 
-			if(canEdit && owner !== 'system') { // Prevent editor control for system groups
+			if(canEdit && owner === 'custom') {
 				$table.setAttribute('request-edit', '');
 				const edit = document.createElement('kc-tc-edit');
 				edit.setAttribute('slot', 'after');

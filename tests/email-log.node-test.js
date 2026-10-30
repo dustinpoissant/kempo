@@ -136,6 +136,17 @@ export default {
     pass('');
   },
 
+  'a sender that is not set up hands the email on, so a set-up one after it sends it': async ({ pass, fail }) => {
+    await reset();
+    await sender('unset', "return { sent: false, skipped: true, error: 'No key is saved' };");
+    await sender('working', "return { sent: true, provider: 'working' };");
+    const [error, result] = await mail();
+    if(error) return fail(error.msg);
+    if((await row(result.id)).provider !== 'working') return fail('the set-up sender did not send it');
+    if(calls('working').length !== 1) return fail('the set-up sender should have been given the email once');
+    pass('');
+  },
+
   'a sender that is not set up is not counted as having tried, and the real failure is what is reported': async ({ pass, fail }) => {
     await reset();
     await sender('unset', "return { sent: false, skipped: true, error: 'No key is saved' };");
@@ -150,6 +161,35 @@ export default {
     await sender('unset', "return { sent: false, skipped: true, error: 'No key is saved' };");
     const [none] = await mail();
     if(none.code !== 503 || !/No email extension is set up yet/.test(none.msg) || !none.msg.includes('No key is saved')) return fail(`when every sender is skipped: ${none.code} "${none.msg}"`);
+    pass('');
+  },
+
+  'a reply-to address is kept in the log and handed to the sender, and a bad one is refused before anything is saved': async ({ pass, fail }) => {
+    await reset();
+    await sender('looker', "return { sent: true, provider: 'looker' };");
+    const [error, result] = await mail({ replyTo: ' Ann Lee <ann@email-log.test> ' });
+    if(error) return fail(error.msg);
+    if(calls('looker')[0].replyTo !== 'Ann Lee <ann@email-log.test>') return fail(`the sender was given ${JSON.stringify(calls('looker')[0].replyTo)}`);
+    if((await row(result.id)).replyTo !== 'Ann Lee <ann@email-log.test>') return fail('the log did not keep it');
+
+    const [, plain] = await mail();
+    if(calls('looker')[1].replyTo !== null || (await row(plain.id)).replyTo !== null) return fail('an email with none should have null');
+
+    const before = (await listEmails({ limit: 100 }))[1].total;
+    for(const bad of ['nobody', 'a@b.test, c@d.test', 'x@y.test\r\nBcc: z@y.test', 'Name <x@y.test>\nBcc: z@y.test', 42]){
+      const [refused] = await mail({ replyTo: bad });
+      if(refused?.code !== 400) return fail(`${JSON.stringify(bad)} was not refused: ${JSON.stringify(refused)}`);
+    }
+    if((await listEmails({ limit: 100 }))[1].total !== before) return fail('a refused email was saved');
+    pass('');
+  },
+
+  'sendEmailFromTemplate passes the reply-to on': async ({ pass, fail }) => {
+    await reset();
+    await sender('looker', "return { sent: true, provider: 'looker' };");
+    const [error] = await sendEmailFromTemplate({ to: TO, subject: 'Hi', template: 'verify-email', data: { name: 'A', verificationLink: 'https://x.test/v' }, replyTo: 'ann@email-log.test' });
+    if(error) return fail(error.msg);
+    if(calls('looker')[0]?.replyTo !== 'ann@email-log.test') return fail(`the sender was given ${JSON.stringify(calls('looker')[0])}`);
     pass('');
   },
 

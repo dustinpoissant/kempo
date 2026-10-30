@@ -1,6 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from 'fs/promises';
 import { dirname } from 'path';
 import { locateTemplate } from './emailTemplatePaths.js';
+import { splitFrontmatter, joinFrontmatter } from './frontmatter.js';
 import renderEmailTemplate from './renderEmailTemplate.js';
 
 const MAX_SOURCE = 100000;
@@ -20,6 +21,8 @@ export default async ({ template, source } = {}) => {
 
   const [site, packaged] = await Promise.all([readFile(located.sitePath, 'utf8').catch(() => null), readFile(located.defaultPath, 'utf8').catch(() => null)]);
   if(site === null && packaged === null) return [{ code: 404, msg: `Email template not found: ${template}` }, null];
+  const frontmatter = splitFrontmatter(site ?? packaged).frontmatter;
+  source = joinFrontmatter(frontmatter, source);
 
   try {
     await mkdir(dirname(located.sitePath), { recursive: true });

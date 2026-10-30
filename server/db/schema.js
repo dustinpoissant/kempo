@@ -168,6 +168,7 @@ export const email = pgTable('email', {
   type: text('type').notNull().default('other'),
   recipient: text('recipient').notNull(),
   sender: text('sender').notNull(),
+  replyTo: text('replyTo'),
   subject: text('subject').notNull(),
   html: text('html').notNull(),
   status: text('status').notNull().default('queued'),
@@ -182,6 +183,25 @@ export const email = pgTable('email', {
   index('email_status_idx').on(table.status, table.updatedAt),
   index('email_createdAt_idx').on(table.createdAt),
 ]);
+
+/*
+  Email stylesheets: the CSS an email's HTML is drawn with, kept by name. `default` is made when the server starts and cannot be
+  deleted. A template with no row in `emailTemplateStyle` uses `default`.
+*/
+export const emailStylesheet = pgTable('emailStylesheet', {
+  name: text('name').primaryKey(),
+  description: text('description').notNull().default(''),
+  css: text('css').notNull().default(''),
+  createdAt: timestamp('createdAt').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
+});
+
+/* Which stylesheet a template uses, by the template's name (`verify-email`, `kempo-forms/submission-notification`). */
+export const emailTemplateStyle = pgTable('emailTemplateStyle', {
+  template: text('template').primaryKey(),
+  stylesheet: text('stylesheet').notNull(),
+  updatedAt: timestamp('updatedAt').notNull(),
+});
 
 /*
   Realtime System

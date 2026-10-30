@@ -13,7 +13,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 globalThis.window = globalThis.window || globalThis;
 
-const { registerComponentOverride, getComponentOverride } = await import(
+const { registerComponentOverride, getComponentOverride, registerEditorExtension, getEditorExtensions } = await import(
   pathToFileURL(path.join(root, 'src/admin/component-overrides.js')).href
 );
 
@@ -47,6 +47,25 @@ export default {
     registerComponentOverride('page-content-editor', 'my-ext-wysiwyg');
     const tag = getComponentOverride('some-other-slot', 'default-tag');
     if(tag !== 'default-tag') return fail(`expected the fallback tag for an unregistered slot, got '${tag}'`);
+    pass();
+  },
+  'with nothing registered the editor gets no extra nodes or controls': async ({ pass, fail }) => {
+    delete window.kempo;
+    const { nodes, controls } = getEditorExtensions();
+    if(nodes.length || controls.length) return fail('expected empty lists');
+    pass();
+  },
+
+  'several extensions add nodes and controls, each once, without touching other window.kempo state': async ({ pass, fail }) => {
+    delete window.kempo;
+    window.kempo = { lexicalUrl: '/vendor/lexical' };
+    registerEditorExtension({ nodes: ['/a/Node.js'], controls: ['a-insert'] });
+    registerEditorExtension({ nodes: ['/b/Node.js', '/a/Node.js'], controls: ['b-insert', 'a-insert'] });
+    registerEditorExtension();
+    const { nodes, controls } = getEditorExtensions();
+    if(nodes.join() !== '/a/Node.js,/b/Node.js') return fail('nodes were ' + nodes);
+    if(controls.join() !== 'a-insert,b-insert') return fail('controls were ' + controls);
+    if(window.kempo.lexicalUrl !== '/vendor/lexical') return fail('registration clobbered an existing window.kempo property');
     pass();
   },
 };

@@ -21,6 +21,7 @@ import { flagFailed, markHealthy } from '../server/utils/updates/siteLayout.js';
 import notifySchemaAttention from '../server/utils/updates/notifySchemaAttention.js';
 import { ensureSystemSettings } from '../server/utils/settings/systemSettings.js';
 import { ensureSystemPermissions } from '../server/utils/setup/systemPermissions.js';
+import { ensureDefaultStylesheet } from '../server/utils/email/stylesheets.js';
 import registerJobs from '../server/utils/scheduler/registerJobs.js';
 import '../server/utils/updates/runtime.js';
 import { resolveAlias } from '../server/utils/extensions/aliases.js';
@@ -243,6 +244,7 @@ export default config => {
         }],
         ['settings', ensureSystemSettings],
         ['permissions', ensureSystemPermissions],
+        ['email stylesheets', ensureDefaultStylesheet],
         ['extensions', async () => {
           const [error, result] = await reconcileExtensions();
           for(const { name, from, to } of result?.upgraded ?? []) console.log(`[kempo] Extension ${name} brought up to date: ${from} -> ${to}`);

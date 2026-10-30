@@ -1,6 +1,7 @@
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
 import renderEmailTemplate from '../../../../../server/utils/email/renderEmailTemplate.js';
 import readEmailSample from '../../../../../server/utils/email/readEmailSample.js';
+import mailClientView from '../../../../../server/utils/email/mailClientView.js';
 
 /*
   An email template drawn to open in a tab: what the site would send. It is filled in with the template's `<name>.sample.json` when
@@ -15,5 +16,5 @@ export default async (request, response) => {
 	const [error, page] = await renderEmailTemplate({ template: request.query.template, data: await readEmailSample({ template: request.query.template }) });
 	if(error) return response.status(error.code).json({ error: error.msg });
 
-	response.type('html').send(page);
+	response.type('html').send(mailClientView(page));
 };

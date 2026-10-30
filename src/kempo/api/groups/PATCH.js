@@ -1,5 +1,6 @@
 import currentUserHasPermission from '../../../../server/utils/permissions/currentUserHasPermission.js';
 import updateGroup from '../../../../server/utils/groups/updateGroup.js';
+import assertEditable from '../../../../server/utils/groups/assertEditable.js';
 
 export default async (request, response) => {
 	const token = request.cookies.session_token;
@@ -21,6 +22,11 @@ export default async (request, response) => {
 
 	if(!hasPermission){
 		return response.status(403).json({ error: 'Insufficient permissions' });
+	}
+
+	const [editError] = await assertEditable(name);
+	if(editError){
+		return response.status(editError.code).json({ error: editError.msg });
 	}
 
 	const updates = {};

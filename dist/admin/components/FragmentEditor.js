@@ -1,4 +1,4 @@
-import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/kempo-ui/lit-all.min.js";import{getFragment as a,updateFragment as n,deleteFragments as i,moveFragment as r,listDirectories as s}from"/kempo/sdk.js";import o from"/kempo-ui/components/Dialog.js";import l from"/kempo-ui/components/Toast.js";import"/kempo-ui/components/Icon.js";import"/kempo-ui/components/Accordion.js";import"/kempo-ui/components/CodeEditor.js";export default class d extends e{static properties={loading:{state:!0},error:{state:!0},saving:{state:!0},fragment:{state:!0}};constructor(){super(),this.loading=!0,this.error=!1,this.saving=!1,this.fragment=null,this.file=""}async connectedCallback(){super.connectedCallback(),document.addEventListener("keydown",this.handleKeyDown);const e=new URLSearchParams(window.location.search).get("fragment");if(this.file=e?e+".fragment.html":"",!this.file)return this.loading=!1,void(this.error=!0);const[t,n]=await a(this.file);this.loading=!1,t?this.error=!0:(this.fragment=n,document.title=`Edit: ${n.name} - Admin`)}disconnectedCallback(){super.disconnectedCallback(),document.removeEventListener("keydown",this.handleKeyDown)}getFormState(){const e=this.shadowRoot;return{name:e.querySelector("#metaName")?.value??this.fragment.name,markup:e.querySelector("k-code-editor")?.getValue()??this.fragment.markup}}handleKeyDown=e=>{(e.ctrlKey||e.metaKey)&&"s"===e.key&&(e.preventDefault(),this.saving||this.fragment?.locked||this.handleSave())};handleDelete=()=>{o.confirm("Delete this fragment? This action cannot be undone.",async e=>{if(!e)return;const[t]=await i([this.file]);t?l.error(t.msg||"Failed to delete fragment"):(l.success("Fragment deleted"),setTimeout(()=>{window.location.href="/admin/content/fragments"},1e3))})};handleMove=async()=>{const[,e]=await s(),a=e?.directories||["."],i=this.file.replace(/\.fragment\.html$/,"").split("/"),d=i.pop(),m=i.join("/")||".",c=e=>(e||"/").replace(/^\//,"").replace(/\/$/,"")||".",g="."===m?"/":"/"+m,p=o.create(t`
+import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/kempo-ui/lit-all.min.js";import{getFragment as a,updateFragment as n,deleteFragments as i,moveFragment as s,listDirectories as r}from"/kempo/sdk.js";import o from"/kempo-ui/components/Dialog.js";import l from"/kempo-ui/components/Toast.js";import"/kempo-ui/components/Icon.js";import"/kempo-ui/components/Tabs.js";import"/kempo-ui/components/CodeEditor.js";export default class m extends e{static properties={loading:{state:!0},error:{state:!0},saving:{state:!0},fragment:{state:!0}};constructor(){super(),this.loading=!0,this.error=!1,this.saving=!1,this.fragment=null,this.file=""}async connectedCallback(){super.connectedCallback(),document.addEventListener("keydown",this.handleKeyDown);const e=new URLSearchParams(window.location.search).get("fragment");if(this.file=e?e+".fragment.html":"",!this.file)return this.loading=!1,void(this.error=!0);const[t,n]=await a(this.file);this.loading=!1,t?this.error=!0:(this.fragment=n,document.title=`Edit: ${n.name} - Admin`)}disconnectedCallback(){super.disconnectedCallback(),document.removeEventListener("keydown",this.handleKeyDown)}getFormState(){const e=this.shadowRoot;return{name:e.querySelector("#metaName")?.value??this.fragment.name,markup:e.querySelector("k-code-editor")?.getValue()??this.fragment.markup}}handleKeyDown=e=>{(e.ctrlKey||e.metaKey)&&"s"===e.key&&(e.preventDefault(),this.saving||this.fragment?.locked||this.handleSave())};handleDelete=()=>{o.confirm("Delete this fragment? This action cannot be undone.",async e=>{if(!e)return;const[t]=await i([this.file]);t?l.error(t.msg||"Failed to delete fragment"):(l.success("Fragment deleted"),setTimeout(()=>{window.location.href="/admin/content/fragments"},1e3))})};handleMove=async()=>{const[,e]=await r(),a=e?.directories||["."],i=this.file.replace(/\.fragment\.html$/,"").split("/"),m=i.pop(),d=i.join("/")||".",c=e=>(e||"/").replace(/^\//,"").replace(/\/$/,"")||".",g="."===d?"/":"/"+d,p=o.create(t`
       <div class="p">
         <div class="mb">
           <label class="d-b mb-sm"><strong>Location</strong></label>
@@ -9,11 +9,11 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/ke
         </div>
         <div>
           <label class="d-b mb-sm"><strong>Fragment Name</strong></label>
-          <input type="text" id="dlg-move-name" class="full" .value="${d}">
+          <input type="text" id="dlg-move-name" class="full" .value="${m}">
           <p class="mt-sm muted"><small id="dlg-move-preview"></small></p>
         </div>
       </div>
-    `,{title:"Move Fragment",confirmText:"Save and Move Fragment",confirmAction:async()=>{const e=p.querySelector("#dlg-move-dir").value.trim()||"/",t=p.querySelector("#dlg-move-name").value.trim();if(!t)return void l.error("Fragment name is required");if(!/^\/[a-zA-Z0-9_\-\[\]\/]*$/.test(a=e)||a.includes("..")||a.includes("//"))return void l.error("Invalid directory path");var a;const i=c(e),s="."===i?`${t}.fragment.html`:`${i}/${t}.fragment.html`;this.saving=!0;const[o]=await n({file:this.file,markup:this.getFormState().markup});if(this.saving=!1,o)return void l.error(o.msg||"Failed to save fragment");const[d,m]=await r({file:this.file,newFile:s});if(d)return void l.error(d.msg||"Failed to move fragment");l.success("Fragment saved and moved");const g=m.file.replace(/\.fragment\.html$/,"");setTimeout(()=>{window.location.href=`/admin/content/fragments/edit?fragment=${encodeURIComponent(g)}`},1e3)},cancelText:"Cancel"}),v=()=>{const e=c(p.querySelector("#dlg-move-dir").value||"/"),t=p.querySelector("#dlg-move-name").value,a="."===e?"/":"/"+e+"/";p.querySelector("#dlg-move-preview").textContent=t?a+t:""};p.querySelector("#dlg-move-dir").addEventListener("input",v),p.querySelector("#dlg-move-name").addEventListener("input",v),v()};handleReset=()=>{o.confirm("Reset this fragment? Any unsaved changes will be lost.",e=>{e&&(this.fragment={...this.fragment})})};handleSave=async()=>{this.saving=!0;const e=this.getFormState(),[t,a]=await n({file:this.file,markup:e.markup});if(this.saving=!1,t)return void l.error(t.msg||"Failed to save fragment");this.fragment={...this.fragment,markup:e.markup,updatedAt:a.updatedAt};const i=this.file.replace(/\.fragment\.html$/,"").split("/"),s=i.pop(),o=i.join("/"),d=e.name.toLowerCase().trim().replace(/[^\w\s-]/g,"").replace(/[\s_]+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");if(d&&d!==s){const e=o?`${o}/${d}.fragment.html`:`${d}.fragment.html`,[t,a]=await r({file:this.file,newFile:e});if(t)return void l.error(t.msg||"Failed to rename fragment file");l.success("Fragment saved and renamed");const n=a.file.replace(/\.fragment\.html$/,"");return void setTimeout(()=>{window.location.href=`/admin/content/fragments/edit?fragment=${encodeURIComponent(n)}`},1e3)}document.title=`Edit: ${this.fragment.name} - Admin`,l.success("Fragment saved")};render(){if(this.loading)return t`<div>Loading fragment...</div>`;if(this.error)return t`
+    `,{title:"Move Fragment",confirmText:"Save and Move Fragment",confirmAction:async()=>{const e=p.querySelector("#dlg-move-dir").value.trim()||"/",t=p.querySelector("#dlg-move-name").value.trim();if(!t)return void l.error("Fragment name is required");if(!/^\/[a-zA-Z0-9_\-\[\]\/]*$/.test(a=e)||a.includes("..")||a.includes("//"))return void l.error("Invalid directory path");var a;const i=c(e),r="."===i?`${t}.fragment.html`:`${i}/${t}.fragment.html`;this.saving=!0;const[o]=await n({file:this.file,markup:this.getFormState().markup});if(this.saving=!1,o)return void l.error(o.msg||"Failed to save fragment");const[m,d]=await s({file:this.file,newFile:r});if(m)return void l.error(m.msg||"Failed to move fragment");l.success("Fragment saved and moved");const g=d.file.replace(/\.fragment\.html$/,"");setTimeout(()=>{window.location.href=`/admin/content/fragments/edit?fragment=${encodeURIComponent(g)}`},1e3)},cancelText:"Cancel"}),v=()=>{const e=c(p.querySelector("#dlg-move-dir").value||"/"),t=p.querySelector("#dlg-move-name").value,a="."===e?"/":"/"+e+"/";p.querySelector("#dlg-move-preview").textContent=t?a+t:""};p.querySelector("#dlg-move-dir").addEventListener("input",v),p.querySelector("#dlg-move-name").addEventListener("input",v),v()};handleReset=()=>{o.confirm("Reset this fragment? Any unsaved changes will be lost.",e=>{e&&(this.fragment={...this.fragment})})};handleSave=async()=>{this.saving=!0;const e=this.getFormState(),[t,a]=await n({file:this.file,markup:e.markup});if(this.saving=!1,t)return void l.error(t.msg||"Failed to save fragment");this.fragment={...this.fragment,markup:e.markup,updatedAt:a.updatedAt};const i=this.file.replace(/\.fragment\.html$/,"").split("/"),r=i.pop(),o=i.join("/"),m=e.name.toLowerCase().trim().replace(/[^\w\s-]/g,"").replace(/[\s_]+/g,"-").replace(/-+/g,"-").replace(/^-|-$/g,"");if(m&&m!==r){const e=o?`${o}/${m}.fragment.html`:`${m}.fragment.html`,[t,a]=await s({file:this.file,newFile:e});if(t)return void l.error(t.msg||"Failed to rename fragment file");l.success("Fragment saved and renamed");const n=a.file.replace(/\.fragment\.html$/,"");return void setTimeout(()=>{window.location.href=`/admin/content/fragments/edit?fragment=${encodeURIComponent(n)}`},1e3)}document.title=`Edit: ${this.fragment.name} - Admin`,l.success("Fragment saved")};render(){if(this.loading)return t`<div>Loading fragment...</div>`;if(this.error)return t`
       <div>
         <p>Fragment not found.</p>
         <a href="/admin/content/fragments">Back to Fragments</a>
@@ -49,9 +49,9 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/ke
 
       <h1 class="mb">Fragment: ${e.name}</h1>
 
-      <k-accordion>
-        <k-accordion-header for-panel="metadata">Metadata</k-accordion-header>
-        <k-accordion-panel name="metadata">
+      <k-tabs active="fragment">
+        <k-tab for="metadata">Metadata</k-tab>
+        <k-tab-content name="metadata">
           <div class="p">
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Name</strong></label>
@@ -83,9 +83,9 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/ke
               <span class="muted">${e.updatedAt?new Date(e.updatedAt).toLocaleString():""}</span>
             </div>
           </div>
-        </k-accordion-panel>
-        <k-accordion-header for-panel="fragment" active>Fragment</k-accordion-header>
-        <k-accordion-panel name="fragment" active>
+        </k-tab-content>
+        <k-tab for="fragment">Fragment</k-tab>
+        <k-tab-content name="fragment">
           <div class="p">
             <k-code-editor
               class="r b"
@@ -95,7 +95,7 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/ke
               ?disabled="${n}"
             ></k-code-editor>
           </div>
-        </k-accordion-panel>
-      </k-accordion>
-    `}}customElements.define("admin-fragment-editor",d);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\FragmentEditor.js.map
+        </k-tab-content>
+      </k-tabs>
+    `}}customElements.define("admin-fragment-editor",m);
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\FragmentEditor.js.map

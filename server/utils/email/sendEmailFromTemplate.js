@@ -4,8 +4,9 @@ import sendEmail from './sendEmail.js';
 /*
   `template` is a plain name for kempo's and the site's templates, or "owner/name" for an extension's;
   see renderEmailTemplate.js. It is also the email's type in the log, which the retention settings go by.
+  `replyTo` is passed on to sendEmail.
 */
-export default async ({ to, subject, template, data = {} }) => {
+export default async ({ to, subject, template, data = {}, replyTo = null }) => {
   if(!to){
     return [{ code: 400, msg: 'Recipient email is required' }, null];
   }
@@ -23,5 +24,5 @@ export default async ({ to, subject, template, data = {} }) => {
     return [error, null];
   }
 
-  return await sendEmail({ to, subject, html, template });
+  return await sendEmail({ to, subject, html, template, replyTo });
 };

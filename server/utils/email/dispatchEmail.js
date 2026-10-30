@@ -18,8 +18,9 @@ export const SEND_HOOK = 'email:send';
     export default async ({ email }) => ({ sent: false, error: 'Mailbox full' });                    // it tried and could not (throwing says the same)
     export default async ({ email }) => ({ sent: false, skipped: true, error: 'No API key is saved' }); // it is not set up, so it did not try
 
-  `email` is `{ id, to, from, fromIsDefault, subject, html, type, attempt }`; `fromIsDefault` says the site has not set its own sender, so
-  `from` is only a placeholder and a sender that knows a better one (the mailbox it signs in with) can use that. A handler sends the email and returns; it never touches the log, which
+  `email` is `{ id, to, from, fromIsDefault, replyTo, subject, html, type, attempt }`; `fromIsDefault` says the site has not set its own sender, so
+  `from` is only a placeholder and a sender that knows a better one (the mailbox it signs in with) can use that. `replyTo` is the address
+  a reply goes to, or null. A handler sends the email and returns; it never touches the log, which
   kempo keeps. After the chain the email is `sent`, or goes back to `queued` for a retry, or is `failed` when it has no tries left
   (the first try plus `email_max_retries`). Resolves like sendEmail.
 */
@@ -35,7 +36,7 @@ export default async id => {
     .returning();
   if(!claimed) return [{ code: 409, msg: 'That email is not waiting to be sent', emailId: id }, null];
 
-  const [hookError, fired] = await triggerHook(SEND_HOOK, { email: { id: claimed.id, to: claimed.recipient, from: claimed.sender, fromIsDefault: claimed.sender === defaultSender, subject: claimed.subject, html: claimed.html, type: claimed.type, attempt: claimed.attempts } }, { stopWhen: result => result?.sent === true });
+  const [hookError, fired] = await triggerHook(SEND_HOOK, { email: { id: claimed.id, to: claimed.recipient, from: claimed.sender, fromIsDefault: claimed.sender === defaultSender, replyTo: claimed.replyTo ?? null, subject: claimed.subject, html: claimed.html, type: claimed.type, attempt: claimed.attempts } }, { stopWhen: result => result?.sent === true });
   const results = fired?.results ?? [];
   const sent = results.find(entry => entry.result?.sent === true);
 

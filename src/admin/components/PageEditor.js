@@ -3,9 +3,9 @@ import { html, repeat, staticHtml, unsafeStatic } from '/kempo-ui/lit-all.min.js
 import { getPage, updatePage, listTemplates, deletePages, listDirectories, movePage } from '/kempo/sdk.js';
 import Dialog from '/kempo-ui/components/Dialog.js';
 import Toast from '/kempo-ui/components/Toast.js';
-import { getComponentOverride } from '../component-overrides.js';
+import { getComponentOverride, getEditorExtensions } from '../component-overrides.js';
 import '/kempo-ui/components/Icon.js';
-import '/kempo-ui/components/Accordion.js';
+import '/kempo-ui/components/Tabs.js';
 import '/kempo-ui/components/HtmlEditor.js';
 
 const CODE_MODE_LOCATIONS = new Set(['head', 'scripts']);
@@ -293,6 +293,7 @@ export default class PageEditor extends ShadowComponent {
 
   render() {
     if (this.loading) return html`<div>Loading page...</div>`;
+    const defaultTab = this.contents.some(content => content.location === 'default') ? 'content-default' : 'metadata';
 
     if (this.error) return html`
       <div>
@@ -341,9 +342,9 @@ export default class PageEditor extends ShadowComponent {
 
       <a href="${this.getPageUrl()}" class="d-b mb"><code>${this.getPageUrl()}</code></a>
 
-      <k-accordion>
-        <k-accordion-header for-panel="metadata">Metadata</k-accordion-header>
-        <k-accordion-panel name="metadata">
+      <k-tabs active="${defaultTab}">
+        <k-tab for="metadata">Metadata</k-tab>
+        <k-tab-content name="metadata">
           <div class="p">
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Name</strong></label>
@@ -397,10 +398,10 @@ export default class PageEditor extends ShadowComponent {
               <span class="muted">${page.updatedAt ? new Date(page.updatedAt).toLocaleString() : ''}</span>
             </div>
           </div>
-        </k-accordion-panel>
+        </k-tab-content>
         ${Object.keys(page.extraMetadata || {}).length ? html`
-          <k-accordion-header for-panel="extra-metadata">Extra Metadata</k-accordion-header>
-          <k-accordion-panel name="extra-metadata">
+          <k-tab for="extra-metadata">Extra Metadata</k-tab>
+          <k-tab-content name="extra-metadata">
             <div class="p">
               ${Object.entries(page.extraMetadata).map(([key, value]) => html`
                 <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
@@ -410,17 +411,18 @@ export default class PageEditor extends ShadowComponent {
               `)}
               <p class="muted mt0"><small>Extra metadata is managed by extensions and cannot be edited here.</small></p>
             </div>
-          </k-accordion-panel>
+          </k-tab-content>
         ` : ''}
         ${repeat(contents, c => c.location, ({ location, label, content, orphaned }) => {
       const isDefault = location === 'default';
       const headerTitle = label || (isDefault ? 'Content' : location.slice(0, 1).toUpperCase() + location.slice(1));
       const editorTag = unsafeStatic(getComponentOverride('page-content-editor', 'k-html-editor'));
+      const extensions = CODE_MODE_LOCATIONS.has(location) ? { nodes: [], controls: [] } : getEditorExtensions();
       return html`
-            <k-accordion-header for-panel="content-${location}" ?active="${isDefault}">
+            <k-tab for="content-${location}">
               ${headerTitle}${orphaned ? html` <span class="tc-warning"><small>(not in template)</small></span>` : ''}
-            </k-accordion-header>
-            <k-accordion-panel name="content-${location}" ?active="${isDefault}">
+            </k-tab>
+            <k-tab-content name="content-${location}">
               <div class="p">
                 ${staticHtml`<${editorTag}
                   class="r b"
@@ -428,14 +430,14 @@ export default class PageEditor extends ShadowComponent {
                   controls="full"
                   .value="${content}"
                   mode="${CODE_MODE_LOCATIONS.has(location) ? 'code' : 'visual'}"
-                  style="height: 400px;"
+                  nodes="${extensions.nodes.join(',')}"
                   ?disabled="${isLocked}"
-                ></${editorTag}>`}
+                >${extensions.controls.map(control => staticHtml`<${unsafeStatic(control)} slot="toolbar-top-extra"></${unsafeStatic(control)}>`)}</${editorTag}>`}
               </div>
-            </k-accordion-panel>
+            </k-tab-content>
           `;
     })}
-      </k-accordion>
+      </k-tabs>
     `;
   }
 }

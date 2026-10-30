@@ -236,7 +236,7 @@ export const deleteTemplates = async (files) =>
   del(`${API_BASE}/templates`, { files });
 
 export const listEmailTemplates = async (owner) =>
-  get(`${API_BASE}/email-templates`, owner ? { owner } : {});
+  get(`${API_BASE}/email-templates`, { owner: owner || 'all' });
 
 export const getEmailTemplate = async (template) =>
   get(`${API_BASE}/email-templates/file`, { template });
@@ -246,6 +246,24 @@ export const saveEmailTemplate = async ({ template, source }) =>
 
 export const resetEmailTemplate = async (template) =>
   del(`${API_BASE}/email-templates/file`, { template });
+
+export const listEmailStylesheets = async () =>
+  get(`${API_BASE}/email-stylesheets`);
+
+export const getEmailStylesheet = async (name) =>
+  get(`${API_BASE}/email-stylesheets/${encodeURIComponent(name)}`);
+
+export const createEmailStylesheet = async ({ name, description, css }) =>
+  post(`${API_BASE}/email-stylesheets`, { name, description, css });
+
+export const updateEmailStylesheet = async (name, { description, css }) =>
+  put(`${API_BASE}/email-stylesheets/${encodeURIComponent(name)}`, { description, css });
+
+export const deleteEmailStylesheet = async (name) =>
+  del(`${API_BASE}/email-stylesheets/${encodeURIComponent(name)}`);
+
+export const setEmailTemplateStylesheet = async ({ template, stylesheet }) =>
+  put(`${API_BASE}/email-templates/style`, { template, stylesheet });
 
 export const disableTemplate = async (file) =>
   put(`${API_BASE}/templates/disable`, { file });

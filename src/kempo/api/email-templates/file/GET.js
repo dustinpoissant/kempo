@@ -1,5 +1,6 @@
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
 import readEmailTemplate from '../../../../../server/utils/email/readEmailTemplate.js';
+import { stylesheetFor } from '../../../../../server/utils/email/stylesheets.js';
 
 /* One email template: what the site sends now, and the packaged version it can go back to. `?template=owner/name`. */
 export default async (request, response) => {
@@ -10,5 +11,5 @@ export default async (request, response) => {
 	const [error, template] = await readEmailTemplate({ template: request.query.template });
 	if(error) return response.status(error.code).json({ error: error.msg });
 
-	response.json(template);
+	response.json({ ...template, stylesheet: await stylesheetFor(template.template) });
 };

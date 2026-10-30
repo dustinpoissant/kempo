@@ -1373,9 +1373,9 @@ const [error, content] = await enableAdminGlobalContent('content_id');
 
 Email sending utilities.
 
-### `sendEmail({ to, subject, html, template })`
+### `sendEmail({ to, subject, html, template, replyTo })`
 
-Ask for an email to be sent. Kempo does not send it itself: it is saved in the email log (**Admin > Emails**) and handed to the installed email extension (kempo-resend, kempo-smtp...) through the `email:send` hook. `template` is optional and names what kind of email it is in the log (the retention settings go by it).
+Ask for an email to be sent. Kempo does not send it itself: it is saved in the email log (**Admin > Emails**) and handed to the installed email extension (kempo-resend, kempo-smtp...) through the `email:send` hook. `template` is optional and names what kind of email it is in the log (the retention settings go by it). `replyTo` is optional: the address a reply goes to (`name@example.com` or `Name <name@example.com>`), sent as the email's Reply-To header. One address on one line; anything else is refused with a 400 before the email is saved. Older versions of kempo ignore it, so an extension that only wants it as a nicety can pass it without checking the version.
 
 ```javascript
 import { sendEmail } from 'kempo/server/sdk.js';
@@ -1395,9 +1395,9 @@ A success means a sender sent it. A failure is still in the log and is tried aga
 
 Read the log (`status` is `queued`, `sending`, `sent` or `failed`), try a waiting or failed email again, and delete the ones older than the retention settings.
 
-### `sendEmailFromTemplate({ to, subject, template, data })`
+### `sendEmailFromTemplate({ to, subject, template, data, replyTo })`
 
-Send an email using a template with variable substitution. `template` is a plain name (`'verify-email'`) for kempo's and the site's templates, or `'your-extension/name'` for an extension's own, which the site can override; see [Email Templates](creating-extensions.md#email-templates).
+Send an email using a template with variable substitution. `replyTo` is the same as for `sendEmail`. `template` is a plain name (`'verify-email'`) for kempo's and the site's templates, or `'your-extension/name'` for an extension's own, which the site can override; see [Email Templates](creating-extensions.md#email-templates).
 
 ### `getSenderEmail()`
 

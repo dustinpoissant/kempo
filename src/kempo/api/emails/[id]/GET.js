@@ -1,5 +1,6 @@
 import currentUserHasPermission from '../../../../../server/utils/permissions/currentUserHasPermission.js';
 import getEmail from '../../../../../server/utils/email/getEmail.js';
+import mailClientView from '../../../../../server/utils/email/mailClientView.js';
 
 /* One email with its whole body. */
 export default async (request, response) => {
@@ -10,5 +11,5 @@ export default async (request, response) => {
 	const [error, found] = await getEmail(request.params.id);
 	if(error) return response.status(error.code).json({ error: error.msg });
 
-	response.json(found);
+	response.json({ ...found, clientHtml: mailClientView(found.html) });
 };

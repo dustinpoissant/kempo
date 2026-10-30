@@ -1,0 +1,2 @@
+import s from"../../../../server/utils/permissions/currentUserHasPermission.js";import{createStylesheet as e}from"../../../../server/utils/email/stylesheets.js";export default async(r,t)=>{const[o,i]=await s(r.cookies.session_token,"system:emails:manage");if(o)return t.status(o.code).json({error:o.msg});if(!i)return t.status(403).json({error:"Insufficient permissions"});const[n,a]=await e(r.body||{});if(n)return t.status(n.code).json({error:n.msg});t.status(201).json({stylesheet:a})};
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\email-stylesheets\POST.js.map

@@ -4,7 +4,7 @@ import { getGlobalContent, updateGlobalContent, deleteGlobalContent } from '/kem
 import Dialog from '/kempo-ui/components/Dialog.js';
 import Toast from '/kempo-ui/components/Toast.js';
 import '/kempo-ui/components/Icon.js';
-import '/kempo-ui/components/Accordion.js';
+import '/kempo-ui/components/Tabs.js';
 import '/kempo-ui/components/CodeEditor.js';
 
 export default class GlobalContentEditor extends ShadowComponent {
@@ -154,9 +154,9 @@ export default class GlobalContentEditor extends ShadowComponent {
       </div>
       <h1 class="mb">Global Content: ${entry.name || this.entryId}</h1>
 
-      <k-accordion>
-        <k-accordion-header for-panel="metadata">Metadata</k-accordion-header>
-        <k-accordion-panel name="metadata">
+      <k-tabs active="content">
+        <k-tab for="metadata">Metadata</k-tab>
+        <k-tab-content name="metadata">
           <div class="p">
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Name</strong></label>
@@ -189,9 +189,9 @@ export default class GlobalContentEditor extends ShadowComponent {
               <span class="muted">${entry.updatedAt ? new Date(entry.updatedAt).toLocaleString() : ''}</span>
             </div>
           </div>
-        </k-accordion-panel>
-        <k-accordion-header for-panel="content" active>Content</k-accordion-header>
-        <k-accordion-panel name="content" active>
+        </k-tab-content>
+        <k-tab for="content">Content</k-tab>
+        <k-tab-content name="content">
           <div class="p">
             <k-code-editor
               class="r b"
@@ -201,8 +201,8 @@ export default class GlobalContentEditor extends ShadowComponent {
               ?disabled="${isLocked}"
             ></k-code-editor>
           </div>
-        </k-accordion-panel>
-      </k-accordion>
+        </k-tab-content>
+      </k-tabs>
     `;
   }
 }

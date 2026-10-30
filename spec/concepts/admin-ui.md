@@ -21,6 +21,7 @@ The admin portal is the primary interface for site administrators. It is not con
 - **Locked template**: `dist/admin/default.template.html` is system-owned and locked to prevent accidental edits from the admin UI.
 - **Absolute paths**: Admin template uses absolute paths (`/kempo-css/...`) rather than `{{pathToRoot}}` since admin always lives at `/admin/`.
 - **Component override registry**: `/admin/component-overrides.js` lets an extension swap its own custom element into a named slot (e.g. `page-content-editor`, default `k-html-editor`) — see `docs/extensions/creating-extensions.md`. Backed by `window.kempo.componentOverrides`, populated via `registerComponentOverride(slot, tagName)`. `PageEditor` reads it once per content block through lit-html's `staticHtml`/`unsafeStatic` to render the resolved tag dynamically. Registration must run after `init.js`, which does a full `window.kempo = {...}` reassignment — an extension's `admin/*.global.html` targeting `location="head"` is guaranteed to render after it.
+- **Editor extension registry**: the same file also has `registerEditorExtension({ nodes, controls })` / `getEditorExtensions()`, backed by `window.kempo.editorExtensions`, so any number of extensions add custom Lexical node URLs (the editor's `nodes` attribute) and toolbar control tags (its `toolbar-top-extra` slot) to the `PageEditor` content editors without replacing them. The Head and Scripts editors (code mode) get none. Needs kempo-ui with URL `nodes` and `toolbar-top-extra`.
 
 ## Implementation
 

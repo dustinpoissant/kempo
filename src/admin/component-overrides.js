@@ -19,3 +19,17 @@ export const registerComponentOverride = (slot, tagName) => {
 
 export const getComponentOverride = (slot, fallbackTagName) =>
   window.kempo?.componentOverrides?.[slot] || fallbackTagName;
+
+/*
+  Lets any number of extensions add to the page/fragment content editor without replacing it (see registerComponentOverride for
+  that). `nodes` are URLs of custom Lexical node modules, loaded by the editor's `nodes` attribute; `controls` are tag names of
+  toolbar controls, drawn in the editor's `toolbar-top-extra` slot. Both apply to the visual editors, not the Head and Scripts ones.
+*/
+export const registerEditorExtension = ({ nodes = [], controls = [] } = {}) => {
+  window.kempo = window.kempo || {};
+  const registry = window.kempo.editorExtensions = window.kempo.editorExtensions || { nodes: [], controls: [] };
+  for(const node of nodes) if(!registry.nodes.includes(node)) registry.nodes.push(node);
+  for(const control of controls) if(!registry.controls.includes(control)) registry.controls.push(control);
+};
+
+export const getEditorExtensions = () => window.kempo?.editorExtensions || { nodes: [], controls: [] };

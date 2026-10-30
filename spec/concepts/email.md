@@ -31,7 +31,7 @@ Email is used for account verification and password reset, and by extensions (or
 | `getSenderEmail()` | The bare address emails are sent from |
 
 ### The email:send hook
-Payload `{ email: { id, to, from, fromIsDefault, subject, html, type, attempt } }`. Answer `{ sent: true, provider, messageId }`, `{ sent: false, error }`, or `{ sent: false, skipped: true, error }` when the extension is not set up (not counted as a try, and its reason is only shown when nothing else tried). `fromIsDefault` means `from` is only the placeholder.
+Payload `{ email: { id, to, from, fromIsDefault, replyTo, subject, html, type, attempt } }`; `replyTo` is the address a reply goes to, or `null` (`sendEmail` takes it, validates it as one address on one line, and keeps it in the `replyTo` column so a retry sends the same header). Answer `{ sent: true, provider, messageId }`, `{ sent: false, error }`, or `{ sent: false, skipped: true, error }` when the extension is not set up (not counted as a try, and its reason is only shown when nothing else tried). `fromIsDefault` means `from` is only the placeholder.
 
 ### Settings
 - `system:email_from` — the address emails are sent from, else `EMAIL_FROM` in the environment (`SMTP_FROM` is still read), else `noreply@example.com`. It must look like `name@example.com` or `Shop Name <name@example.com>`; one that does not is skipped, and the setting cannot be saved as one.
@@ -43,3 +43,7 @@ Payload `{ email: { id, to, from, fromIsDefault, subject, html, type, attempt } 
 
 ### Email Templates
 Located in `app-templates/emails/`: `email.template.html` (the layout), `verify-email.page.html`, `reset-password.page.html`, `test.page.html`. Templates are copied to the consumer's `templates/emails/` during `npx kempo init`.
+
+## Email stylesheets
+
+The CSS an email is drawn with is a **stylesheet**, kept by name in `emailStylesheet` and managed on the Styles tab of the Emails page. `default` is made at start and cannot be deleted. Each template picks one in `emailTemplateStyle` (no row means `default`). Rendering (`renderEmailTemplate`) takes the chosen CSS, drops what mail clients do not keep (`mailClientView.js`, the same filter the previews use), and keeps only the rules whose elements and classes are in the email (`treeShake.js`). kempo-css is no longer embedded in emails.

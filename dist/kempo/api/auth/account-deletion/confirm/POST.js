@@ -1,2 +1,2 @@
 import{confirmAccountDeletion as o}from"../../../../../../server/utils/auth/accountDeletion.js";export default async(e,t)=>{const[r,s]=await o({email:e.body?.email,code:e.body?.code});if(r)return t.status(r.code).json({error:r.msg});t.json(s)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\auth\account-deletion\confirm\POST.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\auth\account-deletion\confirm\POST.js.map

@@ -5,12 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Added
+
+- **Email stylesheets.** A Styles tab on the Emails page makes, changes and deletes the CSS emails are drawn with. The `default` stylesheet is kempo's light theme written in properties mail clients keep, and cannot be deleted. Each email template picks one on its Templates dialog (default when none). When an email is rendered its stylesheet is filtered for what mail clients drop and cut down to the rules its HTML uses, in place of kempo-css's shake. Routes: `/kempo/api/email-stylesheets` and `/kempo/api/email-templates/style`.
+- **Email preview as a mail client shows it.** Template previews and the email log show the email with the CSS a mail client keeps (`server/utils/email/mailClientView.js`).
 ### Requires
 
 - kempo-ui 0.7.2 or later. Its sortable items (the rows of a table of menu links) fill their row and centre vertically.
 
 ### Added
 
+- **Editor extensions.** `registerEditorExtension({ nodes, controls })` (in `/admin/component-overrides.js`) lets any number of extensions add custom Lexical nodes and toolbar controls to the page editor's Content editors, instead of replacing the editor as an override does. The nodes go to `k-html-editor`'s `nodes` attribute and the controls to its `toolbar-top-extra` slot. Needs a kempo-ui with URL `nodes` and that slot.
+- **Reply-To on email.** `sendEmail` and `sendEmailFromTemplate` take an optional `replyTo` (`name@example.com` or `Name <name@example.com>`; one address on one line, anything else is a 400 before the email is saved). It is kept in a new `replyTo` column of the email log (added to an existing site's table on the next start), shown in **Admin > Emails**, and handed to the `email:send` handler as `email.replyTo` (`null` when there is none), so a retry sends the same header. kempo-resend and kempo-smtp send it as the Reply-To header.
 - Admin tabs on Groups, Permissions, Global content, Pages, Templates, Emails and Extensions have a location after their tabs (`admin-groups-tabs`, `admin-permissions-tabs`, `admin-globals-tabs`, `admin-pages-tabs`, `admin-templates-tabs`, `admin-emails-tabs`, `admin-extensions-tabs`), so an extension can add a tab there.
 - **Global content page has tabs** for Custom, Extensions and System global content, with hash routing, and each table has a search box that filters by name, location or author.
 - **Pages page has tabs** for Custom, Extensions and System pages, with hash routing, and each table has a search box that filters by name, title, URL, description or author on the server. `listPages` takes an optional `q` for the same filter.

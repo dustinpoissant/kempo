@@ -1,2 +1,2 @@
 import s from"../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../server/utils/updates/getUpdateStatus.js";export default async(r,t)=>{const[o,i]=await s(r.cookies.session_token,"system:updates:manage");if(o)return t.status(o.code).json({error:o.msg});if(!i)return t.status(403).json({error:"Insufficient permissions"});const[n,a]=await e({offline:"true"===r.query.offline});if(n)return t.status(n.code).json({error:n.msg});t.json(a)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\updates\GET.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\updates\GET.js.map

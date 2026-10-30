@@ -4,7 +4,7 @@ import { getFragment, updateFragment, deleteFragments, moveFragment, listDirecto
 import Dialog from '/kempo-ui/components/Dialog.js';
 import Toast from '/kempo-ui/components/Toast.js';
 import '/kempo-ui/components/Icon.js';
-import '/kempo-ui/components/Accordion.js';
+import '/kempo-ui/components/Tabs.js';
 import '/kempo-ui/components/CodeEditor.js';
 
 export default class FragmentEditor extends ShadowComponent {
@@ -263,9 +263,9 @@ export default class FragmentEditor extends ShadowComponent {
 
       <h1 class="mb">Fragment: ${fragment.name}</h1>
 
-      <k-accordion>
-        <k-accordion-header for-panel="metadata">Metadata</k-accordion-header>
-        <k-accordion-panel name="metadata">
+      <k-tabs active="fragment">
+        <k-tab for="metadata">Metadata</k-tab>
+        <k-tab-content name="metadata">
           <div class="p">
             <div class="d-f mb" style="align-items: center; gap: var(--spacer);">
               <label style="min-width: 120px;"><strong>Name</strong></label>
@@ -297,9 +297,9 @@ export default class FragmentEditor extends ShadowComponent {
               <span class="muted">${fragment.updatedAt ? new Date(fragment.updatedAt).toLocaleString() : ''}</span>
             </div>
           </div>
-        </k-accordion-panel>
-        <k-accordion-header for-panel="fragment" active>Fragment</k-accordion-header>
-        <k-accordion-panel name="fragment" active>
+        </k-tab-content>
+        <k-tab for="fragment">Fragment</k-tab>
+        <k-tab-content name="fragment">
           <div class="p">
             <k-code-editor
               class="r b"
@@ -309,8 +309,8 @@ export default class FragmentEditor extends ShadowComponent {
               ?disabled="${isLocked}"
             ></k-code-editor>
           </div>
-        </k-accordion-panel>
-      </k-accordion>
+        </k-tab-content>
+      </k-tabs>
     `;
   }
 }
