@@ -87,7 +87,8 @@ All extension capabilities are declared in `kempo-config.json`. Older extensions
 | `settings` | Settings to create on install |
 | `groups` | Groups to create on install, with their assigned permissions |
 | `hooks` | Event hooks to register (`{ "event-name": "path/to/handler.js" }`) |
-| `widgets` | Widgets to add to the admin dashboard, see [Admin Dashboard](../dashboard.md) |
+| `admin_dashboard_widgets` | Widgets to add to the admin dashboard, see [Admin Dashboard](../dashboard.md). The older name, `widgets`, still works |
+| `page_widgets` | Widgets a page can hold in the page builder, see [The Page Builder](../sitebuilder.md#writing-widgets-for-your-extension) |
 | `jobs` | Recurring work kempo runs for you, see [Scheduled Jobs](#scheduled-jobs) |
 | `aliases` | Short addresses for your public pages, see [Address Aliases](#address-aliases) |
 | `dependencies` | Names of other extensions that must be installed and enabled first |

@@ -7,6 +7,7 @@ Kempo is a fullstack CMS framework. Install it into a project, scaffold the star
 - [Getting Started](getting-started.md) — installation, database setup, first run
 - [Project Structure](project-structure.md) — directory layout and configuration files
 - [Content Management](content-management.md) — pages, templates, fragments, and global content
+- [The Page Builder](sitebuilder.md) — building pages from widgets, and writing widgets for your extension
 - [Users, Auth & Permissions](users-auth-permissions.md) — accounts, login, groups, and access control
 - [Settings](settings.md) — runtime key-value configuration
 - [Extensions](extensions/README.md) — installing and managing extensions

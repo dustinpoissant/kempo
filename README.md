@@ -360,7 +360,7 @@ Extensions can push live updates to browsers: declare a channel, publish to it f
 
 ## Admin Dashboard
 
-The admin home page is a grid of widgets one to four blocks wide and one to three tall. Kempo provides widgets for pages, content, users, notifications and extensions; extensions add their own with `widgets` in `kempo-config.json` or `registerDashboardWidget`. Each person chooses which are shown, their order and size, kept in their browser's localStorage, and a widget only loads its script and data once it is shown. Existing sites get the `dashboardWidget` table when the server starts. See [docs/dashboard.md](docs/dashboard.md).
+The admin home page is a grid of widgets one to four blocks wide and one to three tall. Kempo provides widgets for pages, content, users, notifications and extensions; extensions add their own with `admin_dashboard_widgets` (or its older name, `widgets`) in `kempo-config.json` or `registerDashboardWidget`. Each person chooses which are shown, their order and size, kept in their browser's localStorage, and a widget only loads its script and data once it is shown. Existing sites get the `dashboardWidget` table when the server starts. See [docs/dashboard.md](docs/dashboard.md).
 
 ## Notifications
 
@@ -394,6 +394,10 @@ Kempo uses [kempo-css](https://github.com/dustinpoissant/kempo-css) for styling 
 ```
 
 Refer to the [kempo-css docs](https://github.com/dustinpoissant/kempo-css) and [kempo-ui docs](https://github.com/dustinpoissant/kempo-ui) for available utility classes and components.
+
+## The Page Builder
+
+Pages are edited in a block-based page builder: widgets are added to a page, configured and nested, and the page is saved as plain HTML, so serving it is still a file read. The builder takes the whole screen but the admin navigation. The widget tree lives in the `sitebuilderPage` table (added to an existing site when the server starts), keyed by the page file; when a file is changed outside the builder, an admin chooses which version to keep. Extensions add widgets with `page_widgets` in `kempo-config.json`. See [docs/sitebuilder.md](docs/sitebuilder.md).
 
 ## The Rich Text Editor
 

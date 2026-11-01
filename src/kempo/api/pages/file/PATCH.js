@@ -17,7 +17,7 @@ export default async (request, response) => {
 		return response.status(403).json({ error: 'Insufficient permissions' });
 	}
 
-	const { file, newFile } = request.body;
+	const { file, newFile, overwrite } = request.body;
 
 	if(!file){
 		return response.status(400).json({ error: 'File path is required' });
@@ -27,7 +27,7 @@ export default async (request, response) => {
 		return response.status(400).json({ error: 'New file path is required' });
 	}
 
-	const [error, data] = await movePage({ rootDir, file, newFile });
+	const [error, data] = await movePage({ rootDir, file, newFile, overwrite: overwrite === true });
 
 	if(error){
 		return response.status(error.code).json({ error: error.msg });

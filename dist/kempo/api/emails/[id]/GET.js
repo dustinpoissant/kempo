@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import r from"../../../../../server/utils/email/getEmail.js";import e from"../../../../../server/utils/email/mailClientView.js";export default async(i,t)=>{const[o,m]=await s(i.cookies.session_token,"system:emails:read");if(o)return t.status(o.code).json({error:o.msg});if(!m)return t.status(403).json({error:"Insufficient permissions"});const[n,a]=await r(i.params.id);if(n)return t.status(n.code).json({error:n.msg});t.json({...a,clientHtml:e(a.html)})};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\emails\[id]\GET.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\emails\[id]\GET.js.map

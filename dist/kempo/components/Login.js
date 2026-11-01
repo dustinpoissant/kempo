@@ -15,4 +15,4 @@ import e from"/kempo-ui/components/LightComponent.js";import{html as s}from"/kem
       <p class="mt"><a href="/forgot-password">Forgot Password?</a></p>
       <p class="mt">Don't have an account? <a href="/register">Register</a></p>
     `}}customElements.define("k-login",a);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\Login.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\Login.js.map

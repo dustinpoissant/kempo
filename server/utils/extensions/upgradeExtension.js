@@ -14,6 +14,7 @@ import declaredValue from '../settings/declaredValue.js';
 import syncCoreSchema from '../setup/syncCoreSchema.js';
 import readKempoConfig from './readKempoConfig.js';
 import { invalidateScopeCache } from './scopeCache.js';
+import dashboardWidgetsOf from './dashboardWidgetsOf.js';
 
 /*
   Brings the database in step with a newer version of an extension that is already on disk: its tables (additions only: new
@@ -89,12 +90,12 @@ export default async ({ name, record, extRoot = join(process.cwd(), 'node_module
     if(!newHooks[event]) await db.delete(hook).where(and(eq(hook.owner, name), eq(hook.event, event))).catch(() => {});
   }
 
-  const newWidgetKeys = new Set((newKempo.widgets || []).map(w => w.key));
-  for(const widget of newKempo.widgets || []){
+  const newWidgetKeys = new Set(dashboardWidgetsOf(newKempo).map(w => w.key));
+  for(const widget of dashboardWidgetsOf(newKempo)){
     const [widgetError] = await registerDashboardWidget({ ...widget, owner: name });
     if(widgetError) console.warn(`[${name}] dashboard widget "${widget.key}" was not registered: ${widgetError.msg}`);
   }
-  for(const { key } of oldKempo.widgets || []){
+  for(const { key } of dashboardWidgetsOf(oldKempo)){
     if(!newWidgetKeys.has(key)) await unregisterDashboardWidget({ owner: name, key });
   }
 

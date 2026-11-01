@@ -1,6 +1,7 @@
 import { rename } from 'fs/promises';
 import { join, normalize, sep } from 'path';
 import { existsSync } from 'fs';
+import { moveRow } from '../sitebuilder/rows.js';
 
 export default async ({ rootDir, file }) => {
   if(!rootDir) return [{ code: 400, msg: 'Root directory is required' }, null];
@@ -26,5 +27,7 @@ export default async ({ rootDir, file }) => {
   }
 
   await rename(fullPath, enabledPath);
-  return [null, { file: normalized.replace(/\.page-disabled\.html$/, '.page.html') }];
+  const enabledFile = normalized.replace(/\.page-disabled\.html$/, '.page.html');
+  await moveRow(normalized.split(sep).join('/'), enabledFile.split(sep).join('/'));
+  return [null, { file: enabledFile }];
 };

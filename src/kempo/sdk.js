@@ -210,8 +210,39 @@ export const disablePage = async (file) =>
 export const enablePage = async (file) =>
   put(`${API_BASE}/pages/enable`, { file });
 
-export const movePage = async ({ file, newFile }) =>
-  patch(`${API_BASE}/pages/file`, { file, newFile });
+export const movePage = async ({ file, newFile, overwrite = false }) =>
+  patch(`${API_BASE}/pages/file`, { file, newFile, overwrite });
+
+export const copyPage = async ({ file, newFile }) =>
+  post(`${API_BASE}/pages/copy`, { file, newFile });
+
+/*
+  Sitebuilder
+*/
+
+export const getSitebuilderWidgets = async () =>
+  get(`${API_BASE}/sitebuilder/widgets`);
+
+export const openSitebuilderPage = async (file) =>
+  get(`${API_BASE}/sitebuilder/page`, { file });
+
+export const saveSitebuilderPage = async ({ file, trees, codeBlocks, changes, loadedHash }) =>
+  put(`${API_BASE}/sitebuilder/page`, { file, trees, codeBlocks, changes, loadedHash });
+
+export const resolveSitebuilderConflict = async ({ file, keep, loadedHash }) =>
+  post(`${API_BASE}/sitebuilder/page/resolve`, { file, keep, loadedHash });
+
+export const leaveSitebuilderCodeMode = async ({ file, mode, loadedHash }) =>
+  post(`${API_BASE}/sitebuilder/page/leave-code`, { file, mode, loadedHash });
+
+export const listSitebuilderTemplates = async () =>
+  get(`${API_BASE}/sitebuilder/templates`);
+
+export const createSitebuilderTemplate = async ({ name, nodes }) =>
+  post(`${API_BASE}/sitebuilder/templates`, { name, nodes });
+
+export const deleteSitebuilderTemplate = async (id) =>
+  del(`${API_BASE}/sitebuilder/templates`, { id });
 
 export const searchPagesByMetadata = async (query) =>
   get(`${API_BASE}/pages/search`, { query: JSON.stringify(query) });

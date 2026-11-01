@@ -1,0 +1,2 @@
+export const HISTORY_LIMIT=50;export default class t{#t=[];#e=[];constructor(t=50){this.limit=t}push=t=>{this.#t.push(structuredClone(t)),this.#t.length>this.limit&&this.#t.shift(),this.#e=[]};get canUndo(){return this.#t.length>0}get canRedo(){return this.#e.length>0}undo=t=>this.#t.length?(this.#e.push(structuredClone(t)),this.#t.pop()):null;redo=t=>this.#e.length?(this.#t.push(structuredClone(t)),this.#e.pop()):null;get size(){return this.#t.length}}
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\history.js.map

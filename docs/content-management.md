@@ -48,7 +48,7 @@ Templates are `.template.html` files that wrap page content. They define named `
 </html>
 ```
 
-A page targets a template by name via its frontmatter `template` field. Content pages are rendered into the `content` location.
+Pages are edited in the [page builder](sitebuilder.md), which builds a page from widgets and saves it as the HTML below. A page targets a template by name via its frontmatter `template` field. Content pages are rendered into the `content` location.
 
 ## Fragments
 

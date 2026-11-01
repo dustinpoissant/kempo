@@ -311,6 +311,37 @@ export const dashboardWidget = pgTable('dashboardWidget', {
 ]);
 
 /*
+  Sitebuilder
+
+  The page builder keeps the widget tree of each page it edits here, keyed by the page's file path (pages are only
+  files, so there is no pages table). The page file is what is served; this row is what the editor opens. `trees`
+  holds one tree per visual content location, `fileHash` is the hash of the page file as the builder last wrote or
+  read it, and `codeOnly` is set for a page the builder could not rebuild exactly, which is edited as code.
+  `lastGoodTrees` is the last tree that was good, kept while a page is code-only so it can be brought back.
+*/
+export const sitebuilderPage = pgTable('sitebuilderPage', {
+  file: text('file').primaryKey(),
+  trees: jsonb('trees').notNull().default({}),
+  fileHash: text('fileHash').notNull(),
+  codeOnly: boolean('codeOnly').notNull().default(false),
+  lastGoodTrees: jsonb('lastGoodTrees'),
+  savedAt: timestamp('savedAt').notNull(),
+  savedBy: text('savedBy'),
+});
+
+/*
+  A widget (with its children) a person saved to insert again. Inserting makes a copy, so changing a template later
+  does not change the pages it was used on.
+*/
+export const sitebuilderTemplate = pgTable('sitebuilderTemplate', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  nodes: jsonb('nodes').notNull(),
+  createdBy: text('createdBy'),
+  createdAt: timestamp('createdAt').notNull(),
+});
+
+/*
   Triggers to prevent deletion of system resources
 */
 export const createSettingProtectionTrigger = () => `

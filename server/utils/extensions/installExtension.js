@@ -18,6 +18,7 @@ import registerJobs from '../scheduler/registerJobs.js';
 import { normalizeJobs } from '../scheduler/helpers.js';
 import { normalizeAliases } from './aliases.js';
 import { normalizeScopes, scopeNames } from './scopes.js';
+import dashboardWidgetsOf from './dashboardWidgetsOf.js';
 import checkClaims from './checkClaims.js';
 
 export default async ({ name }) => {
@@ -145,7 +146,7 @@ export default async ({ name }) => {
     invalid definition, or a site that has not applied the dashboardWidget table yet) is reported and
     skipped rather than failing the install of an otherwise working extension.
   */
-  for(const widget of kempoConfig.widgets || []){
+  for(const widget of dashboardWidgetsOf(kempoConfig)){
     const [widgetError] = await registerDashboardWidget({ ...widget, owner: name });
     if(widgetError){
       console.warn(`[${name}] dashboard widget "${widget.key}" was not registered: ${widgetError.msg}`);

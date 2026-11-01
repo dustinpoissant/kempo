@@ -1,0 +1,13 @@
+import t from"/kempo/sitebuilder/components/Widget.js";import{html as e,css as i}from"/kempo-ui/lit-all.min.js";import{resolveEmbed as r}from"/kempo/sitebuilder/embedProviders.js";import"/kempo-ui/components/Video.js";export default class o extends t{static properties={src:{type:String,reflect:!0},poster:{type:String,reflect:!0},width:{type:Number,reflect:!0},align:{type:String,reflect:!0},ratio:{type:String,reflect:!0},fit:{type:String,reflect:!0},controls:{type:String,reflect:!0},skip:{type:Number,reflect:!0},neverHide:{type:Boolean,reflect:!0,attribute:"never-hide"},hideAfter:{type:Number,reflect:!0,attribute:"hide-after"},autoplay:{type:Boolean,reflect:!0},loop:{type:Boolean,reflect:!0},muted:{type:Boolean,reflect:!0},remember:{type:Boolean,reflect:!0},preload:{type:String,reflect:!0}};constructor(){super(),this.src="",this.poster="",this.width=0,this.align="left",this.ratio="",this.fit="",this.controls="normal",this.skip=10,this.neverHide=!1,this.hideAfter=3,this.autoplay=!1,this.loop=!1,this.muted=!1,this.remember=!1,this.preload="metadata"}static styles=i`
+    :host { display: block; margin-bottom: var(--spacer, 1rem); }
+    .box { width: 100%; }
+    .box.center { margin-inline: auto; }
+    .box.right { margin-inline-start: auto; }
+    .frame { width: 100%; border: 0; display: block; }
+    k-video.cover::part(video) { object-fit: cover; }
+    .empty { padding: var(--spacer, 1rem); border: 1px dashed var(--c_border, #888); text-align: center; opacity: 0.7; }
+  `;render(){if(!this.src)return e`<div class="empty">Choose a video.</div>`;const t=this.ratio?this.ratio.replace("/"," / "):"",i=r(this.src,{autoplay:this.autoplay,muted:this.muted,loop:this.loop,controls:""!==this.controls}),o=this.width>0?`max-width: ${this.width}px`:"",s=this.neverHide?"999999999":""+1e3*this.hideAfter;return e`
+      <div class="box ${"center"===this.align||"right"===this.align?this.align:""}" style="${o}">
+        ${i?e`<iframe class="frame" style="aspect-ratio: ${t||i.ratio};" src="${i.src}" title="${i.provider} video" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`:e`<k-video class="${"cover"===this.fit?"cover":""}" style="${t?`aspect-ratio: ${t}`:""}" src="${this.src}" poster="${this.poster||""}" controls="${this.controls}" skip-duration="${this.skip}" idle-delay-ms="${s}" preload="${this.preload}" persistent-id="${this.remember?this.src:""}" ?autoplay="${this.autoplay}" ?loop="${this.loop}" ?muted="${this.muted||this.autoplay}"></k-video>`}
+      </div>`}}customElements.define("k-video-player",o);
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\VideoPlayer.js.map

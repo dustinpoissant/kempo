@@ -82,4 +82,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t}from"/ke
         </k-tab-content>
       </k-tabs>
     `}}customElements.define("admin-global-content-editor",l);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\GlobalContentEditor.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\GlobalContentEditor.js.map

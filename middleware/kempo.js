@@ -29,6 +29,7 @@ import { normalizeScopes } from '../server/utils/extensions/scopes.js';
 
 const MIME_TYPES = {
   '.js': 'application/javascript',
+  '.html': 'text/html',
   '.css': 'text/css',
   '.json': 'application/json',
   '.png': 'image/png',
@@ -404,7 +405,13 @@ export default config => {
                 return;
               }
               const mime = MIME_TYPES[extname(filePath)] || 'application/octet-stream';
-              response.writeHead(200, { 'Content-Type': mime });
+              /*
+                The page builder shows the page being edited in an iframe of this one page, which the site's default
+                X-Frame-Options: DENY would block. It is only ever framed by the admin, on the same origin.
+              */
+              const headers = { 'Content-Type': mime };
+              if(name === 'sitebuilder-frame.html') headers['X-Frame-Options'] = 'SAMEORIGIN';
+              response.writeHead(200, headers);
               response.end(await readFile(filePath));
               return;
             }

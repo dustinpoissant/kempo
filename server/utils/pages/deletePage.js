@@ -1,6 +1,7 @@
 import { unlink } from 'fs/promises';
 import { join, normalize, sep } from 'path';
 import triggerHook from '../hooks/triggerHook.js';
+import { deleteRow } from '../sitebuilder/rows.js';
 
 export default async ({ rootDir, files }) => {
   if(!rootDir) return [{ code: 400, msg: 'Root directory is required' }, null];
@@ -19,6 +20,7 @@ export default async ({ rootDir, files }) => {
       continue;
     }
 
+    await deleteRow(normalized.split(sep).join('/'));
     await triggerHook('page:deleted', { file });
   }
 

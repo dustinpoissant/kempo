@@ -10,3 +10,12 @@ window.litDisableBundleWarning = true;
 import('/kempo-ui/components/Import.js');
 import('/kempo-ui/components/Aside.js');
 import('/kempo-ui/components/Main.js');
+
+/*
+  Toasts appear at the bottom right in the admin (the top right is covered by the page builder's controls and the
+  tables' actions). A call that gives its own position still wins.
+*/
+import('/kempo-ui/components/Toast.js').then(({ default: Toast }) => {
+  const create = Toast.create.bind(Toast);
+  Toast.create = (message, options = {}) => create(message, { position: window.innerWidth <= 768 ? 'bottom center' : 'bottom right', ...options });
+});

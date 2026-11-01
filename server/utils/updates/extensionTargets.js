@@ -10,6 +10,7 @@ import checkClaims from '../extensions/checkClaims.js';
 import { normalizeAliases } from '../extensions/aliases.js';
 import { normalizeScopes, scopeNames } from '../extensions/scopes.js';
 import { NAME_PATTERN } from '../extensions/marketplaceClient.js';
+import dashboardWidgetsOf from '../extensions/dashboardWidgetsOf.js';
 
 /*
   Checks a set of extension updates against npm and the site, and says what to install: for each name, that it is installed,
@@ -92,7 +93,7 @@ export const extensionPlan = async ({ dir, items, executor }) => {
         permissions: countNew(next.permissions, old.permissions),
         settings: countNew(next.settings, old.settings),
         groups: countNew(next.groups, old.groups),
-        widgets: countNew(next.widgets, old.widgets, widget => widget.key),
+        widgets: countNew(dashboardWidgetsOf(next), dashboardWidgetsOf(old), widget => widget.key),
         jobs: countNew(next.jobs, old.jobs)
       }
     });

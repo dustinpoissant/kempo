@@ -2,6 +2,7 @@ import { readFile, rename } from 'fs/promises';
 import { join, normalize, sep } from 'path';
 import { existsSync } from 'fs';
 import parseFrontmatter from '../fs/parseFrontmatter.js';
+import { moveRow } from '../sitebuilder/rows.js';
 
 export default async ({ rootDir, file }) => {
   if(!rootDir) return [{ code: 400, msg: 'Root directory is required' }, null];
@@ -30,5 +31,7 @@ export default async ({ rootDir, file }) => {
   }
 
   await rename(fullPath, disabledPath);
-  return [null, { file: normalized.replace(/\.page\.html$/, '.page-disabled.html') }];
+  const disabledFile = normalized.replace(/\.page\.html$/, '.page-disabled.html');
+  await moveRow(normalized.split(sep).join('/'), disabledFile.split(sep).join('/'));
+  return [null, { file: disabledFile }];
 };
