@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../../server/utils/email/readEmailTemplate.js";import{stylesheetFor as r}from"../../../../../server/utils/email/stylesheets.js";export default async(t,i)=>{const[o,a]=await s(t.cookies.session_token,"system:pages:read");if(o)return i.status(o.code).json({error:o.msg});if(!a)return i.status(403).json({error:"Insufficient permissions"});const[m,n]=await e({template:t.query.template});if(m)return i.status(m.code).json({error:m.msg});i.json({...n,stylesheet:await r(n.template)})};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\email-templates\file\GET.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\email-templates\file\GET.js.map

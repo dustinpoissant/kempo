@@ -9,4 +9,4 @@ import{html as e}from"/kempo-ui/lit-all.min.js";import t from"./WidgetSettings.j
       ${t?this.renderChoice("fit","Fit",[{value:"",label:"Fill and crop"},{value:"contain",label:"Show all"}],{hint:"How the picture fills the aspect ratio."}):""}
       ${this.renderChoice("rounded","Corners",[{value:"",label:"Square"},{value:"small",label:"Rounded"},{value:"round",label:"Circle"}])}
     `}}customElements.define("k-image-settings",l);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\ImageSettings.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\ImageSettings.js.map

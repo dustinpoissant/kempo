@@ -1,6 +1,23 @@
 import { safeUrl } from './html.js';
 
 /*
+  Colors are kept as #rrggbb, or #rrggbbaa when they are not fully opaque: one spelling for the settings panel, the
+  page and the rebuild, and nothing that can carry anything but a color into a style attribute.
+*/
+export const parseColor = value => {
+  const match = /^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.exec(String(value ?? '').trim());
+  if(!match) return null;
+  const digits = match[1].length <= 4 ? [...match[1]].map(digit => digit + digit).join('') : match[1];
+  const [red, green, blue, alpha] = digits.match(/../g).map(pair => parseInt(pair, 16));
+  return { red, green, blue, alpha: alpha === undefined ? 1 : alpha / 255 };
+};
+
+export const formatColor = ({ red, green, blue, alpha = 1 }) => {
+  const channel = number => Math.max(0, Math.min(255, Math.round(number))).toString(16).padStart(2, '0');
+  return `#${channel(red)}${channel(green)}${channel(blue)}${alpha < 1 ? channel(alpha * 255) : ''}`;
+};
+
+/*
   Attribute types. A widget declares its settings as attributes with a type, and the type decides how a value is
   cleaned (here, on the server and in the editor alike) and how the attribute editor draws its field (`field`, a
   name the editor maps to a control). Extensions can add types with registerAttributeType. A type the server does
@@ -24,6 +41,13 @@ export const attributeTypes = {
   url: { field: 'text', coerce: value => safeUrl(value) },
   id: { field: 'text', coerce: value => String(value ?? '').trim().replace(/[^A-Za-z0-9_-]/g, '') },
   image: { field: 'image', coerce: value => safeUrl(value) },
+  color: {
+    field: 'color',
+    coerce: value => {
+      const color = parseColor(value);
+      return color ? formatColor(color) : '';
+    }
+  },
   select: {
     field: 'select',
     coerce: (value, def) => {

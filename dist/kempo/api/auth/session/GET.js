@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/auth/getSession.js";export default async(e,o)=>{try{const r=e.cookies.session_token,[n,t]=await s({token:r});if(n||!t||!t.user)return o.json({session:null,user:null});const{passwordHash:i,...u}=t.user;o.json({session:t.session,user:u})}catch(s){console.log("Session API error:",s),o.status(500).json({error:s.message})}};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\auth\session\GET.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\auth\session\GET.js.map

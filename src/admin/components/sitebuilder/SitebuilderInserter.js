@@ -1,6 +1,6 @@
 import ShadowComponent from '/kempo-ui/components/ShadowComponent.js';
 import { html, css } from '/kempo-ui/lit-all.min.js';
-import '/kempo-ui/components/Icon.js';
+import widgetIcon from './widgetIcon.js';
 
 const CATEGORY_TITLES = {
   text: 'Text',
@@ -29,13 +29,13 @@ export default class SitebuilderInserter extends ShadowComponent {
   }
 
   static styles = css`
-    :host { display: block; min-width: min(40rem, 80vw); }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr)); gap: 0.5rem; }
+    :host { display: block; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: 0.5rem; }
     .grid button { display: flex; flex-direction: column; align-items: center; gap: 0.25rem; padding: 0.75rem 0.5rem; text-align: center; height: 100%; }
     .grid small { opacity: 0.65; }
   `;
 
-  firstUpdated(){
+  focusSearch(){
     this.renderRoot.querySelector('input')?.focus();
   }
 
@@ -52,25 +52,26 @@ export default class SitebuilderInserter extends ShadowComponent {
       if(!byCategory.has(definition.category)) byCategory.set(definition.category, []);
       byCategory.get(definition.category).push(definition);
     }
+    const titles = new Map(available.filter(definition => definition.category_title).map(definition => [definition.category, definition.category_title]));
     const names = [...byCategory.keys()].sort((a, b) => {
       const ai = CATEGORY_ORDER.indexOf(a);
       const bi = CATEGORY_ORDER.indexOf(b);
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
     });
-    return names.map(name => ({ name, title: CATEGORY_TITLES[name] || name[0].toUpperCase() + name.slice(1), widgets: byCategory.get(name) }));
+    return names.map(name => ({ name, title: CATEGORY_TITLES[name] || titles.get(name) || name[0].toUpperCase() + name.slice(1).replace(/[-_]+/g, ' '), widgets: byCategory.get(name) }));
   }
 
   render(){
     const groups = this.groups();
     return html`
       <div class="p">
-        <input type="search" class="full mb" placeholder="Search widgets" aria-label="Search widgets" .value="${this.query}" @input="${event => { this.query = event.target.value; }}">
+        <input type="search" class="full mb" placeholder="Search widgets" aria-label="Search widgets" .value="${this.query}" @input="${event => { this.query = event.target.value; }}" @keydown="${event => { if(event.key === 'Enter' && groups.length) this.host.insert(groups[0].widgets[0].key); }}">
         ${groups.length ? groups.map(group => html`
           <h6 class="mb">${group.title}</h6>
           <div class="grid mb">
             ${group.widgets.map(definition => html`
               <button @click="${() => this.host.insert(definition.key)}" title="${definition.description || ''}">
-                ${definition.iconSrc ? html`<k-icon src="${definition.iconSrc}"></k-icon>` : html`<k-icon name="${definition.icon || 'extension'}"></k-icon>`}
+                ${widgetIcon(definition, 'extension')}
                 <span>${definition.title}</span>
               </button>
             `)}

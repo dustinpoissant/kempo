@@ -16,7 +16,7 @@ One control bar runs across the top. From the left:
 - phone, tablet and desktop previews;
 - a switcher for the page's content areas, when its template has more than one;
 - undo, redo and save;
-- a **more** menu: page settings (which selects nothing, so the right panel shows them), the head and scripts code, editor settings, keyboard shortcuts (a list of everything below), copy, move, replace another page, reset and delete;
+- a **more** menu: page settings (which selects nothing, so the right panel shows them), the head code, editor settings, keyboard shortcuts (a list of everything below), copy, move, replace another page, reset and delete;
 - the **widget settings** button, which shows or hides the right panel: the settings of the selected widget, or, when nothing is selected, the page's own settings (name, title, description and template, with who made it and when). They apply as you type and are saved with the page.
 
 The page itself is in the middle, in an iframe, so your site's theme shows rather than the admin's.
@@ -31,6 +31,7 @@ On a Mac, Ctrl means Cmd.
 
 | Keys | Does |
 |---|---|
+| Ctrl+K | Open the Add a widget list with the search focused; Enter adds the first widget it finds (works while typing in text too) |
 | Ctrl+S | Save |
 | Ctrl+D | Duplicate the selected widgets (the editor cancels the browser's bookmark shortcut while it has focus) |
 | Ctrl+Z | Undo |
@@ -63,7 +64,7 @@ Kept in your browser. **Confirm deletion** (off by default) asks before the Dele
 | Text | **Text** (paragraphs, headings, lists, quotes, code and inline formatting, edited with the visual editor without its code view) |
 | Media | Image, Video (a URL: a file from the media library, or a YouTube or Vimeo address), Audio (a URL or a file from the media library), File (a download link), Photo viewer (one picture, or a gallery: several chosen at once from the media library), Hero (a large background image with a slot), Embed (YouTube, Vimeo or Spotify) |
 | Layout | Group, Row and Column (add as many columns to a row as you like; a column's width is set in its settings, out of 12, and columns without one share what is left; columns stack on a phone unless told not to), Spacer, Divider |
-| Content | Button (a **Link** with a URL, or a real **Button** with an ID that a script in the page's Scripts area can find with `document.getElementById`), Table, Search, Social icons |
+| Content | Button (a **Link** with a URL, or a real **Button** with an ID that a script on the page can find with `document.getElementById`), Table, HTML (written by hand, edited in a large code dialog), Script (a script file with its type, defer, async, cross-origin and integrity settings, or JavaScript written in a large code dialog; put these in the page's **Scripts** content area), Social icons |
 | Interactive | Accordion (with sections), Tabs (with tabs), Card, Content slider, Show more, Icon |
 | Server | Fragment, Location, Conditional, Repeat |
 
@@ -158,11 +159,12 @@ The `tag` is always declared, because pages are read back into widgets by their 
 | `slots` | `{ "name": "default", "label": "…", "accepts": ["key"] }`. Other widgets can be placed in a slot, so widgets nest (up to 100 levels). Children of a slot other than `default` get `slot="name"` on their tag. |
 | `editable` | The name of an attribute that is the element's own text, edited in place. |
 | `only_in` | A list of widget keys this widget may only be placed inside. |
-| `icon`, `category`, `description`, `keywords` | How the widget shows in the Add list. |
+| `icon`, `iconSrc`, `description`, `keywords` | How the widget shows in the Add list, the widget tree and its settings. `icon` is a name from the icon set; `iconSrc` is the path of an icon file the extension ships, and wins when both are given. |
+| `category`, `category_title` | The group the widget is listed under in the Add list. Use one of kempo's (`text`, `media`, `layout`, `content`, `interactive`, `server`) or any other name to make a new group, which is listed after them. Widgets from several extensions that use the same name share the group. A new group is titled from its name (`my-shop` is "My shop"), or from `category_title` when a widget gives one. |
 
 ### Attribute types
 
-`string`, `text` (several lines), `number` (`min`, `max`), `boolean` (`"format": "text"` writes `attr="true"` and `attr="false"` for components that read them so), `url`, `image` (uses the media library when kempo-media or kempo-files is installed, and a plain field otherwise) and `select` (`options`). A `url` attribute can add `"picker": "video"` (or `"audio"` or `"image"`) to offer a **Choose from the media library** button beside the field, which opens the library on that kind of file when kempo-media or kempo-files is installed. Only what differs from a default is written to the page. Extensions can add types with `registerAttributeType` from `/kempo/sitebuilder/attributes.js`.
+`string`, `text` (several lines), `number` (`min`, `max`), `boolean` (`"format": "text"` writes `attr="true"` and `attr="false"` for components that read them so), `url`, `color` (a color picker and an opacity; kept as `#rrggbb`, or `#rrggbbaa` when see-through; `"alpha": false` leaves out the opacity), `image` (uses the media library when kempo-media or kempo-files is installed, and a plain field otherwise) and `select` (`options`). A `url` attribute can add `"picker": "video"` (or `"audio"` or `"image"`) to offer a **Choose from the media library** button beside the field, which opens the library on that kind of file when kempo-media or kempo-files is installed. Only what differs from a default is written to the page. Extensions can add types with `registerAttributeType` from `/kempo/sitebuilder/attributes.js`.
 
 ### Settings components
 

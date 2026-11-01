@@ -1,7 +1,10 @@
 import ShadowComponent from '/kempo-ui/components/ShadowComponent.js';
 import { html } from '/kempo-ui/lit-all.min.js';
 import { titleOf } from './labels.js';
+import widgetIcon from './widgetIcon.js';
+import { supportsMargin } from '/kempo/sitebuilder/margins.js';
 import './SitebuilderFields.js';
+import './SitebuilderMargin.js';
 import '/kempo-ui/components/Icon.js';
 
 /*
@@ -79,13 +82,14 @@ export default class SitebuilderAttributes extends ShadowComponent {
     const definition = this.registry.get(this.node.type);
     return html`
       <div class="p">
-        <h5 class="mb"><k-icon name="${definition?.icon || 'help'}"></k-icon> ${titleOf(this.registry, this.node)}</h5>
+        <h5 class="mb">${widgetIcon(definition)} ${titleOf(this.registry, this.node)}</h5>
         ${definition?.description ? html`<p class="tc-muted">${definition.description}</p>` : ''}
         ${this.node.type === 'unknown' ? html`<p class="tc-muted">This content comes from something that is not installed. It is kept exactly as it was, and can be moved or deleted.</p>` : ''}
         ${this.node.type === 'markup' ? html`<p class="tc-muted">Click the text on the page to edit it.</p>` : ''}
         ${definition?.settings_tag
           ? html`<div class="custom"></div>`
           : html`<admin-sitebuilder-fields .node="${this.node}" .registry="${this.registry}" .host="${this.host}" .version="${this.version}"></admin-sitebuilder-fields>`}
+        ${supportsMargin(definition) ? html`<admin-sitebuilder-margin .node="${this.node}" .host="${this.host}" .version="${this.version}"></admin-sitebuilder-margin>` : ''}
       </div>
     `;
   }

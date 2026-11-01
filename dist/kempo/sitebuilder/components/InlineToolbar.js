@@ -11,4 +11,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,css as n
         <button title="Link" aria-label="Link" @mousedown="${this.link}"><k-icon name="link"></k-icon></button>
       </div>
     `}}customElements.define("k-inline-toolbar",o);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\InlineToolbar.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\InlineToolbar.js.map

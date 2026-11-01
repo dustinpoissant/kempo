@@ -2,4 +2,4 @@ import{html as e}from"/kempo-ui/lit-all.min.js";import r from"./WidgetSettings.j
       ${this.renderFields(["color"])}
       ${this.renderChoice("color","Color",r,{swatch:!0})}
     `}}customElements.define("k-button-settings",t);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\ButtonSettings.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\ButtonSettings.js.map

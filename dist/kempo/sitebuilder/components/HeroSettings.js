@@ -6,4 +6,4 @@ import{html as e}from"/kempo-ui/lit-all.min.js";import l from"./WidgetSettings.j
         <input id="sb-hero-overlay" type="range" class="full" min="0" max="90" .value="${String(l)}" @input="${e=>this.set("overlay",Number(e.target.value))}">
       </div>
     `}}customElements.define("k-hero-settings",t);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\HeroSettings.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\HeroSettings.js.map

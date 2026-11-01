@@ -1,2 +1,2 @@
 import o from"/kempo-ui/components/ShadowComponent.js";export default class e extends o{}
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\Widget.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\Widget.js.map

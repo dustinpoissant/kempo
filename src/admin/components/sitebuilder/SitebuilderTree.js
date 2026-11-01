@@ -3,6 +3,7 @@ import { html, css } from '/kempo-ui/lit-all.min.js';
 import { slotsOf } from '/kempo/sitebuilder/render.js';
 import { acceptingSlot } from '/kempo/sitebuilder/ops.js';
 import { hintOf, titleOf } from './labels.js';
+import widgetIcon from './widgetIcon.js';
 import '/kempo-ui/components/Icon.js';
 
 /*
@@ -36,9 +37,10 @@ export default class SitebuilderTree extends ShadowComponent {
     .row { display: flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.375rem; border-radius: 0.25rem; cursor: pointer; border: 1px solid transparent; }
     .row:hover { background: var(--c_bg__alt, #8881); }
     .row.selected { background: var(--c_primary, #36f); color: #fff; }
-    .row.before { border-top-color: var(--c_primary, #36f); }
-    .row.after { border-bottom-color: var(--c_primary, #36f); }
-    .row.inside { border-color: var(--c_primary, #36f); }
+    .row.before { box-shadow: inset 0 2px 0 0 var(--c_primary, #36f); }
+    .row.after { box-shadow: inset 0 -2px 0 0 var(--c_primary, #36f); }
+    .row.inside { box-shadow: inset 0 0 0 2px var(--c_primary, #36f); background: color-mix(in srgb, var(--c_primary, #36f) 20%, transparent); }
+    .row.selected.inside { color: inherit; }
     .hint { opacity: 0.65; font-size: 0.85em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .slot { font-size: 0.8em; opacity: 0.6; padding: 0.25rem 0.375rem 0; }
     .twisty { width: 1rem; flex: none; background: none; border: 0; padding: 0; color: inherit; cursor: pointer; }
@@ -60,9 +62,10 @@ export default class SitebuilderTree extends ShadowComponent {
     const ratio = (event.clientY - rect.top) / rect.height;
     const found = this.host.find(id);
     const container = found && acceptingSlot(this.registry, found.node, this.dragType()) !== null;
-    if(ratio < 0.3) return 'before';
-    if(ratio > 0.7) return 'after';
-    return container ? 'inside' : (ratio < 0.5 ? 'before' : 'after');
+    if(!container) return ratio < 0.5 ? 'before' : 'after';
+    if(ratio < 0.25) return 'before';
+    if(ratio > 0.75) return 'after';
+    return 'inside';
   }
 
   dragType(){
@@ -78,7 +81,9 @@ export default class SitebuilderTree extends ShadowComponent {
   handleDragOver = (event, id) => {
     if(!this.dragId || id === this.dragId) return;
     event.preventDefault();
-    this.dropAt = { id, zone: this.zoneOf(event, event.currentTarget, id) };
+    const zone = this.zoneOf(event, event.currentTarget, id);
+    if(this.dropAt?.id !== id || this.dropAt.zone !== zone) this.host.showDropTarget?.(id, zone);
+    this.dropAt = { id, zone };
   };
 
   handleDrop = (event, id) => {
@@ -93,6 +98,7 @@ export default class SitebuilderTree extends ShadowComponent {
   clearDrag = () => {
     this.dragId = null;
     this.dropAt = null;
+    this.host.showDropTarget?.(null);
   };
 
   toggle(id){
@@ -124,7 +130,7 @@ export default class SitebuilderTree extends ShadowComponent {
           ${hasChildren
             ? html`<button class="twisty no-btn" aria-label="Show or hide what is inside" @click="${event => { event.stopPropagation(); this.toggle(node.id); }}"><k-icon name="chevron" direction="${this.collapsed.has(node.id) ? 'right' : 'down'}"></k-icon></button>`
             : html`<span class="twisty"></span>`}
-          <k-icon name="${definition?.icon || 'help'}"></k-icon>
+          ${widgetIcon(definition)}
           <span>${titleOf(this.registry, node)}</span>
           ${hint ? html`<span class="hint">${hint}</span>` : ''}
         </div>

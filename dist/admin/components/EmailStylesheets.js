@@ -23,4 +23,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,nothing 
       </k-table>
       ${this.renderDialog()}
     `:t`<k-spinner></k-spinner>`}}customElements.define("k-email-stylesheets",d);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\EmailStylesheets.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\EmailStylesheets.js.map

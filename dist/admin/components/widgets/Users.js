@@ -2,4 +2,4 @@ import e from"/kempo/components/DashboardWidget.js";import{html as t}from"/kempo
       <div class="h1 m0">${this.total}</div>
       <div class="tc-muted">${1===this.total?"User":"Users"}</div>
     `}}customElements.define("k-widget-users",i);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\widgets\Users.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\widgets\Users.js.map

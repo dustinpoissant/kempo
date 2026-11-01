@@ -2,4 +2,4 @@ import t from"/kempo/components/DashboardWidget.js";import{html as s}from"/kempo
       <div class="h1 m0">${this.total}</div>
       <div class="tc-muted">${1===this.total?"Extension":"Extensions"}${this.disabled?s`, ${this.disabled} disabled`:""}</div>
     `:s`<p class="tc-muted">No extensions installed.</p>`}}customElements.define("k-widget-extensions",i);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\widgets\Extensions.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\widgets\Extensions.js.map

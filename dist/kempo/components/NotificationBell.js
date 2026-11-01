@@ -14,4 +14,4 @@ import t from"/kempo-ui/components/LightComponent.js";import{html as i,nothing a
         </div>
       </k-dropdown>
     `}}customElements.define("k-notification-bell",o);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\NotificationBell.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\NotificationBell.js.map

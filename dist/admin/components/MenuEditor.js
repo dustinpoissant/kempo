@@ -91,4 +91,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,nothing 
         <p class="mt"><button class="danger" @click=${()=>this.handleDeleteMenu(e)}><k-icon name="delete"></k-icon> Delete this menu</button></p>
       `:n}
     `}}customElements.define("admin-menu-editor",k);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\MenuEditor.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\MenuEditor.js.map

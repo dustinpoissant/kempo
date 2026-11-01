@@ -174,9 +174,9 @@ export default {
   'keeping a file the builder cannot rebuild makes the page code-only and keeps the last good tree': withSite(async dir => {
     await write(dir, 'j.page.html', pageText('<p>good</p>'));
     ok(await openPage({ rootDir: dir, file: 'j.page.html' }), 'open');
-    await write(dir, 'j.page.html', pageText('<p>good</p>\n<script>alert(1)</script>'));
+    await write(dir, 'j.page.html', pageText('<p>good</p>\n<style>p{}</style>'));
     const conflict = ok(await openPage({ rootDir: dir, file: 'j.page.html' }), 'open changed');
-    expect(conflict.state === 'conflict' && !conflict.conflict.fileRebuildable && /script/.test(conflict.conflict.fileReason), 'the dialog can warn first');
+    expect(conflict.state === 'conflict' && !conflict.conflict.fileRebuildable && /style/.test(conflict.conflict.fileReason), 'the dialog can warn first');
     const code = ok(await resolveConflict({ rootDir: dir, file: 'j.page.html', keep: 'file', loadedHash: conflict.hash }), 'keep file');
     expect(code.state === 'code' && code.hasLastGood, `${code.state} ${code.hasLastGood}`);
     expect((await getRow('j.page.html')).codeOnly, 'row is code-only');
@@ -202,6 +202,20 @@ export default {
     expect(ok(await openPage({ rootDir: dir, file: 'k.page.html' }), 'reopen').state === 'builder', 'and it stays in the builder');
     const [noGood] = await leaveCodeMode({ rootDir: dir, file: 'k.page.html', mode: 'nonsense', loadedHash: empty.hash });
     expect(noGood.code === 400, 'a mode must be given');
+  }),
+
+  'the scripts location holds Script widgets, and a page the builder saved before that is read from its file, not emptied': withSite(async dir => {
+    const text = pageText('<p>x</p>').replace('</page>', '<content location="scripts">\n<script src="/a.js" defer></script>\n<script>console.log(1)</script>\n</content>\n</page>');
+    await write(dir, 'm.page.html', text);
+    await saveRow({ file: 'm.page.html', trees: { default: [{ id: 'p', type: 'markup', attrs: { html: '<p>x</p>' }, slots: {} }] }, fileHash: hashFile(text) });
+    const page = ok(await openPage({ rootDir: dir, file: 'm.page.html' }), 'open');
+    const scripts = page.trees?.scripts || [];
+    expect(page.state === 'builder', page.state + ' ' + (page.reason || ''));
+    expect(page.state === 'builder' && page.locations.find(location => location.name === 'scripts')?.code === false, 'scripts is a widget location');
+    expect(scripts.length === 2 && scripts[0].attrs.src === '/a.js' && scripts[0].attrs.defer === true && scripts[1].attrs.code === 'console.log(1)', JSON.stringify(scripts));
+    ok(await savePage({ rootDir: dir, file: 'm.page.html', trees: page.trees, loadedHash: page.hash }), 'save');
+    const file = await read(dir, 'm.page.html');
+    expect(file.includes('<script src="/a.js" defer></script>') && file.includes('console.log(1)'), file);
   }),
 
   'a tree that uses a widget which is no longer installed is rebuilt from the file instead of being lost': withSite(async dir => {

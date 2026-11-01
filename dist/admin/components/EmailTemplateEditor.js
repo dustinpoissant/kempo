@@ -25,4 +25,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,nothing 
         ${e.overridden?t`<button class="danger" ?disabled=${this.saving} @click=${this.reset}>Reset to default</button>`:s}
       </p>
     `}}customElements.define("k-email-template-editor",c);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\EmailTemplateEditor.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\EmailTemplateEditor.js.map

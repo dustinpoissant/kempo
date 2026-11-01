@@ -2,4 +2,4 @@ import{html as e}from"/kempo-ui/lit-all.min.js";import t from"./WidgetSettings.j
       ${this.renderFields()}
       ${this.renderChildren("default",{label:"Tabs",addType:"tab-item",addLabel:"Add tab"})}
     `}}customElements.define("k-tabs-settings",d);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\TabsSettings.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\TabsSettings.js.map

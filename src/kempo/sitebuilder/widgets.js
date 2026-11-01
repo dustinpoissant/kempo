@@ -1,5 +1,9 @@
 import { escapeAttribute, escapeText } from './html.js';
 import { attributeString, mark, renderSlot } from './render.js';
+import { coerceAttribute } from './attributes.js';
+import { columnWidths } from './tables.js';
+import { marginClasses } from './margins.js';
+import { writeCode } from './scriptCode.js';
 
 /*
   The widgets kempo ships. An extension declares its own in `page_widgets` in kempo-config.json with the same fields
@@ -22,6 +26,15 @@ export const VIDEO_RATIOS = ['', '16/9', '21/9', '4/3', '1/1', '3/4', '9/16'];
 
 export const VIDEO_CONTROLS = ['', 'minimal', 'normal', 'full'];
 
+export const SPACER_HEIGHTS = { small: '2rem', medium: '6rem', large: '12rem' };
+
+export const SPACING_CHOICES = ['small', 'medium', 'large', 'custom'];
+
+export const SPACING_LABELS = { '': 'None', small: 'Small (2rem)', medium: 'Medium (6rem)', large: 'Large (12rem)', custom: 'Custom' };
+
+/* The length a space setting stands for: a preset height, or the pixels of a custom one; '' for none. */
+export const spacingOf = (choice, pixels) => (choice === 'custom' ? `${Number(pixels) || 0}px` : SPACER_HEIGHTS[choice] || '');
+
 /* Photos per row, and the kempo-css width of each. */
 export const GALLERY_SPANS = { 2: 6, 3: 4, 4: 3, 6: 2 };
 
@@ -36,6 +49,18 @@ const placeholder = (node, ctx, label, detail, container = false) =>
   `<div class="sb-placeholder"${mark(node, ctx, ` data-sb-label="${escapeAttribute(label)}"${container ? ' data-sb-slot="default"' : ''}`)}>${container ? '' : escapeText(detail)}${container ? renderSlot(node, 'default', ctx, false) : ''}</div>`;
 
 const accordionIds = (index = 0) => `panel-${index + 1}`;
+
+/* The declarations of a Text widget's box, in the one order and spelling the rebuild reads back. */
+export const markupStyle = attrs => {
+  const background = coerceAttribute({ type: 'color' }, attrs?.background);
+  const color = coerceAttribute({ type: 'color' }, attrs?.color);
+  const radius = Number(attrs?.radius);
+  return [
+    background && `background: ${background}`,
+    color && `color: ${color}`,
+    radius > 0 && `border-radius: ${Math.min(radius, 100)}px`
+  ].filter(Boolean).join('; ');
+};
 
 export const groupClasses = attrs => [
   PADDING[attrs.padding || ''],
@@ -70,12 +95,25 @@ const coreWidgets = [
     category: 'text',
     keywords: ['paragraph', 'heading', 'list', 'quote', 'code', 'markup', 'text'],
     tag: null,
+    margin: 'own',
     editor_tag: 'k-markup-editor',
     editor_component: '/kempo/sitebuilder/components/MarkupEditor.js',
-    attributes: [{ name: 'html', type: 'text', virtual: true }],
+    attributes: [
+      { name: 'html', type: 'text', virtual: true },
+      { name: 'background', type: 'color', label: 'Background', hint: 'Behind the text, with space around it. Empty is see-through.' },
+      { name: 'color', type: 'color', alpha: false, label: 'Text color', hint: 'Empty uses the theme\'s text color.' },
+      { name: 'radius', type: 'number', label: 'Corner radius (pixels)', hint: 'Rounds the corners of the background.', min: 0, max: 100 }
+    ],
     render: (node, ctx) => {
       const html = ctx.sanitize ? ctx.sanitize(node.attrs?.html || '') : (node.attrs?.html || '');
-      return ctx.editor ? `<k-markup-editor${mark(node, ctx)}>${html}</k-markup-editor>` : html;
+      const background = coerceAttribute({ type: 'color' }, node.attrs?.background);
+      const style = markupStyle(node.attrs);
+      const margins = marginClasses(node.attrs?.margin);
+      const classes = [...(background ? ['p'] : []), ...margins];
+      const box = `${classes.length ? ` class="${classes.join(' ')}"` : ''}${style ? ` style="${escapeAttribute(style)}"` : ''}`;
+      if(ctx.editor) return `<k-markup-editor${box}${mark(node, ctx)}>${html}</k-markup-editor>`;
+      if(!style && !margins.length) return html;
+      return `<div${margins.length ? ' data-sb-text' : ''}${box}>${html ? `\n${html}\n` : ''}</div>`;
     }
   },
 
@@ -148,6 +186,7 @@ const coreWidgets = [
     category: 'media',
     keywords: ['sound', 'music', 'podcast', 'mp3'],
     tag: 'k-audio',
+    page_component: '/kempo-ui/components/Audio.js',
     attributes: [
       { name: 'src', type: 'url', label: 'Audio URL', picker: 'audio' },
       { name: 'controls', type: 'select', label: 'Controls', default: 'normal', options: options(VIDEO_CONTROLS, { '': 'Off', minimal: 'Minimal', normal: 'Normal', full: 'Full' }) },
@@ -156,7 +195,7 @@ const coreWidgets = [
       { name: 'muted', type: 'boolean', label: 'Muted' },
       { name: 'preload', type: 'select', label: 'Loading', default: 'metadata', options: options(['none', 'metadata', 'auto'], { none: 'Nothing', metadata: 'Its length', auto: 'All' }) }
     ],
-    render: (node, ctx, definition) => `<k-audio${attributeString(definition, node, ctx)}${mark(node, ctx)}></k-audio>`
+    render: (node, ctx, definition) => `<k-audio${attributeString(definition, node, ctx, ['controls'])} controls="${escapeAttribute(node.attrs?.controls ?? 'normal')}"${mark(node, ctx)}></k-audio>`
   },
   {
     key: 'file',
@@ -168,7 +207,7 @@ const coreWidgets = [
     tag: 'a',
     editable: 'label',
     attributes: [
-      { name: 'href', type: 'url', label: 'File address' },
+      { name: 'href', type: 'url', label: 'File address', picker: 'file' },
       { name: 'label', type: 'string', label: 'Link text', default: 'Download' }
     ],
     render: (node, ctx) => {
@@ -194,6 +233,7 @@ const coreWidgets = [
     render: (node, ctx) => {
       const images = Array.isArray(node.attrs?.images) ? node.attrs.images : [];
       const viewer = (image, extra = '') => `<k-photo-viewer${image?.src ? ` src="${escapeAttribute(image.src)}"` : ''}${image?.alt ? ` alt="${escapeAttribute(image.alt)}"` : ''}${extra}></k-photo-viewer>`;
+      if(!images.some(image => image?.src) && ctx.editor) return placeholder(node, ctx, 'Photo viewer', 'Add photos in the settings.');
       if(images.length <= 1) return viewer(images[0], mark(node, ctx));
       const span = GALLERY_SPANS[node.attrs?.columns] || GALLERY_SPANS[3];
       return `<div class="row"${mark(node, ctx)}>\n${images.map(image => viewer(image, ` class="span-${span} m-span-6 pq"`)).join('\n')}\n</div>`;
@@ -305,13 +345,14 @@ const coreWidgets = [
     keywords: ['gap', 'space', 'margin', 'padding'],
     tag: 'div',
     attributes: [
-      { name: 'size', type: 'select', label: 'Size', default: 'medium', options: options(['small', 'medium', 'large']) }
+      { name: 'size', type: 'select', label: 'Size', default: 'medium', options: options(['small', 'medium', 'large', 'custom'], { small: 'Small (2rem)', medium: 'Medium (6rem)', large: 'Large (12rem)', custom: 'Custom' }) },
+      { name: 'height', type: 'number', label: 'Height (pixels)', min: 0, max: 2000, default: 48, when: { size: 'custom' } }
     ],
     render: (node, ctx) => {
       const size = node.attrs?.size || 'medium';
-      if(size === 'small') return `<div class="pyh"${mark(node, ctx)}></div>`;
-      if(size === 'large') return `<div class="py"${mark(node, ctx)}><div class="py"></div></div>`;
-      return `<div class="py"${mark(node, ctx)}></div>`;
+      const height = size === 'custom' ? `${Number(node.attrs?.height) || 0}px` : SPACER_HEIGHTS[size] || SPACER_HEIGHTS.medium;
+      if(ctx.editor) return `<div class="sb-spacer tc-muted" style="height: ${height}"${mark(node, ctx)}>Spacer</div>`;
+      return `<div style="height: ${height}"></div>`;
     }
   },
   {
@@ -321,7 +362,20 @@ const coreWidgets = [
     icon: 'wrap_text',
     category: 'layout',
     keywords: ['line', 'rule', 'separator', 'hr'],
-    tag: 'hr'
+    tag: 'hr',
+    attributes: [
+      { name: 'above', type: 'select', label: 'Space above', default: '', options: options(['', ...SPACING_CHOICES], SPACING_LABELS) },
+      { name: 'aboveHeight', type: 'number', label: 'Space above (pixels)', min: 0, max: 2000, default: 48, when: { above: 'custom' } },
+      { name: 'below', type: 'select', label: 'Space below', default: '', options: options(['', ...SPACING_CHOICES], SPACING_LABELS) },
+      { name: 'belowHeight', type: 'number', label: 'Space below (pixels)', min: 0, max: 2000, default: 48, when: { below: 'custom' } }
+    ],
+    render: (node, ctx) => {
+      const declarations = [
+        spacingOf(node.attrs?.above, node.attrs?.aboveHeight) && `margin-top: ${spacingOf(node.attrs?.above, node.attrs?.aboveHeight)}`,
+        spacingOf(node.attrs?.below, node.attrs?.belowHeight) && `margin-bottom: ${spacingOf(node.attrs?.below, node.attrs?.belowHeight)}`
+      ].filter(Boolean);
+      return `<hr${declarations.length ? ` style="${declarations.join('; ')}"` : ''}${mark(node, ctx)}>`;
+    }
   },
 
   /*
@@ -365,36 +419,62 @@ const coreWidgets = [
     tag: 'table',
     attributes: [
       { name: 'header', type: 'boolean', label: 'First row is a heading', default: true },
-      { name: 'rows', type: 'table', label: 'Cells', virtual: true }
+      { name: 'rows', type: 'table', label: 'Cells', virtual: true },
+      { name: 'widths', type: 'text', label: 'Column widths', virtual: true }
     ],
     render: (node, ctx) => {
       const rows = Array.isArray(node.attrs?.rows) && node.attrs.rows.length ? node.attrs.rows : [['', ''], ['', '']];
       const header = node.attrs?.header !== false;
+      const widths = columnWidths(node.attrs?.widths, Math.max(1, ...rows.map(row => row.length)));
+      const group = widths.some(Boolean) ? `<colgroup>${widths.map(width => `<col${width ? ` style="width: ${width}"` : ''}>`).join('')}</colgroup>\n` : '';
       const cell = (tag, text, rowIndex, columnIndex) => `<${tag}${ctx.editor ? ` data-sb-cell="${rowIndex},${columnIndex}"` : ''}>${escapeText(text)}</${tag}>`;
       const line = (row, rowIndex, tag) => `<tr>${row.map((text, columnIndex) => cell(tag, text, rowIndex, columnIndex)).join('')}</tr>`;
       const head = header ? `<thead>\n${line(rows[0], 0, 'th')}\n</thead>\n` : '';
       const bodyRows = (header ? rows.slice(1) : rows).map((row, index) => line(row, index + (header ? 1 : 0), 'td'));
-      return `<table${mark(node, ctx)}>\n${head}<tbody>\n${bodyRows.join('\n')}\n</tbody>\n</table>`;
+      return `<table${mark(node, ctx)}>\n${group}${head}<tbody>\n${bodyRows.join('\n')}\n</tbody>\n</table>`;
     }
   },
   {
-    key: 'search',
-    title: 'Search',
-    description: 'A search box that goes to your search page.',
-    icon: 'search',
+    key: 'html-block',
+    title: 'HTML',
+    description: 'HTML written by hand, shown on the page exactly as it is.',
+    icon: 'code',
     category: 'content',
-    keywords: ['find', 'query'],
-    tag: 'form',
+    keywords: ['code', 'raw', 'custom', 'markup', 'script'],
+    tag: 'div',
+    settings_tag: 'k-html-block-settings',
+    settings_component: '/kempo/sitebuilder/components/HtmlBlockSettings.js',
+    attributes: [{ name: 'html', type: 'text', virtual: true }],
+    render: (node, ctx) => `<div data-sb-html${mark(node, ctx)}>${node.attrs?.html ?? ''}</div>`
+  },
+  {
+    key: 'script',
+    title: 'Script',
+    description: 'Loads a JavaScript file, or runs JavaScript written here. Best placed in the scripts location.',
+    icon: 'code_blocks',
+    category: 'content',
+    keywords: ['javascript', 'js', 'file', 'src', 'module', 'defer', 'async', 'analytics', 'library', 'code'],
+    tag: 'script',
+    margin: false,
+    settings_tag: 'k-script-settings',
+    settings_component: '/kempo/sitebuilder/components/ScriptSettings.js',
     attributes: [
-      { name: 'action', type: 'url', label: 'Search page', default: '/search' },
-      { name: 'placeholder', type: 'string', label: 'Placeholder', default: 'Search' },
-      { name: 'button', type: 'string', label: 'Button text', default: 'Search' }
+      { name: 'src', type: 'url', label: 'Script file', hint: 'The address of the .js file.', default: '' },
+      { name: 'type', type: 'select', label: 'Type', hint: 'A module can use import and export, and is always deferred.', default: '', options: [{ value: '', label: 'Classic' }, { value: 'module', label: 'Module' }] },
+      { name: 'defer', type: 'boolean', label: 'Defer', hint: 'Run it after the page has been read, in order.' },
+      { name: 'async', type: 'boolean', label: 'Async', hint: 'Run it as soon as it has loaded, in any order.' },
+      { name: 'crossorigin', type: 'select', label: 'Cross-origin', hint: 'For a file from another site.', default: '', options: [{ value: '', label: 'Not set' }, { value: 'anonymous', label: 'Anonymous' }, { value: 'use-credentials', label: 'Use credentials' }] },
+      { name: 'integrity', type: 'string', label: 'Integrity', hint: 'A hash that the file must match, such as sha384-…', default: '' },
+      { name: 'code', type: 'text', virtual: true }
     ],
-    render: (node, ctx) => {
-      const action = node.attrs?.action || '/search';
-      const placeholder = node.attrs?.placeholder ?? 'Search';
-      const button = node.attrs?.button ?? 'Search';
-      return `<form action="${escapeAttribute(action)}" method="get" role="search"${mark(node, ctx)}><input type="search" name="q" placeholder="${escapeAttribute(placeholder)}"> <button class="primary">${escapeText(button)}</button></form>`;
+    render: (node, ctx, definition) => {
+      const { src, code } = node.attrs || {};
+      if(ctx.editor){
+        const lines = String(code || '').trim() ? String(code).trim().split('\n').length : 0;
+        return placeholder(node, ctx, 'Script', src || (lines ? `JavaScript written here, ${lines} ${lines === 1 ? 'line' : 'lines'}` : 'Choose a script file, or write JavaScript, in the settings.'));
+      }
+      if(!src && String(code || '').trim()) return `<script${attributeString(definition, node, ctx, ['src', 'defer', 'async', 'crossorigin', 'integrity'])}>${writeCode(code)}</script>`;
+      return `<script${attributeString(definition, node, ctx)}></script>`;
     }
   },
   {
@@ -433,15 +513,15 @@ const coreWidgets = [
     icon: 'unfold_less',
     category: 'interactive',
     only_in: ['accordion'],
+    margin: false,
     tag: 'k-accordion-header',
     page_component: '/kempo-ui/components/Accordion.js',
-    editable: 'title',
     attributes: [{ name: 'title', type: 'string', label: 'Heading', default: 'Section' }],
     slots: [{ name: 'default', label: 'Content' }],
     render: (node, ctx, definition, info) => {
       const id = accordionIds(info?.index);
       const children = renderSlot(node, 'default', ctx, false);
-      const header = `<k-accordion-header for-panel="${id}"${ctx.editor ? ' active' : ''}${mark(node, ctx, ' data-sb-edit="title"')}>${escapeText(node.attrs?.title ?? 'Section')}</k-accordion-header>`;
+      const header = `<k-accordion-header for-panel="${id}"${mark(node, ctx)}>${escapeText(node.attrs?.title ?? 'Section')}</k-accordion-header>`;
       const panel = `<k-accordion-panel name="${id}"${mark(node, ctx, ctx.editor ? ' data-sb-slot="default"' : '')}>${children ? `\n${children}\n` : ''}</k-accordion-panel>`;
       return `${header}\n${panel}`;
     }
@@ -466,6 +546,7 @@ const coreWidgets = [
     icon: 'label',
     category: 'interactive',
     only_in: ['tabs'],
+    margin: false,
     tag: 'k-tab',
     page_component: '/kempo-ui/components/Tabs.js',
     editable: 'label',

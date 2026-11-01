@@ -4,6 +4,8 @@ import { slotsOf, canContain } from '../../../src/kempo/sitebuilder/render.js';
 import { resolveEmbed } from '../../../src/kempo/sitebuilder/embedProviders.js';
 import { sanitizeMarkup, sanitizeText } from './sanitize.js';
 import { safeUrl } from '../../../src/kempo/sitebuilder/html.js';
+import { columnWidths } from '../../../src/kempo/sitebuilder/tables.js';
+import { cleanMargin, supportsMargin } from '../../../src/kempo/sitebuilder/margins.js';
 
 /*
   Everything the editor sends is checked here before it is stored or written to a page. The server cannot assume the
@@ -28,8 +30,13 @@ const virtual = {
   table: attrs => {
     const rows = Array.isArray(attrs.rows) ? attrs.rows.slice(0, MAX_TABLE_ROWS) : [];
     const width = Math.min(MAX_TABLE_COLUMNS, Math.max(1, ...rows.map(row => (Array.isArray(row) ? row.length : 0))));
-    return { rows: rows.map(row => Array.from({ length: width }, (_, index) => sanitizeText(Array.isArray(row) ? row[index] : ''))) };
+    return {
+      rows: rows.map(row => Array.from({ length: width }, (_, index) => sanitizeText(Array.isArray(row) ? row[index] : ''))),
+      widths: columnWidths(attrs.widths, width)
+    };
   },
+  'html-block': attrs => ({ html: String(attrs.html ?? '') }),
+  script: attrs => ({ code: String(attrs.code ?? '') }),
   'photo-viewer': attrs => ({
     images: (Array.isArray(attrs.images) ? attrs.images : []).slice(0, MAX_PHOTOS)
       .map(image => ({ src: safeUrl(image?.src), alt: sanitizeText(image?.alt) }))
@@ -61,6 +68,10 @@ const cleanAttributes = (definition, attrs, context) => {
     cleaned[declared.name] = coerceAttribute(declared, attrs[declared.name]);
   }
   Object.assign(cleaned, virtual[definition.key]?.(attrs, context) || {}, strict[definition.key]?.({ ...cleaned, ...attrs }) || {});
+  if(supportsMargin(definition) && attrs.margin){
+    const margin = cleanMargin(attrs.margin);
+    if(Object.values(margin).some(Boolean)) cleaned.margin = margin;
+  }
   return cleaned;
 };
 

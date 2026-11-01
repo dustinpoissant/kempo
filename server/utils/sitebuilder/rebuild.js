@@ -1,10 +1,13 @@
 import { createNode, MAX_DEPTH } from '../../../src/kempo/sitebuilder/nodes.js';
 import { INLINE_TAGS, TEXT_BLOCK_TAGS } from '../../../src/kempo/sitebuilder/html.js';
 import { coerceAttribute } from '../../../src/kempo/sitebuilder/attributes.js';
-import { BUTTON_COLORS, GALLERY_SPANS, GROUP_ELEMENTS, groupAttributes } from '../../../src/kempo/sitebuilder/widgets.js';
+import { BUTTON_COLORS, GALLERY_SPANS, GROUP_ELEMENTS, SPACER_HEIGHTS, groupAttributes } from '../../../src/kempo/sitebuilder/widgets.js';
 import { parse, isElement, isText, isComment, isBlank, sourceOf, classesOf, elementChildren } from './parse.js';
 import { sameMeaning } from './normalize.js';
 import { sanitizeMarkup } from './sanitize.js';
+import { cleanWidth } from '../../../src/kempo/sitebuilder/tables.js';
+import { readMarginClasses, supportsMargin } from '../../../src/kempo/sitebuilder/margins.js';
+import { readCode } from '../../../src/kempo/sitebuilder/scriptCode.js';
 
 /*
   Builds a widget tree from the HTML of a content location: the opposite of rendering. Each known tag becomes its
@@ -115,7 +118,50 @@ const generic = (definition, element, ctx, depth) => {
   Widgets that are more than one tag, or whose settings are in classes
 */
 
+const BOX_PROPERTIES = { background: 'background', color: 'color', 'border-radius': 'radius' };
+
+/* The settings in a Text widget's box (what markupStyle writes), or null when the style holds anything else. */
+const boxSettings = element => {
+  const attrs = {};
+  for(const declaration of String(attribute(element, 'style') || '').split(';')){
+    if(!declaration.trim()) continue;
+    const [name, ...rest] = declaration.split(':');
+    const key = BOX_PROPERTIES[name.trim().toLowerCase()];
+    if(!key) return null;
+    const value = rest.join(':').trim();
+    attrs[key] = key === 'radius' ? Number.parseFloat(value) : coerceAttribute({ type: 'color' }, value);
+    if(attrs[key] === '' || Number.isNaN(attrs[key])) return null;
+  }
+  return Object.keys(attrs).length ? attrs : null;
+};
+
+const SPACING_PROPERTIES = { 'margin-top': 'above', 'margin-bottom': 'below' };
+
+/* The space above and below a divider (what the widget writes), or false when its style holds anything else. */
+const readSpacing = (element, attrs) => {
+  for(const declaration of String(attribute(element, 'style') || '').split(';')){
+    if(!declaration.trim()) continue;
+    const [name, ...rest] = declaration.split(':');
+    const key = SPACING_PROPERTIES[name.trim().toLowerCase()];
+    const length = /^(\d+(?:\.\d+)?)(rem|px)$/.exec(rest.join(':').trim());
+    if(!key || !length) return false;
+    const preset = Object.entries(SPACER_HEIGHTS).find(([, height]) => height === `${length[1]}${length[2]}`);
+    if(preset) attrs[key] = preset[0];
+    else if(length[2] === 'px'){
+      attrs[key] = 'custom';
+      attrs[`${key}Height`] = Number(length[1]);
+    } else return false;
+  }
+  return true;
+};
+
 const readers = {
+  markup: (definition, element, ctx) => {
+    const inner = element.children.filter(child => !isComment(child) && !isBlank(child));
+    const html = inner.length ? sourceOf(ctx.source, inner[0], inner[inner.length - 1]).trim() : '';
+    if(html && !sameMeaning(html, sanitizeMarkup(html))) fail('Text holds something the editor would change');
+    return createNode('markup', { html, ...boxSettings(element) });
+  },
   image: (definition, element) => {
     const attrs = readAttributes(definition, element);
     const classes = classesOf(element);
@@ -128,7 +174,14 @@ const readers = {
     else if(classes.includes('r')) attrs.rounded = 'small';
     return createNode('image', attrs);
   },
-  divider: () => createNode('divider'),
+  'html-block': (definition, element, ctx) => {
+    const html = element.children.length ? sourceOf(ctx.source, element.children[0], element.children[element.children.length - 1]) : '';
+    return createNode('html-block', { html });
+  },
+  divider: (definition, element) => {
+    const attrs = {};
+    return createNode('divider', readSpacing(element, attrs) ? attrs : {});
+  },
   fragment: (definition, element) => createNode('fragment', { name: attribute(element, 'name') || '' }),
   location: (definition, element) => createNode('location', { name: attribute(element, 'name') || '' }),
   conditional: (definition, element, ctx, depth) => createNode('conditional', { condition: attribute(element, 'condition') || '' }, readSlots(definition, element, ctx, depth)),
@@ -141,13 +194,6 @@ const readers = {
     return createNode('button', { href: attribute(element, 'href') || '', ...(attribute(element, 'target') === '_blank' ? { newTab: true } : {}), label: textOf(element), color });
   },
   file: (definition, element) => createNode('file', { href: attribute(element, 'href') || '', label: textOf(element) }),
-  audio: (definition, element) => createNode('audio', { src: attribute(element, 'src') || '', loop: attribute(element, 'loop') !== undefined }),
-
-  search: (definition, element) => {
-    const input = elementChildren(element).find(child => child.name === 'input');
-    const button = elementChildren(element).find(child => child.name === 'button');
-    return createNode('search', { action: attribute(element, 'action') || '/search', placeholder: attribute(input || {}, 'placeholder') ?? 'Search', button: button ? textOf(button) : 'Search' });
-  },
 
   table: (definition, element) => {
     const rowsOf = parent => elementChildren(parent).filter(child => child.name === 'tr');
@@ -161,7 +207,12 @@ const readers = {
     const bodyRows = [...bodies.flatMap(body => rowsOf(body)), ...loose].map(readRow);
     const rows = [...headRows, ...bodyRows];
     const width = Math.max(1, ...rows.map(row => row.length));
-    return createNode('table', { header: headRows.length === 1, rows: rows.map(row => [...row, ...Array(width - row.length).fill('')]) });
+    const group = sections.find(child => child.name === 'colgroup');
+    const widths = group ? elementChildren(group).filter(col => col.name === 'col').map(col => {
+      const match = /^\s*width:\s*([^;]+?)\s*$/.exec(String(attribute(col, 'style') || ''));
+      return match ? cleanWidth(match[1]) : '';
+    }) : [];
+    return createNode('table', { header: headRows.length === 1, rows: rows.map(row => [...row, ...Array(width - row.length).fill('')]), widths });
   },
 
   row: (definition, element, ctx, depth) => {
@@ -192,6 +243,13 @@ const readers = {
     const classes = classesOf(element);
     const inner = elementChildren(element);
     if(element.children.some(child => !isComment(child) && !isBlank(child) && !isElement(child))) return null;
+    const height = /^\s*height:\s*(\d+(?:\.\d+)?)(rem|px)\s*$/.exec(String(attribute(element, 'style') || ''));
+    if(height && !inner.length && element.children.every(child => isComment(child) || isBlank(child))){
+      const preset = Object.entries(SPACER_HEIGHTS).find(([, value]) => value === `${height[1]}${height[2]}`);
+      if(preset) return createNode('spacer', { size: preset[0] });
+      if(height[2] === 'px') return createNode('spacer', { size: 'custom', height: Number(height[1]) });
+      return null;
+    }
     if(classes.length === 1 && classes[0] === 'pyh' && !inner.length) return createNode('spacer', { size: 'small' });
     if(classes.length === 1 && classes[0] === 'py' && !inner.length) return createNode('spacer', { size: 'medium' });
     if(classes.length === 1 && classes[0] === 'py' && inner.length === 1 && inner[0].name === 'div' && classesOf(inner[0]).join(' ') === 'py' && !elementChildren(inner[0]).length) return createNode('spacer', { size: 'large' });
@@ -229,16 +287,16 @@ const readers = {
 
 /* Which primitive matches this element, by key; the first that returns a node wins. */
 const primitiveMatchers = [
+  ['markup', element => element.name === 'div' && (attribute(element, 'data-sb-text') !== undefined || (attribute(element, 'style') !== undefined && !!boxSettings(element))) && classesOf(element).every(name => name === 'p')],
   ['table', element => element.name === 'table'],
   ['divider', element => element.name === 'hr'],
   ['image', element => element.name === 'img'],
-  ['audio', element => element.name === 'audio'],
-  ['search', element => element.name === 'form' && attribute(element, 'role') === 'search'],
   ['button', element => (element.name === 'a' && classesOf(element).includes('btn')) || (element.name === 'button' && attribute(element, 'type') === 'button')],
   ['file', element => element.name === 'a' && attribute(element, 'download') !== undefined],
+  ['html-block', element => element.name === 'div' && attribute(element, 'data-sb-html') !== undefined],
   ['photo-viewer', element => element.name === 'div' && classesOf(element).includes('row') && elementChildren(element).length > 1 && elementChildren(element).every(child => child.name === 'k-photo-viewer')],
   ['row', element => element.name === 'div' && classesOf(element).includes('row')],
-  ['spacer', element => element.name === 'div' && /^(pyh?)$/.test(String(attribute(element, 'class') || ''))],
+  ['spacer', element => element.name === 'div' && (/^(pyh?)$/.test(String(attribute(element, 'class') || '')) || /^\s*height:/.test(String(attribute(element, 'style') || '')))],
   ['group', element => GROUP_ELEMENTS.includes(element.name)]
 ];
 
@@ -249,10 +307,34 @@ const SERVER_TAGS = { fragment: 'fragment', location: 'location', if: 'condition
   to a run of text).
 */
 function readElement(element, ctx, depth){
+  /* The margin classes are read off first, so what is left is read as the widget itself. */
+  const { margin, rest } = readMarginClasses(classesOf(element));
+  if(margin){
+    const clone = { ...element, attribs: { ...element.attribs } };
+    if(rest.length) clone.attribs.class = rest.join(' ');
+    else delete clone.attribs.class;
+    const node = readElementPlain(clone, ctx, depth);
+    if(node && supportsMargin(ctx.registry.get(node.type))){
+      node.attrs = { ...node.attrs, margin };
+      return node;
+    }
+  }
+  return readElementPlain(element, ctx, depth);
+}
+
+function readElementPlain(element, ctx, depth){
   if(depth > MAX_DEPTH) fail('Widgets are nested too deeply');
   if(element.name === 'script'){
     if(attribute(element, 'type') === 'module' && ctx.scripts.has(attribute(element, 'src')) && !element.children.length) return undefined;
-    fail('The page holds a script');
+    /* A script is the Script widget: a file (src), or JavaScript written in it, never both. */
+    const body = element.children.filter(isText).map(child => child.data).join('');
+    if(element.children.some(child => !isText(child) && !isComment(child))) fail('A script holds more than text');
+    const node = generic(findDefinition(ctx, 'script'), element, ctx, depth);
+    if(body.trim()){
+      if(attribute(element, 'src') !== undefined) fail('A script has a file or JavaScript, not both');
+      node.attrs.code = readCode(body);
+    }
+    return node;
   }
   if(element.name === 'style' || element.name === 'iframe' || element.name === 'link' || element.name === 'meta') fail(`The page holds <${element.name}>`);
 
@@ -280,7 +362,7 @@ function readElement(element, ctx, depth){
   return null;
 }
 
-const CORE = new Set(['markup', 'image', 'video', 'audio', 'file', 'photo-viewer', 'hero', 'embed', 'group', 'row', 'column', 'spacer', 'divider', 'button', 'table', 'search', 'social-icons', 'accordion', 'accordion-item', 'tabs', 'tab-item', 'card', 'content-slider', 'show-more', 'icon', 'fragment', 'location', 'conditional', 'repeat', 'unknown']);
+const CORE = new Set(['markup', 'image', 'video', 'audio', 'file', 'photo-viewer', 'hero', 'embed', 'group', 'row', 'column', 'spacer', 'divider', 'button', 'table', 'social-icons', 'accordion', 'accordion-item', 'tabs', 'tab-item', 'card', 'content-slider', 'show-more', 'icon', 'fragment', 'location', 'conditional', 'repeat', 'unknown']);
 
 /*
   Resolves to [null, nodes], or [{ code: 422, msg }, null] when the HTML cannot be a tree.
@@ -289,7 +371,7 @@ export default (html, registry) => {
   const { document, source } = parse(html);
   const byTag = new Map();
   for(const definition of registry.list()){
-    if(definition.tag && !byTag.has(definition.tag) && !['group', 'row', 'column', 'spacer', 'divider', 'image', 'audio', 'file', 'button', 'search', 'table'].includes(definition.key)) byTag.set(definition.tag, definition);
+    if(definition.tag && !byTag.has(definition.tag) && !['group', 'row', 'column', 'spacer', 'divider', 'image', 'file', 'button', 'table'].includes(definition.key)) byTag.set(definition.tag, definition);
   }
   const ctx = { registry, source, byTag, scripts: new Set(registry.pageComponents()), coreKeys: CORE };
   try {

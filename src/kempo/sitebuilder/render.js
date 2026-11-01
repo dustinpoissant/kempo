@@ -1,5 +1,6 @@
 import { VOID_TAGS, escapeAttribute, escapeText } from './html.js';
 import { attributeDefault, coerceAttribute, isDefaultValue } from './attributes.js';
+import { addClasses, cleanMargin, marginClasses, supportsMargin } from './margins.js';
 
 /*
   Turns a widget tree into HTML. The same code makes the page file on the server and the editor's preview in the
@@ -63,7 +64,11 @@ export const canContain = (registry, parentNode, slotName, childType) => {
   Helpers the widget definitions use
 */
 
-export const mark = (node, ctx, extra = '') => (ctx.editor ? ` data-sb-id="${escapeAttribute(node.id)}"${extra} tabindex="0"` : '');
+export const mark = (node, ctx, extra = '') => {
+  if(!ctx.editor) return '';
+  const label = extra.includes('data-sb-label') ? '' : ` data-sb-label="${escapeAttribute(ctx.registry?.get(node.type)?.title ?? node.type)}"`;
+  return ` data-sb-id="${escapeAttribute(node.id)}"${label}${extra} tabindex="0"`;
+};
 
 /* The attributes of a widget as a string: only what differs from the widget's defaults, so pages stay short. */
 export const attributeString = (definition, node, ctx, skip = []) => {
@@ -88,6 +93,7 @@ const withSlotAttribute = (html, slot) => (slot === 'default' ? html : html.repl
 
 export const renderSlot = (node, slot, ctx, wrap = true) => {
   const children = node.slots?.[slot] || [];
+  if(ctx.editor && !children.length) return `<div class="sb-slot-empty">${escapeText(ctx.registry?.get(node.type)?.title ?? 'This')} is empty. Select it, then use Add.</div>`;
   return children
     .map((child, index) => {
       const html = renderNode(child, ctx, { index, parent: node, slot });
@@ -112,10 +118,24 @@ const renderStandard = (node, ctx, definition) => {
   return `<${tag}${attributes}>${text}${children ? `\n${children}\n` : ''}</${tag}>`;
 };
 
+/*
+  A widget's margin is classes on its element. The server's tags (a fragment, say) are not elements, so they have none;
+  Text draws its own.
+*/
+const withMargin = (html, node, ctx, definition) => {
+  if(definition.margin === 'own' || !supportsMargin(definition)) return html;
+  const classes = marginClasses(node.attrs?.margin);
+  if(!classes.length) return html;
+  const margin = cleanMargin(node.attrs?.margin);
+  /* Auto margins only center a block, and an image, a link or a custom element is inline until it is told otherwise. */
+  if((margin.left === 'a' || margin.right === 'a') && /^\s*<(img|a|k-)/i.test(html)) classes.push('d-b');
+  return addClasses(html, classes);
+};
+
 export const renderNode = (node, ctx, info = {}) => {
   const definition = ctx.registry.get(node.type) || ctx.registry.get('unknown');
   if(!definition) return '';
-  return definition.render ? definition.render(node, ctx, definition, info) : renderStandard(node, ctx, definition);
+  return withMargin(definition.render ? definition.render(node, ctx, definition, info) : renderStandard(node, ctx, definition), node, ctx, definition);
 };
 
 export const renderNodes = (nodes, ctx) => (nodes || []).map((node, index) => renderNode(node, ctx, { index, parent: null, slot: '' })).join('\n');

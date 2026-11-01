@@ -3,4 +3,4 @@ import e from"/kempo/sitebuilder/components/Widget.js";import{html as t,css as i
     ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--spacer_h, 0.5rem) var(--spacer, 1rem); }
     a { display: inline-flex; align-items: center; gap: var(--spacer_q, 0.25rem); }
   `;render(){const e=r.filter(([e])=>s.test(this[e]||""));return e.length?t`<ul>${e.map(([e,i,r])=>t`<li><a href="${this[e]}" target="_blank" rel="noopener noreferrer"><k-icon name="${r}"></k-icon>${i}</a></li>`)}</ul>`:t`<span class="tc-muted">Add the addresses of your profiles.</span>`}}customElements.define("k-social-icons",n);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\SocialIcons.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\SocialIcons.js.map

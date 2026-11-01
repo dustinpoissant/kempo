@@ -1,2 +1,2 @@
 import s from"../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../server/utils/email/listEmails.js";export default async(r,t)=>{const[i,o]=await s(r.cookies.session_token,"system:emails:read");if(i)return t.status(i.code).json({error:i.msg});if(!o)return t.status(403).json({error:"Insufficient permissions"});const{status:a,type:n,search:m,limit:u,offset:f}=r.query,[c,l]=await e({status:a,type:n,search:m,limit:u,offset:f});if(c)return t.status(c.code).json({error:c.msg});t.json(l)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\emails\GET.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\emails\GET.js.map

@@ -9,23 +9,8 @@
 	<script src="/init.js"></script>
 	<script type="module" src="/kempo-ui/utils/theme.js"></script>
 	<script type="module" src="/kempo-ui/components/Icon.js"></script>
-	<script type="module" src="/kempo/components/Audio.js"></script>
+	<script type="module" src="/kempo-ui/components/Audio.js"></script>
 	<script type="module" src="/kempo-ui/components/Video.js"></script>
-	<script type="module">
-		// Alias k-audio-player to k-audio for backwards compatibility
-		customElements.whenDefined('k-audio').then(() => {
-			const AudioClass = customElements.get('k-audio');
-			if(AudioClass) customElements.define('k-audio-player', AudioClass);
-		}).catch(() => {
-			// Fallback: try after a delay
-			setTimeout(() => {
-				const AudioClass = customElements.get('k-audio');
-				if(AudioClass && !customElements.get('k-audio-player')) {
-					customElements.define('k-audio-player', AudioClass);
-				}
-			}, 1000);
-		});
-	</script>
 	<style>
 		/* The editor's marks on the page: nothing here is part of the published page. */
 		body { margin: 0; overflow-x: hidden; }
@@ -33,14 +18,22 @@
 		#sb-root.sb-drag-restricted { --sb-accent: var(--c_warning, #f90); }
 		#sb-root:empty::before { content: 'This page has no widgets yet. Use Add in the toolbar.'; display: block; padding: 3rem 1rem; text-align: center; opacity: 0.6; }
 		[data-sb-id] { cursor: default; }
-		[data-sb-slot]:empty { min-height: 3rem; outline: 1px dashed var(--c_border, #888); outline-offset: -1px; position: relative; }
-		[data-sb-slot]:empty::before { content: 'Empty. Select it, then use Add.'; display: block; padding: 0.75rem; text-align: center; opacity: 0.55; font-size: 0.85em; }
+		.sb-slot-empty { min-height: 3rem; padding: 0.75rem; box-sizing: border-box; outline: 1px dashed var(--c_border, #888); outline-offset: -1px; text-align: center; opacity: 0.55; font-size: 0.85em; }
 		[data-sb-id].sb-selected { outline: 2px solid var(--c_success, #2c2); outline-offset: 2px; }
 		[data-sb-id].sb-selected.sb-restricted { outline-color: var(--c_warning, #f90); }
+		[data-sb-id].sb-drop-inside { outline: 3px dashed var(--c_primary, #36f); outline-offset: 2px; background: color-mix(in srgb, var(--c_primary, #36f) 12%, transparent); }
+		[data-sb-id].sb-drop-before { box-shadow: 0 -4px 0 0 var(--c_primary, #36f); }
+		[data-sb-id].sb-drop-after { box-shadow: 0 4px 0 0 var(--c_primary, #36f); }
+		k-accordion-panel > [data-sb-id].sb-selected { outline: none; position: relative; }
+		k-accordion-panel > [data-sb-id].sb-selected::after { content: ''; position: absolute; inset: 0; outline: 2px solid var(--c_success, #2c2); outline-offset: -2px; pointer-events: none; z-index: 1; }
+		k-accordion-panel > [data-sb-id].sb-selected.sb-restricted::after { outline-color: var(--c_warning, #f90); }
 		[data-sb-edit][contenteditable] { cursor: text; outline: 1px dotted var(--c_primary, #36f); }
 		k-tab[contenteditable] { display: flex; }
 		[data-sb-cell][contenteditable] { cursor: text; outline: 1px dotted var(--c_primary, #36f); min-width: 3rem; }
 		.sb-placeholder { border: 1px dashed var(--c_border, #888); padding: 0.75rem; margin-bottom: var(--spacer, 1rem); }
+		.sb-spacer { border: 1px dashed var(--c_border, #888); display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+		.sb-empty { display: block; min-height: 3rem; box-sizing: border-box; outline: 1px dashed var(--c_border, #888); outline-offset: -1px; position: relative; }
+		.sb-empty::before { content: attr(data-sb-label); display: block; padding: 0.75rem; text-align: center; opacity: 0.55; font-size: 0.85em; }
 		.sb-placeholder::before { content: attr(data-sb-label); display: block; font-size: 0.8em; font-weight: bold; opacity: 0.7; margin-bottom: 0.25rem; }
 		#sb-handle { position: absolute; z-index: 10; display: none; align-items: center; justify-content: center; width: 2rem; height: 1.5rem; background: var(--c_success, #2c2); color: #fff; border-radius: 0.25rem; cursor: grab; }
 		#sb-handle { touch-action: none; }
@@ -48,8 +41,8 @@
 		#sb-handle.sb-restricted { background: var(--c_warning, #f90); }
 		.sb-zone { min-height: 2.5rem; margin: 0.25rem 0; border: 2px dashed var(--sb-accent); border-radius: 0.25rem; box-sizing: border-box; }
 		.row > .sb-zone { flex: 0 0 2.5rem; margin: 0 -1.25rem; position: relative; z-index: 5; }
-		[data-sb-slot].sb-zone-empty { outline: 2px dashed var(--sb-accent); outline-offset: -2px; }
-		.sb-zone-active, [data-sb-slot].sb-zone-active { background: color-mix(in srgb, var(--sb-accent) 45%, transparent); border-color: transparent; outline: none; }
+		[data-sb-slot].sb-zone-empty > .sb-slot-empty { outline: none; border: 2px dashed var(--sb-accent); border-radius: 0.25rem; opacity: 1; }
+		.sb-zone-active, [data-sb-slot].sb-zone-active > .sb-slot-empty { background: color-mix(in srgb, var(--sb-accent) 45%, transparent); border-color: transparent; }
 	</style>
 </head>
 <body>

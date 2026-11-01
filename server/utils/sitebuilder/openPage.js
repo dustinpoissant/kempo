@@ -14,8 +14,9 @@ import { analyzeFile, blockContent, listLocations, pageSummary, previewHtml, rea
   Opening never changes a page. The one thing it writes is the builder's own row, for a page that has none yet.
 */
 
-const hasMissingTypes = (trees, registry) => {
-  let missing = false;
+/* A stored tree is out of date when it holds a widget nothing knows now, or lacks a location the page has (one that used to hold code). */
+const hasMissingTypes = (trees, registry, visual) => {
+  let missing = visual.some(location => !Array.isArray(trees?.[location.name]));
   for(const nodes of Object.values(trees || {})){
     walk(nodes, node => { if(!registry.has(node.type)) missing = true; });
   }
@@ -65,13 +66,13 @@ export default async ({ rootDir, file, userId = null }) => {
       const analysis = analyze();
       return [null, code(analysis.ok ? '' : analysis.reason, row.lastGoodTrees)];
     }
-    if(!hasMissingTypes(row.trees, registry)) return [null, builder(row.trees)];
+    if(!hasMissingTypes(row.trees, registry, visual)) return [null, builder(row.trees)];
     return [null, await adopt(row, null)];
   }
 
   if(row.codeOnly) return [null, await adopt(row, row.lastGoodTrees)];
 
-  if(!hasMissingTypes(row.trees, registry) && treesMatchFile({ parsed: page.parsed, trees: row.trees, locations, registry })){
+  if(!hasMissingTypes(row.trees, registry, visual) && treesMatchFile({ parsed: page.parsed, trees: row.trees, locations, registry })){
     await saveRow({ file, trees: row.trees, fileHash: page.hash, codeOnly: false, lastGoodTrees: row.lastGoodTrees, savedBy: row.savedBy });
     return [null, builder(row.trees)];
   }

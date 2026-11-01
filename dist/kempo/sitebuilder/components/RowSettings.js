@@ -8,4 +8,4 @@ import{html as e}from"/kempo-ui/lit-all.min.js";import t from"./WidgetSettings.j
       </div>
       ${this.renderChildren("default",{label:"Columns",hint:"Select a column to set its width.",addType:"column",addLabel:"Add column"})}
     `}}customElements.define("k-row-settings",i);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\RowSettings.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\RowSettings.js.map

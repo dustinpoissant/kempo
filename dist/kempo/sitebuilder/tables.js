@@ -1,0 +1,2 @@
+export const COLUMN_WIDTH=/^(\d+(?:\.\d+)?)(%|px)$/;export const cleanWidth=t=>{const r=String(t??"").trim();return COLUMN_WIDTH.test(r)?r:""};export const columnWidths=(t,r)=>Array.from({length:r},(r,n)=>cleanWidth(Array.isArray(t)?t[n]:""));
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\tables.js.map

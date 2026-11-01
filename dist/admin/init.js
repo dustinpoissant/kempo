@@ -1,2 +1,2 @@
 window.kempo={pathsToIcons:["/admin/icons","/kempo/icons","/kempo-ui/icons"],monacoUrl:"/monaco-editor",lexicalUrl:"/kempo/vendor/lexical"},window.litDisableBundleWarning=!0,import("/kempo-ui/components/Import.js"),import("/kempo-ui/components/Aside.js"),import("/kempo-ui/components/Main.js"),import("/kempo-ui/components/Toast.js").then(({default:o})=>{const i=o.create.bind(o);o.create=(o,n={})=>i(o,{position:window.innerWidth<=768?"bottom center":"bottom right",...n})});
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\init.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\init.js.map

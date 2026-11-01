@@ -9,4 +9,4 @@ import{html as e}from"/kempo-ui/lit-all.min.js";import l from"./WidgetSettings.j
         </div>`:""}
       ${this.renderFields(["size"])}
     `}}customElements.define("k-column-settings",t);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\ColumnSettings.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\ColumnSettings.js.map

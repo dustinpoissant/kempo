@@ -1,7 +1,9 @@
 import ShadowComponent from '/kempo-ui/components/ShadowComponent.js';
 import { html } from '/kempo-ui/lit-all.min.js';
-import { attributeTypes, attributeDefault } from '/kempo/sitebuilder/attributes.js';
+import { attributeTypes, attributeDefault, parseColor, formatColor } from '/kempo/sitebuilder/attributes.js';
+import { COLUMN_WIDTH, columnWidths } from '/kempo/sitebuilder/tables.js';
 import '/kempo-ui/components/Icon.js';
+import '/kempo-ui/components/ColorPicker.js';
 import '/kempo-ui/components/Toggle.js';
 
 /*
@@ -54,6 +56,18 @@ export default class SitebuilderFields extends ShadowComponent {
     if(field === 'number'){
       return html`<div class="mb">${label}<input id="${id}" type="number" class="full" min="${attribute.min ?? ''}" max="${attribute.max ?? ''}" .value="${String(value ?? '')}" @input="${event => this.set(attribute.name, event.target.value)}"></div>`;
     }
+    if(field === 'color'){
+      const color = parseColor(value);
+      const base = color || { red: 0, green: 0, blue: 0, alpha: 1 };
+      return html`
+        <div class="mb">${label}
+          <k-color-picker id="${id}" format="hex" .value="${formatColor({ ...base, alpha: 1 })}" @input="${event => this.set(attribute.name, formatColor({ red: event.target.red, green: event.target.green, blue: event.target.blue, alpha: base.alpha }))}"></k-color-picker>
+          ${attribute.alpha === false ? '' : html`
+            <label class="d-b mtq mbq" for="${id}-opacity">Opacity (%)</label>
+            <input id="${id}-opacity" type="number" class="full" min="0" max="100" .value="${color ? String(Math.round(color.alpha * 100)) : '100'}" @input="${event => this.set(attribute.name, formatColor({ ...base, alpha: Math.max(0, Math.min(100, Number(event.target.value) || 0)) / 100 }))}">`}
+          <button class="mtq" ?disabled="${!color}" @click="${() => this.set(attribute.name, '', false)}">Reset</button>
+        </div>`;
+    }
     if(field === 'image'){
       return html`
         <div class="mb">${label}
@@ -71,19 +85,44 @@ export default class SitebuilderFields extends ShadowComponent {
 
   renderTable(){
     const rows = this.node.attrs?.rows?.length ? this.node.attrs.rows : [['', ''], ['', '']];
+    const width = Math.max(...rows.map(row => row.length));
+    const widths = columnWidths(this.node.attrs?.widths, width);
     const edit = change => this.set('rows', change(rows.map(row => [...row])), false);
+    const setWidth = (index, unit, amount) => {
+      const next = [...widths];
+      const value = amount === '' ? (unit === 'px' ? 120 : 25) : Math.max(0, Number(amount));
+      next[index] = unit ? `${value}${unit}` : '';
+      this.set('widths', next, false);
+    };
     return html`
       <div class="mb">
         <label class="d-b mbq">Rows and columns<small class="d-b tc-muted">Click a cell on the page to type in it.</small></label>
-        <p class="tc-muted mb0">${rows.length} rows, ${rows[0].length} columns</p>
+        <p class="tc-muted mb0">${rows.length} rows, ${width} columns</p>
         <div class="btn-grp mt">
           <button @click="${() => edit(data => [...data, Array(data[0].length).fill('')])}">Add row</button>
           <button ?disabled="${rows.length < 2}" @click="${() => edit(data => data.slice(0, -1))}">Remove row</button>
         </div>
         <div class="btn-grp mt">
           <button @click="${() => edit(data => data.map(row => [...row, '']))}">Add column</button>
-          <button ?disabled="${rows[0].length < 2}" @click="${() => edit(data => data.map(row => row.slice(0, -1)))}">Remove column</button>
+          <button ?disabled="${width < 2}" @click="${() => edit(data => data.map(row => row.slice(0, -1)))}">Remove column</button>
         </div>
+      </div>
+      <div class="mb">
+        <label class="d-b mbq">Column widths<small class="d-b tc-muted">Auto fits a column to its text. A percentage is a share of the table, and pixels are a fixed width.</small></label>
+        ${widths.map((width, index) => {
+          const match = COLUMN_WIDTH.exec(width);
+          const unit = match ? match[2] : '';
+          return html`
+            <div class="d-f mbq">
+              <span class="mrq">Column ${index + 1}</span>
+              <select aria-label="Width of column ${index + 1}" class="mrq" @change="${event => setWidth(index, event.target.value, event.target.parentElement.querySelector('input').value)}">
+                <option value="" ?selected="${!unit}">Auto</option>
+                <option value="%" ?selected="${unit === '%'}">Percentage</option>
+                <option value="px" ?selected="${unit === 'px'}">Pixels</option>
+              </select>
+              <input type="number" min="0" class="flex" aria-label="Width of column ${index + 1} in ${unit === 'px' ? 'pixels' : 'percent'}" ?disabled="${!unit}" .value="${match ? match[1] : ''}" @input="${event => setWidth(index, unit, event.target.value)}">
+            </div>`;
+        })}
       </div>
     `;
   }

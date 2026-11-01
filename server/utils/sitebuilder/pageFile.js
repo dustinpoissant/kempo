@@ -7,8 +7,8 @@ import parseFrontmatter from '../fs/parseFrontmatter.js';
   builder asks is whether anything at all changed since it last wrote it.
 */
 
-/* Locations that hold code (the page's <head> and end-of-body scripts), not widgets. */
-export const CODE_LOCATIONS = ['head', 'scripts'];
+/* Locations that hold code (the page's <head>), not widgets. The scripts location holds Script widgets. */
+export const CODE_LOCATIONS = ['head'];
 
 export const MAX_FILE_BYTES = 2 * 1024 * 1024;
 

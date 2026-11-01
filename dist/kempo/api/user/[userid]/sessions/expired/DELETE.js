@@ -1,2 +1,2 @@
 import s from"../../../../../../../server/utils/permissions/currentUserHasPermission.js";import r from"../../../../../../../server/utils/sessions/deleteExpiredUserSessions.js";export default async(e,o)=>{const t=e.cookies.session_token,[i,n]=await s(t,"system:user:update");if(i)return o.status(i.code).json({error:i.msg});if(!n)return o.status(403).json({error:"Insufficient permissions"});const{userid:u}=e.params,[a,m]=await r(u);if(a)return o.status(a.code).json({error:a.msg});o.json(m)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\user\[userid]\sessions\expired\DELETE.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\user\[userid]\sessions\expired\DELETE.js.map

@@ -63,9 +63,9 @@
     "sanitize-html": "^2.18.1"
   },
   "peerDependencies": {
-    "kempo-css": ">=2.2.5",
+    "kempo-css": ">=2.3.0",
     "kempo-server": ">=3.5.2",
-    "kempo-ui": ">=0.7.3"
+    "kempo-ui": ">=0.8.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.9",

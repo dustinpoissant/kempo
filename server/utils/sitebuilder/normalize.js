@@ -20,12 +20,14 @@ const attributesOf = element => Object.entries(element.attribs || {})
   .filter(([name, value]) => !(name === 'class' && !value))
   .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 
-const canonicalChildren = (children, keepWhitespace) => {
+const canonicalChildren = (children, keepWhitespace, trimEnds = false) => {
   const items = children.filter(child => !isComment(child));
   const parts = [];
   items.forEach((child, index) => {
     if(isText(child)){
       let text = keepWhitespace ? child.data : child.data.replace(/\s+/g, ' ');
+      /* The whitespace around the whole of a script means nothing to JavaScript. */
+      if(trimEnds) text = text.trim();
       if(!keepWhitespace){
         const previous = items[index - 1];
         const next = items[index + 1];
@@ -37,7 +39,7 @@ const canonicalChildren = (children, keepWhitespace) => {
     }
     if(!isElement(child)) return;
     const attributes = attributesOf(child).map(([name, value]) => ` ${name}=${JSON.stringify(value)}`).join('');
-    const inside = canonicalChildren(child.children || [], keepWhitespace || KEEP_WHITESPACE.has(child.name));
+    const inside = canonicalChildren(child.children || [], keepWhitespace || KEEP_WHITESPACE.has(child.name), child.name === 'script');
     parts.push(`<${child.name}${attributes}>${inside}</${child.name}>`);
   });
   return parts.join('');

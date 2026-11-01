@@ -1,2 +1,2 @@
 import r from"./widgets.js";import{createRegistry as t}from"./render.js";export const buildRegistry=(e=[])=>t([...r,...e]);export const widgetKey=(r,t)=>`${r}:${t}`;
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\registry.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\registry.js.map

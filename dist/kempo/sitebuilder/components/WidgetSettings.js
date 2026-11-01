@@ -20,4 +20,4 @@ import t from"/kempo-ui/components/ShadowComponent.js";import{html as e}from"/ke
           </div>`:e`<p class="tc-muted">Nothing here yet.</p>`}
         ${n?e`<button @click="${()=>this.addChild(n,t)}"><k-icon name="add"></k-icon> ${o}</button>`:""}
       </div>`}}
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\WidgetSettings.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\WidgetSettings.js.map

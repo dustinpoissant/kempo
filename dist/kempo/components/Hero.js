@@ -19,4 +19,4 @@ import e from"/kempo/sitebuilder/components/Widget.js";import{html as t,css as i
         <div class="content"><slot></slot></div>
       </div>
     `}}customElements.define("k-hero",r);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\Hero.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\Hero.js.map

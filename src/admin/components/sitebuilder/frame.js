@@ -78,6 +78,7 @@ export default class Frame {
       event.preventDefault();
       return;
     }
+    if(event.target.closest?.('k-accordion-header')) return;
     const chain = this.chainOf(event.target);
     if(!chain.length){
       this.handlers.onBlank();
@@ -209,10 +210,27 @@ export default class Frame {
     await this.ready;
     this.loadModulesInFrame(nodes);
     const scroll = this.iframe.contentWindow.scrollY;
+    const open = this.openSections();
     this.root.innerHTML = renderNodes(nodes, { registry: this.registry, editor: true, sanitize: cleanMarkup });
+    this.restoreSections(open);
     this.renderedAt = performance.now();
+    this.markEmpty();
+    requestAnimationFrame(() => this.markEmpty());
     this.setSelection(selection);
     this.iframe.contentWindow.scrollTo(0, scroll);
+  }
+
+  /*
+    A widget with nothing in it (an HTML block, say) is drawn with no height, so it is given a labelled box to select. A
+    widget that holds text or elements is not: its height may not be measured yet, and a box would break its layout.
+  */
+  markEmpty(){
+    for(const element of this.root.querySelectorAll('[data-sb-id]')){
+      /* A component that draws itself in its shadow DOM (an extension's card, say) is not empty either. */
+      const empty = !element.children.length && !element.textContent.trim() && !element.matches('hr') && !element.shadowRoot?.querySelector(':not(style):not(slot)');
+      /* The box gives the element a height, so one that already has it stays marked while it is still empty. */
+      element.classList.toggle('sb-empty', empty && (element.classList.contains('sb-empty') || element.getBoundingClientRect().height < 8));
+    }
   }
 
   /*
@@ -237,12 +255,41 @@ export default class Frame {
           if(element.matches('[data-sb-edit]')) element.setAttribute('contenteditable', 'plaintext-only');
           for(const cell of element.querySelectorAll('[data-sb-cell]')) cell.setAttribute('contenteditable', 'plaintext-only');
         }
-        if(element.matches('k-tab, k-accordion-header') && ids.length === 1) element.click?.();
+        if(element.matches('k-tab') && ids.length === 1) element.click?.();
+        if(element.matches('k-accordion-header') && ids.length === 1) this.openSection(element);
         if(ids.length === 1) this.showTabsAround(element);
       }
     }
+    this.markEmpty();
     this.placeHandle();
     requestAnimationFrame(() => this.placeHandle());
+  }
+
+  showDropTarget(id, zone){
+    const doc = this.document;
+    for(const element of doc.querySelectorAll('.sb-drop-before, .sb-drop-after, .sb-drop-inside')) element.classList.remove('sb-drop-before', 'sb-drop-after', 'sb-drop-inside');
+    if(id) doc.querySelector(`[data-sb-id="${CSS.escape(id)}"]`)?.classList.add(`sb-drop-${zone}`);
+  }
+
+  /* The accordion sections that are open, by widget id, so a redraw leaves them open. */
+  openSections(){
+    return new Set([...(this.root?.querySelectorAll('k-accordion-panel[active][data-sb-id]') || [])].map(panel => panel.dataset.sbId));
+  }
+
+  restoreSections(ids){
+    for(const id of ids) this.setSectionOpen(this.root, id, true);
+  }
+
+  /* Heading and panel share the section's widget id; panel names repeat across accordions, so the id is what finds them. */
+  setSectionOpen(scope, id, open){
+    for(const element of scope.querySelectorAll(`k-accordion-header[data-sb-id="${CSS.escape(id)}"], k-accordion-panel[data-sb-id="${CSS.escape(id)}"]`)){
+      element.toggleAttribute('active', open);
+    }
+  }
+
+  /* A selected accordion section is opened, and stays as it is when it is already open (a click would close it). */
+  openSection(header){
+    this.setSectionOpen(this.root, header.dataset.sbId, true);
   }
 
   /* A widget inside a tab that is not showing is invisible, and has no place for the handle, so its tabs are opened. */
@@ -306,8 +353,19 @@ export default class Frame {
     handle.addEventListener('pointerup', this.endDrag);
     handle.addEventListener('pointercancel', this.clearDrag);
     this.document.body.classList.add('sb-dragging');
-    this.showZones();
+    this.holdPosition(() => this.showZones());
   };
+
+  /*
+    The zones push the page down (and taking them away pulls it back up), so what is on the screen is kept where it is:
+    the first widget that starts inside the view is the anchor, and the page is scrolled by however far it moved.
+  */
+  holdPosition(change){
+    const anchor = [...this.root.querySelectorAll('[data-sb-id]')].find(element => element.getBoundingClientRect().top >= 0);
+    const before = anchor?.getBoundingClientRect().top;
+    change();
+    if(anchor) this.iframe.contentWindow.scrollBy(0, anchor.getBoundingClientRect().top - before);
+  }
 
   moveDrag = event => {
     this.pointer = event;
@@ -412,7 +470,10 @@ export default class Frame {
     handle?.removeEventListener('pointercancel', this.clearDrag);
     doc?.body.classList.remove('sb-dragging');
     this.root?.classList.remove('sb-drag-restricted');
-    for(const zone of doc?.querySelectorAll('.sb-zone') || []) zone.remove();
-    for(const element of doc?.querySelectorAll('.sb-zone-empty, .sb-zone-active') || []) element.classList.remove('sb-zone-empty', 'sb-zone-active');
+    if(!doc) return;
+    this.holdPosition(() => {
+      for(const zone of doc.querySelectorAll('.sb-zone')) zone.remove();
+      for(const element of doc.querySelectorAll('.sb-zone-empty, .sb-zone-active')) element.classList.remove('sb-zone-empty', 'sb-zone-active');
+    });
   };
 }

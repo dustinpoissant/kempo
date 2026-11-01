@@ -17,6 +17,8 @@ const { createNode } = nodes;
 const ops = await load('src/kempo/sitebuilder/ops.js');
 const History = (await load('src/kempo/sitebuilder/history.js')).default;
 const { coerceAttribute, isDefaultValue } = await load('src/kempo/sitebuilder/attributes.js');
+const { cleanWidth, columnWidths } = await load('src/kempo/sitebuilder/tables.js');
+const { marginClasses, readMarginClasses, supportsMargin } = await load('src/kempo/sitebuilder/margins.js');
 const { resolveEmbed } = await load('src/kempo/sitebuilder/embedProviders.js');
 const { safeUrl, escapeAttribute } = await load('src/kempo/sitebuilder/html.js');
 const coreWidgets = (await load('src/kempo/sitebuilder/widgets.js')).default;
@@ -63,7 +65,6 @@ const everyWidget = () => [
   createNode('spacer', { size: 'small' }),
   createNode('divider'),
   createNode('group', { element: 'section', padding: 'medium', background: 'alt', align: 'center', extraClass: 'foo bar' }, { default: [createNode('markup', { html: '<p>in group</p>' })] }),
-  createNode('search', { action: '/find' }),
   createNode('audio', { src: '/a.mp3', loop: true }),
   createNode('file', { href: '/f.pdf', label: 'Get it' }),
   createNode('card', { label: 'Card' }, { default: [createNode('markup', { html: '<p>c</p>' })] }),
@@ -165,7 +166,7 @@ export default {
   'the editor version marks every widget and shows the server tags as placeholders': t(() => {
     const html = renderNodes([createNode('fragment', { name: 'nav' }), createNode('button', { label: 'Go' })], { registry, editor: true });
     expect(!html.includes('<fragment') && html.includes('data-sb-label="Fragment"'), 'fragment placeholder');
-    expect(/data-sb-id="[^"]+" data-sb-edit="label"/.test(html), 'button editable');
+    expect(/data-sb-id="[^"]+" data-sb-label="[^"]*" data-sb-edit="label"/.test(html), 'button editable');
   }),
 
   'hand-written pages become widgets where they can, with unrecognised classes kept': t(() => {
@@ -191,7 +192,7 @@ export default {
   }),
 
   'a page the builder cannot represent is refused with the reason': t(() => {
-    for(const [html, word] of [['<p>x</p><script>alert(1)</script>', 'script'], ['<iframe src="/x"></iframe>', 'iframe'], ['<style>p{}</style>', 'style'], ['<blink>x</blink>', 'blink']]){
+    for(const [html, word] of [['<iframe src="/x"></iframe>', 'iframe'], ['<style>p{}</style>', 'style'], ['<blink>x</blink>', 'blink']]){
       const [error] = rebuild(html, registry);
       expect(error && error.msg.includes(word), `${html} -> ${error?.msg}`);
     }
@@ -214,6 +215,24 @@ export default {
     expect(roundTrip('<div class="row"><div><p>a</p></div></div>').tree[0].type === 'group', 'a column that is not a column class');
     expect(roundTrip('<div class="row"><div class="span-3 span-4"><p>a</p></div></div>').tree[0].type === 'group', 'two sizes');
     expect(roundTrip('<div class="py"><div class="py"></div></div>').tree[0].attrs.size === 'large', 'large spacer');
+    for(const [size, height] of [['small', '2rem'], ['medium', '6rem'], ['large', '12rem']]){
+      const html = renderLocation([createNode('spacer', { size })], ctx);
+      expect(html === `<div style="height: ${height}"></div>`, html);
+      const back = roundTrip(html);
+      expect(back.tree[0].type === 'spacer' && back.tree[0].attrs.size === size && sameMeaning(html, back.again), JSON.stringify(back.tree));
+    }
+    const custom = renderLocation([createNode('spacer', { size: 'custom', height: 40 })], ctx);
+    expect(custom === '<div style="height: 40px"></div>', custom);
+    const customBack = roundTrip(custom);
+    expect(customBack.tree[0].attrs.size === 'custom' && customBack.tree[0].attrs.height === 40 && sameMeaning(custom, customBack.again), JSON.stringify(customBack.tree));
+    expect(renderNodes([createNode('spacer', { size: 'custom', height: 40 })], { registry, editor: true }).startsWith('<div class="sb-spacer tc-muted" style="height: 40px" data-sb-id='), 'the editor draws a dotted spacer with its label');
+    expect(roundTrip('<div style="height: 3rem"></div>').tree[0].type !== 'spacer', 'a height that is no preset and no pixels is not read as a spacer');
+    expect(renderLocation([createNode('divider', {})], ctx) === '<hr>', 'a plain divider is a plain line');
+    const spaced = renderLocation([createNode('divider', { above: 'large', below: 'custom', belowHeight: 20 })], ctx);
+    expect(spaced === '<hr style="margin-top: 12rem; margin-bottom: 20px">', spaced);
+    const spacedBack = roundTrip(spaced);
+    expect(spacedBack.tree[0].type === 'divider' && spacedBack.tree[0].attrs.above === 'large' && spacedBack.tree[0].attrs.below === 'custom' && spacedBack.tree[0].attrs.belowHeight === 20 && sameMeaning(spaced, spacedBack.again), JSON.stringify(spacedBack.tree));
+    expect(!sameMeaning('<hr style="margin-top: 3rem">', roundTrip('<hr style="margin-top: 3rem">').again), 'a divider margin that is no choice is not dropped silently');
     expect(roundTrip('<div class="py"><p>text</p></div>').tree[0].type === 'group', 'padding with content is a group');
   }),
 
@@ -237,6 +256,94 @@ export default {
     expect(tree[0].attrs.header === true && tree[0].attrs.rows[1][1] === '2', JSON.stringify(tree[0].attrs));
     const headless = roundTrip('<table><tbody><tr><td>1</td></tr></tbody></table>').tree[0];
     expect(headless.attrs.header === false, 'no heading row');
+  }),
+
+  'every widget can have a margin on each side, written as kempo-css classes and read back from them': t(() => {
+    const all = side => ({ top: side, right: side, bottom: side, left: side });
+    expect(JSON.stringify(marginClasses(all('f'))) === '["m"]' && JSON.stringify(marginClasses(all('h'))) === '["mh"]' && JSON.stringify(marginClasses(all('q'))) === '["mq"]', 'all four sides');
+    expect(JSON.stringify(marginClasses({ top: 'q', bottom: 'q', left: 'h', right: 'h' })) === '["myq","mxh"]', 'matching pairs');
+    expect(JSON.stringify(marginClasses({ top: 'f', right: 'h' })) === '["mt","mrh"]' && marginClasses({}).length === 0, 'single sides, and no margin');
+    const read = readMarginClasses(['p', 'mx', 'mtq', 'custom', 'mb0']);
+    expect(read.margin.left === 'f' && read.margin.right === 'f' && read.margin.top === 'q' && read.margin.bottom === '' && JSON.stringify(read.rest) === '["p","custom","mb0"]', JSON.stringify(read));
+    expect(readMarginClasses(['p']).margin === null, 'no margin classes is no margin');
+    const group = renderLocation([createNode('group', { margin: { bottom: 'f' } }, { default: [createNode('markup', { html: '<p>in</p>' })] })], ctx);
+    expect(group.startsWith('<div class="mb">'), group);
+    const groupBack = roundTrip(group);
+    expect(groupBack.tree[0].type === 'group' && groupBack.tree[0].attrs.margin.bottom === 'f' && groupBack.tree[0].attrs.extraClass === '' && sameMeaning(group, groupBack.again), JSON.stringify(groupBack.tree));
+    const withClasses = roundTrip('<div class="p mb custom"><p>x</p></div>').tree[0];
+    expect(withClasses.attrs.padding === 'medium' && withClasses.attrs.extraClass === 'custom' && withClasses.attrs.margin.bottom === 'f', JSON.stringify(withClasses.attrs));
+    const image = renderLocation([createNode('image', { src: '/a.png', full: true, margin: { top: 'h', bottom: 'h' } })], ctx);
+    expect(image.includes('class="full myh"'), image);
+    expect(JSON.stringify(marginClasses({ left: 'a', right: 'a' })) === '["mxa"]' && JSON.stringify(marginClasses(all('a'))) === '["ma"]' && readMarginClasses(['mxa']).margin.left === 'a', 'auto margins');
+    const centered = renderLocation([createNode('image', { src: '/a.png', width: 200, margin: { left: 'a', right: 'a' } })], ctx);
+    expect(/class="[^"]*\bmxa\b[^"]*\bd-b\b|class="[^"]*\bd-b\b[^"]*\bmxa\b/.test(centered), centered);
+    const centeredBack = roundTrip(centered);
+    expect(centeredBack.tree[0].type === 'image' && centeredBack.tree[0].attrs.margin.left === 'a' && centeredBack.tree[0].attrs.margin.right === 'a' && sameMeaning(centered, centeredBack.again), JSON.stringify(centeredBack.tree));
+    expect(!renderLocation([createNode('group', { margin: { left: 'a', right: 'a' } })], ctx).includes('d-b'), 'a block needs no display class');
+    const fragment = renderLocation([createNode('fragment', { name: 'nav', margin: { top: 'f' } })], ctx);
+    expect(fragment === '<fragment name="nav" />', fragment);
+    expect(!supportsMargin(registry.get('fragment')) && !supportsMargin(registry.get('conditional')) && supportsMargin(registry.get('group')), 'server widgets have no margin');
+    const [, cleanedFragment] = validateTree([{ id: 'f', type: 'fragment', attrs: { name: 'nav', margin: { top: 'f' } }, slots: {} }], registry);
+    expect(cleanedFragment[0].attrs.margin === undefined, JSON.stringify(cleanedFragment[0].attrs));
+    const text = renderLocation([createNode('markup', { html: '<p>Hi</p>', margin: { bottom: 'q' } })], ctx);
+    expect(text === '<div data-sb-text class="mbq">\n<p>Hi</p>\n</div>', text);
+    const textBack = roundTrip(text);
+    expect(textBack.tree[0].type === 'markup' && textBack.tree[0].attrs.html === '<p>Hi</p>' && textBack.tree[0].attrs.margin.bottom === 'q' && sameMeaning(text, textBack.again), JSON.stringify(textBack.tree));
+    expect(renderLocation([createNode('group', {})], ctx) === '<div></div>', 'no margin adds nothing');
+    const [, cleaned] = validateTree([{ id: 'g', type: 'group', attrs: { margin: { top: 'q', bottom: 'x', left: 'f' } }, slots: {} }, { id: 'h', type: 'group', attrs: { margin: { top: 'x' } }, slots: {} }], registry);
+    expect(cleaned[0].attrs.margin.top === 'q' && cleaned[0].attrs.margin.bottom === '' && cleaned[0].attrs.margin.left === 'f' && cleaned[1].attrs.margin === undefined, JSON.stringify(cleaned.map(node => node.attrs)));
+  }),
+
+  'an HTML block is shown exactly as written, and reads back as the same block': t(() => {
+    const code = '<p class="x">Hi</p>\n<script>alert(1)</script>';
+    const html = renderLocation([createNode('html-block', { html: code })], ctx);
+    expect(html === `<div data-sb-html>${code}</div>`, html);
+    const back = roundTrip(html);
+    expect(back.tree[0].type === 'html-block' && back.tree[0].attrs.html === code && sameMeaning(html, back.again), JSON.stringify(back.tree));
+    expect(renderLocation([createNode('html-block', {})], ctx) === '<div data-sb-html></div>', 'an empty block');
+  }),
+
+  'a Script widget loads a script file, shows a placeholder in the editor, and reads back as the same widget': t(() => {
+    const plain = renderLocation([createNode('script', { src: '/js/app.js' })], ctx);
+    expect(plain === '<script src="/js/app.js"></script>', plain);
+    const full = renderLocation([createNode('script', { src: 'https://cdn.example/lib.js', type: 'module', defer: true, async: true, crossorigin: 'anonymous', integrity: 'sha384-abc' })], ctx);
+    expect(full === '<script src="https://cdn.example/lib.js" type="module" defer async crossorigin="anonymous" integrity="sha384-abc"></script>', full);
+    const back = roundTrip(full);
+    expect(back.tree.length === 1 && back.tree[0].type === 'script' && back.tree[0].attrs.src === 'https://cdn.example/lib.js' && back.tree[0].attrs.type === 'module' && back.tree[0].attrs.defer === true && back.tree[0].attrs.async === true && sameMeaning(full, back.again), JSON.stringify(back.tree));
+    const editor = renderLocation([createNode('script', { src: '/js/app.js' })], { registry, editor: true });
+    expect(!editor.includes('<script') && editor.includes('/js/app.js') && editor.includes('data-sb-id'), 'the editor never runs the script');
+    expect(renderLocation([createNode('script', {})], ctx) === '<script></script>' && roundTrip('<script></script>').tree[0].type === 'script', 'a Script with no file is kept');
+        const [, cleaned] = validateTree([{ id: 's', type: 'script', attrs: { src: 'javascript:alert(1)', type: 'evil', onload: 'x()', crossorigin: 'nope' }, slots: {} }], registry);
+    expect(cleaned[0].attrs.src === '' && cleaned[0].attrs.type === '' && cleaned[0].attrs.onload === undefined && cleaned[0].attrs.crossorigin === '', JSON.stringify(cleaned[0].attrs));
+    expect(!supportsMargin(registry.get('script')), 'a script has no margin');
+  }),
+
+  'a Script widget can hold JavaScript written in it, which is one script on the page and reads back the same': t(() => {
+    const code = 'const s = "</script>";\nconsole.log(s);';
+    const html = renderLocation([createNode('script', { code })], ctx);
+    expect(html === '<script>\nconst s = "<\\/script>";\nconsole.log(s);\n</script>', html);
+    const back = roundTrip(html);
+    expect(back.tree.length === 1 && back.tree[0].type === 'script' && back.tree[0].attrs.code === code && sameMeaning(html, back.again), JSON.stringify(back.tree));
+    const module = renderLocation([createNode('script', { code: 'a();', type: 'module', defer: true })], ctx);
+    expect(module === '<script type="module">\na();\n</script>', 'only the type applies to written JavaScript: ' + module);
+    expect(renderLocation([createNode('script', { src: '/a.js', code: 'ignored();' })], ctx) === '<script src="/a.js"></script>', 'a file wins over written JavaScript');
+    expect(roundTrip('<script src="/a.js">alert(1)</script>').error, 'a script with a file and JavaScript is refused');
+    expect(roundTrip('<script>  </script>').tree[0].attrs.code === undefined, 'a blank script has no code');
+    const [, cleaned] = validateTree([{ id: 's', type: 'script', attrs: { code: 42 }, slots: {} }], registry);
+    expect(cleaned[0].attrs.code === '42', 'code is text');
+    expect(renderLocation([createNode('script', { code: 'a();' })], { registry, editor: true }).includes('1 line'), 'the editor says how much JavaScript there is');
+  }),
+
+  'table columns take a width each in a colgroup, and read back with the same widths': t(() => {
+    expect(cleanWidth('25%') === '25%' && cleanWidth('120px') === '120px' && cleanWidth('25em') === '' && cleanWidth('10%; color: red') === '', 'only a percentage or pixels is a width');
+    expect(JSON.stringify(columnWidths(['30%'], 3)) === '["30%","",""]', 'a column without a width is auto');
+    const plain = renderLocation([createNode('table', { header: false, rows: [['a', 'b']] })], ctx);
+    expect(!plain.includes('colgroup'), 'no widths means no colgroup');
+    const sized = renderLocation([createNode('table', { header: false, rows: [['a', 'b']], widths: ['30%', ''] })], ctx);
+    expect(sized.startsWith('<table>\n<colgroup><col style="width: 30%"><col></colgroup>\n<tbody>'), sized);
+    const back = roundTrip(sized);
+    expect(back.tree[0].attrs.widths[0] === '30%' && back.tree[0].attrs.widths[1] === '' && sameMeaning(sized, back.again), JSON.stringify(back.tree));
+    expect(roundTrip('<table><colgroup><col style="width: 3em"></colgroup><tbody><tr><td>a</td></tr></tbody></table>').again.includes('3em') === false, 'a width that is not a percentage or pixels is not kept');
   }),
 
   'nesting deeper than 100 levels is refused': t(() => {
@@ -467,6 +574,23 @@ export default {
     const [, cleaned] = validateTree([{ id: 'p', type: 'photo-viewer', attrs: { images: [{ src: 'javascript:alert(1)', alt: 'x' }, { src: '/ok.png', alt: '<b>y</b>' }] }, slots: {} }], registry);
     expect(cleaned[0].attrs.images.length === 1 && cleaned[0].attrs.images[0].src === '/ok.png' && !cleaned[0].attrs.images[0].alt.includes('<'), JSON.stringify(cleaned[0].attrs));
     expect(roundTrip('<div class="row"><div class="col"><p>a</p></div></div>').tree[0].type === 'row', 'a row of columns is still a row');
+  }),
+
+  'text can have a background with opacity, a text color and rounded corners, and is read back as the same text widget': t(() => {
+    expect(renderLocation([createNode('markup', { html: '<p>Hi</p>' })], ctx) === '<p>Hi</p>', 'plain text has no box');
+    expect(renderLocation([createNode('markup', { html: '<p>Hi</p>', background: '', color: '', radius: 0 })], ctx) === '<p>Hi</p>', 'empty settings have no box');
+    const html = renderLocation([createNode('markup', { html: '<p>Hi</p>', background: '#00000080', color: '#ffffff', radius: 8 })], ctx);
+    expect(html === '<div class="p" style="background: #00000080; color: #ffffff; border-radius: 8px">\n<p>Hi</p>\n</div>', html);
+    const { tree, again, error } = roundTrip(html);
+    expect(!error && tree.length === 1 && tree[0].type === 'markup' && tree[0].attrs.background === '#00000080' && tree[0].attrs.color === '#ffffff' && tree[0].attrs.radius === 8 && tree[0].attrs.html === '<p>Hi</p>' && sameMeaning(html, again), error || JSON.stringify(tree));
+    const colorOnly = roundTrip(renderLocation([createNode('markup', { html: '<p>Hi</p>', color: '#f00' })], ctx));
+    expect(colorOnly.tree[0].attrs.color === '#ff0000' && !colorOnly.tree[0].attrs.background && !renderLocation(colorOnly.tree, ctx).includes('class='), 'a text color needs no padding');
+    expect(roundTrip('<div class="p bg-alt"><p>a</p></div>').tree[0].type === 'group', 'a padded box with no style is still a group');
+    const named = roundTrip('<div style="background: red"><p>a</p></div>');
+    expect(named.tree[0].type !== 'markup' && !sameMeaning('<div style="background: red"><p>a</p></div>', named.again), 'a style that is not one of its colors is not read as a text box, and the page is not rebuilt');
+    const [, cleaned] = validateTree([{ id: 'm', type: 'markup', attrs: { html: '<p>x</p>', background: 'red; position: fixed', color: 'rgb(0,0,0)', radius: 9999 }, slots: {} }], registry);
+    expect(cleaned[0].attrs.background === '' && cleaned[0].attrs.color === '' && cleaned[0].attrs.radius === 100, JSON.stringify(cleaned[0].attrs));
+    expect(renderNodes([createNode('markup', { html: '<p>Hi</p>', background: '#000000cc' })], { registry, editor: true }).startsWith('<k-markup-editor class="p" style="background: #000000cc" data-sb-id='), 'the editor shows the box on the editing element');
   }),
 
   'a button is a link, or a real button with an ID that a script can find': t(() => {

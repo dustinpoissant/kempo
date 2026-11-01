@@ -12,4 +12,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,live as 
         `)}
       `:t`<p class="tc-muted">Your theme has no locations for a menu yet. Mark one with <code>&lt;location name="footer-links" label="Footer" menu="true" /&gt;</code>.</p>`}
     `}}customElements.define("admin-menu-places",l);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\MenuPlaces.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\MenuPlaces.js.map

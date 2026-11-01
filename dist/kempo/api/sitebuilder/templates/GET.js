@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../../server/utils/sitebuilder/templates/listTemplates.js";export default async(r,t)=>{const o=r.cookies.session_token,[i,n]=await s(o,"system:pages:update");if(i)return t.status(i.code).json({error:i.msg});if(!n)return t.status(403).json({error:"Insufficient permissions"});const[a,u]=await e();if(a)return t.status(a.code).json({error:a.msg});t.json(u)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\sitebuilder\templates\GET.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\sitebuilder\templates\GET.js.map

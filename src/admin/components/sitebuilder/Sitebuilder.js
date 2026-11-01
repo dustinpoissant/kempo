@@ -17,7 +17,7 @@ import '/kempo-ui/components/Toggle.js';
 import '/kempo-ui/components/Dropdown.js';
 
 const SETTINGS_KEY = 'sitebuilder:settings';
-const DEVICES = [['phone', 'Phone', 'smartphone'], ['tablet', 'Tablet', 'tablet'], ['desktop', 'Desktop', 'desktop']];
+const DEVICES = [['phone', 'Phone', 'mobile'], ['tablet', 'Tablet', 'tablet'], ['desktop', 'Desktop', 'computer']];
 const QUIET = /^Already /;
 
 const readSettings = () => {
@@ -291,7 +291,9 @@ export default class Sitebuilder extends ShadowComponent {
     const inserter = document.createElement('admin-sitebuilder-inserter');
     inserter.registry = this.registry;
     inserter.host = this;
-    this.inserterDialog = Dialog.create(inserter, { title: 'Add a widget', cancelText: 'Close' });
+    this.inserterDialog = Dialog.create(inserter, { title: 'Add a widget', cancelText: 'Close', width: '100vw', height: '100vh' });
+    /* The dialog puts the focus on its own first control (the close button) once it has drawn, so the search takes it after that. */
+    this.inserterDialog.updateComplete.then(() => requestAnimationFrame(() => inserter.focusSearch()));
   };
 
   insert = type => {
@@ -342,6 +344,9 @@ export default class Sitebuilder extends ShadowComponent {
   }
 
   /* From the widget tree: a row was dropped before, after or into another. */
+  /* While a widget is dragged in the tree, the page shows where it would land. */
+  showDropTarget = (id, zone) => this.frame?.showDropTarget(id, zone);
+
   dropOn = (draggedId, targetId, zone) => {
     const target = this.find(targetId);
     const dragged = this.find(draggedId);
@@ -503,6 +508,7 @@ export default class Sitebuilder extends ShadowComponent {
       ['Click', 'Select the outermost widget under the pointer. Each click inside it selects the next widget down, and clicking the selected widget edits its text.'],
       ['Shift or Ctrl + click', 'Add the widget beside the selected one (same parent) to the selection.'],
       ['Drag the handle', 'Move the selected widget: drop it in a box that shows on the page. Letting go anywhere else cancels.'],
+      ['Ctrl + K', 'Open the Add a widget list, with the search ready to type in. Enter adds the first widget it finds.'],
       ['Ctrl + S', 'Save the page.'],
       ['Ctrl + D', 'Duplicate the selected widgets.'],
       ['Ctrl + Z', 'Undo.'],
@@ -545,6 +551,11 @@ export default class Sitebuilder extends ShadowComponent {
     if(mod && key === 's'){
       event.preventDefault();
       this.host?.save();
+      return;
+    }
+    if(mod && !event.altKey && !event.shiftKey && key === 'k'){
+      event.preventDefault();
+      if(!document.querySelector('k-dialog[opened]')) this.openInserter();
       return;
     }
     if(mod && key === 'd' && this.selection.length){
@@ -630,7 +641,7 @@ export default class Sitebuilder extends ShadowComponent {
         </div>
         ${visual.length > 1 ? html`
           <select aria-label="Content area" @change="${event => this.setLocation(event.target.value)}">
-            ${visual.map(location => html`<option value="${location.name}" ?selected="${location.name === this.location}">${location.label || (location.name === 'default' ? 'Content' : location.name)}</option>`)}
+            ${visual.map(location => html`<option value="${location.name}" ?selected="${location.name === this.location}">${location.label || (location.name === 'default' ? 'Content' : location.name[0].toUpperCase() + location.name.slice(1))}</option>`)}
           </select>
         ` : ''}
         <span class="spacer"></span>

@@ -10,4 +10,4 @@ import t from"/kempo/sitebuilder/components/Widget.js";import{html as e,css as i
       <div class="box ${"center"===this.align||"right"===this.align?this.align:""}" style="${o}">
         ${i?e`<iframe class="frame" style="aspect-ratio: ${t||i.ratio};" src="${i.src}" title="${i.provider} video" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`:e`<k-video class="${"cover"===this.fit?"cover":""}" style="${t?`aspect-ratio: ${t}`:""}" src="${this.src}" poster="${this.poster||""}" controls="${this.controls}" skip-duration="${this.skip}" idle-delay-ms="${s}" preload="${this.preload}" persistent-id="${this.remember?this.src:""}" ?autoplay="${this.autoplay}" ?loop="${this.loop}" ?muted="${this.muted||this.autoplay}"></k-video>`}
       </div>`}}customElements.define("k-video-player",o);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\VideoPlayer.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\VideoPlayer.js.map

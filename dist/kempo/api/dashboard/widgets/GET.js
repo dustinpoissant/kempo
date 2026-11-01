@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/auth/getSession.js";import e from"../../../../../server/utils/dashboard/listDashboardWidgets.js";export default async(r,t)=>{const[o,i]=await s({token:r.cookies.session_token});if(o)return t.status(500===o.code?500:401).json({error:500===o.code?o.msg:"Authentication required"});const[a,n]=await e({userId:i.user.id});if(a)return t.status(a.code).json({error:a.msg});t.json(n)};
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\dashboard\widgets\GET.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\dashboard\widgets\GET.js.map

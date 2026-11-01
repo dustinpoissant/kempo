@@ -67,6 +67,9 @@ const ALLOWED_ATTRS_PER_TAG = {
   TH: new Set(['colspan', 'rowspan', 'scope', 'align'])
 };
 
+/* The text is edited where it sits, so the editor paints nothing of its own: the page, or a Hero's picture, shows through. */
+const EDITOR_STYLES = ':host { background: transparent; } .lexical-editor { background: transparent; }';
+
 export const cleanMarkup = value => sanitizeHtml(value, { allowedTags: ALLOWED_TAGS, allowedAttrs: ALLOWED_ATTRS, allowedAttrsPerTag: ALLOWED_ATTRS_PER_TAG });
 
 export default class MarkupEditor extends WidgetEditor {
@@ -107,7 +110,7 @@ export default class MarkupEditor extends WidgetEditor {
   };
 
   render(){
-    return html`<k-html-editor controls="sitebuilder" layout="floating" .value="${this.initial}" @change="${this.handleChange}"></k-html-editor>`;
+    return html`<k-html-editor controls="sitebuilder" layout="floating" .stylesheet="${EDITOR_STYLES}" .value="${this.initial}" @change="${this.handleChange}"></k-html-editor>`;
   }
 }
 

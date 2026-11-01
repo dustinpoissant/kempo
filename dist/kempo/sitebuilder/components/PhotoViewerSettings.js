@@ -17,4 +17,4 @@ import{html as t}from"/kempo-ui/lit-all.min.js";import e from"./WidgetSettings.j
       </div>
       ${e.length>1?this.renderFields():""}
     `}}customElements.define("k-photo-viewer-settings",a);
-//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\PhotoViewerSettings.js.map
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\PhotoViewerSettings.js.map
