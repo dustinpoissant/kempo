@@ -36,6 +36,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- The `kempo-ui` peer dependency is now `>=1.0.0`.
+
 - **The dashboard widgets key is `admin_dashboard_widgets`.** The old `widgets` key still works as an alias until the next major version.
 - The middleware serves `.html` files as `text/html`, and the page builder's frame page may be framed by the admin (`X-Frame-Options: SAMEORIGIN` for that one file).
 - Dependencies: `sanitize-html` and `htmlparser2`, used to clean what the builder writes and to read a page back into widgets.
