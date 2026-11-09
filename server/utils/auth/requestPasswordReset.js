@@ -4,6 +4,7 @@ import db from '../../db/index.js';
 import { user, verificationToken } from '../../db/schema.js';
 import sendEmailFromTemplate from '../email/sendEmailFromTemplate.js';
 import getSetting from '../settings/getSetting.js';
+import defaultTokenUrl from '../settings/defaultTokenUrl.js';
 
 const generateToken = () => crypto.randomBytes(32).toString('hex');
 
@@ -38,7 +39,7 @@ export default async ({ email, subject = 'Reset Your Password', template = 'rese
       createdAt: now,
     });
 
-    const [settingError, passwordResetUrlTemplate] = await getSetting('system', 'password_reset_url', 'http://localhost:3000/reset-password/{{token}}');
+    const [settingError, passwordResetUrlTemplate] = await getSetting('system', 'password_reset_url', defaultTokenUrl('reset-password'));
     
     if(settingError){
       return [settingError, null];

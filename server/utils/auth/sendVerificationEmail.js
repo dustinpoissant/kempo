@@ -3,6 +3,7 @@ import db from '../../db/index.js';
 import { verificationToken } from '../../db/schema.js';
 import sendEmailFromTemplate from '../email/sendEmailFromTemplate.js';
 import getSetting from '../settings/getSetting.js';
+import defaultTokenUrl from '../settings/defaultTokenUrl.js';
 
 const generateToken = () => crypto.randomBytes(32).toString('hex');
 
@@ -28,7 +29,7 @@ export default async ({ userId, email, name }) => {
       createdAt: now,
     });
 
-    const [settingError, verificationUrlTemplate] = await getSetting('system', 'verification_url', 'http://localhost:3000/verify-email/{{token}}');
+    const [settingError, verificationUrlTemplate] = await getSetting('system', 'verification_url', defaultTokenUrl('verify-email'));
     
     if(settingError){
       return [settingError, null];

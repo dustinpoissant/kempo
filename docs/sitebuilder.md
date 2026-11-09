@@ -1,118 +1,106 @@
 # The Page Builder
 
-Kempo's page editor is a block-based page builder, in the way WordPress blocks work: a page is built from **widgets** that are added, configured and nested, and the page is saved as plain HTML. It replaces the visual editor that pages used to have. The admin's side navigation is the only thing left around it: the builder takes the rest of the screen.
+Kempo's page editor is [kempo-ui's `<k-page-builder>`](https://dustinpoissant.github.io/kempo-ui/components/page-builder.html), in the way WordPress blocks work: a page is built from **widgets** that are added, configured and nested. Kempo gives the builder what only a CMS has around it, and the page is still saved as a plain HTML file. The admin's side navigation is the only thing left around the builder: it takes the rest of the screen.
 
 Open **Content > Pages**, pick a page, and the builder opens.
 
 ## The editor
 
-One control bar runs across the top. From the left:
+One control bar runs across the top, from the left:
 
 - the **widget tree** button, which opens the tree of the page's widgets on the left;
-- back to the pages, and view the page;
-- the page's name;
-- **Add** (opens a searchable list of widgets), delete, move up, move down, move into the widget before, move out of the parent;
-- duplicate, **save as template** and **insert template**;
-- phone, tablet and desktop previews;
+- back to the pages, and open the page in a new tab;
 - a switcher for the page's content areas, when its template has more than one;
-- undo, redo and save;
-- a **more** menu: page settings (which selects nothing, so the right panel shows them), the head code, editor settings, keyboard shortcuts (a list of everything below), copy, move, replace another page, reset and delete;
-- the **widget settings** button, which shows or hides the right panel: the settings of the selected widget, or, when nothing is selected, the page's own settings (name, title, description and template, with who made it and when). They apply as you type and are saved with the page.
+- **Add** (a searchable list of widgets), delete, duplicate, undo, redo, and move up, down, into the widget before and out of its parent;
+- phone, tablet and desktop previews;
+- the page's own actions, as controls in the bar: the head code, copy, move, replace another page and delete. They are the first controls to move into the bar's own "more" menu when the bar is narrow;
+- **Templates** (save the selection as a template, insert one), save, reset, keyboard shortcuts and the **settings** button, which shows or hides the right panel.
 
-The page itself is in the middle, in an iframe, so your site's theme shows rather than the admin's.
+The right panel shows the settings of the selected widget, in a Widget tab and a Styles tab. With nothing selected it shows the page's own settings: its **title** and **description**, and (kempo adds these with the builder's `page-settings` slot) its **name** and **template**, with who made it and when. The page is in the middle, in an iframe, so your site's theme shows rather than the admin's.
 
-### Selecting and editing
+How selecting, dragging, the keyboard shortcuts and undo work, and what each widget's settings are, is described in [kempo-ui's page builder documentation](https://dustinpoissant.github.io/kempo-ui/components/page-builder.html). What follows is what kempo adds.
 
-The first click on the page selects the outermost widget under the pointer (a Row, say): it is highlighted in the tree, its settings load on the right, and the control bar acts on it. Each click inside the selected widget selects the next widget down towards the one clicked (the Column, then the Text in it), however deeply they are nested. Once the widget that was clicked is selected, further clicks are normal editing: they place the cursor in its text. Shift or Ctrl clicks select several widgets that share a parent. The tree and the page are separate places to drag from: select a widget and drag the handle that appears over it on the page, or drag a row in the tree. While a widget is dragged, every place it can go shows as a box and the one under the pointer fills in (letting go anywhere else cancels the drop): a box at the very top of the page and between and inside the widgets, except where dropping would not move it. Selection outlines, the drag handle and these boxes are green, and orange for a widget that can only go in one kind of parent (a Column in a Row, a section in an accordion), which therefore has no box on the page itself.
+### Saving and leaving
 
-### Keyboard shortcuts
+Saving (the save button, or Ctrl+S) publishes the page at once: pages are served from their files, so there are no drafts. To work on a draft, **copy** the page, edit the copy (nothing links to it, so only you can find it by its address) and use **Replace another page** on the copy to publish it over the original. The editor asks before a reload or a close while there are unsaved changes.
 
-On a Mac, Ctrl means Cmd.
+Saving checks that the file is still the one the editor opened, so two people cannot silently overwrite each other. If the file changed, the save is refused and you are offered a reload.
 
-| Keys | Does |
-|---|---|
-| Ctrl+K | Open the Add a widget list with the search focused; Enter adds the first widget it finds (works while typing in text too) |
-| Ctrl+S | Save |
-| Ctrl+D | Duplicate the selected widgets (the editor cancels the browser's bookmark shortcut while it has focus) |
-| Ctrl+Z | Undo |
-| Ctrl+Shift+Z, Ctrl+Shift+Y, Ctrl+Y | Redo |
-| Delete | Remove the selected widgets |
-| Escape | Stop typing and keep the widget selected, then select its parent, and at the top of the page select nothing (clicking an empty part of the tree or the page does the same) |
-| Alt+Shift+Up / Down | Move the selection up or down |
-| Alt+Shift+Left / Right | Move the selection out of its parent / into the widget before it |
+### Content areas
 
-Inside text the browser's own shortcuts work (Ctrl+B and the rest), and Ctrl+Z and Delete stay the text's own, so one key never does two things.
-
-### Undo, saving and leaving
-
-Undo and redo are kept in the browser, up to 50 steps, and a reload clears them. Saving publishes the page at once: pages are served from their files, so there are no drafts. To work on a draft, **copy** the page, edit the copy (nothing links to it, so only you can find it by its address) and use **Replace another page** on the copy to publish it over the original. The editor asks before a reload or a close while there are unsaved changes.
+A page's template decides which **content areas** it has (`<location />` in the template: the default one, and any others, such as a sidebar). The builder edits one area at a time and the switcher in the control bar (kempo adds it to the bar, with the page's areas from the server) changes which. The area is in the address hash (`/admin/content/pages/edit?path=about#scripts`; the first area has no hash), so a link, a reload and the back button keep it. The undo history belongs to the area shown, so it starts again when you switch. **Scripts** is a content area like the others, where Script widgets belong. Only the **head** is code: it opens from the **Head code** control in a code editor and is kept as it is.
 
 ### Templates
 
-**Save as template** saves the selected widgets (with everything inside them) under a name; **insert template** places a copy of one. A template is a pattern: changing it later does not change the pages that used it. Content that should be changed in one place and shared by many pages is a **Fragment** (see Server widgets).
-
-### Editor settings
-
-Kept in your browser. **Confirm deletion** (off by default) asks before the Delete key or the delete button removes a widget.
+**Save as template** saves the selected widgets (with everything inside them) under a name; **insert template** places a copy of one. Templates are stored in the database (`sitebuilderTemplate`) and shared by everyone who edits pages. A template is a pattern: changing it later does not change the pages that used it. Content that should be changed in one place and shared by many pages is a **Fragment** (see Server widgets).
 
 ## Widgets
 
-### The ones kempo provides
+### The ones kempo-ui provides
 
-| Group | Widgets |
-|---|---|
-| Text | **Text** (paragraphs, headings, lists, quotes, code and inline formatting, edited with the visual editor without its code view) |
-| Media | Image, Video (a URL: a file from the media library, or a YouTube or Vimeo address), Audio (a URL or a file from the media library), File (a download link), Photo viewer (one picture, or a gallery: several chosen at once from the media library), Hero (a large background image with a slot), Embed (YouTube, Vimeo or Spotify) |
-| Layout | Group, Row and Column (add as many columns to a row as you like; a column's width is set in its settings, out of 12, and columns without one share what is left; columns stack on a phone unless told not to), Spacer, Divider |
-| Content | Button (a **Link** with a URL, or a real **Button** with an ID that a script on the page can find with `document.getElementById`), Table, HTML (written by hand, edited in a large code dialog), Script (a script file with its type, defer, async, cross-origin and integrity settings, or JavaScript written in a large code dialog; put these in the page's **Scripts** content area), Social icons |
-| Interactive | Accordion (with sections), Tabs (with tabs), Card, Content slider, Show more, Icon |
-| Server | Fragment, Location, Conditional, Repeat |
+Text, Markdown, Image, Video, Audio, File, Photo viewer, Media gallery, Hero, Embed, Group, Fullscreen breakout, Container, Columns (and Column), Spacer, Divider, Button, Table, HTML, Script, Accordion, Tabs, Card, Content slider, Show more and Icon. See kempo-ui's documentation for each one's settings.
 
-#### Settings that are more than attributes
+Two things are different on a kempo site:
 
-Some widgets have their own settings panel (see Settings components below), so what a person sets is what they mean, not an HTML attribute:
+- **HTML** writes what was typed in it exactly as it is, with **no element around it** (kempo-ui draws a `div`). That is what lets a page the builder did not write open as HTML widgets and be written back unchanged. It has no box, colours or classes of its own: put it in a Group to give it those. Scripts and styles in it run on the published page. Only trust people who may edit pages with it, since it is not sanitized.
+- **Icons** are chosen with the site's own icon picker, which offers every icon the site has (its own, kempo's, kempo-ui's and each extension's). An icon setting holds a kempo-ui icon name (`add`) or `src:` and the address of an SVG file (`src:/commerce/icons/shopping_cart.svg`). **Image**, **Video** and **Audio** settings have a button that opens the media library.
 
-- **Video:** everything kempo-ui's `k-video` supports, as settings: the **controls** (none, minimal, normal or everything), **play automatically** (muted, as browsers require), **loop**, **muted**, **remember where the viewer stopped**, how much **loads** first, the **skip** distance and how soon the controls **hide**. The size is a **maximum width** (empty fills the space) and a **position**, an **aspect ratio** (16:9, 21:9, 4:3, square or portrait) and, for a video file, whether it is **fit** whole or filled and cropped. A YouTube or Vimeo address gets the options the provider has (autoplay, muted, loop, no controls) and the aspect ratio; the rest are for video files.
-- **Image:** **Full width** (the picture fills its place and keeps its aspect ratio, in place of a width in pixels), an **aspect ratio** (square, 4:3, 3:2, 16:9, 21:9 or portrait), how the picture **fits** the aspect ratio (fill and crop, or show all) and its **corners** (square, rounded or a circle). The page gets the kempo-css classes `full`, `r` or `round` and a `style` with `aspect-ratio` and `object-fit`; the person sees none of it.
-- **Button:** the colour is chosen from swatches, and a link can **open in a new tab** (`target="_blank" rel="noopener"`).
-- **Row:** a **layout** picked from common ones (1 to 4 equal columns, 1/3 + 2/3, 2/3 + 1/3, 1/4 + 3/4, 3/4 + 1/4) adds or removes columns to match and moves the content of a removed column into the last one; the columns are listed, each a click from its settings, and a button adds one.
-- **Column:** its width as a fraction (fill, 1/4, 1/3, 1/2, 2/3, 3/4 or full), and an exact width out of 12 for anything else.
-- **Accordion, Tabs and Content slider:** their sections, tabs or slides are listed, each a click from its settings, with **Add section**, **Add tab** and **Add slide** buttons.
-- **Photo viewer:** pictures are added several at a time from the media library (or by URL), each with its alternative text and buttons to move or remove it, and **Photos per row** (2, 3, 4 or 6) once there are two or more. One picture is a single `<k-photo-viewer>`; more are a `row` of them, which kempo-ui pages through with the arrow buttons.
-- **Hero:** the height as a choice and the overlay darkness as a slider.
+### Account widgets
 
-There is no raw HTML widget. If you need markup or JavaScript no widget offers, make a widget for it (see below) or edit the page as code.
+The functions of kempo itself are widgets, so the pages that come with kempo (login, register, forgot password, reset password, account, delete account) are made of them and can be changed in the page builder, and the same pieces can go on any page. They are in the **Account** group:
+
+- **Login form** and **Register form** (`k-login`, `k-register`): what is placed inside shows under the form (another way in). Each has settings for where to go afterwards.
+- **Forgot password form**, **Reset password form** (for the page at `/reset-password/<token>`), **Delete account form** (a code is sent to the account's email before anything is deleted).
+- **Change password button** (opens the form in a dialog) and **Logout button** (text, where to go afterwards, color): plain kempo-css `<button class="btn">` elements with nothing around them, made to work by one script per page (`LogoutButton.js`, `ChangePasswordButton.js`). The Styles tab's margin, alignment and color classes go on the button itself, so they line up with any other button. A button with a margin only below it (`mb`) sits higher on the line than one with none, so give every button in a row the same margin classes, including the links other extensions add: the account page and the links its extensions add all use `mb mrq`. In the builder they are links that do nothing.
+- **Signed-in name**, **email**, **email verified** and **member since**: the signed-in person's details, drawn inline.
+- **Notification bell** and **Notification list**.
+- **Show for permission** (in the **Server** group) shows what is inside it only to people who have a permission. It draws no box of its own (`display: contents`).
+
+In the builder these draw as they do on the page, but they never sign anyone in or out or send a form, so working on a page never changes the session of whoever is editing it, and what is inside Show for permission is always shown there.
+
+### The pages that come with kempo
+
+Kempo's own pages (the home page, 404, login, register, forgot and reset password, verify email, delete account and account) are made of widgets, so a new site opens them in the page builder as widgets, ready to change, and not as one block of code. A page the builder did not write has no stored layout, so each of these has its widgets in `src/kempo/pagebuilder/systemPages.js`, and the page file in `app-public/` is what they render to. The first time the builder opens one of these pages, if the file still holds exactly what its widgets render to, it opens as those widgets. A page that has been changed by hand no longer matches, so it is taken as it is (one HTML widget) and is never replaced.
+
+To change one of these pages in kempo itself, change its widgets in `systemPages.js` and run `npm run build:pages`, which writes the files in `app-public/`; a test fails if a file and its widgets disagree. The setup page, the navigation and footer fragments and the page templates are not made of widgets.
 
 ### Server widgets
 
-A server widget writes one of the server's own template tags, which the server resolves on every request, so the page is still a plain file.
+A server widget writes one of the server's own template tags, which the server resolves on every request, so the page is still a plain file. They are in the **Server** group.
 
-- **Fragment** places a fragment (`<fragment name="nav" />`): a disclaimer or notice used on many pages and edited in one place.
+- **Fragment** places a fragment (`<fragment name="nav" />`): a disclaimer or notice used on many pages and edited in one place. Its settings are a list of the site's fragments, with a link to edit the chosen one.
 - **Location** is a place other extensions fill (`<location name="…" />`).
 - **Conditional** (`<if condition="name">`) shows its content only when a value is set; put `!` in front to invert it.
 - **Repeat** (`<foreach in="list" as="item">`) repeats its content for each item of a list.
 
-Conditional and Repeat can use the values the server has for a page: the attributes on its `<page>` tag, the built-ins (`year`, `date`, `datetime`, `timestamp`) and the site's globals. In the editor a server widget is a labelled placeholder, because nothing resolves it there. `{{ }}` can be typed in any text and is kept as typed; the tags themselves only come from server widgets.
+Conditional and Repeat can use the values the server has for a page: the attributes on its `<page>` tag, the built-ins (`year`, `date`, `datetime`, `timestamp`) and the site's globals, and their settings suggest the page's own as you type. In the editor a server widget is a labelled box, because nothing resolves it there. `{{ }}` can be typed in any text and is kept as typed; the tags themselves only come from server widgets. They have no styles or classes, since the server replaces them.
+
+### Widgets from extensions
+
+An enabled extension adds its widgets to the same Add list, in a group of its own (Forms, Products, Blog). Turning an extension off takes its widgets out of the list. A page that uses one keeps it in the builder's copy and leaves it off the published page until the extension is on again. [Building page builder widgets](sitebuilder-widgets.md) is the guide for writing them.
 
 ## How a page is stored
 
-The page file is what is served, and it is plain HTML: no render happens per request. The builder keeps the widget tree (JSON) in its own database table (`sitebuilderPage`), keyed by the page's file path, with the hash of the file it last wrote.
+The page file is what is served, and it is plain HTML: no render happens per request. The builder keeps the widget tree (JSON, one list per content area) in its own database table (`sitebuilderPage`), keyed by the page's file path, with the hash of the file it last wrote. **The tree is what the builder edits; the file is generated from it on every save** (each widget writes its HTML, and the module scripts the widgets on the page need are added once at the end).
 
 When a page is opened, the file's hash is compared with the stored one.
 
 - **They match:** the page opens from the tree.
-- **There is no row** (the page was copied or deployed without it): a tree is rebuilt from the HTML and stored, if the rebuild is exact.
-- **They differ** (the file was changed outside the builder): the tree stored and the file are compared by meaning (whitespace, attribute order and quote style do not matter). If they say the same thing, nothing happens. If they differ, someone who can edit the page gets a dialog with a preview of each version and chooses which to keep. Choosing saves both sides: the file is rebuilt into a tree, or the tree is rendered over the file.
+- **There is no row** (the page was written by hand, deployed without it, or saved by an earlier kempo): the page file is taken as it is. The content of each content area becomes **one HTML widget**, written back exactly as it is, so nothing is changed or lost, and everything can be edited. Split it into real widgets as you go.
+- **They differ** (the file was changed outside the builder): the tree stored and the file are compared by meaning (whitespace, attribute order and quote style do not matter). If they say the same thing, nothing happens. If they differ, someone who can edit the page gets a dialog with a preview of each version and chooses which to keep. Choosing saves both sides: the file is taken as it is (as HTML widgets), or the tree is rendered over the file.
 
-A page the builder cannot rebuild **exactly** (a script, an iframe, a tag nothing knows, or text the sanitizer would change) is edited as code instead. Going from code back to the builder replaces the page's content: you choose to start over with an empty page, or to start from the last page the builder had.
-
-Saving checks that the file is still the one the editor opened, so two people cannot silently overwrite each other.
+A page that holds something **outside its content blocks** (the part of the file that is not frontmatter, the `<page>` tag or a `<content>` block) cannot be kept that way, and is edited as code instead. Going from code back to the builder replaces the page's content: you choose to start over with an empty page, or to start from the last page the builder had.
 
 Copying, moving, disabling, enabling and deleting a page take the builder's row with them. **Replace another page** moves a page over another page after a confirmation.
 
-## Writing widgets for your extension
+### What the server accepts
 
-Extensions add their own widgets to the page builder by declaring them in `page_widgets` in `kempo-config.json`. The full guide, with the declaration reference, attribute types, the component classes, settings, the round-trip rule, testing and a worked example, is [Building page builder widgets](sitebuilder-widgets.md).
+Everything the editor sends is checked again by the server, because anyone can send it a request without ever loading the editor. Only widgets the site has, only the settings each declares (each cleaned by its type), well-formed unique ids and at most 5000 widgets are kept. Rich text is sanitized. See `server/utils/sitebuilder/validateTree.js`.
+
 ## For developers
 
-Server code is in `server/utils/sitebuilder/` (opening, saving, resolving a conflict, leaving code mode, rebuilding a tree from HTML, rendering, validating, templates); the code the server and the editor share is in `src/kempo/sitebuilder/` (the tree, the widgets, the renderer, attribute types). Routes are under `/kempo/api/sitebuilder/`, and `/kempo/sdk.js` exposes them (`openSitebuilderPage`, `saveSitebuilderPage`, `resolveSitebuilderConflict`, `leaveSitebuilderCodeMode`, the template functions). Page management gained `copyPage` and `movePage({ overwrite: true })`.
+- Server code is in `server/utils/sitebuilder/`: opening, saving, resolving a conflict, leaving code mode, rendering (`pageCore.js`, which uses kempo-ui's DOM-free `renderPage`), validating (`validateTree.js`), the widget registry (`registry.js`) and templates.
+- The widgets only kempo has (the server widgets, the account widgets in `coreWidgets.js`, and the HTML widget written as it is) are in `src/kempo/pagebuilder/`, which imports nothing, so the server and the admin register the same ones. The builder's copies of the account widgets are in `src/admin/components/pagebuilder/CoreWidgetEditors.js`.
+- The admin component is `src/admin/components/pagebuilder/PageBuilderEditor.js` (`<admin-page-builder>`), around `<k-page-builder>`. The controls it adds to the bar are kempo-ui controls in `controls/`: `PageControl.js` (`<admin-pb-control>`, a `ButtonControl` for the links and the page's actions) and `LocationControl.js` (`<admin-pb-location>`, a `Control` that chooses the content area). The page's name and template are fields in the builder's page settings panel (`slot="page-settings"`). The builder ranks a spot of extra controls by their `priority`, so the links and the area chooser have one and the page's actions have `-1`, which moves them into the "more" menu first; `PageEditor.js` loads the page, saves it and shows the conflict and code screens.
+- Routes are under `/kempo/api/sitebuilder/`, and `/kempo/sdk.js` exposes them (`openSitebuilderPage`, `saveSitebuilderPage`, `resolveSitebuilderConflict`, `leaveSitebuilderCodeMode`, the template functions). Page management has `copyPage` and `movePage({ overwrite: true })`.
+- A site's own `init.js` needs `window.kempo.pathToStylesheet = '/kempo-css/kempo.min.css'` (kempo-ui 1.3 loads kempo-css from a CDN otherwise). The builder draws the page in a frame that copies the admin page's stylesheets, so the admin hands it the site's `/styles.css` too (`stylesheets` on `<k-page-builder>`). Saving goes through the server, so the admin listens to the builder's `saverequest` event, stores the page, shows a `Toast.success` or `Toast.error`, and calls `markSaved()` once the page is stored.

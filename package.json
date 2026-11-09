@@ -14,6 +14,7 @@
     "test:email": "node ./scripts/test-email.js",
     "test": "node scripts/run-tests.js unit",
     "test:node": "node scripts/run-tests.js unit",
+    "build:pages": "node scripts/build-system-pages.js",
     "test:integration": "node scripts/run-tests.js integration",
     "test:browser": "node scripts/run-browser-tests.js",
     "link:local": "npm install ../kempo-server ../kempo-ui --no-save",
@@ -27,7 +28,7 @@
   "files": [
     "bin",
     "dist",
-    "src/kempo/sitebuilder",
+    "src/kempo/pagebuilder",
     "app-public",
     "app-server",
     "app-drizzle.config.js",
@@ -65,7 +66,7 @@
   "peerDependencies": {
     "kempo-css": ">=2.3.0",
     "kempo-server": ">=3.5.2",
-    "kempo-ui": ">=1.0.0"
+    "kempo-ui": ">=1.4.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.9",

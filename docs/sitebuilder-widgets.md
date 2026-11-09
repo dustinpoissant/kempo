@@ -1,49 +1,44 @@
 # Building page builder widgets
 
-This is everything an extension needs to add widgets to the page builder. You should not need kempo's source to build one. If something here is missing or wrong, that's a bug in this guide.
+This is everything an extension needs to add widgets to the page builder. The builder is [kempo-ui's `<k-page-builder>`](https://dustinpoissant.github.io/kempo-ui/components/page-builder.html), and an extension's widget is a kempo-ui widget definition, written as JSON in `kempo-config.json`. If something here is missing or wrong, that's a bug in this guide.
 
-**Needs** kempo 4.10.0 or later (the page builder's extension API). Auto margins need kempo-css 2.3.0 or later. A widget can use any kempo-ui component.
+**Needs** a kempo that has kempo-ui's page builder (see the changelog) and kempo-ui 1.3.1 or later. A widget can use any kempo-ui component.
 
 ## Contents
 
 - [The short version](#the-short-version)
 - [How a widget is stored](#how-a-widget-is-stored)
 - [Declaring the widget](#declaring-the-widget)
-- [Kinds of widget](#kinds-of-widget)
-- [Attributes](#attributes)
+- [Settings](#settings)
 - [Slots and nesting](#slots-and-nesting)
 - [The page component](#the-page-component)
-- [Editable text](#editable-text)
-- [The editor](#the-editor)
-- [Settings](#settings)
+- [The editor component](#the-editor-component)
+- [The settings component](#the-settings-component)
 - [Groups, icons and search](#groups-icons-and-search)
-- [Margins](#margins)
-- [The round trip](#the-round-trip)
 - [Testing](#testing)
 - [Shipping checklist](#shipping-checklist)
-- [A complete example](#a-complete-example)
 - [Limits](#limits)
 - [For kempo's maintainers](#for-kempos-maintainers)
 
 ## The short version
 
 1. Declare the widget in `kempo-config.json` under `page_widgets`.
-2. Write its page component: a web component that extends `Widget`, with a Lit property for each attribute.
-3. Add a test that the widget's HTML reads back into the same widget (see [Testing](#testing)).
+2. Write its page component: a web component that extends kempo-ui's `ShadowComponent`, with a Lit property for each setting.
+3. Add a test that the widget is declared correctly and is written as you expect (see [Testing](#testing)).
 
 Everything else (an editor component, a settings panel, slots, groups) is optional.
 
 ## How a widget is stored
 
-A page is saved as plain HTML. A widget is one element in it: its tag is the widget's tag, its attributes are its settings, its text is an editable text attribute, and its children are the widgets in its slots.
+A page's widgets are a tree (JSON) that the builder edits and the server stores. When the page is saved, each widget writes its HTML into the page file: one element, whose tag is the widget's tag, whose attributes are its settings and whose children are the widgets in its slots.
 
-For example, a widget with key `callout`, tag `my-ext-callout` and the attribute `tone="warning"` is saved as:
+A widget with key `callout`, tag `my-ext-callout` and the setting `tone` set to `warning` is written as:
 
 ```html
-<my-ext-callout tone="warning">Stock is low.</my-ext-callout>
+<my-ext-callout tone="warning"><p>Stock is low.</p></my-ext-callout>
 ```
 
-The widget's name on pages is `<extension>:<key>`, so `my-ext:callout` here. When the editor opens a page, kempo rebuilds the widget tree from this HTML. That is why the HTML must mean the same thing when it is read back (see [The round trip](#the-round-trip)).
+The widget's name in the tree is `<extension>-<key>` in lowercase, so `my-ext-callout` here. The builder never reads the HTML back into the tree: the tree is the truth, so a widget has **no round-trip rule** to satisfy. It only has to draw the same on the page and in the editor. The script of each page component the page uses is added once at the end of the content (`<script type="module" src="…">`); do not add your own.
 
 ## Declaring the widget
 
@@ -79,29 +74,24 @@ Widgets are declared in `kempo-config.json` in an array called `page_widgets`:
 | `title` | yes | The name shown in the Add list and the widget tree. |
 | `tag` | yes | The element name on the page. Lowercase letters, digits and hyphens, starting with a letter. A component's tag must contain a hyphen. |
 | `page_component` | for components | The path of the module that defines the tag on the published page. It starts with `/`. |
-| `editor_component`, `editor_tag` | no | A module, and the tag it defines, for the editor instead of the page component (see [The editor](#the-editor)). |
-| `settings_component`, `settings_tag` | no | Both or neither. A module and the tag it defines, replacing the default settings panel (see [Settings](#settings)). |
-| `attributes` | no | The widget's settings (see [Attributes](#attributes)). |
+| `editor_component`, `editor_tag` | no | Both or neither. A module, and the tag it defines, drawn in the editor instead of the page element (see [The editor component](#the-editor-component)). |
+| `settings_component`, `settings_tag` | no | Both or neither. A module, and the tag it defines, replacing the default settings panel (see [The settings component](#the-settings-component)). |
+| `attributes` | no | The widget's settings (see [Settings](#settings)). |
 | `slots` | no | Places where other widgets go (see [Slots and nesting](#slots-and-nesting)). |
-| `editable` | no | The name of a text attribute that is edited in place (see [Editable text](#editable-text)). |
-| `only_in` | no | A list of widget keys this widget may only be placed inside, such as `["column"]`. |
+| `section` | no | `true` for a widget that is one part of another (a column of a row, a tab). Sections are left out of the Add list. |
+| `display` | no | The display class the widget's element gets. Left out, it is `d-b` (block). `""` for a widget that sets its own display in its component's styles, such as one whose `inline` setting changes it. |
+| `hide_styles` | no | A list of the parts of the Styles tab the widget does not need, because it has its own setting for them: `box` (margin, padding, corners, borders), `background`, `textColour`, `align`, `id`, `classes`. A button whose colour is its `variant` setting hides `background` and `textColour`, so there is one way to set it. A hidden part is left out of the tab, and what was stored for it is not written on the page. An unknown part skips the widget. |
 | `category`, `category_title` | no | The group in the Add list (see [Groups, icons and search](#groups-icons-and-search)). |
-| `icon`, `iconSrc` | no | An icon name, or the path of an icon file the extension ships. `iconSrc` wins if both are set. |
+| `icon`, `iconSrc` | no | An icon name, or the path of an icon file the extension ships. |
 | `description`, `keywords` | no | Shown in the Add list. Keywords are matched by search as well as the title. |
 
-A widget that breaks a rule is left out, and the server log says why, for example `[my-ext] page widget skipped: Page widget "callout" needs a tag`. The other widgets still load. The rules are: `key`, `title` and `tag` are present and valid; a component has a `page_component`; `settings_component` and `settings_tag` are both given or both missing; every path starts with `/`; and no two widgets share a component tag. Slots with an invalid name are dropped without a message.
+A widget that breaks a rule is left out, and the server log says why, for example `[my-ext] page widget skipped: Page widget "callout" needs a tag`. The other widgets still load. The rules are: `key`, `title` and `tag` are present and valid; a component has a `page_component`; the editor and settings fields come in pairs; every path starts with `/`; and no widget has the name of another. Slots with an invalid name are dropped without a message.
 
-Paths point at files the site serves. Files in the extension's `public/` folder are served under its public scope, so `/my-ext/components/Callout.js` is `public/components/Callout.js` in an extension whose public scope is `my-ext`.
+Paths point at files the site serves. Files in the extension's `public/` folder are served under its public scope, so `/my-ext/components/Callout.js` is `public/components/Callout.js` in an extension whose public scope is `my-ext`. Admin components are under `/admin/extension/<extension>/` (its `admin/` folder).
 
-## Kinds of widget
+## Settings
 
-- **Component:** a custom element. It has a `tag` with a hyphen and a `page_component`. Most widgets are this kind.
-- **Primitive:** a native element with no component, such as `"tag": "hr"`. Nothing is loaded on the page. Use it only for a plain HTML element with settings that map to attributes.
-- **Server:** a widget that kempo's server fills in (Fragment, Location, Conditional, Repeat). Extensions can't declare these. They can offer fragments and locations that those widgets place.
-
-## Attributes
-
-Each attribute is one setting. It is stored on the element as an HTML attribute.
+Each attribute is one setting, written on the element as an HTML attribute. A setting that is at its default is not written, so your component must treat a missing attribute as its default.
 
 ```json
 { "name": "tone", "type": "select", "label": "Tone", "hint": "How the box looks.", "default": "info", "options": [
@@ -112,7 +102,7 @@ Each attribute is one setting. It is stored on the element as an HTML attribute.
 
 | Field | Meaning |
 |---|---|
-| `name` | The setting's name in the page builder. Required. |
+| `name` | The setting's name. Required. |
 | `attr` | The HTML attribute name, if different from `name`. |
 | `type` | One of the types below. Defaults to `string`. |
 | `label`, `hint` | The label of the setting, and a line of help shown under it. |
@@ -120,29 +110,31 @@ Each attribute is one setting. It is stored on the element as an HTML attribute.
 | `options` | For `select`: a list of `{ value, label }`. |
 | `min`, `max` | For `number`: the limits. |
 | `format` | For `boolean`: `"text"` writes `attr="true"` or `attr="false"` instead of the attribute's presence. |
-| `picker` | For `url`: `image`, `video` or `audio` adds a button that picks a file from the media library. |
+| `virtual` | `true` for a setting that is kept in the tree but not written as an attribute (your page component never sees it). |
+| `when` | Shows the setting only while other settings have values: `{ "kind": "link" }`. |
+| `beside` | The name of a number setting to draw this one beside, with no label of its own (a unit select). |
 
-| Type | Settings control | Stored as |
+| Type | Settings control | Kept as |
 |---|---|---|
 | `string` | Single-line text | The text. |
 | `text` | Multi-line text | The text. |
 | `number` | Number | A number, within `min` and `max`. |
 | `boolean` | Switch | Present or absent. With `format: "text"`, `"true"` or `"false"`. |
 | `url` | Text | An address that is safe to link to: `http`, `https`, `mailto`, `tel`, or a path on this site. |
-| `image` | Image picker | A safe address. |
-| `color` | Colour picker | `#rrggbb`, or `#rrggbbaa` with opacity. |
+| `image`, `video`, `audio` | Text, and a button that opens the media library | A safe address. |
+| `color` | Colour picker | `#rgb`, `#rrggbb` or `#rrggbbaa`. |
 | `select` | Dropdown | One of the `options` values. |
 | `id` | Text | Letters, digits, `-` and `_` only. |
+| `icon` | The site's icon picker | A kempo-ui icon name (`add`), or `src:` and the path of an SVG file on this site (`src:/commerce/icons/receipt.svg`). Empty for no icon. |
+| `json` | None (use a settings component) | Plain data. |
 
-Rules that apply to every attribute:
+Every value is **cleaned by the server on save**: coerced to its type, limited to its options, addresses checked, and a setting the widget does not declare dropped. Never rely on a value reaching the page unchanged. An icon setting is written on the element as it is kept (`icon="src:/commerce/icons/receipt.svg"`), so a component that draws it with `<k-icon>` handles both forms: `src:` and the path is `<k-icon src="…">`, anything else is `<k-icon name="…">`.
 
-- **Only values that differ from the default are written.** A widget that keeps its default writes nothing for that attribute. So your component must handle a missing attribute by behaving as its default.
-- **Values are cleaned on save and on read.** A value is coerced to its type, and an attribute the widget doesn't declare is dropped. Never rely on a value reaching the page unchanged.
-- **Attributes are text on the page.** Your component receives strings, unless a Lit property converts them (see below).
+Every widget also has a **Styles** tab, which kempo adds: margin, padding, background, text colour, alignment, corners, borders, an id and extra classes, written as kempo-css classes on the widget's first element. Your element has to be a block for them to show (see `:host` below).
 
 ### Lit property names
 
-Lit reads an attribute into a property of the same name, but it lowercases camelCase names. A property `persistentId` reads the attribute `persistentid`. Either keep attribute names lowercase and single-word (`tone`, `message`), or give the property an explicit name with `attribute: 'persistent-id'` and declare the same name in `attr`/`name`.
+Lit reads an attribute into a property of the same name, but it lowercases camelCase names. A property `persistentId` reads the attribute `persistentid`. Either keep names lowercase and single-word (`tone`), or give the property an explicit attribute name: `persistentId: { type: String, attribute: 'persistent-id' }`, and declare the setting as `persistent-id`.
 
 ## Slots and nesting
 
@@ -151,27 +143,32 @@ A slot is a place where other widgets go. Declare one in `slots`:
 ```json
 "slots": [
   { "name": "default", "label": "Content" },
-  { "name": "footer", "label": "Footer", "accepts": ["my-ext:button"] }
+  { "name": "footer", "label": "Footer" }
 ]
 ```
 
-- `default` holds the widgets that have no `slot` attribute on the page. The widget's own children, when it has no declared slots, are not kept: a widget with no slots must not render any children.
-- Any other slot holds the widgets whose page element has `slot="footer"`. The editor writes that attribute for you.
-- `accepts` limits the widgets a slot takes, by key. Without it, a slot takes any widget.
+- `default` holds the widgets that have no `slot` attribute on the page. A widget with no slots holds no children: anything placed in it is not kept.
+- Any other slot holds the widgets whose page element has `slot="footer"`. The builder writes that attribute for you. In the builder each of these slots is drawn as a place to drop into, even while it is empty: a `<div slot="footer">` that holds the widgets in it (the page has no such `div`), so your editor component needs `<slot name="footer">` to show it. Name the slots so the first one is where a widget added with the toolbar should land.
+
+**Anything can go in anything.** Every widget that has a slot takes any widget in it, and any widget can be placed at the top of a page. There are no placement rules to declare. A widget that needs a particular ancestor finds it where it is drawn with `closest()`:
+
+```js
+const parentProduct = this.closest('my-ext-parent');
+if(!parentProduct) return html`<p>Place this in a parent.</p>`;
+```
 
 Nesting is allowed up to 100 levels. Your component shows the children with `<slot>` (or `<slot name="footer">`) in its shadow DOM.
 
 ## The page component
 
-The page component is the web component that the published page loads. Extend `Widget`, which is a kempo-ui `ShadowComponent` (so kempo-css is in its shadow DOM):
+The page component is the web component the published page loads. Extend kempo-ui's `ShadowComponent` (so kempo-css is in its shadow DOM):
 
 ```js
-import Widget from '/kempo/sitebuilder/components/Widget.js';
+import ShadowComponent from '/kempo-ui/components/ShadowComponent.js';
 import { html, css } from '/kempo-ui/lit-all.min.js';
 
-export default class Callout extends Widget {
+export default class Callout extends ShadowComponent {
   static properties = {
-    message: { type: String, reflect: true },
     tone: { type: String, reflect: true }
   };
 
@@ -180,7 +177,7 @@ export default class Callout extends Widget {
   `;
 
   render(){
-    return html`<div class="p b r ${this.tone === 'warning' ? 'bc-warning tc-warning' : ''}">${this.message}<slot></slot></div>`;
+    return html`<div class="p b r ${this.tone === 'warning' ? 'bc-warning tc-warning' : ''}"><slot></slot></div>`;
   }
 }
 
@@ -189,104 +186,79 @@ customElements.define('my-ext-callout', Callout);
 
 Points to get right:
 
-- **`:host { display: block; }`:** custom elements are inline by default, and vertical margins (and the widget's margin, see [Margins](#margins)) do nothing on an inline element.
-- **Style with kempo-css classes,** not custom CSS. The `:host` rule is the one exception, to set the element's own display.
-- **The page contains only the tag.** Anything else the widget shows must come from its own render. Don't add wrapper elements or scripts in the page HTML.
-- **Declare a property for every attribute** that the render uses. Anything the widget doesn't read is still stored.
-- **The script loads once per page.** kempo adds `<script type="module" src="...">` for each page component the page uses. Don't add your own.
+- **`:host { display: block; }`:** custom elements are inline by default, and margins, padding and borders do nothing useful on an inline element.
+- **Style with kempo-css classes,** not custom CSS. The `:host` rule is the one exception.
+- **The page contains only the tag.** Anything else the widget shows must come from its own render.
+- **Declare a property for every setting** that the render uses.
+- **The same module is loaded in the builder,** so the widget is drawn live while it is edited. If it must not do what it does on the page there (load data, send a form), write an [editor component](#the-editor-component).
 
-## Editable text
+## The editor component
 
-Set `editable` to the name of a text attribute, and the widget's text is that attribute. The page then stores the text as the element's text:
+By default the builder draws the page component itself, with the settings you declared. That is right for most widgets.
 
-```json
-{ "key": "heading", "tag": "my-ext-heading", "editable": "text", "attributes": [
-  { "name": "text", "type": "string", "label": "Text", "default": "Heading" }
-] }
-```
-
-```html
-<my-ext-heading>Welcome</my-ext-heading>
-```
-
-In the editor the text is typed in place. The element must hold text only, with no child elements, or the page can't be read back.
-
-## The editor
-
-By default the editor shows the page component itself, with the attributes you declared, and its settings are the default panel. That is right for most widgets and needs nothing more.
-
-Write an **editor component** when the page component can't be used in the editor as it is. For example, the Form widget in kempo-forms shows a card with the form's title, not the live form, because a live form would load, validate and send in the middle of the editor.
+Write an **editor component** when the page component can't be used in the builder as it is. For example, the Form widget in kempo-forms shows a card with the form's title, not the live form, because a live form would load, validate and send in the middle of the editor.
 
 ```json
-"editor_component": "/my-ext/components/CalloutEditor.js",
+"editor_component": "/admin/extension/my-ext/components/pagebuilder/CalloutEditor.js",
 "editor_tag": "my-ext-callout-editor"
 ```
 
-An editor component extends `WidgetEditor` (from `/kempo/sitebuilder/components/WidgetEditor.js`):
+An editor component extends kempo-ui's `WidgetEditor` (`/kempo-ui/components/pagebuilder/WidgetEditor.js`), and is drawn with the widget's settings as attributes:
 
-- `selected` is `true` while the widget is selected. The first click selects, and later clicks edit. Show editing controls only while `selected` is set.
-- `emitChange({ attribute: value })` tells the editor the settings changed. The editor updates the widget and records an undo step.
-- `tabIndex` is set for you, so the widget can be reached from the keyboard.
+- `selected` is `true` while the widget is the only one selected, so editing controls show only then. The first click selects, and later clicks edit.
+- `emitChange({ setting: value })` tells the builder the widget changed, as one undo step.
 
 ```js
-import WidgetEditor from '/kempo/sitebuilder/components/WidgetEditor.js';
+import WidgetEditor from '/kempo-ui/components/pagebuilder/WidgetEditor.js';
 import { html } from '/kempo-ui/lit-all.min.js';
 
 export default class CalloutEditor extends WidgetEditor {
   static properties = {
     ...WidgetEditor.properties,
-    message: { type: String, reflect: true }
+    tone: { type: String, reflect: true }
   };
 
   render(){
-    return html`<div class="b r p">${this.message || 'Callout'}</div>`;
+    return html`<div class="b r p">Callout (${this.tone || 'info'})</div>`;
   }
 }
 
 customElements.define('my-ext-callout-editor', CalloutEditor);
 ```
 
-The editor loads both the editor component and the page component into its preview, so use the same URL convention for both.
+## The settings component
 
-## Settings
-
-By default the settings panel is built from `attributes`: a control for each, with its label and hint. That is usually enough.
-
-For settings that need more (a list to add to, a preview, a button that opens a dialog), declare a settings component:
+By default the settings panel is built from `attributes`: a control for each, with its label and hint. That is usually enough. For settings that need more (a list to choose from, a preview, a button that opens a dialog), declare a settings component:
 
 ```json
-"settings_component": "/my-ext/components/CalloutSettings.js",
+"settings_component": "/admin/extension/my-ext/components/pagebuilder/CalloutSettings.js",
 "settings_tag": "my-ext-callout-settings"
 ```
 
-It extends `WidgetSettings` (from `/kempo/sitebuilder/components/WidgetSettings.js`). The panel gives it these properties:
-
-| Property | Meaning |
-|---|---|
-| `node` | The selected widget: `{ id, type, attrs, slots }`. |
-| `registry` | The registry of all widgets. |
-| `host` | The page editor. You don't call it directly; use the methods below. |
-| `version` | A number that changes with every change to the page, so the panel redraws. |
+It extends kempo-ui's `WidgetSettings` (`/kempo-ui/components/pagebuilder/WidgetSettings.js`). The panel gives it `node` (the selected widget: `{ id, type, attrs, slots }`), `widget` (its definition), `host` (the builder), `registry` and `version` (a number that changes with every change, so the panel redraws).
 
 | Method | Does |
 |---|---|
-| `set(name, value, coalesce = true)` | Changes one attribute. |
-| `edit((node, nodes) => …)` | Changes the page any way you like, as one undo step. The function gets this widget's node and the whole tree. |
+| `set(name, value, coalesce = true)` | Changes one setting, as one undo step (typing in a row is one step with `coalesce`). |
+| `edit((node, nodes) => …, coalesce = false)` | Changes the page any way you like, as one undo step. The function gets this widget's node and the whole tree, and returns `true` to keep the change. |
 | `addChild(type, slot = 'default')` | Adds a widget inside this one, without changing the selection. |
-| `select(id)` | Selects another widget, such as one of this one's children. |
-| `renderFields(except = [])` | The default fields for the declared attributes, without the names in `except`. |
-| `renderChoice(name, label, choices, { hint, swatch })` | An attribute as a row of buttons. Choices are `{ value, label, icon? }`. |
-| `renderChildren(slot, { label, hint, addType, addLabel })` | The widgets in a slot, each with a button to select it, and a button to add one of `addType`. |
+| `renderFields(except = [])` | The default fields for the declared settings, without the names in `except`. |
 
 ```js
-import WidgetSettings from '/kempo/sitebuilder/components/WidgetSettings.js';
+import WidgetSettings from '/kempo-ui/components/pagebuilder/WidgetSettings.js';
 import { html } from '/kempo-ui/lit-all.min.js';
 
 export default class CalloutSettings extends WidgetSettings {
   render(){
     return html`
-      ${this.renderFields()}
-      ${this.renderChoice('tone', 'Tone', [{ value: 'info', label: 'Information' }, { value: 'warning', label: 'Warning' }])}
+      <div class="mb">
+        <label class="d-b mbq" for="tone">Tone<small class="d-b tc-muted">How the box looks.</small></label>
+        <select id="tone" class="full" @change="${event => this.set('tone', event.target.value, false)}">
+          <option value="info" ?selected="${this.node.attrs?.tone !== 'warning'}">Information</option>
+          <option value="warning" ?selected="${this.node.attrs?.tone === 'warning'}">Warning</option>
+        </select>
+      </div>
+      ${this.renderFields(['tone'])}
     `;
   }
 }
@@ -294,55 +266,39 @@ export default class CalloutSettings extends WidgetSettings {
 customElements.define('my-ext-callout-settings', CalloutSettings);
 ```
 
-The settings module loads the first time a widget of that type is selected. Anything else in the panel is an ordinary component: it can import other elements, such as kempo-ui controls, and use the methods above.
-
-Use kempo-ui components for controls (a `k-combobox`, a `k-toggle`, a `k-tags`) rather than writing your own.
+The module loads the first time a widget of that type is selected. Use kempo-ui components for controls (a `k-combobox`, a `k-toggle`) rather than writing your own.
 
 ## Groups, icons and search
 
-- **`category`** puts the widget in a group in the Add list. Kempo's groups are `text`, `media`, `layout`, `content`, `interactive` and `server`. Any other name makes a new group after them. Widgets from several extensions that use the same name share the group.
-- **`category_title`** sets the group's heading. Without it, the heading is the name with hyphens and underscores turned into spaces, so `my-shop` becomes "My shop".
+- **`category`** puts the widget in a group in the Add list. kempo-ui's groups are `content`, `media`, `layout` and `interactive`, and kempo adds `server`. Any other name makes a new group after them. Widgets from several extensions that use the same name share the group.
+- **`category_title`** sets the group's heading. Without it, the heading comes from the name.
 - **`icon`** is the name of an icon that kempo-ui ships, such as `info`, `code`, `star` or `table`.
-- **`iconSrc`** is the path of an icon file the site serves, such as `/my-ext/icons/callout.svg`. Use it for an icon of your own. It shows in the Add list, the widget tree and the settings panel.
-- **`description`** is shown under the title in the Add list.
-- **`keywords`** are matched by search, along with the title and description.
-
-## Margins
-
-Every extension widget gets the margin box in its settings. A margin is written as kempo-css classes on the widget's outer element, so the widget's element must be a block (see the `:host` rule above). An auto margin on the left and right centres a narrower widget, and it adds `d-b` to an element that isn't a block already.
-
-Your component doesn't need to do anything for margins. Don't put margin classes on your own elements.
-
-## The round trip
-
-When the editor opens a page, kempo rebuilds the tree from the HTML, renders the tree back to HTML, and compares the two by meaning (whitespace, attribute order and quote style are ignored). If they differ, the page opens as code rather than in the builder. So your widget must satisfy these rules:
-
-1. **The widget's HTML is its tag, the declared attributes that differ from their defaults, its editable text, and its slot children.** Nothing else.
-2. **A widget with no slots has no children.** Children it doesn't declare are dropped, and the page then doesn't read back.
-3. **An editable widget holds text only,** with no child elements.
-4. **A child of a named slot has `slot="name"`.** A child of the default slot has no `slot` attribute.
-5. **The widget's render depends only on its attributes, text and children.** It must not depend on the time, a random value, or the rest of the page. The same HTML must produce the same widget every time.
-6. **The page's own script is the only script.** kempo adds the page component's script itself and ignores it when comparing.
-
-If the extension is disabled, its widgets are kept as HTML and shown as an "unknown" widget. That also reads back exactly, so the page stays in the builder.
+- **`iconSrc`** is the path of an icon file the site serves, such as `/my-ext/icons/callout.svg`. Use it for an icon of your own.
+- **`description`** is shown under the title in the Add list; **`keywords`** are matched by search, along with the title and description.
 
 ## Testing
 
-Add a test that proves the widget is declared correctly and reads back as the same widget. Put it in your extension's `tests/` folder. This is the pattern kempo-forms uses; the test runs with `npm test`:
+Add a test that proves the widget is declared correctly and is written as you expect. Put it in your extension's `tests/` folder. Kempo's registry code cleans the declaration (so one it would refuse fails here, not in somebody's editor) and kempo-ui's renderer, which has no DOM, writes the page. Load kempo-ui from kempo's own copy, so it is the one kempo's registry adds the widgets to:
 
 ```js
 import { readFile } from 'fs/promises';
-import { normalizeExtensionWidget } from 'kempo/server/utils/sitebuilder/registry.js';
-import { buildRegistry } from 'kempo/src/kempo/sitebuilder/registry.js';
-import { renderLocation } from 'kempo/src/kempo/sitebuilder/render.js';
-import { createNode } from 'kempo/src/kempo/sitebuilder/nodes.js';
-import { sameMeaning } from 'kempo/server/utils/sitebuilder/normalize.js';
-import rebuild from 'kempo/server/utils/sitebuilder/rebuild.js';
+import path from 'path';
+import { fileURLToPath, pathToFileURL } from 'url';
 
-const config = JSON.parse(await readFile(new URL('../kempo-config.json', import.meta.url), 'utf8'));
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const load = async file => import(pathToFileURL(file).href);
+const kempo = relative => load(path.join(root, 'node_modules', 'kempo', relative));
+const ui = relative => load(path.join(root, 'node_modules', 'kempo', 'node_modules', 'kempo-ui', 'src', relative));
+
+const config = JSON.parse(await readFile(path.join(root, 'kempo-config.json'), 'utf8'));
+const { normalizeExtensionWidget } = await kempo('server/utils/sitebuilder/registry.js');
+const { widgets, addWidget, registryOf } = await ui('utils/pageWidgets.js');
+const { renderPage, collectModules } = await ui('utils/renderPage.js');
+const { createNode } = await ui('utils/pageTree.js');
+
 const [error, callout] = normalizeExtensionWidget('my-ext', config.page_widgets[0]);
-const registry = buildRegistry(error ? [] : [callout]);
-const ctx = { registry };
+if(!error) addWidget(callout);
+const registry = registryOf(widgets);
 
 export default {
   'the declaration is accepted': async ({ pass, fail }) => {
@@ -350,61 +306,43 @@ export default {
     pass('');
   },
 
-  'a callout reads back as the same widget': async ({ pass, fail }) => {
-    const html = renderLocation([createNode('my-ext:callout', { tone: 'warning' }, { default: [createNode('markup', { html: '<p>Stock is low.</p>' })] })], ctx);
-    const [readError, tree] = rebuild(html, registry);
-    if(readError) return fail(readError.msg);
-    if(tree[0].type !== 'my-ext:callout') return fail(JSON.stringify(tree));
-    if(!sameMeaning(renderLocation(tree, ctx), html)) return fail(`${html} came back as ${renderLocation(tree, ctx)}`);
+  'a callout is written with its tone, and loads its component': async ({ pass, fail }) => {
+    const nodes = [createNode('my-ext-callout', { tone: 'warning' })];
+    const html = renderPage(nodes, registry);
+    if(!html.startsWith('<my-ext-callout') || !html.includes('tone="warning"')) return fail(html);
+    if(!collectModules(nodes, registry).includes('/my-ext/components/Callout.js')) return fail('the component is not loaded');
     pass('');
   }
 };
 ```
 
-The `kempo/...` imports are kempo's own files, which your extension has installed as a dependency. The round-trip test exercises every rule above, so write one for each kind of widget: one with its attributes at non-default values, one with children, and one with editable text.
+To test what the server keeps of a page (the cleaning by type), run the nodes through `kempo/server/utils/sitebuilder/validateTree.js` (its default export, `(nodes, registry) → [error, nodes]`) first. `renderPage(nodes, registry, { editor: true })` is what the builder draws.
 
-Run it with the extension's test command. A widget that fails to round-trip shows up here, not on a page where it would open as code.
-
-Finally, check the widget in the browser: add it from the Add list, change each setting, use the drag handle, save, reload, and look at the page on the site.
+Finally, check the widget in the browser: add it from the Add list, change each setting, save, reload, and look at the page on the site.
 
 ## Shipping checklist
 
-- `kempo` peer dependency is `>=4.10.0` (or later).
-- Every page component, editor component, settings component and icon file exists under the extension's `public/` folder, at the path declared.
-- The round-trip tests pass.
-- The widget has been added, edited, saved and reopened in the editor, and the page renders correctly on the site.
+- The `kempo` peer dependency is the first kempo release that has kempo-ui's page builder, and `kempo-ui` is `>=1.3.1`.
+- Every page component, editor component, settings component and icon file exists at the path declared.
+- The tests pass.
+- The widget has been added, edited, saved and reopened in the builder, and the page renders correctly on the site.
 - README and CHANGELOG describe the widget.
-
-## A complete example
-
-The callout above, in full, is the declaration in `kempo-config.json`, `components/Callout.js` (the page component) and the round-trip test. Together they are a working widget:
-
-- The declaration makes the widget available as `my-ext:callout` in the Add list, under Content.
-- The page component draws a bordered box with a message and the content inside it. The `tone` setting changes its colour.
-- The test checks that a callout with a warning tone and some content reads back as the same widget.
-
-Add the settings component and editor component only when the default settings panel and the page component aren't enough.
 
 ## Limits
 
 - **Extensions can't declare the server widgets** (Fragment, Location, Conditional, Repeat). They can offer fragments and locations for those to place.
-- **Extensions can't use "virtual" attributes,** the settings that kempo's own widgets keep outside the HTML. A settings component is the way to build those settings.
-- **Extension widgets can't opt out of margins.** Every extension widget gets the margin box.
-- **The `alpha` option of a colour attribute isn't passed through** in a declaration yet, so a colour always has opacity. Say so if you need it turned off.
+- **A declaration can't set** a widget's `content` (the text a widget holds as its children) or `render`. Use a component that renders its own content and `<slot>`s.
+- **Every widget gets the Styles tab.** A widget can hide parts of it (`hide_styles`) but can't opt out of it.
+- **The `icon` setting's value changed** when kempo moved to kempo-ui's builder: a path alone (`/commerce/icons/receipt.svg`) is no longer a value; it is `src:/commerce/icons/receipt.svg`. A component that gets either (such as one that reads an old page) should handle both.
 
 ## For kempo's maintainers
 
-These are the files that implement the widget API, for changing kempo itself.
-
 | File | Role |
 |---|---|
-| `server/utils/sitebuilder/registry.js` | Reads and checks each extension's `page_widgets` (`normalizeExtensionWidget`). |
-| `src/kempo/sitebuilder/registry.js` | Builds the registry the server and the editor share. |
-| `src/kempo/sitebuilder/render.js` | Turns a widget tree into HTML, for the page and for the editor. |
-| `server/utils/sitebuilder/rebuild.js` | Turns HTML back into a widget tree. Its generic reader handles extension widgets (`generic`). |
-| `server/utils/sitebuilder/validateTree.js` | Checks and cleans every widget the editor saves. |
-| `src/kempo/sitebuilder/attributes.js` | The attribute types and `registerAttributeType`. |
-| `src/kempo/sitebuilder/components/` | `Widget`, `WidgetEditor`, `WidgetSettings`, `InlineToolbar`. |
-| `src/kempo/sitebuilder/widgets.js` | Kempo's own widgets. The reference for anything the guide doesn't cover. |
-| `src/admin/components/sitebuilder/` | The editor: the page, the tree, the settings panel, and the preview frame (`frame.js`). |
-| `tests/sitebuilder-widgets.node-test.js` | Kempo's tests for the widget API. |
+| `server/utils/sitebuilder/registry.js` | Reads and checks each extension's `page_widgets` (`normalizeExtensionWidget`) into kempo-ui widget definitions, and keeps kempo-ui's widget list up to date with the enabled extensions. |
+| `src/kempo/pagebuilder/serverWidgets.js` | The server widgets. Imports nothing: the server and the admin register the same list. |
+| `src/kempo/pagebuilder/rawHtml.js` | The change to kempo-ui's HTML widget: written with no element around it. |
+| `server/utils/sitebuilder/validateTree.js` | Checks and cleans every tree the builder saves. |
+| `server/utils/sitebuilder/pageCore.js` | Reads and writes page files, renders a tree to HTML and adds the module scripts, takes a file as it is (`adoptFile`). |
+| `src/admin/components/pagebuilder/PageBuilderEditor.js` | The admin's `<k-page-builder>`: registers the widgets and pickers, switches content areas, the page menu, templates. |
+| `tests/sitebuilder-pages.node-test.js` | Kempo's tests for opening, saving, conflicts, templates and the extension widgets. |

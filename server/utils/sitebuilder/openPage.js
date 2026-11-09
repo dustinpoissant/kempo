@@ -1,29 +1,20 @@
-import { walk } from '../../../src/kempo/sitebuilder/nodes.js';
 import { getRow, saveRow } from './rows.js';
 import loadRegistry from './registry.js';
-import { analyzeFile, blockContent, listLocations, pageSummary, previewHtml, readPage, renderTrees, treesMatchFile } from './pageCore.js';
+import systemPages from '../../../src/kempo/pagebuilder/systemPages.js';
+import { adoptFile, blockContent, listLocations, pageSummary, previewHtml, readPage, renderTrees, treesMatchFile } from './pageCore.js';
 
 /*
   Opens a page for the builder and says what state it is in:
 
     builder    the page opens from its tree
-    code       the builder could not rebuild the page exactly, so it is edited as code
+    code       the page holds something outside its content blocks, which the builder cannot keep, so it is edited as code
     conflict   the file and the builder's copy disagree, and a person has to choose which to keep
 
   The page file is what is served, so it is treated as the truth: the stored tree is only what the builder last wrote.
-  Opening never changes a page. The one thing it writes is the builder's own row, for a page that has none yet.
+  A file the builder did not write is taken as it is, as one HTML widget per location, except a page that comes with kempo
+  (systemPages.js) that still holds what its widgets render to, which opens as those widgets. Opening never changes a page.
+  The one thing it writes is the builder's own row, for a page that has none yet.
 */
-
-/* A stored tree is out of date when it holds a widget nothing knows now, or lacks a location the page has (one that used to hold code). */
-const hasMissingTypes = (trees, registry, visual) => {
-  let missing = visual.some(location => !Array.isArray(trees?.[location.name]));
-  for(const nodes of Object.values(trees || {})){
-    walk(nodes, node => { if(!registry.has(node.type)) missing = true; });
-  }
-  return missing;
-};
-
-const hasContent = trees => Object.values(trees || {}).some(nodes => nodes?.length);
 
 export default async ({ rootDir, file, userId = null }) => {
   const [error, page] = await readPage({ rootDir, file });
@@ -34,7 +25,8 @@ export default async ({ rootDir, file, userId = null }) => {
   const visual = locations.filter(location => !location.code);
   const row = await getRow(file);
 
-  const filled = trees => Object.fromEntries(visual.map(location => [location.name, trees?.[location.name] || []]));
+  const adopted = adoptFile({ parsed: page.parsed, locations, registry });
+  const filled = trees => Object.fromEntries(visual.map(location => [location.name, trees?.[location.name] || adopted.trees?.[location.name] || []]));
   const base = extra => ({ file, hash: page.hash, page: pageSummary(file, page), locations, savedAt: row?.savedAt || null, ...extra });
   const builder = trees => ({
     ...base({ state: 'builder' }),
@@ -42,49 +34,72 @@ export default async ({ rootDir, file, userId = null }) => {
     codeBlocks: Object.fromEntries(locations.filter(location => location.code).map(location => [location.name, blockContent(page.parsed, location.name)]))
   });
   const code = (reason, lastGood) => ({
-    ...base({ state: 'code', reason, hasLastGood: hasContent(lastGood) }),
+    ...base({ state: 'code', reason, hasLastGood: Object.values(lastGood || {}).some(nodes => nodes?.length) }),
     blocks: locations.map(location => ({ ...location, location: location.name, content: blockContent(page.parsed, location.name) }))
   });
 
-  const analyze = () => analyzeFile({ parsed: page.parsed, locations, registry });
-
-  /* A page the builder has not seen: take it if it rebuilds exactly, otherwise it is code. */
-  const adopt = async (previous, lastGoodTrees) => {
-    const analysis = analyze();
-    if(analysis.ok){
-      await saveRow({ file, trees: analysis.trees, fileHash: page.hash, codeOnly: false, savedBy: userId });
-      return builder(analysis.trees);
-    }
-    await saveRow({ file, trees: {}, fileHash: page.hash, codeOnly: true, lastGoodTrees, savedBy: userId });
-    return code(analysis.reason, lastGoodTrees);
+  /* The widgets of a page that comes with kempo, when the file still holds exactly what they render to, so it opens as them and not as one block of code. */
+  const seed = () => {
+    const trees = systemPages[file] ? filled(structuredClone(systemPages[file])) : null;
+    return trees && adopted.ok && treesMatchFile({ parsed: page.parsed, trees, locations, registry }) ? trees : null;
   };
 
-  if(!row) return [null, await adopt(null, null)];
+  /* Whether trees are only the file taken as one HTML widget per location (nothing has been done to the page in the builder). */
+  const onlyAdopted = trees => visual.every(location => {
+    const nodes = trees?.[location.name] ?? [];
+    const expected = adopted.trees?.[location.name] ?? [];
+    return nodes.length === expected.length && nodes.every((node, index) => node.type === 'html' && node.attrs?.html === expected[index].attrs?.html);
+  });
+
+  /* A page the builder has not made, or whose row is not the file's any more and is not wanted: take the file as it is. */
+  const adopt = async lastGoodTrees => {
+    const seeded = seed();
+    if(seeded){
+      await saveRow({ file, trees: seeded, fileHash: page.hash, codeOnly: false, lastGoodTrees, savedBy: userId });
+      return builder(seeded);
+    }
+    if(adopted.ok){
+      await saveRow({ file, trees: adopted.trees, fileHash: page.hash, codeOnly: false, savedBy: userId });
+      return builder(adopted.trees);
+    }
+    await saveRow({ file, trees: {}, fileHash: page.hash, codeOnly: true, lastGoodTrees, savedBy: userId });
+    return code(adopted.reason, lastGoodTrees);
+  };
+
+  if(!row) return [null, await adopt(null)];
 
   if(row.fileHash === page.hash){
-    if(row.codeOnly){
-      const analysis = analyze();
-      return [null, code(analysis.ok ? '' : analysis.reason, row.lastGoodTrees)];
+    if(row.codeOnly) return [null, code(adopted.ok ? '' : adopted.reason, row.lastGoodTrees)];
+    /* A page that comes with kempo, opened before it had widgets, only has the file as one HTML widget: it gets its widgets now. */
+    const upgraded = seed();
+    if(upgraded && onlyAdopted(row.trees)){
+      await saveRow({ file, trees: upgraded, fileHash: page.hash, codeOnly: false, lastGoodTrees: row.lastGoodTrees, savedBy: row.savedBy });
+      return [null, builder(upgraded)];
     }
-    if(!hasMissingTypes(row.trees, registry, visual)) return [null, builder(row.trees)];
-    return [null, await adopt(row, null)];
-  }
-
-  if(row.codeOnly) return [null, await adopt(row, row.lastGoodTrees)];
-
-  if(!hasMissingTypes(row.trees, registry, visual) && treesMatchFile({ parsed: page.parsed, trees: row.trees, locations, registry })){
-    await saveRow({ file, trees: row.trees, fileHash: page.hash, codeOnly: false, lastGoodTrees: row.lastGoodTrees, savedBy: row.savedBy });
+    /* A location the template has gained since the row was saved starts from what the file holds for it. */
+    if(visual.some(location => !Array.isArray(row.trees?.[location.name]))){
+      const trees = filled(row.trees);
+      await saveRow({ file, trees, fileHash: page.hash, codeOnly: false, lastGoodTrees: row.lastGoodTrees, savedBy: row.savedBy });
+      return [null, builder(trees)];
+    }
     return [null, builder(row.trees)];
   }
 
-  const analysis = analyze();
+  if(row.codeOnly) return [null, await adopt(row.lastGoodTrees)];
+
+  /* Something outside the content blocks is a change the tree knows nothing about, even when the blocks still match. */
+  if(adopted.ok && treesMatchFile({ parsed: page.parsed, trees: filled(row.trees), locations, registry })){
+    await saveRow({ file, trees: filled(row.trees), fileHash: page.hash, codeOnly: false, lastGoodTrees: row.lastGoodTrees, savedBy: row.savedBy });
+    return [null, builder(row.trees)];
+  }
+
   return [null, {
     ...base({ state: 'conflict' }),
     conflict: {
       rowSavedAt: row.savedAt,
       fileModifiedAt: page.modifiedAt,
-      fileRebuildable: analysis.ok,
-      fileReason: analysis.ok ? '' : analysis.reason,
+      fileRebuildable: adopted.ok,
+      fileReason: adopted.ok ? '' : adopted.reason,
       filePreview: previewHtml(Object.fromEntries(visual.map(location => [location.name, blockContent(page.parsed, location.name)])), locations),
       rowPreview: previewHtml(renderTrees(row.trees, locations, registry), locations)
     }

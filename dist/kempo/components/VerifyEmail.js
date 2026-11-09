@@ -1,0 +1,8 @@
+import e from"/kempo-ui/components/LightComponent.js";import{html as i}from"/kempo-ui/lit-all.min.js";import{verifyEmail as t}from"../sdk.js";export default class s extends e{static properties={token:{type:String},redirect:{type:String},loginHref:{type:String,attribute:"login-href"},phase:{state:!0},message:{state:!0}};constructor(){super(),this.token="",this.redirect="/account",this.loginHref="/login",this.phase="loading",this.message=""}connectedCallback(){super.connectedCallback(),this.verify()}verify=async()=>{const e=window.location.pathname.split("/"),i=this.token||e[e.length-1]||e[e.length-2];if(!i||"verify-email"===i)return this.message="No verification token found in URL.",void(this.phase="error");const[s]=await t({token:i});if(s)return this.message=s.msg,void(this.phase="error");this.phase="success",setTimeout(()=>{window.location.href=this.redirect},2e3)};renderLightDom(){return"success"===this.phase?i`<div class="ta-center"><h2>Email Verified!</h2><p>Your email has been successfully verified. Redirecting you to your account...</p></div>`:"error"===this.phase?i`
+        <div class="ta-center">
+          <h2>Verification Failed</h2>
+          <p class="tc-danger">${this.message}</p>
+          <p class="mt"><a href=${this.loginHref} class="btn">Go to Login</a></p>
+        </div>
+      `:i`<div class="ta-center"><h2>Verifying Your Email...</h2><p>Please wait while we verify your email address.</p></div>`}}customElements.define("k-verify-email",s);
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\VerifyEmail.js.map

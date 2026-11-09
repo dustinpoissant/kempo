@@ -1,0 +1,2 @@
+import{logout as t}from"../sdk.js";document.addEventListener("click",async e=>{const o=e.target.closest?.("button[data-logout]");if(!o)return;const[r]=await t();r?console.error("Logout failed:",r.msg):o.dataset.redirect&&(window.location.href=o.dataset.redirect)});
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\LogoutButton.js.map

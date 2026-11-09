@@ -8,13 +8,19 @@ import { sitebuilderPage } from '../../db/schema.js';
   database has not got the table yet simply has no rows to move.
 */
 
+/*
+  The shape of the trees a row holds. Rows from before kempo-ui's page builder (format 1) hold another kind of tree, so
+  they are treated as if the page had no row: the page file is the truth and is taken as it is.
+*/
+export const TREE_FORMAT = 2;
+
 export const getRow = async file => {
   const [row] = await db.select().from(sitebuilderPage).where(eq(sitebuilderPage.file, file)).limit(1);
-  return row || null;
+  return row && row.format === TREE_FORMAT ? row : null;
 };
 
 export const saveRow = async ({ file, trees, fileHash, codeOnly = false, lastGoodTrees = null, savedBy = null }) => {
-  const values = { file, trees, fileHash, codeOnly, lastGoodTrees, savedAt: new Date(), savedBy };
+  const values = { file, trees, fileHash, codeOnly, lastGoodTrees, format: TREE_FORMAT, savedAt: new Date(), savedBy };
   const { file: key, ...changes } = values;
   const [row] = await db.insert(sitebuilderPage).values(values).onConflictDoUpdate({ target: sitebuilderPage.file, set: changes }).returning();
   return row;

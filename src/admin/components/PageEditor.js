@@ -9,9 +9,9 @@ import '/kempo-ui/components/Tabs.js';
 import '/kempo-ui/components/HtmlEditor.js';
 import '/kempo-ui/components/CodeEditor.js';
 import '/kempo-ui/components/Dropdown.js';
-import './sitebuilder/Sitebuilder.js';
+import './pagebuilder/PageBuilderEditor.js';
 
-const CODE_MODE_LOCATIONS = new Set(['head', 'scripts']);
+const CODE_MODE_LOCATIONS = new Set(['head']);
 
 const slugify = name => name
   .toLowerCase()
@@ -55,7 +55,7 @@ export default class PageEditor extends ShadowComponent {
       background: var(--c_bg, #fff);
       transition: left var(--animation_ms, 256ms), right var(--animation_ms, 256ms);
     }
-    admin-sitebuilder { display: block; height: 100%; }
+    admin-page-builder { display: block; height: 100%; }
   `;
 
   constructor() {
@@ -78,7 +78,7 @@ export default class PageEditor extends ShadowComponent {
     this.toggleAttribute('builder', !this.loading && this.inBuilder);
   }
 
-  /* Changes made outside the builder's own tree (the page's settings, its head and scripts) that are not saved yet. */
+  /* Changes made outside the builder's own tree (the page's settings and its head) that are not saved yet. */
   get extrasDirty() {
     return this.metaDirty || this.codeDirty;
   }
@@ -199,7 +199,7 @@ export default class PageEditor extends ShadowComponent {
       const [error, saved] = await updatePage({ file: this.file, ...this.getFormState() });
       return [error, saved];
     }
-    const editor = this.shadowRoot.querySelector('admin-sitebuilder');
+    const editor = this.shadowRoot.querySelector('admin-page-builder');
     const state = this.getFormState();
     const codeBlocks = Object.fromEntries(state.contents.filter(block => CODE_MODE_LOCATIONS.has(block.location)).map(block => [block.location, block.content]));
     const [error, saved] = await saveSitebuilderPage({
@@ -211,7 +211,7 @@ export default class PageEditor extends ShadowComponent {
     });
     if (error) return [error, null];
     this.builder = { ...this.builder, hash: saved.hash };
-    editor.markSaved(saved.trees);
+    editor.markSaved();
     return [null, saved];
   }
 
@@ -226,6 +226,8 @@ export default class PageEditor extends ShadowComponent {
   */
 
   handleKeyDown = e => {
+    /* The page builder saves on Ctrl+S itself (and so would save twice). */
+    if (this.inBuilder) return;
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
       e.preventDefault();
       this.save();
@@ -516,10 +518,10 @@ export default class PageEditor extends ShadowComponent {
   openCode = location => {
     const block = this.contents.find(content => content.location === location);
     if (!block) return;
-    const title = location === 'head' ? 'Head' : location === 'scripts' ? 'Scripts' : location;
+    const title = location === 'head' ? 'Head' : location;
     const $dialog = Dialog.create(html`
       <div class="p">
-        <p class="tc-muted">${location === 'head' ? 'Code placed in the page\'s head.' : 'Code placed at the end of the page.'} It is saved with the page and is not changed by the builder.</p>
+        <p class="tc-muted">Code placed in the page's head. It is saved with the page and is not changed by the builder.</p>
         <k-code-editor id="dlg-code" class="r b" language="html" controls="normal" .value="${/^\s*(<p>\s*(<br\s*\/?>)?\s*<\/p>\s*)?$/i.test(block.content) ? '' : block.content}"></k-code-editor>
       </div>
     `, {
@@ -609,7 +611,7 @@ export default class PageEditor extends ShadowComponent {
         <p>The builder cannot edit this page as it is${this.builder.reason ? html` (${this.builder.reason})` : ''}. To use the builder, the page's content has to be replaced.</p>
         <button class="danger full mb" @click="${() => leave('empty')}">Start over with an empty page</button>
         ${this.builder.hasLastGood ? html`<button class="primary full mb" @click="${() => leave('lastGood')}">Start from the last good builder page</button>` : ''}
-        <p class="tc-muted">Your head and scripts are kept. The current content of the page is lost.</p>
+        <p class="tc-muted">Your head is kept. The current content of the page is lost.</p>
       </div>
     `, { title: 'Use the page builder', cancelText: 'Cancel' });
   };
@@ -665,7 +667,7 @@ export default class PageEditor extends ShadowComponent {
       <p class="tc-muted">Choose which version of this page to keep to continue.</p>
     `;
 
-    if (inBuilder) return html`<admin-sitebuilder .data="${this.builder}" .host="${this}" .saving="${this.saving}" .meta="${this.meta}"></admin-sitebuilder>`;
+    if (inBuilder) return html`<admin-page-builder .data="${this.builder}" .host="${this}" .saving="${this.saving}" .meta="${this.meta}"></admin-page-builder>`;
 
     return html`
       ${isLocked ? html`

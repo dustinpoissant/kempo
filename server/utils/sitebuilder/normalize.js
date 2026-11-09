@@ -1,5 +1,4 @@
 import { parse, isComment, isElement, isText } from './parse.js';
-import { INLINE_TAGS } from '../../../src/kempo/sitebuilder/html.js';
 
 /*
   Two pieces of HTML mean the same thing when they have the same tags, the same attributes and the same text. How they
@@ -7,6 +6,8 @@ import { INLINE_TAGS } from '../../../src/kempo/sitebuilder/html.js';
   quote style around an attribute are all ignored. Whitespace that changes how the page looks is kept: inside <pre>
   and <textarea>, and the single space between inline elements and words.
 */
+
+const INLINE_TAGS = new Set(['a', 'abbr', 'b', 'bdi', 'bdo', 'br', 'cite', 'code', 'data', 'del', 'dfn', 'em', 'i', 'ins', 'kbd', 'mark', 'q', 's', 'samp', 'small', 'span', 'strong', 'sub', 'sup', 'time', 'u', 'var', 'wbr']);
 
 const KEEP_WHITESPACE = new Set(['pre', 'textarea', 'script', 'style']);
 

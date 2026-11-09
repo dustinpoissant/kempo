@@ -349,8 +349,8 @@ Two default groups are created:
 | `session_duration_days` | `7` | number | no | Session duration in days |
 | `allow_registration` | `true` | boolean | yes | Allow new users to register |
 | `require_email_verification` | `false` | boolean | no | Require email verification before account access |
-| `verification_url` | `http://localhost:3000/verify-email/{{token}}` | string | no | Email verification URL template |
-| `password_reset_url` | `http://localhost:3000/reset-password/{{token}}` | string | no | Password reset URL template |
+| `verification_url` | `http://localhost:<PORT>/verify-email/{{token}}` | string | no | Email verification URL template |
+| `password_reset_url` | `http://localhost:<PORT>/reset-password/{{token}}` | string | no | Password reset URL template |
 
 Settings can be managed through the admin panel at `/admin/settings` or the SDK.
 
@@ -397,7 +397,7 @@ Refer to the [kempo-css docs](https://github.com/dustinpoissant/kempo-css) and [
 
 ## The Page Builder
 
-Pages are edited in a block-based page builder: widgets are added to a page, configured and nested, and the page is saved as plain HTML, so serving it is still a file read. The builder takes the whole screen but the admin navigation. The widget tree lives in the `sitebuilderPage` table (added to an existing site when the server starts), keyed by the page file; when a file is changed outside the builder, an admin chooses which version to keep. Extensions add widgets with `page_widgets` in `kempo-config.json`. See [docs/sitebuilder.md](docs/sitebuilder.md).
+Pages are edited in [kempo-ui's page builder](https://dustinpoissant.github.io/kempo-ui/components/page-builder.html): widgets are added to a page, configured and nested, and the page is saved as plain HTML, so serving it is still a file read. Kempo adds the content areas of a page's template, page settings, copy, move, replace and delete, templates, the server widgets (fragment, location, conditional, repeat) and the widgets extensions declare with `page_widgets` in `kempo-config.json`. The widget tree lives in the `sitebuilderPage` table (added to an existing site when the server starts), keyed by the page file; a page the builder did not write opens as an HTML widget, and when a file is changed outside the builder, an admin chooses which version to keep. See [docs/sitebuilder.md](docs/sitebuilder.md).
 
 ## The Rich Text Editor
 

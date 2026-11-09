@@ -461,6 +461,9 @@ export const enableExtension = async (name, { cascade = false } = {}) =>
 export const getExtensionRequirements = async (name) =>
   get(`${API_BASE}/extensions/${encodeURIComponent(name)}/requirements`);
 
+export const getSuggestedExtensions = async names =>
+  get(`${API_BASE}/extensions/suggested`, { names: [].concat(names).join(',') });
+
 export const disableExtension = async (name, { cascade = false } = {}) =>
   post(`${API_BASE}/extensions/${encodeURIComponent(name)}/disable`, { cascade });
 

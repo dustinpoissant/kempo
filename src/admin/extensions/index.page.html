@@ -25,13 +25,36 @@
 
 	<h1>Extensions</h1>
 
-	<k-tabs active="installed" hash-routing>
-		<k-tab for="installed">Installed</k-tab>
+	<k-tabs active="enabled" hash-routing>
+		<k-tab for="enabled">Enabled</k-tab>
+		<k-tab for="disabled">Disabled</k-tab>
 		<k-tab for="downloaded">Downloaded</k-tab>
 		<k-tab for="browse">Browse</k-tab>
 
-		<k-tab-content name="installed">
-			<k-table open-on-click id="installedTable" enable-pages page-size="25" placeholder="No extensions are currently installed.">
+		<k-tab-content name="enabled">
+			<k-table open-on-click id="enabledTable" enable-pages page-size="25" placeholder="No extensions are enabled.">
+				<div slot="top" class="d-f full" style="align-items: center;"><kc-tc-search style="width: 16rem"></kc-tc-search><kc-tc-filters></kc-tc-filters><kc-tc-field-sort-hide></kc-tc-field-sort-hide></div>
+				<kc-tc-open slot="after" title="View in Store"><k-icon name="storefront"></k-icon></kc-tc-open>
+				<admin-toggle-extension slot="after"></admin-toggle-extension>
+				<admin-uninstall-extension slot="after"></admin-uninstall-extension>
+				<div class="d-f full" style="align-items: center;">
+					<div>
+						<kc-tc-first-page></kc-tc-first-page>
+						<kc-tc-prev-page></kc-tc-prev-page>
+						<kc-tc-next-page></kc-tc-next-page>
+						<kc-tc-last-page></kc-tc-last-page>
+					</div>
+					<div class="flex"></div>
+					<div><kc-tc-page-select></kc-tc-page-select></div>
+					<div class="flex"></div>
+					<div><kc-tc-page-size></kc-tc-page-size></div>
+				</div>
+			</k-table>
+		</k-tab-content>
+
+		<k-tab-content name="disabled">
+			<p class="tc-muted">Installed, but switched off. Their data, settings and permissions are kept, and their pages, files, widgets and hooks are not used until you enable them again.</p>
+			<k-table open-on-click id="disabledTable" enable-pages page-size="25" placeholder="No extensions are disabled.">
 				<div slot="top" class="d-f full" style="align-items: center;"><kc-tc-search style="width: 16rem"></kc-tc-search><kc-tc-filters></kc-tc-filters><kc-tc-field-sort-hide></kc-tc-field-sort-hide></div>
 				<kc-tc-open slot="after" title="View in Store"><k-icon name="storefront"></k-icon></kc-tc-open>
 				<admin-toggle-extension slot="after"></admin-toggle-extension>
@@ -52,7 +75,7 @@
 		</k-tab-content>
 
 		<k-tab-content name="downloaded">
-			<p class="tc-muted">Extension packages already in this site. To find and download more, <a href="#browse">browse the marketplace</a>.</p>
+			<p class="tc-muted">These extension packages are in this site's code, but have never been installed here, so nothing of theirs is set up yet: no tables, settings or permissions. That is why they are <strong>downloaded</strong>, not <strong>disabled</strong>: a disabled extension was installed and is only switched off. Install one to set it up and turn it on. To find and download more, <a href="#browse">browse the marketplace</a>.</p>
 			<k-table open-on-click id="availableTable" enable-pages page-size="25" placeholder="Every downloaded extension is installed.">
 				<div slot="top" class="d-f full" style="align-items: center;"><kc-tc-search style="width: 16rem"></kc-tc-search><kc-tc-filters></kc-tc-filters><kc-tc-field-sort-hide></kc-tc-field-sort-hide></div>
 				<admin-install-extension slot="after"></admin-install-extension>
@@ -73,7 +96,7 @@
 		</k-tab-content>
 
 		<k-tab-content name="browse">
-			<p class="tc-muted">Extensions from the Kempo marketplace that are not installed here yet. Pick one to see what it does and what it needs before installing it. Installed ones are on the Installed tab, with a store button to see their page.</p>
+			<p class="tc-muted">Extensions from the Kempo marketplace that are not installed here yet. Pick one to see what it does and what it needs before installing it. Installed ones are on the Enabled and Disabled tabs, with a store button to see their page.</p>
 
 			<div class="row mb">
 				<div class="col mr">
@@ -104,38 +127,30 @@
 	import { listExtensions, listAvailableExtensions, listKnownExtensions } from '/kempo/sdk.js';
 	import badgesOf from '/admin/components/marketplaceBadges.js';
 
-	const installedTable = document.getElementById('installedTable');
+	const enabledTable = document.getElementById('enabledTable');
+	const disabledTable = document.getElementById('disabledTable');
 	const availableTable = document.getElementById('availableTable');
 	const withDetailsUrl = e => ({ ...e, _url: `/admin/extensions/details/?name=${encodeURIComponent(e.name)}` });
 
-	const [installedErr, installedData] = await listExtensions();
-	if(!installedErr){
-		installedTable.setData({
-			records: installedData.items.map(withDetailsUrl),
-			fields: [
-				{ name: 'name', label: 'Name', size: 300 },
-				{ name: 'version', label: 'Version' },
-				{ name: 'description', label: 'Description' },
-				{ name: 'enabled', label: 'Enabled' },
-			]
-		});
-	}
+	const INSTALLED_FIELDS = [
+		{ name: 'name', label: 'Name', size: 300 },
+		{ name: 'version', label: 'Version' },
+		{ name: 'description', label: 'Description' },
+	];
 
-	const refreshInstalledTable = async () => {
-		const [err, data] = await listExtensions();
-		if(!err) installedTable.setData({
-			records: data.items.map(withDetailsUrl),
-			fields: [
-				{ name: 'name', label: 'Name', size: 300 },
-				{ name: 'version', label: 'Version' },
-				{ name: 'description', label: 'Description' },
-				{ name: 'enabled', label: 'Enabled' },
-			]
-		});
+	/* The installed extensions split by whether they are switched on. A toggle moves a row from one table to the other. */
+	const refreshInstalledTables = async () => {
+		const [err, data] = await listExtensions({ limit: 200 });
+		if(err) return;
+		const records = data.items.map(withDetailsUrl);
+		enabledTable.setData({ records: records.filter(e => e.enabled !== false), fields: INSTALLED_FIELDS });
+		disabledTable.setData({ records: records.filter(e => e.enabled === false), fields: INSTALLED_FIELDS });
 	};
 
+	await refreshInstalledTables();
+
 	const refreshAvailableTable = async () => {
-		const [instErr, instData] = await listExtensions();
+		const [instErr, instData] = await listExtensions({ limit: 200 });
 		const [availErr, availData] = await listAvailableExtensions();
 		if(!instErr && !availErr){
 			const installedNames = new Set((instData?.items || []).map(e => e.name));
@@ -150,8 +165,13 @@
 		}
 	};
 
-	availableTable.addEventListener('recordDeleted', refreshInstalledTable);
-	installedTable.addEventListener('recordDeleted', refreshAvailableTable);
+	availableTable.addEventListener('recordDeleted', refreshInstalledTables);
+	for(const installed of [enabledTable, disabledTable]){
+		installed.addEventListener('recordDeleted', () => {
+			refreshInstalledTables();
+			refreshAvailableTable();
+		});
+	}
 
 	/*
 		Downloaded loads the first time its tab is opened, like Browse, so the package folder is not read until someone looks.

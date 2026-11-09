@@ -2,6 +2,7 @@ import db from '../../db/index.js';
 import { setting } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
 import setSetting from './setSetting.js';
+import defaultTokenUrl from './defaultTokenUrl.js';
 
 /*
   The settings kempo itself owns, with their defaults. A new site gets them when it is set up (seedDatabase), and `ensureSystemSettings`
@@ -13,10 +14,10 @@ export const SYSTEM_SETTINGS = [
   { owner: 'system', name: 'session_duration_days', value: 7, type: 'number', isPublic: false, description: 'Session duration in days' },
   { owner: 'system', name: 'allow_registration', value: true, type: 'boolean', isPublic: true, description: 'Allow new users to register' },
   { owner: 'system', name: 'require_email_verification', value: false, type: 'boolean', isPublic: false, description: 'Require email verification before account access' },
-  { owner: 'system', name: 'verification_url', value: 'http://localhost:3000/verify-email/{{token}}', type: 'string', isPublic: false, description: 'Email verification URL template' },
+  { owner: 'system', name: 'verification_url', value: defaultTokenUrl('verify-email'), type: 'string', isPublic: false, description: 'Email verification URL template' },
   { owner: 'system', name: 'session_cleanup_hours', value: 24, type: 'number', isPublic: false, description: 'Hours after a session expires before it is deleted automatically (0 keeps expired sessions)' },
   { owner: 'system', name: 'notification_retention_days', value: 90, type: 'number', isPublic: false, description: 'Days to keep notifications before they are deleted (0 keeps them forever)' },
-  { owner: 'system', name: 'password_reset_url', value: 'http://localhost:3000/reset-password/{{token}}', type: 'string', isPublic: false, description: 'Password reset URL template' },
+  { owner: 'system', name: 'password_reset_url', value: defaultTokenUrl('reset-password'), type: 'string', isPublic: false, description: 'Password reset URL template' },
   { owner: 'system', name: 'email_max_retries', value: 1, type: 'number', isPublic: false, description: 'How many times kempo tries again to send an email that could not be sent, after the first try (0 never retries)' },
   { owner: 'system', name: 'email_retention_days', value: 30, type: 'number', isPublic: false, description: 'Days to keep the log of sent emails before it is deleted (0 keeps it forever)' },
   { owner: 'system', name: 'email_retention_by_type', value: {}, type: 'json', isPublic: false, description: 'Days to keep a particular kind of email, instead of the number above, as { "verify-email": 7, "kempo-commerce/order-processing": 365 } (0 keeps that kind forever)' },

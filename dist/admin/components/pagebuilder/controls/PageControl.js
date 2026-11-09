@@ -1,0 +1,6 @@
+import t from"/kempo-ui/components/controls/ButtonControl.js";import{html as e,css as i}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Icon.js";export default class o extends t{static properties={...t.properties,icon:{type:String},direction:{type:String},label:{type:String},href:{type:String},target:{type:String},danger:{type:Boolean,reflect:!0},action:{attribute:!1}};constructor(){super(),this.icon="",this.direction="",this.label="",this.href="",this.target="",this.danger=!1,this.action=null}willUpdate(t){t.has("label")&&this.label&&(this.title=this.label)}handleAction(){if(!this.href)return this.action?.();"_blank"===this.target?window.open(this.href,"_blank","noopener"):window.location.href=this.href}render(){return e`<slot><k-icon name="${this.icon}" direction="${this.direction}"></k-icon></slot><slot name="menu-text">${this.label}</slot>`}static styles=[...t.styles,i`
+      :host([danger]) {
+        color: var(--tc_danger);
+      }
+    `]}customElements.define("admin-pb-control",o);
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\pagebuilder\controls\PageControl.js.map

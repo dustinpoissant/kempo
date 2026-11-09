@@ -1,2 +1,0 @@
-export const writeCode=e=>`\n${String(e??"").replace(/\s+$/,"").replace(/<\/(script)/gi,"<\\/$1")}\n`;export const readCode=e=>String(e??"").replace(/^\n|\n[ \t]*$/g,"").replace(/<\\\/(script)/gi,"</$1");
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\scriptCode.js.map

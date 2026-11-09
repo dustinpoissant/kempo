@@ -1,6 +1,0 @@
-import e from"/kempo/sitebuilder/components/Widget.js";import{html as t,css as i}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Icon.js";const r=[["facebook","Facebook","link"],["x","X","link"],["instagram","Instagram","link"],["youtube","YouTube","link"],["linkedin","LinkedIn","link"],["tiktok","TikTok","link"],["github","GitHub","github-mark"]],s=/^https?:\/\//i;export default class n extends e{static properties=Object.fromEntries(r.map(([e])=>[e,{type:String,reflect:!0}]));constructor(){super();for(const[e]of r)this[e]=""}static styles=i`
-    :host { display: block; margin-bottom: var(--spacer, 1rem); }
-    ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: var(--spacer_h, 0.5rem) var(--spacer, 1rem); }
-    a { display: inline-flex; align-items: center; gap: var(--spacer_q, 0.25rem); }
-  `;render(){const e=r.filter(([e])=>s.test(this[e]||""));return e.length?t`<ul>${e.map(([e,i,r])=>t`<li><a href="${this[e]}" target="_blank" rel="noopener noreferrer"><k-icon name="${r}"></k-icon>${i}</a></li>`)}</ul>`:t`<span class="tc-muted">Add the addresses of your profiles.</span>`}}customElements.define("k-social-icons",n);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\SocialIcons.js.map

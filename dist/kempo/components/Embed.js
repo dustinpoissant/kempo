@@ -1,6 +1,0 @@
-import e from"/kempo/sitebuilder/components/Widget.js";import{html as r,css as t}from"/kempo-ui/lit-all.min.js";import{resolveEmbed as s}from"/kempo/sitebuilder/embedProviders.js";export default class i extends e{static properties={src:{type:String,reflect:!0},title:{type:String,reflect:!0}};constructor(){super(),this.src="",this.title=""}static styles=t`
-    :host { display: block; margin-bottom: var(--spacer, 1rem); }
-    .frame { width: 100%; border: 0; display: block; }
-    .empty { padding: var(--spacer, 1rem); border: 1px dashed var(--c_border, #888); text-align: center; opacity: 0.7; }
-  `;render(){const e=s(this.src);return e?r`<iframe class="frame" style="aspect-ratio: ${e.ratio};" src="${e.src}" title="${this.title||`${e.provider} embed`}" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`:r`<div class="empty">Paste a YouTube, Vimeo or Spotify address.</div>`}}customElements.define("k-embed",i);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\Embed.js.map

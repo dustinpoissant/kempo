@@ -325,6 +325,7 @@ export const sitebuilderPage = pgTable('sitebuilderPage', {
   fileHash: text('fileHash').notNull(),
   codeOnly: boolean('codeOnly').notNull().default(false),
   lastGoodTrees: jsonb('lastGoodTrees'),
+  format: integer('format').notNull().default(1), // 1: trees from kempo's own first builder (no longer read); 2: kempo-ui's page builder
   savedAt: timestamp('savedAt').notNull(),
   savedBy: text('savedBy'),
 });
@@ -337,6 +338,7 @@ export const sitebuilderTemplate = pgTable('sitebuilderTemplate', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   nodes: jsonb('nodes').notNull(),
+  format: integer('format').notNull().default(1), // as sitebuilderPage.format: only 2 is offered
   createdBy: text('createdBy'),
   createdAt: timestamp('createdAt').notNull(),
 });

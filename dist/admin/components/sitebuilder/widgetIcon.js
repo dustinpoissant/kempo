@@ -1,2 +1,0 @@
-import{html as o}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Icon.js";export default(i,c="help")=>i?.iconSrc?o`<k-icon src="${i.iconSrc}"></k-icon>`:o`<k-icon name="${i?.icon||c}"></k-icon>`;
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\sitebuilder\widgetIcon.js.map

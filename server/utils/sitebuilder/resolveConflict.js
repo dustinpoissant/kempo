@@ -1,13 +1,13 @@
 import { getRow, saveRow } from './rows.js';
 import loadRegistry from './registry.js';
 import openPage from './openPage.js';
-import { analyzeFile, listLocations, readPage, renderTrees, writePage } from './pageCore.js';
+import { adoptFile, listLocations, readPage, renderTrees, writePage } from './pageCore.js';
 
 /*
   Settles a disagreement between a page's file and the builder's copy by keeping one, and saves both sides to match:
 
-    file   the file is rebuilt into a tree and the tree is stored. If it cannot be rebuilt exactly the page becomes
-           code-only, and the tree the builder had is kept as the last known good one.
+    file   the file is taken as it is (one HTML widget per location) and stored. If the page holds something the builder
+           cannot keep it becomes code-only, and the tree the builder had is kept as the last known good one.
     row    the builder's tree is rendered and written over the file's content.
 
   `loadedHash` is the hash of the file the person was shown, so a choice is never applied to a file that changed again.
@@ -25,9 +25,9 @@ export default async ({ rootDir, file, keep, loadedHash, userId = null }) => {
   const row = await getRow(file);
 
   if(keep === 'file'){
-    const analysis = analyzeFile({ parsed: page.parsed, locations, registry });
-    if(analysis.ok){
-      await saveRow({ file, trees: analysis.trees, fileHash: page.hash, codeOnly: false, savedBy: userId });
+    const adopted = adoptFile({ parsed: page.parsed, locations, registry });
+    if(adopted.ok){
+      await saveRow({ file, trees: adopted.trees, fileHash: page.hash, codeOnly: false, savedBy: userId });
     } else {
       await saveRow({ file, trees: {}, fileHash: page.hash, codeOnly: true, lastGoodTrees: row?.trees || row?.lastGoodTrees || null, savedBy: userId });
     }

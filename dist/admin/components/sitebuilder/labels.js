@@ -1,2 +1,0 @@
-export const hintOf=t=>{const e=t.attrs||{};if("markup"===t.type)return(r=e.html,String(r??"").replace(/<[^>]*>/g," ").replace(/&nbsp;/g," ").replace(/\s+/g," ").trim()).slice(0,40);var r;if("unknown"===t.type)return e.tag?`<${e.tag}>`:"";for(const t of["label","title","name","condition","src","href","image"])if(e[t])return String(e[t]).slice(0,40);return""};export const titleOf=(t,e)=>t.get(e.type)?.title||e.type;
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\sitebuilder\labels.js.map

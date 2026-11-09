@@ -218,6 +218,7 @@ export { default as disableExtension } from './utils/extensions/disableExtension
 export { default as enableExtension } from './utils/extensions/enableExtension.js';
 export { default as getExtension } from './utils/extensions/getExtension.js';
 export { default as installExtension } from './utils/extensions/installExtension.js';
+export { getSuggestedPeers } from './utils/extensions/suggestedPeers.js';
 export { default as listExtensions } from './utils/extensions/listExtensions.js';
 export { default as uninstallExtension } from './utils/extensions/uninstallExtension.js';
 export { default as updateExtension } from './utils/extensions/updateExtension.js';

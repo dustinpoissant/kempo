@@ -1,10 +1,12 @@
 import { readFile, writeFile, stat } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
-import { renderLocation } from '../../../src/kempo/sitebuilder/render.js';
+import { renderPage, collectModules, escapeAttribute } from 'kempo-ui/src/utils/renderPage.js';
+import { createNode } from 'kempo-ui/src/utils/pageTree.js';
 import listTemplates from '../pages/listTemplates.js';
 import triggerHook from '../hooks/triggerHook.js';
-import rebuild from './rebuild.js';
+import validateTree from './validateTree.js';
+import { managedModules, servedUrl } from './registry.js';
 import { sameMeaning } from './normalize.js';
 import { sanitizeMarkup } from './sanitize.js';
 import { CODE_LOCATIONS, MAX_FILE_BYTES, composePageFile, hashFile, parsePageFile } from './pageFile.js';
@@ -47,13 +49,21 @@ export const blockContent = (parsed, location) => parsed.blocks.find(block => bl
 
 /* Page-side scripts the renderer adds are not part of what a person wrote, so they are left out when comparing. */
 export const stripManagedScripts = (html, registry) => {
-  const managed = new Set(registry.pageComponents());
+  const managed = managedModules(registry);
   return html.replace(/<script\s+type="module"\s+src="([^"]+)"\s*><\/script>\s*/g, (whole, src) => (managed.has(src) ? '' : whole));
 };
 
-const renderContext = registry => ({ registry, editor: false, sanitize: sanitizeMarkup });
-
-export const renderTree = (nodes, registry) => renderLocation(nodes || [], renderContext(registry));
+/*
+  A tree as the page's HTML: the widgets, then the module scripts their elements need (each once). The tree is cleaned
+  by the same rules the editor's save uses first, so what is written never depends on what was stored.
+*/
+export const renderTree = (nodes, registry) => {
+  const [, cleaned] = validateTree(nodes || [], registry);
+  const tree = cleaned || [];
+  const html = renderPage(tree, registry, { sanitize: sanitizeMarkup });
+  const scripts = collectModules(tree, registry).map(url => `<script type="module" src="${escapeAttribute(servedUrl(url))}"></script>`);
+  return [html, ...scripts].filter(Boolean).join('\n');
+};
 
 /* The HTML of every visual location for a set of trees: { location: html }. */
 export const renderTrees = (trees, locations, registry) => Object.fromEntries(
@@ -61,21 +71,17 @@ export const renderTrees = (trees, locations, registry) => Object.fromEntries(
 );
 
 /*
-  Can the builder take this file? Every visual location has to rebuild into a tree, the tree has to render back to
-  what the file holds, and nothing else may be in the file. Resolves to { ok: true, trees } or { ok: false, reason }.
+  Takes a file the builder has not made as it is: the content of each visual location becomes one HTML widget, written
+  back exactly as it is, so nothing in the page is changed or lost and everything in it can be edited in the builder. A
+  file that holds something outside its content blocks cannot be kept that way, and resolves to { ok: false, reason }.
+  Otherwise { ok: true, trees }.
 */
-export const analyzeFile = ({ parsed, locations, registry }) => {
+export const adoptFile = ({ parsed, locations, registry }) => {
   if(parsed.extra) return { ok: false, reason: 'The page holds something outside its content blocks' };
   const trees = {};
   for(const location of locations.filter(candidate => !candidate.code)){
-    const html = blockContent(parsed, location.name);
-    const [error, nodes] = rebuild(html, registry);
-    if(error) return { ok: false, reason: location.name === 'default' ? error.msg : `${location.label || location.name}: ${error.msg}` };
-    const rendered = renderTree(nodes, registry);
-    if(!sameMeaning(stripManagedScripts(rendered, registry), stripManagedScripts(html, registry))){
-      return { ok: false, reason: `The "${location.name}" content is not exactly what the builder would write` };
-    }
-    trees[location.name] = nodes;
+    const html = stripManagedScripts(blockContent(parsed, location.name), registry).trim();
+    trees[location.name] = html ? [createNode('html', { html })] : [];
   }
   return { ok: true, trees };
 };

@@ -1,2 +1,0 @@
-import e from"./Widget.js";export default class t extends e{static properties={...e.properties,selected:{type:Boolean,reflect:!0}};constructor(){super(),this.selected=!1}connectedCallback(){super.connectedCallback(),this.hasAttribute("tabindex")||(this.tabIndex=0)}emitChange(e){this.dispatchEvent(new CustomEvent("widget-change",{bubbles:!0,composed:!0,detail:{id:this.dataset.sbId,changes:e}}))}}
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\sitebuilder\components\WidgetEditor.js.map

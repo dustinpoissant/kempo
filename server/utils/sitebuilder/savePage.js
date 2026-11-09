@@ -1,8 +1,7 @@
-import { getRow, saveRow } from './rows.js';
+import { saveRow } from './rows.js';
 import loadRegistry from './registry.js';
 import validateTree from './validateTree.js';
 import { listLocations, readPage, renderTrees, writePage } from './pageCore.js';
-import { walk } from '../../../src/kempo/sitebuilder/nodes.js';
 
 /*
   Saves what the builder sends: the tree of each visual location, the code of the code locations, and the page's
@@ -20,16 +19,10 @@ export default async ({ rootDir, file, trees, codeBlocks = {}, changes = {}, loa
 
   const registry = await loadRegistry();
   const locations = await listLocations({ rootDir, parsed: page.parsed });
-  const row = await getRow(file);
-
-  const preserved = new Set();
-  for(const nodes of Object.values(row?.trees || {})){
-    walk(nodes, node => { if(node.type === 'unknown' && node.attrs?.html) preserved.add(node.attrs.html); });
-  }
 
   const cleaned = {};
   for(const location of locations.filter(candidate => !candidate.code)){
-    const [treeError, nodes] = validateTree(trees[location.name] || [], registry, { preserved });
+    const [treeError, nodes] = validateTree(trees[location.name] || [], registry);
     if(treeError) return [treeError, null];
     cleaned[location.name] = nodes;
   }

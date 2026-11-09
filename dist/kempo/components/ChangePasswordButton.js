@@ -1,0 +1,2 @@
+import"./ChangePassword.js";document.addEventListener("click",e=>{if(!e.target.closest?.("button[data-change-password]"))return;(document.querySelector("k-change-password-dialog")??document.body.appendChild(document.createElement("k-change-password-dialog"))).open()});
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\ChangePasswordButton.js.map

@@ -5,13 +5,9 @@
 -->
 <page title="Login">
 <content>
-	<main class="p">
-		<div style="max-width: 400px; margin: 0 auto;">
-			<k-login redirect="{{pathToRoot}}account">
-				<location name="login-form-after" label="After the Login Form" />
-			</k-login>
-		</div>
-	</main>
-	<script type="module" src="{{pathToRoot}}kempo/components/Login.js"></script>
+<div class="row -mx"><div class="d-span-3 d-flex-0 t-span-1 t-flex-0 m-flex-1 px"></div>
+<div class="d-span-6 d-flex-0 t-flex-1 m-span-12 m-flex-0 px"><k-login class="d-b"><location name="login-form-after" label="After the Login Form" /></k-login></div>
+<div class="d-span-3 d-flex-0 t-span-1 t-flex-0 m-span-12 m-flex-0 px"></div></div>
+<script type="module" src="/kempo/components/Login.js"></script>
 </content>
 </page>

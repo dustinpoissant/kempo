@@ -5,12 +5,13 @@ export default class LogoutBtn extends LightComponent {
   static get properties() {
     return {
       redirect: { type: String },
+      label: { type: String },
       buttonClass: { type: String, attribute: 'button-class' }
     };
   }
 
   connectedCallback() {
-    this.buttonText = this.textContent.trim() || 'Logout';
+    this.buttonText = this.label || this.textContent.trim() || 'Logout';
     this.innerHTML = '';
     super.connectedCallback();
   }

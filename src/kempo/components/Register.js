@@ -41,6 +41,13 @@ export default class Register extends LightComponent {
 
   submit = async event => {
     event.preventDefault();
+    const confirm = event.target.elements.confirmPassword;
+    if(event.target.elements.password.value !== confirm.value){
+      confirm.classList.add('error');
+      confirm.setCustomValidity('The passwords do not match');
+      confirm.reportValidity();
+      return;
+    }
     const form = new FormData(event.target);
 
     const [error, result] = await register({ name: form.get('name'), email: form.get('email'), password: form.get('password') });
@@ -52,6 +59,11 @@ export default class Register extends LightComponent {
     window.location.href = result.requiresVerification
       ? this.verifyRedirect
       : safeNext(new URLSearchParams(window.location.search).get('next')) || this.redirect;
+  };
+
+  clearMismatch = event => {
+    event.target.classList.remove('error');
+    event.target.setCustomValidity('');
   };
 
   /*
@@ -73,6 +85,10 @@ export default class Register extends LightComponent {
         <div class="mb">
           <label for="k-register-password" class="d-b mb-sm">Password</label>
           <input type="password" id="k-register-password" name="password" required class="w-full p-sm br">
+        </div>
+        <div class="mb">
+          <label for="k-register-confirm" class="d-b mb-sm">Confirm Password</label>
+          <input type="password" id="k-register-confirm" name="confirmPassword" required class="w-full p-sm br" @input=${this.clearMismatch}>
         </div>
         <button type="submit" class="w-full p-sm br">Register</button>
       </form>

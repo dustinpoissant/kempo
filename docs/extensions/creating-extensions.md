@@ -92,6 +92,7 @@ All extension capabilities are declared in `kempo-config.json`. Older extensions
 | `jobs` | Recurring work kempo runs for you, see [Scheduled Jobs](#scheduled-jobs) |
 | `aliases` | Short addresses for your public pages, see [Address Aliases](#address-aliases) |
 | `dependencies` | Names of other extensions that must be installed and enabled first |
+| `suggestedPeers` | Other extensions yours works better with, offered to the administrator right after yours is installed or enabled, see [Suggested Peers](#suggested-peers) |
 
 ## Database Tables
 
@@ -422,6 +423,19 @@ If your extension requires another extension to be installed and enabled first, 
 
 Install and enable both fail with a 409 while a declared dependency isn't installed and enabled. In the other direction, disable and uninstall fail with a 409 while another enabled extension still declares a dependency on yours — so a dependency can't be pulled out from under something that needs it. Version constraints aren't checked, only presence and enabled state; use `install.js` for anything more specific.
 
+## Suggested Peers
+
+An extension that works without another one, but does more with it (an optional integration), can suggest it in `kempo.suggestedPeers`: names, or objects with a `name` and a `reason` the administrator reads.
+
+```json
+"suggestedPeers": [
+  { "name": "kempo-media", "reason": "Pictures and videos for products, shown in a gallery on the product page" },
+  "kempo-thumbs"
+]
+```
+
+It is advice only, and different from `dependencies`: nothing is required, and nothing is installed unless the administrator chooses it. Right after yours is installed from the admin, or enabled on the Disabled tab, a **Works well with** dialog lists each suggestion that the site does not run yet (with its reason), with a checkbox for each, left unticked. It covers everything that action added, not only yours: installing or enabling an extension that needs others (its `dependencies`) also offers what those suggest, merged into one list that says who suggests what. Ticking one and choosing **Add selected** installs it (and what it depends on), or enables it if it is installed but switched off. A suggestion that is already installed and enabled is not shown. An entry that is not a valid package name is reported on the server and gives no suggestions, so it cannot break the admin. `GET /kempo/api/extensions/suggested?names=a,b` returns the same list (`{ suggestions: [{ name, reason, status, suggestedBy }] }`, where `status` is `missing` or `disabled`), and the SDK has `getSuggestedExtensions(names)` for the browser and `getSuggestedPeers({ names })` for the server.
+
 ## Public Routes
 
 Set `public-scope` in `kempo-config.json` to a URL prefix. Files in your `public/` directory are served under that prefix:
@@ -740,6 +754,10 @@ admin/
 
 Admin pages can use kempo-ui components and the frontend SDK.
 
+### Ctrl+S saves
+
+The admin presses a page's Save button when someone types Ctrl+S (Cmd+S), and stops the browser's own "save page" dialog, so your page needs no key handling of its own. It presses the one visible `<button>` that has `data-save`; with none marked, the one visible button whose label starts with "Save" ("Save", "Save settings", "Saving…"). Mark a button that is not labelled that way, such as "Create product", with `data-save`. It looks inside shadow roots, so a button in a component counts. A disabled button is pressed by nothing but still stops the browser dialog, so Ctrl+S on a page with nothing changed does nothing. A page with no such button, or more than one visible, is left alone, and so is a key pressed while a dialog is open or one an editor already handled.
+
 ## Icons Your Extension Ships
 
 An icon that belongs to your extension goes with it, and is named by path, not by name. Where the SVG lives depends on who uses it:
@@ -979,6 +997,7 @@ An extension can tell users about something that needs them, such as a failed ba
     "event-name": "string — relative path to handler file"
   },
   "dependencies": ["array of extension names — must be installed and enabled first"],
+  "suggestedPeers": ["extension names, or { name, reason } — optional integrations offered after an install"],
   "jobs": [
     {
       "name": "string — lowercase letters, numbers and dashes",

@@ -1,8 +1,13 @@
-import LightComponent from '/kempo-ui/components/LightComponent.js';
-import { html } from '/kempo-ui/lit-all.min.js';
+import { LitElement, html, css } from '/kempo-ui/lit-all.min.js';
 import { currentUserHasPermission, currentUserHasAllPermissions, currentUserHasSomePermissions } from '../sdk.js';
 
-export default class Permission extends LightComponent {
+/*
+  A wrapper only: it draws no box of its own (`display: contents`), so what is inside lines up as if it were not there.
+  What is inside is slotted, so it is shown only to people who have the permission.
+*/
+export default class Permission extends LitElement {
+	static styles = css`:host{display:contents}`;
+
 	static properties = {
 		has: { type: String },
 		all: { type: String },
@@ -60,18 +65,8 @@ export default class Permission extends LightComponent {
 		}
 	}
 
-	renderLightDom() {
-		if(this.loading) {
-			this.style.display = 'none';
-			return html``;
-		}
-
-		if(!this.hasPermission) {
-			this.style.display = 'none';
-			return html``;
-		}
-
-		this.style.display = '';
+	render() {
+		if(this.loading || !this.hasPermission) return html``;
 		return html`<slot></slot>`;
 	}
 }

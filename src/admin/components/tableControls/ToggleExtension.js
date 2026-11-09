@@ -1,11 +1,11 @@
 import AdminTableControl from '../AdminTableControl.js';
 import { html } from '/kempo-ui/lit-all.min.js';
-import Dialog from '/kempo-ui/components/Dialog.js';
 import Toast from '/kempo-ui/components/Toast.js';
 import '/kempo-ui/components/Icon.js';
+import { confirmChain, enableWithConfirm, offerSuggested } from '/admin/components/extensionInstallDialog.js';
 
 /*
-  Switches an installed extension off or on without uninstalling it.
+  Switches an installed extension off or on without uninstalling it. Both ask first.
 
   Disabled, an extension stays installed (its data, settings, groups and hooks are kept) but the CMS
   does not use it: its public files, admin pages, dashboard widgets and hooks are all left out. Turning
@@ -15,84 +15,30 @@ import '/kempo-ui/components/Icon.js';
   show it before anything happens:
     disabling  also disables what depends on it, and what depends on those, and so on
     enabling   also enables what it requires that is switched off, and what those require, and so on
-  Enabling never turns on anything else that happened to be switched off with it.
+  Enabling never turns on anything else that happened to be switched off with it. After an enable, what the extensions
+  just turned on suggest to go with them is offered (see \`offerSuggested\`).
 */
 export default class ToggleExtension extends AdminTableControl {
-  #confirm = ({ title, intro, items, confirmText, danger }) => {
-    const contents = document.createElement('div');
-    contents.className = 'p';
-
-    const text = document.createElement('p');
-    text.textContent = intro;
-    contents.append(text);
-
-    if(items.length){
-      const list = document.createElement('ul');
-      for(const entry of items){
-        const item = document.createElement('li');
-        item.textContent = entry;
-        list.append(item);
-      }
-      contents.append(list);
-    }
-
-    return new Promise(resolve => {
-      Dialog.create(contents, {
-        title,
-        closeBtn: false,
-        overlayClose: false,
-        confirmText,
-        confirmClasses: danger ? 'danger ml' : 'primary ml',
-        cancelText: 'Cancel',
-        confirmAction: () => resolve(true),
-        cancelAction: () => resolve(false),
-      });
-    });
-  };
-
-  #markRows = (names, enabled) => {
+  /*
+    A toggled extension belongs to the other tab now, so it leaves this table and the page loads both lists again (recordDeleted).
+    The table is passed in because removing a row removes this control with it, and a control that is not on the page has no
+    table: looking it up again for the second extension of a chain failed.
+  */
+  #moveRows = (table, names) => {
     for(const name of names){
-      const row = this.table.records.find(candidate => candidate.name === name);
-      if(row) this.table.updateRecord(row, { enabled });
+      const row = table.records.find(candidate => candidate?.name === name);
+      if(row) table.deleteRecord(row);
     }
   };
 
-  #enable = async (record, sdk) => {
-    const [requirementsError, data] = await sdk.getExtensionRequirements(record.name);
-    if(requirementsError){
-      Toast.error(requirementsError.msg || 'Failed to check what this extension requires');
-      return;
-    }
-
-    if(data.missing.length){
-      Toast.error(`"${record.name}" requires ${data.missing.join(', ')}, which ${data.missing.length === 1 ? 'is' : 'are'} not installed`);
-      return;
-    }
-
-    const requirements = data.disabled;
-    if(requirements.length){
-      const agreed = await this.#confirm({
-        title: `Enable ${requirements.length + 1} Extensions`,
-        intro: `"${record.name}" cannot run without these, which are switched off. Enabling it also enables:`,
-        items: requirements.map(requirement => requirement.requires.length ? `${requirement.name} (needs ${requirement.requires.join(', ')})` : requirement.name),
-        confirmText: `Enable ${requirements.length + 1} extensions`,
-        danger: false,
-      });
-      if(!agreed) return;
-    }
-
-    const [error, result] = await sdk.enableExtension(record.name, { cascade: true });
-    if(error){
-      Toast.error(error.msg || 'Failed to enable extension');
-      return;
-    }
-
-    this.#markRows(result.enabledNames, true);
-    Toast.success(result.enabledNames.length > 1 ? `Enabled ${result.enabledNames.join(', ')}` : `"${record.name}" enabled`);
-    this.requestUpdate();
+  #enable = async (record, table) => {
+    const result = await enableWithConfirm(record.name);
+    if(!result) return;
+    offerSuggested(result.enabledNames, added => added && window.location.reload());
+    this.#moveRows(table, result.enabledNames);
   };
 
-  #disable = async (record, sdk) => {
+  #disable = async (record, table, sdk) => {
     const [dependentsError, data] = await sdk.getExtensionDependents(record.name);
     if(dependentsError){
       Toast.error(dependentsError.msg || 'Failed to check what depends on this extension');
@@ -100,7 +46,7 @@ export default class ToggleExtension extends AdminTableControl {
     }
 
     const dependents = data.dependents;
-    const agreed = await this.#confirm({
+    const agreed = await confirmChain({
       title: dependents.length ? `Disable ${dependents.length + 1} Extensions` : 'Disable Extension',
       intro: dependents.length
         ? `Disabling "${record.name}" also disables everything that depends on it:`
@@ -117,18 +63,17 @@ export default class ToggleExtension extends AdminTableControl {
       return;
     }
 
-    this.#markRows(result.disabled, false);
     Toast.success(result.disabled.length > 1 ? `Disabled ${result.disabled.join(', ')}` : `"${record.name}" disabled`);
-    this.requestUpdate();
+    this.#moveRows(table, result.disabled);
   };
 
   toggle = async () => {
     const record = this.record;
-    if(!record) return;
+    const table = this.table;
+    if(!record || !table) return;
 
-    const sdk = await import('/kempo/sdk.js');
-    if(record.enabled === false) await this.#enable(record, sdk);
-    else await this.#disable(record, sdk);
+    if(record.enabled === false) await this.#enable(record, table);
+    else await this.#disable(record, table, await import('/kempo/sdk.js'));
   };
 
   handleAction(){ this.toggle(); }
