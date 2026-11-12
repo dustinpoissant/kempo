@@ -9,6 +9,7 @@ import path from 'path';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const { request, get, post } = await import(pathToFileURL(path.join(root, 'src/kempo/fetch.js')).href);
 
+const realFetch = globalThis.fetch;
 let calls = [];
 let answer = () => ({ status: 200, body: { ok: true } });
 
@@ -27,7 +28,15 @@ const reset = () => {
   answer = () => ({ status: 200, body: { ok: true } });
 };
 
-stub();
+/*
+  The stub is in place for one test at a time. Suites run in one process, so a fetch left replaced would answer every
+  later suite's requests (a sign-in, a page) with this file's canned reply.
+*/
+export const beforeEach = stub;
+
+export const afterEach = () => {
+  globalThis.fetch = realFetch;
+};
 
 export default {
   'identical reads at the same time are one request': async ({ pass, fail }) => {
