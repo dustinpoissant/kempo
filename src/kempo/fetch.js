@@ -1,3 +1,6 @@
+/* Everything an error response says beyond its message (details, and refusals such as conflictItemId) is kept for the caller. */
+const extrasOf = ({ error, message, ...rest }) => rest;
+
 const pendingRequests = new Map();
 
 const CACHE_MS = 5000;
@@ -42,7 +45,7 @@ const dedupFetch = async (url, options) => {
         } catch(e) {
           return [{ code: response.status, msg: 'Service temporarily unavailable. Please try again later.' }, null];
         }
-        return [{ code: response.status, msg: errorData.error || errorData.message || 'An error occurred', ...(errorData.details ? { details: errorData.details } : {}) }, null];
+        return [{ code: response.status, msg: errorData.error || errorData.message || 'An error occurred', ...extrasOf(errorData) }, null];
       }
       try {
         return [null, await response.json()];
@@ -73,7 +76,7 @@ const dedupFetch = async (url, options) => {
       } catch(e) {
         return [{ code: response.status, msg: 'Service temporarily unavailable. Please try again later.' }, null];
       }
-      return [{ code: response.status, msg: errorData.error || errorData.message || 'An error occurred', ...(errorData.details ? { details: errorData.details } : {}) }, null];
+      return [{ code: response.status, msg: errorData.error || errorData.message || 'An error occurred', ...extrasOf(errorData) }, null];
     }
     try {
       return [null, await response.json()];
@@ -129,3 +132,15 @@ export const del = (url, data) => mutate(url, {
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(data)
 });
+
+/*
+  Any method on any URL, for packages whose SDK is not kempo's: a read is shared with every other caller (see above), and a
+  write clears the cache, so an extension's SDK gets the same behaviour as this one. Resolves to [error, data] like the rest.
+*/
+export const request = (method, url, data) => {
+  if(method === 'GET') return cachedGet(url);
+  return mutate(url, {
+    method,
+    ...(data !== undefined ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) } : {})
+  });
+};

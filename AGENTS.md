@@ -16,6 +16,7 @@ An init script ran with `npm kempo init` will be used to help setup their projec
   - Internally we run `npm run dev` that runs this a server in this directory for development.
  - Backend utilities are in `server/utils/` directory
  - Middleware is in `middleware/` directory
+ - Page access (frontmatter `require-login`, `require-permissions`, and their redirects) is checked in `middleware/kempo.js` by `server/utils/pages/checkPageAccess.js` before a page renders. The expression is evaluated by `server/utils/permissions/evaluatePermissionExpression.js`.
  - Database schema and connection are in `server/db/` directory
  - API Route handlers are in `src/kempo/api/**` as `[METHOD].js` files
  - The admin portal is in `src/admin/**` as `*.page.html` files.

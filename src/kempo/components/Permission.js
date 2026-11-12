@@ -1,9 +1,13 @@
 import { LitElement, html, css } from '/kempo-ui/lit-all.min.js';
-import { currentUserHasPermission, currentUserHasAllPermissions, currentUserHasSomePermissions } from '../sdk.js';
+import { getSession, currentUserHasPermission, currentUserHasAllPermissions, currentUserHasSomePermissions } from '../sdk.js';
 
 /*
   A wrapper only: it draws no box of its own (`display: contents`), so what is inside lines up as if it were not there.
   What is inside is slotted, so it is shown only to people who have the permission.
+
+  `logged-in` shows it to anyone who is signed in, and can be combined with one of `has`, `all` or `some`. Nothing is
+  shown until the answer is known. This only hides content in the browser: the page's own frontmatter (`require-login`,
+  `require-permissions`) is what keeps a page, or the data behind it, from someone who should not have it.
 */
 export default class Permission extends LitElement {
 	static styles = css`:host{display:contents}`;
@@ -12,6 +16,7 @@ export default class Permission extends LitElement {
 		has: { type: String },
 		all: { type: String },
 		some: { type: String },
+		loggedIn: { type: Boolean, attribute: 'logged-in' },
 		loading: { type: Boolean, state: true },
 		hasPermission: { type: Boolean, state: true }
 	};
@@ -21,6 +26,7 @@ export default class Permission extends LitElement {
 		this.has = '';
 		this.all = '';
 		this.some = '';
+		this.loggedIn = false;
 		this.loading = true;
 		this.hasPermission = false;
 	}
@@ -32,21 +38,25 @@ export default class Permission extends LitElement {
 
 	async checkPermissions() {
 		const attributeCount = [this.has, this.all, this.some].filter(Boolean).length;
-		
+
 		if(attributeCount > 1) {
 			this.hasPermission = false;
 			this.loading = false;
 			return;
 		}
 
-		if(attributeCount === 0) {
-			this.hasPermission = true;
-			this.loading = false;
-			return;
-		}
-
 		try {
-			if(this.has) {
+			if(this.loggedIn) {
+				const [sessionError, session] = await getSession();
+				if(sessionError || !session?.user) {
+					this.hasPermission = false;
+					return;
+				}
+			}
+
+			if(attributeCount === 0) {
+				this.hasPermission = true;
+			} else if(this.has) {
 				const [error, data] = await currentUserHasPermission({ permission: this.has });
 				this.hasPermission = error ? false : data.hasPermission;
 			} else if(this.all) {

@@ -26,6 +26,13 @@ Middleware is registered in the server config (`app-public/.config.json`) under 
 - `/admin/**` also needs `system:admin:access`.
 - Unauthenticated users are redirected to `/login`; an authenticated user without admin access is sent to `/account`.
 
+### Page access
+- `renderGuardedPage` checks a page's frontmatter before rendering it, through `server/utils/pages/checkPageAccess.js`, for `require-login` and `require-permissions`.
+- Not signed in: `login-required-redirect`, or `/login?next=<page>` when unset.
+- Signed in without the permissions: `permission-denied-redirect`, or an empty 403 when unset.
+- An expression that cannot be read: an empty 500, logged, page never shown.
+- Restricted pages are sent `Cache-Control: private, no-store`.
+
 ### Extension routing
 - **Admin**: `/admin/extension/{name}/**` maps to the extension's `admin/` directory. Supports scoped packages (`@author/package`).
 - **Public**: `/{scope}/**` maps to the `public/` directory of the enabled extension that claims that scope (`public-scope`, or `public-scopes` for several folders). The enabled extensions are cached in memory and invalidated on install, enable, disable and uninstall. When the file is not in the extension, the request falls through to the site's own pages.

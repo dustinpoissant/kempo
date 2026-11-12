@@ -240,7 +240,7 @@ export default [
   {
     name: 'permission',
     title: 'Show for permission',
-    description: 'Shows what is inside it only to people who have a permission.',
+    description: 'Shows what is inside it only to people who are signed in, or who have a permission.',
     icon: 'visibility',
     ...server,
     keywords: ['permission', 'access', 'admin', 'hide', 'show', 'signed in'],
@@ -250,6 +250,7 @@ export default [
     editorTag: 'k-permission-editor',
     display: '',
     attributes: [
+      { name: 'logged-in', type: 'boolean', label: 'Signed in', hint: 'Show it to anyone who is signed in. Leave the permissions empty to ask for nothing more.', default: false },
       { name: 'has', type: 'string', label: 'Has the permission', hint: 'One permission, such as system:admin:access.', default: '' },
       { name: 'all', type: 'string', label: 'Has all of', hint: 'Permissions separated by commas. Use one of these three settings.', default: '' },
       { name: 'some', type: 'string', label: 'Has any of', hint: 'Permissions separated by commas.', default: '' }

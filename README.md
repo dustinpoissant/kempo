@@ -51,14 +51,29 @@ Your site is running at `http://localhost:3000`.
 To promote an existing user instead, register through the UI at `/register`, then run:
 
 ```bash
-node node_modules/kempo/scripts/make-admin.js
+npx kempo make-admin user@example.com
 ```
 
-This prompts for the user's email and adds them to the `system:Administrators` group. To remove admin access:
+Run it from the site's folder (it uses the site's `.env`). Leave the email off to be asked for it. It adds the user to the `system:Administrators` group. To remove admin access:
 
 ```bash
-node node_modules/kempo/scripts/remove-admin.js
+npx kempo remove-admin user@example.com
 ```
+
+## Command Line
+
+Run these from a site's folder. Each uses the site's `.env`, so it works on the site's own database.
+
+| Command | What it does |
+|---|---|
+| `npx kempo init` | Sets up a new site (the wizard) |
+| `npx kempo make-admin [email]` | Adds an existing user to `system:Administrators` |
+| `npx kempo remove-admin [email]` | Removes a user from `system:Administrators` |
+| `npx kempo test-email <email>` | Sends a test email (needs an email extension installed) |
+| `npx kempo db push` | Brings the database in line with the schema (`generate`, `migrate` and `studio` work the same way, through drizzle-kit) |
+| `npx kempo reset-db [-y]` | Deletes every table and their data, then recreates the tables and the defaults. Asks you to type `RESET` unless `-y` is given |
+
+The email is asked for when left off the first three.
 
 ## Scaffolded Pages
 
@@ -257,19 +272,41 @@ Kempo provides web components you can use in your pages:
 
 ```html
 <script type="module" src="/kempo/components/Permission.js"></script>
-<kempo-permission has="system:admin:access">
+<k-permission has="system:admin:access">
   <a href="/admin">Admin Panel</a>
-</kempo-permission>
+</k-permission>
+<k-permission logged-in>Welcome back.</k-permission>
 ```
 
 | Component | Tag | Purpose |
 |---|---|---|
-| `Permission.js` | `<kempo-permission>` | Conditionally render content based on permissions |
-| `LogoutBtn.js` | `<kempo-logout-btn>` | Logout button |
-| `UserName.js` | `<kempo-user-name>` | Display current user's name |
-| `UserEmail.js` | `<kempo-user-email>` | Display current user's email |
-| `UserEmailVerified.js` | `<kempo-user-email-verified>` | Display email verification status |
-| `UserCreatedAt.js` | `<kempo-user-created-at>` | Display account creation date |
+| `Permission.js` | `<k-permission>` | Show its content only to people with a permission (`has`, `all`, `some`), or only to people who are signed in (`logged-in`) |
+| `LogoutBtn.js` | `<k-logout-btn>` | Logout button |
+| `UserName.js` | `<k-user-name>` | Display current user's name |
+| `UserEmail.js` | `<k-user-email>` | Display current user's email |
+| `UserEmailVerified.js` | `<k-user-email-verified>` | Display email verification status |
+| `UserCreatedAt.js` | `<k-user-created-at>` | Display account creation date |
+
+## Restricting Pages
+
+A page can require a signed-in visitor, or certain permissions, through its frontmatter:
+
+```html
+<!--
+  title: Members
+  require-login: true
+  require-permissions: blog:posts:create || (shop:orders:read && shop:orders:update)
+  login-required-redirect: /members-login
+  permission-denied-redirect: /upgrade
+-->
+```
+
+- A visitor who is not signed in goes to `login-required-redirect`, or to `/login?next=<page>` when it is not set.
+- A signed-in visitor who does not meet `require-permissions` goes to `permission-denied-redirect`, or gets an empty 403 when it is not set.
+- `&&` binds tighter than `||`, parentheses group, and administrators pass any expression.
+- An expression that cannot be read returns an empty 500 and is logged; the page is never shown.
+
+See [Content Management](docs/content-management.md#restricting-a-page) for the full reference.
 
 ## Adding Routes
 

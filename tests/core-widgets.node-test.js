@@ -82,6 +82,9 @@ export default {
       expect(!renderPage([createNode('login', {})], registry).includes('redirect='), 'a default setting was written');
       const permission = renderPage([createNode('permission', { has: 'system:admin:access' }, { default: [createNode('text', { html: '<p>Hi</p>' })] })], registry);
       expect(permission.startsWith('<k-permission') && permission.includes('has="system:admin:access"'), permission);
+      const signedIn = renderPage([createNode('permission', { 'logged-in': true })], registry);
+      expect(signedIn.startsWith('<k-permission') && /<k-permission[^>]* logged-in(="")?[ >]/.test(signedIn), `logged-in was not written: ${signedIn}`);
+      expect(!renderPage([createNode('permission', {})], registry).includes('logged-in'), 'a default setting was written');
       const logout = renderPage([createNode('logout', { label: 'Sign out', redirect: '/login', color: 'danger' })], registry);
       expect(/^<button class="btn danger[^"]*"[^>]* data-redirect="\/login"[^>]* type="button" data-logout>Sign out<\/button>$/.test(logout.trim()) || (logout.includes('<button') && logout.includes('data-logout') && logout.includes('data-redirect="/login"') && logout.includes('btn danger') && logout.includes('>Sign out<')), logout);
       expect(!logout.includes('<k-logout-btn') && !logout.includes('style='), `the button has an element or a style around it: ${logout}`);

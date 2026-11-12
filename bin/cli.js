@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { existsSync, cpSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'fs';
+import { createRequire } from 'module';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { join, dirname, basename } from 'path';
 import { execSync, spawnSync } from 'child_process';
@@ -12,16 +13,55 @@ const args = process.argv.slice(2);
 const command = args[0];
 const useDefaults = args.includes('-y') || args.includes('--yes');
 
-if(command !== 'init'){
-  console.log('Usage: npx kempo init [-y|--yes]');
-  process.exit(1);
-}
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const moduleRoot = join(__dirname, '..');
 const projectDir = process.cwd();
 const projectName = basename(projectDir);
+
+/*
+  Commands for an existing site, run from its folder. They use the site's .env (so DATABASE_URL is the site's
+  database), and the script's own output and exit code come straight through.
+*/
+const siteScripts = {
+  'make-admin': 'make-admin.js',
+  'remove-admin': 'remove-admin.js',
+  'test-email': 'test-email.js',
+  'reset-db': 'reset-db.js',
+};
+const dbCommands = ['generate', 'migrate', 'push', 'studio'];
+
+const loadSiteEnv = () => {
+  if(existsSync(join(projectDir, '.env'))) process.loadEnvFile(join(projectDir, '.env'));
+};
+
+if(Object.hasOwn(siteScripts, command)){
+  loadSiteEnv();
+  const result = spawnSync(process.execPath, [join(moduleRoot, 'scripts', siteScripts[command]), ...args.slice(1)], { cwd: projectDir, stdio: 'inherit' });
+  process.exit(result.status ?? 1);
+}
+
+/* drizzle-kit is kempo's own dependency, run with the site's drizzle.config.js. */
+if(command === 'db'){
+  if(!dbCommands.includes(args[1])){
+    console.log(`Usage: npx kempo db <${dbCommands.join('|')}> [drizzle-kit options]`);
+    process.exit(1);
+  }
+  loadSiteEnv();
+  const drizzleKit = join(dirname(createRequire(import.meta.url).resolve('drizzle-kit')), 'bin.cjs');
+  const result = spawnSync(process.execPath, [drizzleKit, args[1], `--config=${join(projectDir, 'drizzle.config.js')}`, ...args.slice(2)], { cwd: projectDir, stdio: 'inherit' });
+  process.exit(result.status ?? 1);
+}
+
+if(command !== 'init'){
+  console.log('Usage: npx kempo init [-y|--yes]');
+  console.log('       npx kempo make-admin [email]');
+  console.log('       npx kempo remove-admin [email]');
+  console.log('       npx kempo test-email <email>');
+  console.log(`       npx kempo db <${dbCommands.join('|')}>`);
+  console.log('       npx kempo reset-db [-y|--yes]');
+  process.exit(1);
+}
 
 /*
   package.json

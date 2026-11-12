@@ -4,6 +4,8 @@ import { pathToFileURL, fileURLToPath } from 'url';
 import { renderExternalPage } from 'kempo-server/templating';
 import getSession from '../server/utils/auth/getSession.js';
 import currentUserHasPermission from '../server/utils/permissions/currentUserHasPermission.js';
+import checkPageAccess from '../server/utils/pages/checkPageAccess.js';
+import parseFrontmatter from '../server/utils/fs/parseFrontmatter.js';
 import { LEXICAL_BASE, bundleFileName as lexicalBundleFileName } from '../server/utils/lexical/packages.js';
 import { getEnabledExtensions, onExtensionsChanged } from '../server/utils/extensions/scopeCache.js';
 import { resyncMenus } from '../server/utils/menus/store.js';
@@ -131,7 +133,7 @@ const executeRouteFile = async (filePath, request, response, params = {}) => {
   extensions guard their own private pages. Rendering a page anywhere without this helper silently
   bypasses those guards.
 */
-const renderGuardedPage = async (pageFilePath, request, response, rootDir, resolveDir, params = {}, extraGlobalDirs = [], extraFragmentDirs = []) => {
+export const renderGuardedPage = async (pageFilePath, request, response, rootDir, resolveDir, params = {}, extraGlobalDirs = [], extraFragmentDirs = []) => {
   try {
     await triggerHook('middleware:before_page', {
       url: request.url.split('?')[0],
@@ -146,8 +148,35 @@ const renderGuardedPage = async (pageFilePath, request, response, rootDir, resol
     return;
   }
 
+  /*
+    A page can restrict itself in its frontmatter (require-login, require-permissions,
+    permission-denied-redirect). A page that cannot be checked is refused, never shown.
+  */
+  const meta = parseFrontmatter(await readFile(pageFilePath, 'utf8').catch(() => ''));
+  const restricted = meta['require-login'] === 'true' || !!meta['require-permissions'];
+
+  if(restricted){
+    const [accessError, access] = await checkPageAccess({ token: request.cookies?.session_token, meta });
+    if(accessError){
+      console.error(`[kempo] Cannot check access to ${pageFilePath}: ${accessError.msg}`);
+      response.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+      response.end('');
+      return;
+    }
+    if(!access.allowed){
+      if(access.redirect) return response.redirect(access.redirect);
+      if(access.reason === 'login') return response.redirect(`/login?next=${encodeURIComponent(request.url)}`);
+      response.writeHead(403, { 'Content-Type': 'text/html; charset=utf-8' });
+      response.end('');
+      return;
+    }
+  }
+
   const html = await renderExternalPage(pageFilePath, rootDir, resolveDir, {}, {}, 10, extraGlobalDirs, extraFragmentDirs);
-  response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  response.writeHead(200, {
+    'Content-Type': 'text/html; charset=utf-8',
+    ...(restricted ? { 'Cache-Control': 'private, no-store' } : {})
+  });
   response.end(html);
 };
 

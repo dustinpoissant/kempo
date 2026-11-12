@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [4.13.0] - 2026-11-12
+
+### Added
+
+- **Restrict a page in its frontmatter**: `require-login: true`, `require-permissions: a || (b && c)` (`&&`, `||` and parentheses, `&&` first; administrators pass) and `login-required-redirect: /somewhere` and `permission-denied-redirect: /somewhere`. Someone not signed in goes to `login-required-redirect`, or to `/login?next=` the page when it is not set; someone signed in without the permissions goes to the redirect, or gets a `403`. A page whose expression cannot be read is refused with a `500`, never shown. Restricted pages are sent `Cache-Control: private, no-store`. The check is `server/utils/pages/checkPageAccess.js`, and the expression is `server/utils/permissions/evaluatePermissionExpression.js`.
+- **`<k-permission logged-in>`** shows its content only to signed-in people, using the SDK's session request so it is shared with other components. It can be combined with `has`, `all` or `some`, and is a setting of the "Show for permission" page builder widget.
+- **Site commands on the `kempo` CLI**, run from a site's folder with its `.env`: `npx kempo make-admin [email]`, `npx kempo remove-admin [email]`, `npx kempo test-email <email>`, `npx kempo db <generate|migrate|push|studio>` (drizzle-kit with the site's `drizzle.config.js`) and `npx kempo reset-db [-y]` (asks for `RESET` first). The scripts are in the published package now; `make-admin.js` was not, so `node node_modules/kempo/scripts/make-admin.js` never worked for a site.
+- The email argument of `make-admin.js` and `remove-admin.js` is optional; without it they ask for one, as before.
+
+### Changed
+
+- The `kempo-server` peer dependency is now `>=3.6.0`.
+
 ## [4.12.0] - 2026-11-12
 
 Requires kempo-ui 1.5.0 or later.

@@ -40,7 +40,11 @@
     "server/sdk.js",
     "middleware/kempo.js",
     "app-templates",
-    "scripts/init-db.js"
+    "scripts/init-db.js",
+    "scripts/make-admin.js",
+    "scripts/remove-admin.js",
+    "scripts/test-email.js",
+    "scripts/reset-db.js"
   ],
   "dependencies": {
     "@lexical/code": "0.43.0",
@@ -65,7 +69,7 @@
   },
   "peerDependencies": {
     "kempo-css": ">=2.3.0",
-    "kempo-server": ">=3.5.2",
+    "kempo-server": ">=3.6.0",
     "kempo-ui": ">=1.5.0"
   },
   "devDependencies": {

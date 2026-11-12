@@ -120,6 +120,26 @@ const [err, allowed] = await currentUserHasSomePermissions(token, [
 ]);
 ```
 
+### Showing Part of a Page to Some People
+
+`<k-permission>` shows what is inside it only to people who qualify, and shows nothing until it knows the answer. It uses the SDK, so several on one page share a single request.
+
+```html
+<script type="module" src="/kempo/components/Permission.js"></script>
+
+<k-permission logged-in>Welcome back.</k-permission>
+<k-permission has="system:admin:access">Admins only.</k-permission>
+<k-permission all="a:b:c, d:e:f">Needs both.</k-permission>
+<k-permission some="a:b:c, d:e:f">Needs either.</k-permission>
+<k-permission logged-in has="a:b:c">The same as the permission alone.</k-permission>
+```
+
+`logged-in` shows its content to anyone who is signed in. This only hides content in the browser; it is not a lock. To keep a whole page from people, use `require-login` and `require-permissions` in its frontmatter ([Restricting a Page](content-management.md#restricting-a-page)), and check on the server in any route that returns private data.
+
+### Restricting a Whole Page
+
+The frontmatter keys `require-login`, `require-permissions`, `login-required-redirect` and `permission-denied-redirect` restrict a page before it is rendered. See [Restricting a Page](content-management.md#restricting-a-page).
+
 ## Default Permissions
 
 Kempo seeds these permissions on first run:

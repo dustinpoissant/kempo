@@ -17,6 +17,7 @@ Pages are the primary content unit of the CMS. They are file-based (not database
 - **Frontmatter metadata**: Page metadata (title, description, author, template) is stored in HTML comment frontmatter at the top of the file.
 - **Template selection**: Each page specifies which template to use. The template defines the layout and available content locations.
 - **Content blocks per location**: Page content is organized into blocks that target specific template locations (e.g., `head`, `scripts`, default body).
+- **Access in frontmatter**: `require-login`, `require-permissions`, `login-required-redirect` and `permission-denied-redirect` are checked by the middleware's page guard before render, failing closed (see [Middleware](../concepts/middleware.md)).
 - **`rootDir` parameter**: All page utils accept a `rootDir` so they work with both the consumer's `public/` and extension directories.
 
 ## Implementation
@@ -29,6 +30,10 @@ Pages are the primary content unit of the CMS. They are file-based (not database
   description: Page description
   author: Author Name
   template: default
+  require-login: true
+  require-permissions: a:b:c || (d:e:f && g:h:i)
+  login-required-redirect: /members-login
+  permission-denied-redirect: /upgrade
 -->
 <location>
   <p>Main content goes here</p>

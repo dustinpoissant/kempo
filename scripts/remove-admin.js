@@ -5,12 +5,8 @@ import db from '../server/db/index.js';
 import { userGroup } from '../server/db/schema.js';
 import { eq, and } from 'drizzle-orm';
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-const email = await new Promise(resolve => {
+const email = process.argv[2]?.trim() || await new Promise(resolve => {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   rl.question('Enter user email: ', answer => {
     rl.close();
     resolve(answer.trim());

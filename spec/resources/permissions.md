@@ -14,6 +14,7 @@ Permissions are the leaf nodes of the access control system. They are checked in
 - **Name as primary key**: Permission names like `system:pages:update` are the identifier. Colon-separated convention: `{owner}:{resource}:{action}`.
 - **`owner` field**: Distinguishes system permissions from extension-created ones. System permissions are protected by a database trigger.
 - **Checked via session token**: The `currentUserHasPermission(token, name)` pattern resolves the user from the session, gets their groups, and checks if any group has the permission. This avoids passing user IDs around in the HTTP layer.
+- **Expressions**: `server/utils/permissions/evaluatePermissionExpression.js` evaluates `&&`, `||` and parentheses over a person's permissions (`&&` binds tighter). Administrators hold every permission.
 - **31 default permissions**: Seeded by `init-db.js` covering all system resources.
 
 ## Implementation

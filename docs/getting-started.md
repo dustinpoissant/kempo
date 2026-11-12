@@ -51,14 +51,16 @@ The `/setup` page and its API route live in `public/setup/` and delete themselve
 If you set up manually without the wizard, the scaffolded `public/setup/` works the same way. Otherwise, register at `/register`, then run:
 
 ```bash
-node node_modules/kempo/scripts/make-admin.js
+npx kempo make-admin user@example.com
 ```
 
-Enter the user's email when prompted. To remove admin access:
+Run it from the site's folder. Leave the email off to be asked for it. To remove admin access:
 
 ```bash
-node node_modules/kempo/scripts/remove-admin.js
+npx kempo remove-admin user@example.com
 ```
+
+The other site commands (`test-email`, `db`, `reset-db`) are listed in the README under **Command Line**.
 
 ## Environment Variables
 

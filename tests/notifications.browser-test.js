@@ -1,5 +1,7 @@
 import '../src/kempo/components/NotificationList.js';
 import '../src/kempo/components/NotificationBell.js';
+/* The elements load the SDK from /kempo/sdk.js, so the cache to clear is the one in /kempo/fetch.js, not src's. */
+import { post } from '/kempo/fetch.js';
 
 /*
   Runs the real k-notification-list and k-notification-bell elements in a real browser (see
@@ -23,6 +25,8 @@ window.fetch = async (input, init = {}) => {
   const url = new URL(typeof input === 'string' ? input : input.url, window.location.origin);
   const method = (init.method || 'GET').toUpperCase();
   const body = init.body ? JSON.parse(init.body) : null;
+
+  if(url.pathname === '/kempo/api/test/reset') return json({});
 
   if(url.pathname.startsWith('/kempo/api/notifications')){
     calls.push({ method, path: url.pathname, body });
@@ -90,11 +94,15 @@ const mountList = async () => {
 
 const buttonLabelled = (el, label) => [...el.querySelectorAll('button, a')].find(node => node.textContent.trim() === label);
 
-export const beforeEach = () => {
+/* The SDK keeps a read for a few seconds and a write clears it, so a change made behind its back (the store here) needs a write to be seen. */
+const forgetReads = () => post('/kempo/api/test/reset', {});
+
+export const beforeEach = async () => {
   store = [];
   calls = [];
   actionResponse = { status: 200, body: { ok: true } };
   signedIn = true;
+  await forgetReads();
 };
 
 export const afterEach = () => {
@@ -122,6 +130,7 @@ export default {
     expect(empty.textContent.includes('No notifications'), 'empty state');
     empty.remove();
     signedIn = false;
+    await forgetReads();
     const el = await mount('k-notification-list');
     await until(() => el.textContent.includes('Sign in'), 'the sign in message');
     pass();
@@ -206,6 +215,7 @@ export default {
 
   'the bell renders nothing when nobody is signed in': async ({ pass }) => {
     signedIn = false;
+    await forgetReads();
     const bell = await mount('k-notification-bell', { interval: '0' });
     await until(() => bell.signedOut === true, 'the signed out state');
     await bell.updateComplete;
@@ -219,6 +229,7 @@ export default {
     const bell = await mount('k-notification-bell', { interval: '0' });
     await until(() => bell.count === 1, 'the first count');
     store.push(make(), make());
+    await forgetReads();
     window.dispatchEvent(new Event('focus'));
     await until(() => bell.count === 3, 'the count to refresh on focus');
     pass();

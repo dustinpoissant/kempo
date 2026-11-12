@@ -5,7 +5,7 @@ const testEmail = async () => {
   const testTo = process.argv[2];
 
   if(!testTo){
-    console.error('Usage: npm run test:email <email@example.com>');
+    console.error('Usage: npx kempo test-email <email@example.com>');
     process.exit(1);
   }
 

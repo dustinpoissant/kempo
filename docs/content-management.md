@@ -17,6 +17,29 @@ template: default
 
 Pages are managed in the Admin under **Content > Pages**.
 
+### Restricting a Page
+
+A page can be limited to signed-in people, or to people with certain permissions, with three keys in its frontmatter comment:
+
+```html
+<!--
+  title: Members Area
+  require-login: true
+  require-permissions: blog:posts:create || (shop:orders:read && shop:orders:update)
+  login-required-redirect: /members-login
+  permission-denied-redirect: /upgrade
+-->
+```
+
+| Key | Meaning |
+|---|---|
+| `require-login` | `true` sends anyone who is not signed in to `login-required-redirect`, or to `/login?next=<this page>` (and back here afterwards) when that is not set. |
+| `login-required-redirect` | Where a person who is not signed in is sent, instead of the login page. Used as written, with no `next`. |
+| `require-permissions` | An expression the person must satisfy. `&&` means both, `\|\|` means either, and parentheses group (`&&` is evaluated before `\|\|`). Names are permission names such as `system:pages:update`. This implies `require-login`. Members of `system:Administrators` pass every expression. |
+| `permission-denied-redirect` | Where a signed-in person who does not satisfy `require-permissions` is sent. Without it they get a `403` and an empty page. |
+
+A page that cannot be checked, because the expression has a syntax error, is refused with a `500` and is never shown; the problem is logged. A restricted page is sent with `Cache-Control: private, no-store`. These keys decide whether the page is served at all. To hide only part of a page, wrap it in `<k-permission>` (see [Users, Auth & Permissions](users-auth-permissions.md)).
+
 ### Dynamic Pages
 
 To create a page with a URL parameter, use a `[param]` directory:
