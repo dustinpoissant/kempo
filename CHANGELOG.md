@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [4.12.0] - 2026-11-12
+
+Requires kempo-ui 1.5.0 or later.
+
+### Changed
+
+- The `kempo-ui` peer dependency is now `>=1.5.0`. kempo-ui 1.5.0 makes every form input read-only-capable: a read-only input shows its value and keeps it in the form, but cannot be changed. The admin and the page builder pick it up with no change to kempo.
+
 ## [4.11.0] - 2026-11-09
 
 ### Added
