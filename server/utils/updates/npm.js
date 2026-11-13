@@ -7,13 +7,29 @@ import { NAME_PATTERN } from '../extensions/marketplaceClient.js';
 
 const execute = promisify(execFile);
 
+/*
+  A version that was published a moment ago can answer 404 until the registry serves it everywhere, so a 404 is tried
+  again over about a minute before the update is given up.
+*/
+const RETRY_DELAYS_MS = [15000, 30000, 60000];
+
 /* `npm install` of already validated targets (plain names and x.y.z or "latest") in `cwd`. */
-export const runNpm = (args, cwd) => execute('npm', ['install', ...args, '--no-audit', '--no-fund'], {
-  cwd,
-  shell: process.platform === 'win32',
-  timeout: 10 * 60 * 1000,
-  maxBuffer: 10 * 1024 * 1024
-});
+export const runNpm = async (args, cwd) => {
+  for(let attempt = 0; ; attempt++){
+    try {
+      return await execute('npm', ['install', ...args, '--no-audit', '--no-fund'], {
+        cwd,
+        shell: process.platform === 'win32',
+        timeout: 10 * 60 * 1000,
+        maxBuffer: 10 * 1024 * 1024
+      });
+    } catch(error) {
+      const notYet = /\b404\b/.test(String(error.stderr || error.message || ''));
+      if(!notYet || attempt >= RETRY_DELAYS_MS.length) throw error;
+      await new Promise(resolve => setTimeout(resolve, RETRY_DELAYS_MS[attempt]));
+    }
+  }
+};
 
 export const installedVersion = (dir, name) => {
   try {
