@@ -1,0 +1,140 @@
+<!--
+	locked: true
+-->
+<page title="Guests - Admin">
+<content>
+<script type="module" src="/kempo-ui/components/Table.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcFirstPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPrevPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcNextPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcLastPage.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPageSelect.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcPageSize.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcDeleteRecord.js"></script>
+<script type="module" src="/kempo-ui/components/controls/TcDeleteSelected.js"></script>
+<script type="module" src="/kempo/components/Permission.js"></script>
+<div class="d-f mb">
+	<h1 class="flex mb0">Guests</h1>
+</div>
+<p class="tc-muted">
+	A guest is a visitor who has not logged in, tracked by a cookie. What they do before logging in moves to their account when they log in or register.
+	Guests that go unused are deleted automatically after the number of days in <code>system:guest_idle_days</code> on the Settings page.
+</p>
+<p id="summary" class="mb">Loading&hellip;</p>
+<label class="d-b mbq" for="filter">Show</label>
+<select id="filter" class="mb">
+	<option value="">All guests</option>
+	<option value="unmerged">Not logged in yet</option>
+	<option value="merged">Logged in or registered</option>
+</select>
+<k-table
+	id="guestsTable"
+	enable-pages
+	page-size="25"
+	page-size-options="[10,25,50,100]"
+	placeholder="No guests yet."
+>
+	<div slot="top" class="d-f full">
+		<k-permission has="system:guests:manage">
+			<kc-tc-delete-selected></kc-tc-delete-selected>
+		</k-permission>
+	</div>
+	<div class="d-f full">
+		<div>
+			<kc-tc-first-page></kc-tc-first-page>
+			<kc-tc-prev-page></kc-tc-prev-page>
+			<kc-tc-next-page></kc-tc-next-page>
+			<kc-tc-last-page></kc-tc-last-page>
+		</div>
+		<div class="flex"></div>
+		<div>
+			<kc-tc-page-select></kc-tc-page-select>
+		</div>
+		<div class="flex"></div>
+		<div>
+			<kc-tc-page-size></kc-tc-page-size>
+		</div>
+	</div>
+</k-table>
+</content>
+<content location="scripts">
+<script type="module">
+	import { listGuests, deleteGuest, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+	import Toast from '/kempo-ui/components/Toast.js';
+	import Dialog from '/kempo-ui/components/Dialog.js';
+	await window.customElements.whenDefined('k-table');
+	const $table = document.getElementById('guestsTable');
+	const $filter = document.getElementById('filter');
+	const $summary = document.getElementById('summary');
+	const formatTime = value => (value ? new Date(value).toLocaleString() : '');
+
+	const [, permData] = await getAllCurrentUserPermissions();
+	if((permData?.permissions ?? []).includes('system:guests:manage')){
+		$table.setAttribute('request-delete', '');
+		$table.setAttribute('enable-selection', '');
+		const del = document.createElement('kc-tc-delete-record');
+		del.setAttribute('slot', 'after');
+		$table.appendChild(del);
+	}
+
+	const toRecord = guest => ({
+		id: guest.token,
+		guest: `${guest.token.slice(0, 8)}…`,
+		createdAt: guest.createdAt,
+		lastSeenAt: guest.lastSeenAt,
+		account: guest.user ? `${guest.user.name} (${guest.user.email})` : guest.mergedAt ? 'Account deleted' : 'Not logged in yet'
+	});
+
+	const fetchGuests = async (start, count) => {
+		const [error, data] = await listGuests({ merged: $filter.value, limit: count, offset: start });
+		return error ? [] : data.guests.map(toRecord);
+	};
+
+	const load = async () => {
+		const [error, data] = await listGuests({ merged: $filter.value, limit: $table.getPageSize(), offset: 0 });
+		if(error){
+			$summary.textContent = error.code === 403 ? 'You do not have permission to view guests.' : `Guests could not be loaded: ${error.msg}`;
+			return;
+		}
+
+		$summary.textContent = `${data.counts.all} guest${data.counts.all === 1 ? '' : 's'}: ${data.counts.unmerged} not logged in yet, ${data.counts.merged} logged in or registered.`;
+		$table.setData({
+			currentPage: 1,
+			records: data.guests.map(toRecord),
+			fields: [
+				{ name: 'guest', label: 'Guest' },
+				{ name: 'createdAt', label: 'First seen', formatter: formatTime },
+				{ name: 'lastSeenAt', label: 'Last seen', formatter: formatTime },
+				{ name: 'account', label: 'Account' }
+			]
+		});
+		$table.setupFetchRecords(data.total, fetchGuests);
+	};
+
+	$filter.addEventListener('change', load);
+
+	$table.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
+		const count = records.length;
+		Dialog.confirm(`Delete ${count === 1 ? 'this guest' : `these ${count} guests`}? Anything they own that has not moved to an account is deleted too. This cannot be undone.`, async confirmed => {
+			if(!confirmed){
+				reject();
+				return;
+			}
+			for(const record of records){
+				const [error] = await deleteGuest(record.id);
+				if(error){
+					reject();
+					Toast.error(error.msg || 'Failed to delete');
+					return;
+				}
+			}
+			approve();
+			Toast.success(count === 1 ? 'Guest deleted' : `${count} guests deleted`);
+			load();
+		});
+	});
+
+	await load();
+</script>
+</content>
+</page>

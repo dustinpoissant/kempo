@@ -293,6 +293,9 @@ Handlers are **awaited one at a time, in registration order**. That means slow w
 | `kempo:updated` | `{ oldVersion, newVersion, packages }` | Kempo itself was updated from the admin (on a Docker volume site, at the moment the owner switches); the server restarts a second later |
 | `page-created` | `{ page }` | After a page is created |
 | `notification:created` | `{ notification, recipientIds, refreshed }` | A notification reached at least one person |
+| `guest:merged` | `{ tx, guestSessionId, userId }` | A visitor who was a guest logged in or registered. Inside the merge's database transaction, after kempo moved its own rows: move what your extension keeps for `guestSessionId` to `userId` through `tx`. A handler that throws undoes the merge and the login is refused. See [Guest sessions](../guests.md) |
+| `guest:merged:committed` | `{ guestSessionId, userId, results }` | The merge has committed. `results` is what each `guest:merged` handler returned. Send notices here, not in `guest:merged`, so a rolled-back merge announces nothing |
+| `guest:expired` | `{ tx, guestSessionId }` | An unmerged guest is about to be deleted (it sat unused, or an administrator deleted it). Inside the transaction that deletes it: remove what you keep for it, such as files. A handler that throws keeps that guest for the next run |
 | `route:unmatched` | `{ url, method, request, draft }` | A request matched no file, page or route anywhere on the site |
 | `user:email_verified` | `{ userId, email }` | Someone followed their verification link, so they have proved they own the address |
 | `user:deleted` | `{ id, email, name }` | A user account was deleted, by an administrator or by the person themselves (with a code sent to their address). Kempo has removed the account; remove anything your extension keeps about `id`. A handler that fails does not undo the deletion |
@@ -978,6 +981,10 @@ An extension can push live updates to browsers by declaring a channel in `kempo-
 Channels are closed by default: `permission` is required, and only users who hold it can subscribe. `persist` stores messages so a client that reconnects can catch up, and `retention` says how long they are kept. `scope` is `"cluster"` (default) or `"process"` for fast in-memory traffic that never touches the database. `onMessage` is a path inside your package to a handler that receives what browsers send to the channel and can reply. `dropIfBackedUp` skips deliveries to a client that is already behind. The channel is named `my-ext:status`, and you publish with `realtime.publish({ channel, data })` from the [Server SDK](sdk.md).
 
 Connections are observable through hooks, declared in `hooks` like any other: `realtime:connected`, `realtime:disconnected`, `realtime:subscribed`, `realtime:unsubscribed`, and the guard `realtime:before_subscribe`, which refuses a subscription when it throws `{ code, msg }`. Use hooks for lifecycle and `onMessage` for messages. See [Realtime](../realtime.md) for the full guide.
+
+## Guest Visitors
+
+A visitor who has not logged in is a guest: `request.guest` is `{ token }` on routes that receive the `kempo_guest` cookie, and a guest never counts as logged in. If your extension stores anything for a guest, add a nullable `guestSessionId` column (referencing `guestSession.token`, cascade delete), handle `guest:merged` to move it to the user inside the transaction, and handle `guest:expired` to remove what lives outside the database. See [Guest sessions](../guests.md).
 
 ## Notifications
 

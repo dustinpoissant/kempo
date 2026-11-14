@@ -36,6 +36,8 @@ setting:
 |---|---|---|---|---|
 | `system:site_name` | "Kempo Site" | string | Yes | Site display name |
 | `system:session_duration_days` | 7 | number | No | Session expiration |
+| `system:guest_session_days` | 30 | number | No | Guest cookie lifetime after the last visit |
+| `system:guest_idle_days` | 60 | number | No | Idle time before an unused guest is deleted (0 keeps them) |
 | `system:allow_registration` | true | boolean | Yes | Enable/disable registration |
 | `system:require_email_verification` | false | boolean | No | Enforce email verification |
 | `system:verification_url` | `http://localhost:3000/verify-email/{{token}}` | string | No | Verification email link template |

@@ -1797,6 +1797,46 @@ Dismiss for one person, or delete for everyone.
 
 Deletes expired notifications and those last raised before the retention (`system:notification_retention_days`, default 90, 0 keeps forever). Also runs lazily, at most hourly, when a notification is created.
 
+## Guest Sessions
+
+A guest is a visitor who has not logged in, tracked by the `kempo_guest` cookie. Guest records move to the account at login. See [Guest sessions](../guests.md) for the rules, the hooks and the HTTP API. All return `[error, result]`. Needs the `guestSession` and `notificationGuestRecipient` tables (`npx drizzle-kit push` on an existing site).
+
+### `createGuest()`
+
+Starts a guest session. Returns `[null, { token, createdAt }]`. The token is the cookie value and is as secret as a login token.
+
+### `getGuest({ token, now })`
+
+Returns an unmerged guest, renewing its last-seen time at most once a minute. Returns `[null, { guest, touched }]`. `404` for an unknown or merged guest.
+
+### `mergeGuest({ guestSessionId, userId })`
+
+Moves what a guest owns to a user in one transaction and fires `guest:merged`. Returns `[null, { merged: true, notifications }]`. `404` for an unknown guest or user, `409` if the guest was already merged, `500` if a handler threw (everything is rolled back).
+
+### `mergeGuestIntoLogin({ guestSessionId, userId, sessionToken })`
+
+What the login and registration routes call after the person is verified and signed in. A guest that is missing or already merged is not an error (`{ merged: false }`). A failed merge revokes `sessionToken` and returns `500`, so the login is refused. Use it when you add another way to log in.
+
+### `deleteGuest({ token })`
+
+Deletes a guest. Fires `guest:expired` first when it was not merged.
+
+### `listGuests({ merged, limit, offset })`
+
+The admin list. `merged` is `'merged'` or `'unmerged'`. Returns `[null, { guests, total, limit, offset, counts: { all, merged, unmerged } }]`.
+
+### `pruneGuests({ now, days })`
+
+Deletes guests unused for longer than `days` (default `system:guest_idle_days`, 60; 0 keeps them forever). Each guest goes in its own transaction, so a refusing handler keeps only that guest. Run daily by the scheduler.
+
+### `planHook(event)` and `triggerPlannedHook(plan, event, data, options)`
+
+`planHook` reads an event's handlers without running them. `triggerPlannedHook` fires them, with the same contract as `triggerHook`. Use them to fire a hook inside a transaction: read the plan before the transaction opens.
+
+### `GUEST_COOKIE`
+
+The cookie's name, `kempo_guest`.
+
 ## Dashboard
 
 Widgets on the admin dashboard. See [Admin Dashboard](../dashboard.md) for sizes, the declarative `widgets` form in `kempo-config.json` and how to write the element. All return `[error, result]`. Needs the `dashboardWidget` table (`npx drizzle-kit push` on an existing site); without it `listDashboardWidgets` still returns Kempo's own widgets.

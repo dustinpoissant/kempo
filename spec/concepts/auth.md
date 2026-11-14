@@ -18,6 +18,7 @@ Auth is the foundational system that all access control builds on. A user regist
 - **Separate verification tokens**: Email verification and password reset share the `verificationToken` table, distinguished by a `type` field.
 - **Configurable session duration**: The `system:session_duration_days` setting controls session lifetime (default: 7 days).
 - **Registration can be disabled**: The `system:allow_registration` setting controls whether new accounts can be created.
+- **Guests are sessions, not accounts**: a visitor who has not logged in gets a `kempo_guest` cookie and a `guestSession` row. A guest never passes a login or permission check, and its records move to the account at login or registration. See [guests](../resources/guests.md).
 - **Email verification is optional**: The `system:require_email_verification` setting controls whether email verification is enforced.
 
 ## Implementation

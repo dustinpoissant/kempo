@@ -449,6 +449,12 @@ export const dismissNotification = async (id) =>
 export const listRealtimeConnections = async () =>
   get(`${API_BASE}/realtime/connections`);
 
+export const listGuests = async ({ merged, limit, offset } = {}) =>
+  get(`${API_BASE}/admin/guests`, { merged, limit, offset });
+
+export const deleteGuest = async (token) =>
+  del(`${API_BASE}/admin/guests/${encodeURIComponent(token)}`);
+
 export const installExtension = async (name, { withDependencies = false } = {}) =>
   post(`${API_BASE}/extensions`, { name, withDependencies });
 

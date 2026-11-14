@@ -17,3 +17,6 @@ dist/admin/kempo-global.global.html
 
 # Scratch dirs created by the http-contract suite
 tests/.tmp-*
+
+# Plans for future work: kept on disk for planning, never committed
+*.plan.md

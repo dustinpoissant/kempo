@@ -84,6 +84,8 @@ console.log(settings['system:site_name']); // "My Site"
 |---|---|---|---|---|
 | `system:site_name` | "Kempo Site" | string | Yes | Site display name |
 | `system:session_duration_days` | 7 | number | No | Session token lifetime in days |
+| `system:guest_session_days` | 30 | number | No | Days a visitor who has not logged in keeps their guest cookie after the last visit (0 is a cookie that ends with the browser session) |
+| `system:guest_idle_days` | 60 | number | No | Days an unused guest session is kept before it is deleted (0 keeps guests forever) |
 | `system:allow_registration` | true | boolean | Yes | Allow new user registrations |
 | `system:require_email_verification` | false | boolean | No | Require verified email to log in |
 | `system:email_max_retries` | 1 | number | No | How many times a failed email is tried again after the first try (0 never retries) |

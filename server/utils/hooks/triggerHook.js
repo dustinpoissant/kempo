@@ -16,6 +16,18 @@ const generation = () => globalThis.kempoDevGeneration ?? 0;
 
 export const clearHandlerCache = () => handlerCache.clear();
 
+/*
+  Reads which handlers an event has and which extensions are disabled, without running anything. Read it before
+  opening a database transaction and fire it with `triggerPlannedHook` inside: the in-process test database
+  runs one transaction at a time, so a hook that reads the database from inside one would wait for itself.
+*/
+export const planHook = async event => ({
+  hooks: await db.select().from(hook)
+    .where(eq(hook.event, event))
+    .orderBy(asc(hook.createdAt), asc(hook.id)),
+  disabled: await getDisabledExtensionNames(),
+});
+
 const resolveHandler = (owner, callback) => {
   if(callback.startsWith('./') || callback.startsWith('../')){
     return join(process.cwd(), 'node_modules', owner, callback);
@@ -48,17 +60,14 @@ const resolveHandler = (owner, callback) => {
   sequence, so a handler doing slow work holds up whatever triggered the event. Such a handler
   should start its work and return rather than awaiting it here.
 */
-export default async (event, data = {}, { bail = false, stopWhen = null } = {}) => {
+const fire = async (event, data, { bail, stopWhen }, planned) => {
   if(!event){
     return [{ code: 400, msg: 'Event is required' }, null];
   }
 
   try {
-    const hooks = await db.select().from(hook)
-      .where(eq(hook.event, event))
-      .orderBy(asc(hook.createdAt), asc(hook.id));
+    const { hooks, disabled } = planned ?? await planHook(event);
     const results = [];
-    const disabled = await getDisabledExtensionNames();
 
     for(const h of hooks){
       /*
@@ -107,3 +116,8 @@ export default async (event, data = {}, { bail = false, stopWhen = null } = {}) 
     return [{ code: 500, msg: 'Failed to trigger hooks' }, null];
   }
 };
+
+export default (event, data = {}, { bail = false, stopWhen = null } = {}) => fire(event, data, { bail, stopWhen }, null);
+
+/* Fires an event whose handlers were read earlier with `planHook`. Same contract as the default export. */
+export const triggerPlannedHook = (plan, event, data = {}, { bail = false, stopWhen = null } = {}) => fire(event, data, { bail, stopWhen }, plan);

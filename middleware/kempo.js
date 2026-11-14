@@ -28,6 +28,10 @@ import registerJobs from '../server/utils/scheduler/registerJobs.js';
 import '../server/utils/updates/runtime.js';
 import { resolveAlias } from '../server/utils/extensions/aliases.js';
 import { normalizeScopes } from '../server/utils/extensions/scopes.js';
+import getGuest from '../server/utils/guests/getGuest.js';
+import createGuest from '../server/utils/guests/createGuest.js';
+import guestCookieOptions from '../server/utils/guests/cookieOptions.js';
+import { GUEST_COOKIE } from '../server/utils/guests/constants.js';
 
 const MIME_TYPES = {
   '.js': 'application/javascript',
@@ -290,6 +294,7 @@ export default config => {
         ['jobs', () => registerJobs({ owner: 'kempo', jobs: [
           { name: 'email-maintenance', every: '1m', callback: './server/utils/email/maintainEmails.js' },
           { name: 'session-cleanup', every: '1h', callback: './server/utils/sessions/pruneExpiredSessions.js' },
+          { name: 'guest-cleanup', every: '1d', callback: './server/utils/guests/pruneGuests.js' },
           { name: 'update-check', every: '12h', callback: './server/utils/updates/runUpdateCheck.js' },
         ] })],
       ]){
@@ -312,6 +317,38 @@ export default config => {
     await systemSettingsReady;
     const { path } = request;
     const url = request.url.split('?')[0];
+
+    /*
+      Guest sessions: a visitor who has not logged in is tracked by a cookie, and this sets `request.guest = { token }`
+      for the routes that accept guests. A guest is never a login: `request.user`-style checks do not see it. A guest is
+      started only by a page request (a GET that asks for HTML, not a file or an API call), so a script or crawler that
+      keeps no cookies does not leave a row behind on every request. A visitor who has a login session does not get one.
+    */
+    if(!/\.(?!html?$)[a-z0-9]+$/i.test(url)){
+      const guestToken = request.cookies?.[GUEST_COOKIE];
+      const [, found] = guestToken ? await getGuest({ token: guestToken }) : [];
+      if(found){
+        request.guest = { token: guestToken };
+      }
+
+      const isPage = request.method === 'GET' && String(request.headers?.accept ?? '').includes('text/html');
+      if(isPage && !found){
+        const [, loggedIn] = request.cookies?.session_token ? await getSession({ token: request.cookies.session_token }) : [];
+        const [, created] = loggedIn?.user ? [] : await createGuest();
+        if(created){
+          request.guest = { token: created.token };
+        }
+      }
+
+      if(request.guest && (!found || found.touched)){
+        const [, options] = await guestCookieOptions();
+        if(options){
+          response.cookie(GUEST_COOKIE, request.guest.token, options);
+          /* A response that carries someone's guest cookie must never be kept by a shared cache and handed to the next visitor. */
+          response.setHeader('Cache-Control', 'private, no-store');
+        }
+      }
+    }
 
     /*
       Locally hosted lexical for the admin's WYSIWYG.

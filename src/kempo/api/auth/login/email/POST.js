@@ -1,4 +1,6 @@
 import loginEmail from '../../../../../../server/utils/auth/loginEmail.js';
+import mergeGuestIntoLogin from '../../../../../../server/utils/guests/mergeGuestIntoLogin.js';
+import { GUEST_COOKIE } from '../../../../../../server/utils/guests/constants.js';
 
 export default async (request, response) => {
   try {
@@ -8,6 +10,15 @@ export default async (request, response) => {
     
     if(error){
       return response.status(error.code).json({ error: error.msg });
+    }
+
+    const guestToken = request.cookies?.[GUEST_COOKIE];
+    const [mergeError] = await mergeGuestIntoLogin({ guestSessionId: guestToken, userId: result.user.id, sessionToken: result.sessionToken });
+    if(mergeError){
+      return response.status(mergeError.code).json({ error: mergeError.msg });
+    }
+    if(guestToken){
+      response.clearCookie(GUEST_COOKIE, { path: '/' });
     }
 
     response.cookie('session_token', result.sessionToken, {

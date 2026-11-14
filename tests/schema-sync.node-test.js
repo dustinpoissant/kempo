@@ -95,6 +95,7 @@ const buildTests = () => ({
     try {
       await run([
         'ALTER TABLE "dashboardWidget" DROP COLUMN "iconSrc"',
+        'DROP TABLE "notificationGuestRecipient"',
         'DROP TABLE "notificationRecipient"',
         'DROP TABLE "notification"',
         'CREATE TABLE ext_table (id text primary key, owner text)',
@@ -104,7 +105,7 @@ const buildTests = () => ({
 
       const [error, result] = await syncCoreSchema();
       expect(!error, `the sync failed: ${JSON.stringify(error)}`);
-      for(const wanted of ['Created table notification', 'Created table notificationRecipient', 'Added column dashboardWidget.iconSrc']){
+      for(const wanted of ['Created table notification', 'Created table notificationRecipient', 'Created table notificationGuestRecipient', 'Added column dashboardWidget.iconSrc']){
         expect(result.applied.includes(wanted), `missing "${wanted}" in ${JSON.stringify(result.applied)}`);
       }
       expect(result.applied.some(line => /^Created index notification_updatedAt_idx/.test(line)), 'a new table comes with its indexes');

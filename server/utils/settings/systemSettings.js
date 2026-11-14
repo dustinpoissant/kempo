@@ -17,6 +17,8 @@ export const SYSTEM_SETTINGS = [
   { owner: 'system', name: 'verification_url', value: defaultTokenUrl('verify-email'), type: 'string', isPublic: false, description: 'Email verification URL template' },
   { owner: 'system', name: 'session_cleanup_hours', value: 24, type: 'number', isPublic: false, description: 'Hours after a session expires before it is deleted automatically (0 keeps expired sessions)' },
   { owner: 'system', name: 'notification_retention_days', value: 90, type: 'number', isPublic: false, description: 'Days to keep notifications before they are deleted (0 keeps them forever)' },
+  { owner: 'system', name: 'guest_session_days', value: 30, type: 'number', isPublic: false, description: 'Days a visitor who has not logged in keeps their guest session after their last visit (0 keeps the cookie for the browser session only)' },
+  { owner: 'system', name: 'guest_idle_days', value: 60, type: 'number', isPublic: false, description: 'Days a guest session can sit unused before it is deleted automatically (0 keeps guests forever)' },
   { owner: 'system', name: 'password_reset_url', value: defaultTokenUrl('reset-password'), type: 'string', isPublic: false, description: 'Password reset URL template' },
   { owner: 'system', name: 'email_max_retries', value: 1, type: 'number', isPublic: false, description: 'How many times kempo tries again to send an email that could not be sent, after the first try (0 never retries)' },
   { owner: 'system', name: 'email_retention_days', value: 30, type: 'number', isPublic: false, description: 'Days to keep the log of sent emails before it is deleted (0 keeps it forever)' },

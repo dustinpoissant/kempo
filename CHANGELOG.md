@@ -4,7 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [4.14.0] - 2026-11-13
+
+### Changed
+
+- The `kempo-server` peer dependency is now `>=3.6.1`, which fixes `clearCookie` so a cookie is actually expired (the guest cookie is cleared at login and registration).
+
+### Added
+
+- **Guest sessions**: a visitor who has not logged in is a guest, tracked by an `httpOnly` `kempo_guest` cookie that their first page request starts (a GET that asks for HTML; not a file, an API call, or someone already logged in). A guest is a session in the new `guestSession` table, never a user: it satisfies no login or permission check. `request.guest` is `{ token }` for routes that accept guests. When a guest logs in or registers, everything it owns moves to the account in one transaction, the guest cookie is cleared, and the `guest:merged` hook (`{ tx, guestSessionId, userId }`) lets an extension move what it keeps; a handler that throws undoes the merge and refuses the login. `guest:expired` (`{ tx, guestSessionId }`) fires before an unmerged guest is deleted. Notifications sent to a guest are rows in the new `notificationGuestRecipient` table and move to the user at login. Guests unused for `system:guest_idle_days` (default 60) are deleted by a daily job; `system:guest_session_days` (default 30) is the cookie's life. New permissions `system:guests:view` and `system:guests:manage`, an admin **Guests** page under Accounts, `GET /kempo/api/guest`, `GET /kempo/api/admin/guests` and `DELETE /kempo/api/admin/guests/:token`. SDK: `createGuest`, `getGuest`, `mergeGuest`, `mergeGuestIntoLogin`, `deleteGuest`, `listGuests`, `pruneGuests`, `GUEST_COOKIE`. The response that sets or renews the cookie is `Cache-Control: private, no-store`. See [docs/guests.md](docs/guests.md). Existing sites get the tables, settings and permissions when the server starts.
+- `guest:merged:committed` (`{ guestSessionId, userId, results }`) fires after a guest merge commits, with what each `guest:merged` handler returned. A rolled-back merge never fires it.
+- `planHook` and `triggerPlannedHook` in the SDK: read an event's handlers before opening a transaction and fire it inside, which the in-process test database needs.
 
 ## [4.13.0] - 2026-11-12
 

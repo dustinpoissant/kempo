@@ -193,6 +193,8 @@ Kempo provides these tables out of the box:
 | `realtimeChannel` | How far each realtime channel has been pruned, to tell a client it missed messages |
 | `notification` | Notifications raised by core or extensions: title, message, level, actions, dedupe key |
 | `notificationRecipient` | One row per person a notification was sent to, with their own read, handled and dismissed state |
+| `guestSession` | A visitor who has not logged in, tracked by a cookie, and where it went when they logged in |
+| `notificationGuestRecipient` | The same as `notificationRecipient`, for a guest |
 | `dashboardWidget` | Widgets extensions add to the admin dashboard: element, module script, size limits, permission |
 | `scheduledJob` | Recurring jobs extensions declare with `jobs`: interval, next run, and the lease that stops two processes running one |
 
@@ -372,6 +374,8 @@ The `init-db.js` script seeds these permissions:
 | `system:settings:update` | Update settings |
 | `system:custom-settings:manage` | Create and delete custom settings |
 | `system:realtime:read` | View realtime connections and channels |
+| `system:guests:view` | View guest sessions: visitors who have not logged in |
+| `system:guests:manage` | Delete guest sessions |
 
 Two default groups are created:
 
@@ -384,6 +388,8 @@ Two default groups are created:
 |---|---|---|---|---|
 | `site_name` | `Kempo Site` | string | yes | The name of the website |
 | `session_duration_days` | `7` | number | no | Session duration in days |
+| `guest_session_days` | `30` | number | no | Days a guest's cookie lasts after the last visit |
+| `guest_idle_days` | `60` | number | no | Days an unused guest is kept before it is deleted (0 keeps them) |
 | `allow_registration` | `true` | boolean | yes | Allow new users to register |
 | `require_email_verification` | `false` | boolean | no | Require email verification before account access |
 | `verification_url` | `http://localhost:<PORT>/verify-email/{{token}}` | string | no | Email verification URL template |
@@ -398,6 +404,10 @@ Extensions can push live updates to browsers: declare a channel, publish to it f
 ## Admin Dashboard
 
 The admin home page is a grid of widgets one to four blocks wide and one to three tall. Kempo provides widgets for pages, content, users, notifications and extensions; extensions add their own with `admin_dashboard_widgets` (or its older name, `widgets`) in `kempo-config.json` or `registerDashboardWidget`. Each person chooses which are shown, their order and size, kept in their browser's localStorage, and a widget only loads its script and data once it is shown. Existing sites get the `dashboardWidget` table when the server starts. See [docs/dashboard.md](docs/dashboard.md).
+
+## Guest sessions
+
+A visitor who has not logged in is a guest: a session tracked by a `kempo_guest` cookie, started by their first page request. A guest is never logged in and passes no login or permission check, but what they own (a notification, and whatever an extension attaches) moves to their account when they log in or register, in one transaction. Extensions move their own records by handling the `guest:merged` hook and clean up with `guest:expired`. Guests unused for `system:guest_idle_days` (default 60) are deleted daily, and the admin has a Guests page under Accounts. Existing sites get the tables, settings and permissions when the server starts. See [docs/guests.md](docs/guests.md).
 
 ## Notifications
 

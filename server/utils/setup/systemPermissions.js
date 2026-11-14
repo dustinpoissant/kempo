@@ -55,6 +55,9 @@ export const SYSTEM_PERMISSIONS = [
   { name: 'system:emails:read', description: 'View the log of emails, including what they said' },
   { name: 'system:emails:manage', description: 'Send a test email and try failed emails again' },
 
+  { name: 'system:guests:view', description: 'View guest sessions: visitors who have not logged in' },
+  { name: 'system:guests:manage', description: 'Delete guest sessions' },
+
   { name: 'system:updates:manage', description: 'See, check for and install kempo updates, which restarts the server' },
 
   { name: 'system:admin:access', description: 'Access admin panel' },

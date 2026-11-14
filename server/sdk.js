@@ -47,6 +47,19 @@ export { default as getSessions } from './utils/sessions/getSessions.js';
 export { default as getUserSessions } from './utils/sessions/getUserSessions.js';
 
 /*
+  Guest sessions
+*/
+
+export { default as createGuest } from './utils/guests/createGuest.js';
+export { default as getGuest } from './utils/guests/getGuest.js';
+export { default as mergeGuest } from './utils/guests/mergeGuest.js';
+export { default as mergeGuestIntoLogin } from './utils/guests/mergeGuestIntoLogin.js';
+export { default as deleteGuest } from './utils/guests/deleteGuest.js';
+export { default as listGuests } from './utils/guests/listGuests.js';
+export { default as pruneGuests } from './utils/guests/pruneGuests.js';
+export { GUEST_COOKIE } from './utils/guests/constants.js';
+
+/*
   Groups
 */
 
@@ -207,7 +220,7 @@ export { default as createHook } from './utils/hooks/createHook.js';
 export { default as deleteHook } from './utils/hooks/deleteHook.js';
 export { default as getHook } from './utils/hooks/getHook.js';
 export { default as listHooks } from './utils/hooks/listHooks.js';
-export { default as triggerHook, clearHandlerCache } from './utils/hooks/triggerHook.js';
+export { default as triggerHook, clearHandlerCache, planHook, triggerPlannedHook } from './utils/hooks/triggerHook.js';
 export { default as updateHook } from './utils/hooks/updateHook.js';
 
 /*

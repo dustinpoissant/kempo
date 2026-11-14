@@ -1,0 +1,2 @@
+import s from"../../../../server/utils/guests/getGuest.js";import{GUEST_COOKIE as t}from"../../../../server/utils/guests/constants.js";export default async(e,r)=>{const o=e.cookies?.[t];if(!o)return r.status(204).send("");const[n,u]=await s({token:o});return 404===n?.code?r.status(204).send(""):n?r.status(n.code).json({error:n.msg}):void r.json({createdAt:u.guest.createdAt})};
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\guest\GET.js.map

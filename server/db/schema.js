@@ -277,6 +277,44 @@ export const notificationRecipient = pgTable('notificationRecipient', {
 ]);
 
 /*
+  Guest Sessions
+
+  A guest is a visitor who has not logged in, tracked by a cookie. It is a session, never a user: it does not
+  satisfy a login or permission check. Records that belong to a guest point at `token` and move to the real
+  account when the visitor logs in or registers (`mergeGuest`), after which `mergedIntoUserId` records where.
+*/
+export const guestSession = pgTable('guestSession', {
+  token: text('token').primaryKey(),
+  createdAt: timestamp('createdAt').notNull(),
+  lastSeenAt: timestamp('lastSeenAt').notNull(),
+  mergedIntoUserId: text('mergedIntoUserId')
+    .references(() => user.id, { onDelete: 'set null' }),
+  mergedAt: timestamp('mergedAt'),
+}, table => [
+  index('guestSession_lastSeenAt_idx').on(table.lastSeenAt),
+  index('guestSession_mergedIntoUserId_idx').on(table.mergedIntoUserId),
+]);
+
+/*
+  What a guest has been sent. The same state as `notificationRecipient`, held by a guest session instead of a
+  user, and moved into `notificationRecipient` when the guest logs in.
+*/
+export const notificationGuestRecipient = pgTable('notificationGuestRecipient', {
+  notificationId: text('notificationId')
+    .notNull()
+    .references(() => notification.id, { onDelete: 'cascade' }),
+  guestSessionId: text('guestSessionId')
+    .notNull()
+    .references(() => guestSession.token, { onDelete: 'cascade' }),
+  readAt: timestamp('readAt'),
+  handledAt: timestamp('handledAt'),
+  dismissedAt: timestamp('dismissedAt'),
+}, table => [
+  primaryKey({ columns: [table.notificationId, table.guestSessionId] }),
+  index('notificationGuestRecipient_guestSessionId_idx').on(table.guestSessionId),
+]);
+
+/*
   Dashboard Widget System
 
   A tile an extension adds to the admin dashboard. `id` is `owner:key`, which is also what the browser
