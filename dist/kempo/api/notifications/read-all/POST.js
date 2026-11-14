@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/notifications/resolveRecipient.js";import e from"../../../../../server/utils/notifications/markAllViewed.js";import{GUEST_COOKIE as o}from"../../../../../server/utils/guests/constants.js";export default async(t,r)=>{const[i,n]=await s({sessionToken:t.cookies?.session_token,guestToken:t.cookies?.[o]});if(i)return r.status(i.code).json({error:500===i.code?i.msg:"Authentication required"});const[a,c]=await e({...n,type:t.body?.type});if(a)return r.status(a.code).json({error:a.msg});r.json(c)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\notifications\read-all\POST.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\notifications\read-all\POST.js.map

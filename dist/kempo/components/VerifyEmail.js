@@ -5,4 +5,4 @@ import e from"/kempo-ui/components/LightComponent.js";import{html as i}from"/kem
           <p class="mt"><a href=${this.loginHref} class="btn">Go to Login</a></p>
         </div>
       `:i`<div class="ta-center"><h2>Verifying Your Email...</h2><p>Please wait while we verify your email address.</p></div>`}}customElements.define("k-verify-email",s);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\VerifyEmail.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\VerifyEmail.js.map

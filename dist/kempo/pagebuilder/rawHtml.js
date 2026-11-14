@@ -1,2 +1,2 @@
 export default{display:"",hideStyles:["box","background","textColour","align","id","classes"],render:(t,d,e)=>d.editor?d.standard(t,e):String(t.attrs?.html??"")};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\pagebuilder\rawHtml.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\pagebuilder\rawHtml.js.map

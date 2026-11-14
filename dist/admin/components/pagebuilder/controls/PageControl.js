@@ -3,4 +3,4 @@ import t from"/kempo-ui/components/controls/ButtonControl.js";import{html as e,c
         color: var(--tc_danger);
       }
     `]}customElements.define("admin-pb-control",o);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\pagebuilder\controls\PageControl.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\pagebuilder\controls\PageControl.js.map

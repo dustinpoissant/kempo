@@ -44,4 +44,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,css as a
         ${this.renderPageSettings()}
       </k-page-builder>
     `}}customElements.define("admin-page-builder",f);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\pagebuilder\PageBuilderEditor.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\pagebuilder\PageBuilderEditor.js.map

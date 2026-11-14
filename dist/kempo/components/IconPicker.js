@@ -42,4 +42,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,css as s
         <span class="current">${this.value?t`<k-icon src=${this.value}></k-icon>`:i}${this.currentLabel()}</span>
       </button>
     `}}customElements.define("k-icon-picker",l);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\IconPicker.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\IconPicker.js.map

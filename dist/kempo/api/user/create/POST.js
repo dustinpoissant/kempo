@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../../server/utils/users/createUser.js";export default async(r,t)=>{try{const o=r.cookies.session_token,{name:i,email:a,password:n,emailVerified:m}=r.body,[u,c]=await s(o,"system:user:create");if(u)return t.status(u.code).json({error:u.msg});if(!c)return t.status(403).json({error:"Insufficient permissions"});const[f,d]=await e({name:i,email:a,password:n,emailVerified:m});if(f)return t.status(f.code).json({error:f.msg});t.json(d)}catch(s){t.status(500).json({error:s.message})}};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\user\create\POST.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\user\create\POST.js.map

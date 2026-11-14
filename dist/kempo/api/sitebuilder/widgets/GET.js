@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import{loadExtensionWidgets as r}from"../../../../../server/utils/sitebuilder/registry.js";export default async(e,i)=>{const t=e.cookies.session_token,[o,n]=await s(t,"system:pages:read");return o?i.status(o.code).json({error:o.msg}):n?void i.json({widgets:await r()}):i.status(403).json({error:"Insufficient permissions"})};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\sitebuilder\widgets\GET.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\sitebuilder\widgets\GET.js.map

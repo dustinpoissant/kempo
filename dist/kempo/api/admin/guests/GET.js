@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../../server/utils/guests/listGuests.js";export default async(r,t)=>{const[i,o]=await s(r.cookies.session_token,"system:guests:view");if(i)return t.status(i.code).json({error:i.msg});if(!o)return t.status(403).json({error:"Insufficient permissions"});const{merged:n,limit:u,offset:m}=r.query,[f,a]=await e({merged:n,limit:u,offset:m});if(f)return t.status(f.code).json({error:f.msg});t.json(a)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\admin\guests\GET.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\admin\guests\GET.js.map

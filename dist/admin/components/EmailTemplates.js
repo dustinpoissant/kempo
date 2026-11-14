@@ -4,4 +4,4 @@ import e from"/kempo-ui/components/ShadowComponent.js";import{html as t,nothing 
         <admin-edit-email-template slot="after"></admin-edit-email-template>
       </k-table>
     `:t`<p class="tc-muted">There are no email templates here.</p>`:t`<k-spinner></k-spinner>`}}customElements.define("k-email-templates",r);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\EmailTemplates.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\EmailTemplates.js.map

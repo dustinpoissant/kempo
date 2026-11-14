@@ -15,4 +15,4 @@ import t from"/kempo-ui/components/LightComponent.js";import{html as e}from"/kem
       </div>
       <k-notification-list show-status paginated .type=${this.type} .status=${this.status} .pageSize=${this.pageSize}></k-notification-list>
     `}}customElements.define("k-notification-history",a);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\NotificationHistory.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\NotificationHistory.js.map

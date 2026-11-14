@@ -1,2 +1,2 @@
 import e from"/kempo-ui/components/LightComponent.js";import{getSession as t}from"../sdk.js";export default class o extends e{connectedCallback(){super.connectedCallback(),this.loadCreatedAt()}async loadCreatedAt(){const[e,o]=await t();if(e)return console.error("Failed to load user created date:",e.msg),void(this.textContent="");const n=new Date(o?.user?.createdAt);this.textContent=n.toLocaleDateString()}renderLightDom(){return"Loading..."}}customElements.define("k-user-created-at",o);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\UserCreatedAt.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\UserCreatedAt.js.map

@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/notifications/resolveRecipient.js";import o from"../../../../../server/utils/notifications/deleteNotification.js";import{GUEST_COOKIE as t}from"../../../../../server/utils/guests/constants.js";export default async(e,i)=>{const[r,n]=await s({sessionToken:e.cookies?.session_token,guestToken:e.cookies?.[t]});if(r)return i.status(r.code).json({error:500===r.code?r.msg:"Authentication required"});const[a,c]=await o({...n,notificationId:e.params.id});if(a)return i.status(a.code).json({error:a.msg});i.json(c)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\notifications\[id]\DELETE.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\notifications\[id]\DELETE.js.map

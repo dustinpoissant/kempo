@@ -1,2 +1,2 @@
 import e from"../../../../../server/utils/notifications/resolveRecipient.js";import s from"../../../../../server/utils/notifications/getUnreadCount.js";import{GUEST_COOKIE as t}from"../../../../../server/utils/guests/constants.js";export default async(o,r)=>{const[i,n]=await e({sessionToken:o.cookies?.session_token,guestToken:o.cookies?.[t]});if(i)return r.status(i.code).json({error:500===i.code?i.msg:"Authentication required"});r.setHeader("Cache-Control","private, no-store");const[a,c]=await s({...n,type:o.query.type});if(a)return r.status(a.code).json({error:a.msg});r.json(c)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\notifications\count\GET.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\notifications\count\GET.js.map

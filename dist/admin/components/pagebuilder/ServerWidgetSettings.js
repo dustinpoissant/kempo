@@ -21,4 +21,4 @@ import e from"/kempo-ui/components/pagebuilder/WidgetSettings.js";import{html as
       ${i(this,"as","Item name","What each item is called inside, as {{name}}.")}
       ${l()}
     `}}customElements.define("admin-pagebuilder-fragment-settings",FragmentSettings),customElements.define("admin-pagebuilder-conditional-settings",ConditionalSettings),customElements.define("admin-pagebuilder-repeat-settings",RepeatSettings);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\pagebuilder\ServerWidgetSettings.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\pagebuilder\ServerWidgetSettings.js.map

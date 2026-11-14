@@ -1,2 +1,2 @@
 import s from"../../../../../../server/utils/permissions/currentUserHasPermission.js";import e from"../../../../../../server/utils/extensions/checkExtensionUpdate.js";export default async(r,n)=>{const t=r.cookies.session_token,[o,i]=await s(t,"system:extensions:manage");if(o)return n.status(o.code).json({error:o.msg});if(!i)return n.status(403).json({error:"Insufficient permissions"});const a=r.params.name,[m,u]=await e({name:a});if(m)return n.status(m.code).json({error:m.msg});n.json(u)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\extensions\[name]\update-check\GET.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\[name]\update-check\GET.js.map

@@ -16,4 +16,4 @@ import e from"/kempo-ui/components/LightComponent.js";import{html as s}from"/kem
       </form>
       <p class="mt"><a href="/login">Back to Login</a></p>
     `}}customElements.define("k-reset-password",i);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\ResetPassword.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\ResetPassword.js.map

@@ -14,4 +14,4 @@ import e from"/kempo-ui/components/LightComponent.js";import{html as t}from"/kem
       </form>
       <p class="mt">Remember your password? <a href=${this.loginHref}>Login</a></p>
     `}}customElements.define("k-forgot-password",o);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\ForgotPassword.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\ForgotPassword.js.map

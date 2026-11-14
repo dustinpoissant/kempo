@@ -9,4 +9,4 @@ import t from"/kempo-ui/components/LightComponent.js";import{html as i,nothing a
         <button class="no-btn" title="Dismiss" aria-label="Dismiss" @click=${()=>this.dismiss(t)}><k-icon name="close"></k-icon></button>
       </div>
     `};renderLightDom(){return i`${this.items.map(this.renderItem)}`}}customElements.define("k-notification-inline",o);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\NotificationInline.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\NotificationInline.js.map

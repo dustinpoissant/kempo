@@ -24,4 +24,4 @@ import e from"/kempo-ui/components/LightComponent.js";import{html as t}from"/kem
         </div>
       `:""}
     `}}customElements.define("k-delete-account",o);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\DeleteAccount.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\DeleteAccount.js.map

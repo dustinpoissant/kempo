@@ -1,2 +1,2 @@
 import s from"../../../../../server/utils/permissions/currentUserHasPermission.js";import{getSuggestedPeers as e}from"../../../../../server/utils/extensions/suggestedPeers.js";export default async(r,t)=>{const n=r.cookies.session_token,[i,o]=await s(n,"system:extensions:install"),[a,m]=o?[i,!0]:await s(n,"system:extensions:manage");if(a)return t.status(a.code).json({error:a.msg});if(!m)return t.status(403).json({error:"Insufficient permissions"});const[u,c]=await e({names:String(r.query.names||"").split(",").map(s=>s.trim())});if(u)return t.status(u.code).json({error:u.msg});t.json(c)};
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\api\extensions\suggested\GET.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\api\extensions\suggested\GET.js.map

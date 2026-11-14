@@ -24,4 +24,4 @@ import s from"/kempo-ui/components/LightComponent.js";import{html as e}from"/kem
       <button type="button" class=${this.buttonClass} @click=${this.open}>${this.label}</button>
       ${this.renderDialog()}
     `}});
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\ChangePassword.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\kempo\components\ChangePassword.js.map

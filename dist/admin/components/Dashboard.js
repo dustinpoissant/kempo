@@ -64,4 +64,4 @@ import t from"/kempo-ui/components/LightComponent.js";import{html as e,nothing a
       </div>
       ${this.renderCustomizeDialog()}
     `}}customElements.define("k-dashboard",p);
-//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\Dashboard.js.map
+//# sourceMappingURL=C:\Users\dusti\dev\kempo\dist\admin\components\Dashboard.js.map
