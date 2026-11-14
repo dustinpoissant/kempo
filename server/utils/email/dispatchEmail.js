@@ -4,6 +4,7 @@ import { and, eq, sql } from 'drizzle-orm';
 import triggerHook from '../hooks/triggerHook.js';
 import emailSettings from './emailSettings.js';
 import defaultSender from './defaultSender.js';
+import { emailFailed, emailSent } from './notifyFailure.js';
 
 export const SEND_HOOK = 'email:send';
 
@@ -22,7 +23,8 @@ export const SEND_HOOK = 'email:send';
   `from` is only a placeholder and a sender that knows a better one (the mailbox it signs in with) can use that. `replyTo` is the address
   a reply goes to, or null. A handler sends the email and returns; it never touches the log, which
   kempo keeps. After the chain the email is `sent`, or goes back to `queued` for a retry, or is `failed` when it has no tries left
-  (the first try plus `email_max_retries`). Resolves like sendEmail.
+  (the first try plus `email_max_retries`), and then the people who hold `system:emails:read` are told (see notifyFailure.js).
+  Resolves like sendEmail.
 */
 const finish = async (id, changes) => {
   const [row] = await db.update(email).set({ ...changes, updatedAt: new Date() }).where(eq(email.id, id)).returning();
@@ -42,6 +44,7 @@ export default async id => {
 
   if(sent){
     await finish(id, { status: 'sent', sentAt: new Date(), lastError: null, provider: String(sent.result.provider ?? sent.owner).slice(0, 100), providerRef: sent.result.messageId ? String(sent.result.messageId).slice(0, 200) : null });
+    await emailSent();
     return [null, { id, status: 'sent', provider: sent.result.provider ?? sent.owner }];
   }
 
@@ -53,5 +56,6 @@ export default async id => {
   const { maxRetries } = await emailSettings();
   const final = claimed.attempts >= 1 + maxRetries;
   await finish(id, { status: final ? 'failed' : 'queued', lastError: message.slice(0, 1000) });
+  if(final) await emailFailed({ type: claimed.type, recipient: claimed.recipient, error: message });
   return [{ code: tried.length ? 502 : 503, msg: message, emailId: id }, null];
 };

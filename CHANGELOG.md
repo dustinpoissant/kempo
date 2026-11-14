@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.17.0] - 2026-11-14
+
+### Added
+
+- **The people who can read the email log are told when an email could not be sent.** When an email has no tries left (a password reset or an order confirmation that never arrived), everyone who holds `system:emails:read` gets a banner, an error that must be acknowledged, naming the latest one and the reason and linking to the log. It is raised at most once an hour however many fail, since a broken sender fails them all, and acknowledged when an email goes through again. It is raised by `dispatchEmail`, so it is the same whichever email extension is installed. An email that will be tried again raises nothing. See docs/notifications.md.
+
 ## [4.16.0] - 2026-11-14
 
 ### Added
