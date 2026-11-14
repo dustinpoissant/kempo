@@ -174,3 +174,5 @@ Kempo seeds these permissions on first run:
 | `system:Administrators` | All system permissions |
 | `system:Editors` | Pages, templates, fragments, global content |
 | `system:Members` | Authenticated users with no special access |
+| `system:Restricted` | Permissions in it are taken away from whoever is restricted. See [Guest sessions](guests.md#restricting-a-guest-or-a-user) |
+| `system:Guests` | What every guest (a visitor who has not logged in) may do. No permissions by default. See [Guest sessions](guests.md#permissions-for-guests) |

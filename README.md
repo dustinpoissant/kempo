@@ -377,9 +377,11 @@ The `init-db.js` script seeds these permissions:
 | `system:guests:view` | View guest sessions: visitors who have not logged in |
 | `system:guests:manage` | Delete guest sessions |
 
-Two default groups are created:
+Four default groups are created:
 
 - **system:Users** — Assigned to all users, no permissions by default.
+- **system:Guests** — The permissions every guest (a visitor who has not logged in) has, none by default. Logged-in people are never members of it. A page with `require-permissions` is open to a guest who holds them.
+- **system:Restricted** — The permissions in this group are taken away from the users who are members. A restricted guest (set on the Guests page) has no permissions at all. Neither can register, and the browser is marked with a cookie so it survives logging out. None by default.
 - **system:Administrators** — Full system access (all permissions above).
 
 ## Default Settings

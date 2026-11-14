@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.18.0] - 2026-11-14
+
+Requires a restart once: the `system:Guests` and `system:Restricted` groups and the new `guestSession.restrictedAt` column are added when the server starts.
+
+### Added
+
+- **A `system:Guests` group holds the permissions every guest has.** Guests (visitors who have not logged in) could not be given permissions before, because only groups carry them and a guest is in none. The group starts empty, so nothing changes until a site grants it something; `getGuestPermissions()` and `guestHasPermission(permissionName)` in the SDK read it, for an extension to check on a route after `request.guest`. A new site gets the group when it is set up and an existing one when the server starts. Logged-in people cannot be members (`addUserToGroup` answers `400`), and the admin group page says so. A page with `require-permissions` is now checked against the guest's permissions when the visitor is not logged in, so granting a permission to `system:Guests` opens the pages that ask for it; `require-login: true` still needs a login. See docs/guests.md.
+- **A `system:Restricted` group takes permissions away.** What it holds is removed from whoever is restricted, however they got it: a user is restricted by being added to the group, and a guest on the Guests page or with `restrictGuest`. A restricted guest has no permissions at all, cannot register, is kept when idle, and its browser carries a `kempo_restricted` cookie (it holds the restricted guest's token) so clearing the guest cookie does not undo it. A restricted user is marked the same way on the next page they open, so the restriction survives logging out and clearing cookies, and nobody restricted can register. Lifting the restriction (leaving the group, or Lift restriction) frees the browser.
+- **`request.guest` now reaches routes.** The middleware set it on its own wrapper of the request, and kempo-server builds a route's request from the original one, so a route never saw it. It is handed over now, with `request.restricted`. The Guests page shows who is restricted. Requires a restart once: the new column `guestSession.restrictedAt` and the group are added when the server starts.
+
 ## [4.17.0] - 2026-11-14
 
 ### Added

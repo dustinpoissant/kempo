@@ -301,6 +301,7 @@ export const guestSession = pgTable('guestSession', {
   mergedIntoUserId: text('mergedIntoUserId')
     .references(() => user.id, { onDelete: 'set null' }),
   mergedAt: timestamp('mergedAt'),
+  restrictedAt: timestamp('restrictedAt'),
 }, table => [
   index('guestSession_lastSeenAt_idx').on(table.lastSeenAt),
   index('guestSession_mergedIntoUserId_idx').on(table.mergedIntoUserId),

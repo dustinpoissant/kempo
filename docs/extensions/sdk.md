@@ -366,6 +366,21 @@ import { getUserPermissions } from 'kempo/server/sdk.js';
 const [error, permissions] = await getUserPermissions('user_id');
 ```
 
+### `getGuestPermissions({ restricted })` / `guestHasPermission(permissionName, { restricted })`
+
+The permissions every guest holds: those of the `system:Guests` group (see [Guest sessions](../guests.md#permissions-for-guests)). A guest is a session, not a person, so there is no id to pass; the HTTP layer decides the visitor is a guest (`request.guest`) and then asks. `getGuestPermissions()` returns `[null, ['name', ...]]`; `guestHasPermission(name)` returns `[null, true|false]`, or a `400` when the name is missing. Pass `restricted: request.restricted`: a restricted guest has no permissions at all.
+
+```javascript
+import { guestHasPermission } from 'kempo/server/sdk.js';
+
+if(!userId && request.guest){
+  const [, allowed] = await guestHasPermission('my-ext:thing:use');
+  if(!allowed) return response.status(403).json({ error: 'Not allowed' });
+}
+```
+
+`addUserToGroup` refuses `system:Guests` with a `400`: logged-in people are never members of it.
+
 ### `userHasPermission(userId, permissionName)`
 
 Check if a user has a specific permission.
@@ -1830,6 +1845,10 @@ Moves what a guest owns to a user in one transaction and fires `guest:merged`. R
 ### `mergeGuestIntoLogin({ guestSessionId, userId, sessionToken })`
 
 What the login and registration routes call after the person is verified and signed in. A guest that is missing or already merged is not an error (`{ merged: false }`). A failed merge revokes `sessionToken` and returns `500`, so the login is refused. Use it when you add another way to log in.
+
+### `restrictGuest({ token, restricted })` / `isGuestRestricted({ token })`
+
+Restricts a guest (`restricted` defaults to `true`; `false` lifts it) and returns `[null, { token, restrictedAt }]`, or `404` for an unknown guest. A restricted guest has no permissions at all, cannot register, and is not deleted for being idle. `isGuestRestricted` returns `[null, true|false]` and does not renew the guest. `isRestricted({ guestToken, restrictedToken })` is the same for a visitor, from the guest cookie and the `kempo_restricted` cookie (either one restricted is enough). `markUserRestricted({ userId })` returns the token of the restricted record that stands for a user in the `system:Restricted` group (for the restriction cookie), or `null` for a user who is not in it. See [Guest sessions](../guests.md#restricting-a-guest-or-a-user).
 
 ### `deleteGuest({ token })`
 

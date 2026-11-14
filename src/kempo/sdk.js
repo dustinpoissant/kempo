@@ -467,6 +467,9 @@ export const listRealtimeConnections = async () =>
 export const listGuests = async ({ merged, limit, offset } = {}) =>
   get(`${API_BASE}/admin/guests`, { merged, limit, offset });
 
+export const restrictGuest = async (token, restricted = true) =>
+  post(`${API_BASE}/admin/guests/${encodeURIComponent(token)}/restrict`, { restricted });
+
 export const deleteGuest = async (token) =>
   del(`${API_BASE}/admin/guests/${encodeURIComponent(token)}`);
 

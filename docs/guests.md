@@ -31,6 +31,28 @@ If a registration needs email verification, nobody is logged in yet, so the gues
 | `system:guests:view` | See the **Guests** page in the admin (Accounts): the list, counts, when each was last seen and which account it went into. |
 | `system:guests:manage` | Delete a guest session. |
 
+## Permissions for guests
+
+A guest holds the permissions of the **`system:Guests`** group, the guest counterpart of `system:Users`. It starts with none, so a site that never touches it behaves as before. Give it permissions in the admin (Accounts, Groups) to let guests do something: an extension asks for the permissions it needs, and a site decides whether visitors who have not logged in get them.
+
+- Every guest has the same permissions: a guest is a session, not a person, so there is nothing to give one guest and not another.
+- A logged-in person is never a member. Adding one is refused, and they get the permissions of `system:Users` and their own groups only. When a guest logs in, they stop being a guest and no longer have the group's permissions.
+- The group is a system group and cannot be deleted. Sites that already exist get it, empty, when the server starts.
+- **Pages.** A page with `require-permissions` is checked against the guest's permissions when the visitor is not logged in: a guest who holds them gets in, one who does not is sent to log in. A page with `require-login: true` always needs a login, whatever the group holds. So granting a permission to `system:Guests` opens the pages that ask for it, and a page that should never be open to guests says `require-login: true` as well.
+- **Routes.** An extension checks it for its own routes: `guestHasPermission(permissionName, { restricted: request.restricted })` or `getGuestPermissions({ restricted })` from the [Server SDK](extensions/sdk.md#permissions), after reading `request.guest` to know the visitor is a guest.
+
+## Restricting a guest or a user
+
+Restriction follows a person as far as it can, so it still works when they log out, clear the guest cookie or try to start over.
+
+- **A restricted user** is a member of the `system:Restricted` group. The permissions in that group are **taken away** from them, whatever else they hold (it starts empty, so put there what you want removed: creating a game, posting a comment). Every permission check (`userHasPermission`, `getUserPermissions`, page access) leaves them out. Administrators are never restricted.
+- **A restricted guest** has **no permissions at all**: not the ones in `system:Guests`, so every page that needs a permission is closed to them, and an extension that checks `guestHasPermission(name, { restricted })` gets `false`. Restrict one on the admin's Guests page (select guests, Restrict selected) or with `restrictGuest({ token })`, and lift it with Lift restriction or `restrictGuest({ token, restricted: false })`. A restricted guest is not deleted for being idle, since it is the record of the restriction.
+- **Nobody restricted can register.** The register route answers `403` while the guest or the browser is restricted.
+- **The browser is marked.** Both kinds get a `kempo_restricted` cookie (a year, `httpOnly`) that outlives the guest cookie. A restricted guest's holds their own token. A restricted user is marked on the next page they open, with a restricted record kept for them (the same one every time, so clearing cookies leaves no pile of them). From then on that browser is a restricted guest even after they log out, or if they clear the guest cookie and become a new guest. The cookie only counts while the record is still restricted, so lifting the restriction (taking the user out of the group, or Lift restriction) frees the browser.
+- **Routes.** `request.guest` and `request.restricted` are set for a route by the middleware. A route outside the request flow can ask `isRestricted({ guestToken, restrictedToken })` with the two cookie values.
+
+This stops the visitor who does not know any better, as a ban cookie does on a game site. It is easy to get around (clear every cookie, use another browser), so it is not a security measure. A browser marked as restricted that logs in to a different, unrestricted account does not restrict that account.
+
 ## Using a guest in your extension
 
 Core does not decide what a guest may do. Each extension decides for its own tables and routes.

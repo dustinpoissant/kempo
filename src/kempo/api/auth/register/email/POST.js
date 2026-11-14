@@ -1,9 +1,15 @@
 import registerEmail from '../../../../../../server/utils/auth/registerEmail.js';
 import mergeGuestIntoLogin from '../../../../../../server/utils/guests/mergeGuestIntoLogin.js';
-import { GUEST_COOKIE } from '../../../../../../server/utils/guests/constants.js';
+import isRestricted from '../../../../../../server/utils/guests/isRestricted.js';
+import { GUEST_COOKIE, RESTRICTED_COOKIE } from '../../../../../../server/utils/guests/constants.js';
 
 export default async (request, response) => {
   try {
+    const [, restricted] = await isRestricted({ guestToken: request.cookies?.[GUEST_COOKIE], restrictedToken: request.cookies?.[RESTRICTED_COOKIE] });
+    if(restricted){
+      return response.status(403).json({ error: 'Registration is not available' });
+    }
+
     const { email, password, name } = request.body;
     
     const [error, result] = await registerEmail({ email, password, name });

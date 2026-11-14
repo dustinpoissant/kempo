@@ -55,9 +55,13 @@ export { default as getGuest } from './utils/guests/getGuest.js';
 export { default as mergeGuest } from './utils/guests/mergeGuest.js';
 export { default as mergeGuestIntoLogin } from './utils/guests/mergeGuestIntoLogin.js';
 export { default as deleteGuest } from './utils/guests/deleteGuest.js';
+export { default as restrictGuest } from './utils/guests/restrictGuest.js';
+export { default as isGuestRestricted } from './utils/guests/isGuestRestricted.js';
+export { default as isRestricted } from './utils/guests/isRestricted.js';
+export { default as markUserRestricted } from './utils/guests/markUserRestricted.js';
 export { default as listGuests } from './utils/guests/listGuests.js';
 export { default as pruneGuests } from './utils/guests/pruneGuests.js';
-export { GUEST_COOKIE } from './utils/guests/constants.js';
+export { GUEST_COOKIE, RESTRICTED_COOKIE } from './utils/guests/constants.js';
 
 /*
   Groups
@@ -82,7 +86,9 @@ export { default as currentUserHasPermission } from './utils/permissions/current
 export { default as currentUserHasSomePermissions } from './utils/permissions/currentUserHasSomePermissions.js';
 export { default as deletePermission } from './utils/permissions/deletePermission.js';
 export { default as getAllPermissions } from './utils/permissions/getAllPermissions.js';
+export { default as getGuestPermissions } from './utils/permissions/getGuestPermissions.js';
 export { default as getPermissionsForGroups } from './utils/permissions/getPermissionsForGroups.js';
+export { default as guestHasPermission } from './utils/permissions/guestHasPermission.js';
 export { default as getUserGroups } from './utils/permissions/getUserGroups.js';
 export { default as getUserPermission } from './utils/permissions/getUserPermission.js';
 export { default as getUserPermissions } from './utils/permissions/getUserPermissions.js';

@@ -3,12 +3,14 @@ import db from '../../db/index.js';
 import { permission, group, groupPermission, setting, createSettingProtectionTrigger, createGroupProtectionTrigger, createPermissionProtectionTrigger } from '../../db/schema.js';
 import { eq, and, sql } from 'drizzle-orm';
 import { SYSTEM_PERMISSIONS } from './systemPermissions.js';
+import { SYSTEM_GROUPS } from './systemGroups.js';
 
 const DEFAULT_GROUPS = {
   'system:Users': {
     description: 'Default group for all users',
     permissions: []
   },
+  ...Object.fromEntries(SYSTEM_GROUPS.map(({ name, description }) => [name, { description, permissions: [] }])),
   'system:Administrators': {
     description: 'Full system access',
     permissions: [

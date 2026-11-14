@@ -1,4 +1,4 @@
-import { and, lt, notInArray } from 'drizzle-orm';
+import { and, isNull, lt, notInArray } from 'drizzle-orm';
 import db from '../../db/index.js';
 import { guestSession } from '../../db/schema.js';
 import getSetting from '../settings/getSetting.js';
@@ -10,8 +10,8 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 const BATCH = 200;
 
 /*
-  Deletes every guest session unused for longer than `system:guest_idle_days` (default 60), merged or not. 0 keeps
-  guests forever. Run daily by the scheduler (middleware/kempo.js registers it).
+  Deletes every guest session unused for longer than `system:guest_idle_days` (default 60), merged or not, except a
+  restricted one, which is the record of the restriction. 0 keeps guests forever. Run daily by the scheduler (middleware/kempo.js registers it).
 
   Each guest goes in its own transaction (see `deleteGuest`), so one an extension's handler refuses to let go of is
   counted in `failed` and left for the next run, and never holds back the others.
@@ -34,7 +34,7 @@ export default async ({ now = new Date(), days } = {}) => {
     let deleted = 0;
 
     for(;;){
-      const idle = lt(guestSession.lastSeenAt, cutoff);
+      const idle = and(lt(guestSession.lastSeenAt, cutoff), isNull(guestSession.restrictedAt));
       const batch = await db.select({ token: guestSession.token }).from(guestSession)
         .where(failed.length ? and(idle, notInArray(guestSession.token, failed)) : idle)
         .limit(BATCH);

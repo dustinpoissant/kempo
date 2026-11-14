@@ -1,13 +1,16 @@
 import getSession from '../auth/getSession.js';
 import getUserGroups from '../permissions/getUserGroups.js';
 import getPermissionsForGroups from '../permissions/getPermissionsForGroups.js';
+import getGuestPermissions from '../permissions/getGuestPermissions.js';
 import evaluatePermissionExpression from '../permissions/evaluatePermissionExpression.js';
 
 /*
   Decides whether a person may see a page, from the page's frontmatter:
 
     require-login: true                       they must be signed in
-    require-permissions: a || (b && c)        they must satisfy the expression (this implies signed in)
+    require-permissions: a || (b && c)        they must satisfy the expression. Someone who is not signed in has the permissions of the
+                                              system:Guests group, so a page is open to guests by granting them there; one who lacks them
+                                              is sent to log in. Add require-login to keep guests out whatever they hold
     permission-denied-redirect: /somewhere    where a signed-in person without the permissions is sent
     login-required-redirect: /somewhere      where a person who is not signed in is sent (the caller's login page when unset)
 
@@ -17,7 +20,7 @@ import evaluatePermissionExpression from '../permissions/evaluatePermissionExpre
   touches the database. An expression that cannot be read is an error, so the caller can refuse the page
   rather than show it.
 */
-export default async ({ token, meta = {} }) => {
+export default async ({ token, meta = {}, guestRestricted = false }) => {
   const expression = meta['require-permissions'];
 
   if(meta['require-login'] !== 'true' && !expression){
@@ -27,7 +30,25 @@ export default async ({ token, meta = {} }) => {
   const [sessionError, sessionData] = token ? await getSession({ token }) : [true, null];
 
   if(sessionError || !sessionData?.user){
-    return [null, { allowed: false, reason: 'login', redirect: meta['login-required-redirect'] || null }];
+    const denied = [null, { allowed: false, reason: 'login', redirect: meta['login-required-redirect'] || null }];
+
+    if(meta['require-login'] === 'true'){
+      return denied;
+    }
+
+    const [guestError, guestPermissions] = await getGuestPermissions({ restricted: guestRestricted });
+
+    if(guestError){
+      return [guestError, null];
+    }
+
+    const [guestExpressionError, guestSatisfied] = evaluatePermissionExpression({ expression, permissions: guestPermissions, isAdmin: false });
+
+    if(guestExpressionError){
+      return [guestExpressionError, null];
+    }
+
+    return guestSatisfied ? [null, { allowed: true }] : denied;
   }
 
   if(!expression){

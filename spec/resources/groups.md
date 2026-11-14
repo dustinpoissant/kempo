@@ -14,7 +14,7 @@ Groups are the middle layer of the access control system: Users → Groups → P
 ### Decisions
 - **Name as primary key**: Group names are unique identifiers (e.g., `system:Administrators`). This makes them human-readable in the DB and avoids extra lookups.
 - **`owner` field**: Distinguishes system groups (`owner = 'system'`) from user-created groups (`owner = 'user'`) and extension-created groups. System groups are protected by a database trigger.
-- **Two default groups**: `system:Users` (all registered users) and `system:Administrators` (full access). These are seeded by `init-db.js`.
+- **Four default groups**: `system:Restricted` (its permissions are removed from restricted users and guests), `system:Users` (all registered users), `system:Guests` (the permissions every guest has; no user is a member) and `system:Administrators` (full access). These are seeded by `init-db.js`; `system:Guests` is added to an existing site when the server starts.
 - **System groups cannot be deleted**: The `prevent_system_group_delete` trigger blocks deletion of groups where `owner = 'system'`.
 
 ## Implementation

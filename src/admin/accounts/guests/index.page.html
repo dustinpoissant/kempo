@@ -18,7 +18,8 @@
 </div>
 <p class="tc-muted">
 	A guest is a visitor who has not logged in, tracked by a cookie. What they do before logging in moves to their account when they log in or register.
-	Guests that go unused are deleted automatically after the number of days in <code>system:guest_idle_days</code> on the Settings page.
+	Guests that go unused are deleted automatically after the number of days in <code>system:guest_idle_days</code> on the Settings page, except a restricted one.
+	A restricted guest has no permissions and cannot register, and its browser stays restricted if it clears the guest cookie.
 </p>
 <p id="summary" class="mb">Loading&hellip;</p>
 <label class="d-b mbq" for="filter">Show</label>
@@ -37,6 +38,8 @@
 	<div slot="top" class="d-f full">
 		<k-permission has="system:guests:manage">
 			<kc-tc-delete-selected></kc-tc-delete-selected>
+			<button id="restrictBtn" class="mb0">Restrict selected</button>
+			<button id="liftBtn" class="mb0">Lift restriction</button>
 		</k-permission>
 	</div>
 	<div class="d-f full">
@@ -59,7 +62,7 @@
 </content>
 <content location="scripts">
 <script type="module">
-	import { listGuests, deleteGuest, getAllCurrentUserPermissions } from '/kempo/sdk.js';
+	import { listGuests, deleteGuest, restrictGuest, getAllCurrentUserPermissions } from '/kempo/sdk.js';
 	import Toast from '/kempo-ui/components/Toast.js';
 	import Dialog from '/kempo-ui/components/Dialog.js';
 	await window.customElements.whenDefined('k-table');
@@ -82,6 +85,7 @@
 		guest: `${guest.token.slice(0, 8)}…`,
 		createdAt: guest.createdAt,
 		lastSeenAt: guest.lastSeenAt,
+		restricted: guest.restrictedAt ? 'Restricted' : '',
 		account: guest.user ? `${guest.user.name} (${guest.user.email})` : guest.mergedAt ? 'Account deleted' : 'Not logged in yet'
 	});
 
@@ -105,6 +109,7 @@
 				{ name: 'guest', label: 'Guest' },
 				{ name: 'createdAt', label: 'First seen', formatter: formatTime },
 				{ name: 'lastSeenAt', label: 'Last seen', formatter: formatTime },
+				{ name: 'restricted', label: 'Restricted' },
 				{ name: 'account', label: 'Account' }
 			]
 		});
@@ -112,6 +117,23 @@
 	};
 
 	$filter.addEventListener('change', load);
+
+	[['restrictBtn', true], ['liftBtn', false]].forEach(([id, restricted]) => document.getElementById(id)?.addEventListener('click', async () => {
+		const records = $table.getSelectedRecords();
+		if(!records.length){
+			Toast.error('Select the guests first');
+			return;
+		}
+		for(const record of records){
+			const [error] = await restrictGuest(record.id, restricted);
+			if(error){
+				Toast.error(error.msg || 'Failed to update');
+				return;
+			}
+		}
+		Toast.success(restricted ? 'Restricted' : 'Restriction lifted');
+		load();
+	}));
 
 	$table.addEventListener('requestDelete', ({ detail: { records, approve, reject } }) => {
 		const count = records.length;

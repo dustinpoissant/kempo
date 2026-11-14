@@ -225,7 +225,10 @@
 
 				const $membersTable = document.getElementById('membersTable');
 
-				if(groupName === 'system:Users'){
+				if(groupName === 'system:Users' || groupName === 'system:Guests'){
+					document.getElementById('usersMembersMsg').textContent = groupName === 'system:Guests'
+						? 'Every visitor who has not logged in (a guest) has the permissions of this group. People who are logged in cannot be members.'
+						: 'All users are automatically members of this group.';
 					document.getElementById('usersMembersMsg').style.display = '';
 					$membersTable.style.display = 'none';
 				} else {

@@ -19,6 +19,7 @@ export default async ({ merged, limit = 25, offset = 0 } = {}) => {
         createdAt: guestSession.createdAt,
         lastSeenAt: guestSession.lastSeenAt,
         mergedAt: guestSession.mergedAt,
+        restrictedAt: guestSession.restrictedAt,
         mergedIntoUserId: guestSession.mergedIntoUserId,
         userName: user.name,
         userEmail: user.email,

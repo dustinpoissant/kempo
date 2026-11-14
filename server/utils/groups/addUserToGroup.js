@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import db from '../../db/index.js';
 import { userGroup } from '../../db/schema.js';
 import { eq, and } from 'drizzle-orm';
+import { GUESTS_GROUP } from '../setup/systemGroups.js';
 
 export default async (userId, groupName) => {
   if(!userId){
@@ -12,6 +13,10 @@ export default async (userId, groupName) => {
     return [{ code: 400, msg: 'Group name is required' }, null];
   }
   
+  if(groupName === GUESTS_GROUP){
+    return [{ code: 400, msg: 'People who are logged in cannot be added to the guests group' }, null];
+  }
+
   try {
     const [existing] = await db
       .select()

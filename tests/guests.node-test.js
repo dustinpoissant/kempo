@@ -17,7 +17,7 @@ const load = async relative => (await import(pathToFileURL(path.join(root, relat
 const db = (await load('server/db/index.js')).default;
 const { user, userGroup, session, hook, notification, notificationRecipient, notificationGuestRecipient, guestSession } = await load('server/db/schema.js');
 const sdk = await load('server/sdk.js');
-const { createUser, deleteUser, addUserToGroup, createHook, createNotification, createGuest, getGuest, mergeGuest, mergeGuestIntoLogin, deleteGuest, listGuests, pruneGuests, getSession, setSetting, GUEST_COOKIE } = sdk;
+const { restrictGuest, removeUserFromGroup, RESTRICTED_COOKIE, createUser, deleteUser, addUserToGroup, createHook, createNotification, createGuest, getGuest, mergeGuest, mergeGuestIntoLogin, deleteGuest, listGuests, pruneGuests, getSession, setSetting, GUEST_COOKIE } = sdk;
 const cookieOptions = (await load('server/utils/guests/cookieOptions.js')).default;
 const currentUserHasPermission = (await load('server/utils/permissions/currentUserHasPermission.js')).default;
 const { SYSTEM_SETTINGS } = await load('server/utils/settings/systemSettings.js');
@@ -380,6 +380,64 @@ const buildTests = () => ({
     expect((await db.select().from(session).where(eq(session.userId, state.ids.bob))).length === before, 'no session was left behind');
     await unregisterHooks();
     globalThis.guestHookMode = 'ok';
+    pass();
+  },
+
+  'a restricted guest is marked in the browser, and clearing the guest cookie does not undo it': async ({ pass }) => {
+    const token = await newGuest();
+    expect(!(await restrictGuest({ token }))[0], 'the guest is restricted');
+
+    const first = await visit({ url: '/', cookies: { [GUEST_COOKIE]: token } });
+    const marker = first.res.cookies.find(cookie => cookie.name === RESTRICTED_COOKIE);
+    expect(first.req.restricted === true && marker?.value === token, 'the visit is restricted and the browser is marked with the guest token');
+    expect(marker.options.httpOnly && marker.options.maxAge > 300 * 24 * 60 * 60, 'with a long-lived httpOnly cookie');
+
+    const again = await visit({ url: '/', cookies: { [GUEST_COOKIE]: token, [RESTRICTED_COOKIE]: token } });
+    expect(again.req.restricted === true && !again.res.cookies.some(cookie => cookie.name === RESTRICTED_COOKIE), 'a marked browser is not sent the cookie again');
+
+    const cleared = await visit({ url: '/', cookies: { [RESTRICTED_COOKIE]: token } });
+    state.tokens.push(cleared.req.guest.token);
+    expect(cleared.req.restricted === true && cleared.req.guest.token !== token, 'a browser that cleared its guest cookie gets a new guest but is still restricted');
+
+    const res = response();
+    await registerRoute(request({ method: 'POST', cookies: { [RESTRICTED_COOKIE]: token }, body: { email: 'guest-register@test.local', password: PASSWORD, name: 'Nope' } }), res);
+    expect(res.statusCode === 403, 'and cannot register');
+    expect(!(await db.select().from(user).where(eq(user.email, 'guest-register@test.local'))).length, 'no account is made');
+
+    const fresh = await visit({ url: '/' });
+    state.tokens.push(fresh.req.guest.token);
+    expect(!fresh.req.restricted, 'a visitor who was never restricted is not');
+
+    await restrictGuest({ token, restricted: false });
+    const lifted = await visit({ url: '/', cookies: { [RESTRICTED_COOKIE]: token } });
+    state.tokens.push(lifted.req.guest.token);
+    expect(!lifted.req.restricted && lifted.res.cookies.some(cookie => cookie.name === RESTRICTED_COOKIE && cookie.options.maxAge === 0), 'lifting the restriction frees the browser and clears the cookie');
+    pass();
+  },
+
+  'a restricted user is marked on a page they open, and stays restricted as a guest after logging out': async ({ pass }) => {
+    const [, signedIn] = await sdk.createSession(state.ids.carol);
+    const before = await visit({ url: '/account', cookies: { session_token: signedIn.sessionToken } });
+    expect(!before.req.restricted && !before.res.cookies.some(cookie => cookie.name === RESTRICTED_COOKIE), 'a user who is not restricted is not marked');
+
+    expect(!(await addUserToGroup(state.ids.carol, 'system:Restricted'))[0], 'the user is restricted');
+    const marked = await visit({ url: '/account', cookies: { session_token: signedIn.sessionToken } });
+    const marker = marked.res.cookies.find(cookie => cookie.name === RESTRICTED_COOKIE);
+    expect(marked.req.restricted === true && marker?.value, 'their next page marks the browser');
+    state.tokens.push(marker.value);
+
+    const loggedOut = await visit({ url: '/', cookies: { [RESTRICTED_COOKIE]: marker.value } });
+    state.tokens.push(loggedOut.req.guest.token);
+    expect(loggedOut.req.restricted === true, 'after logging out they are a restricted guest');
+
+    const api = await visit({ url: '/kempo/api/guest', accept: 'application/json', cookies: { session_token: signedIn.sessionToken } });
+    expect(!api.res.cookies.some(cookie => cookie.name === RESTRICTED_COOKIE), 'an API call does not mark the browser, only a page does');
+
+    await removeUserFromGroup(state.ids.carol, 'system:Restricted');
+    const freed = await visit({ url: '/', cookies: { [RESTRICTED_COOKIE]: marker.value } });
+    state.tokens.push(freed.req.guest.token);
+    expect(!freed.req.restricted, 'taking them out of the group frees the browser');
+    await db.delete(session).where(eq(session.token, signedIn.sessionToken));
     pass();
   },
 

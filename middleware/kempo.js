@@ -23,6 +23,7 @@ import { flagFailed, markHealthy } from '../server/utils/updates/siteLayout.js';
 import notifySchemaAttention from '../server/utils/updates/notifySchemaAttention.js';
 import { ensureSystemSettings } from '../server/utils/settings/systemSettings.js';
 import { ensureSystemPermissions } from '../server/utils/setup/systemPermissions.js';
+import { ensureSystemGroups } from '../server/utils/setup/systemGroups.js';
 import { ensureDefaultStylesheet } from '../server/utils/email/stylesheets.js';
 import registerJobs from '../server/utils/scheduler/registerJobs.js';
 import '../server/utils/updates/runtime.js';
@@ -31,7 +32,9 @@ import { normalizeScopes } from '../server/utils/extensions/scopes.js';
 import getGuest from '../server/utils/guests/getGuest.js';
 import createGuest from '../server/utils/guests/createGuest.js';
 import guestCookieOptions from '../server/utils/guests/cookieOptions.js';
-import { GUEST_COOKIE } from '../server/utils/guests/constants.js';
+import isGuestRestricted from '../server/utils/guests/isGuestRestricted.js';
+import markUserRestricted from '../server/utils/guests/markUserRestricted.js';
+import { GUEST_COOKIE, RESTRICTED_COOKIE, RESTRICTED_COOKIE_SECONDS } from '../server/utils/guests/constants.js';
 
 const MIME_TYPES = {
   '.js': 'application/javascript',
@@ -160,7 +163,7 @@ export const renderGuardedPage = async (pageFilePath, request, response, rootDir
   const restricted = meta['require-login'] === 'true' || !!meta['require-permissions'];
 
   if(restricted){
-    const [accessError, access] = await checkPageAccess({ token: request.cookies?.session_token, meta });
+    const [accessError, access] = await checkPageAccess({ token: request.cookies?.session_token, meta, guestRestricted: !!request.restricted });
     if(accessError){
       console.error(`[kempo] Cannot check access to ${pageFilePath}: ${accessError.msg}`);
       response.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -278,6 +281,7 @@ export default config => {
         }],
         ['settings', ensureSystemSettings],
         ['permissions', ensureSystemPermissions],
+        ['groups', ensureSystemGroups],
         ['email stylesheets', ensureDefaultStylesheet],
         ['extensions', async () => {
           const [error, result] = await reconcileExtensions();
@@ -338,6 +342,42 @@ export default config => {
         if(created){
           request.guest = { token: created.token };
         }
+      }
+
+      /*
+        A restricted guest also gets a cookie of its own that outlives the guest cookie, so clearing the guest cookie does not
+        make them a fresh guest. It holds the restricted guest's token and counts only while that guest is still restricted,
+        so lifting the restriction frees the browser. It is easy to get around by clearing cookies; it is meant to stop the
+        visitor who does not know to.
+      */
+      const markerToken = request.cookies?.[RESTRICTED_COOKIE];
+      const [, markerRestricted] = markerToken ? await isGuestRestricted({ token: markerToken }) : [];
+      const ownRestricted = !!found?.guest.restrictedAt;
+      request.restricted = ownRestricted || !!markerRestricted;
+
+      const markerOptions = { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/', maxAge: RESTRICTED_COOKIE_SECONDS };
+      const isPageRequest = request.method === 'GET' && String(request.headers?.accept ?? '').includes('text/html');
+
+      /* A restricted user is marked the same way, on a page they open, so the restriction stays when they log out or clear the guest cookie. */
+      let userMarker = null;
+      if(!request.restricted && isPageRequest && request.cookies?.session_token){
+        const [, loggedIn] = await getSession({ token: request.cookies.session_token });
+        [, userMarker] = loggedIn?.user ? await markUserRestricted({ userId: loggedIn.user.id }) : [];
+        request.restricted = !!userMarker;
+      }
+
+      if(userMarker){
+        response.cookie(RESTRICTED_COOKIE, userMarker, markerOptions);
+      } else if(ownRestricted && markerToken !== found.guest.token){
+        response.cookie(RESTRICTED_COOKIE, found.guest.token, markerOptions);
+      } else if(markerToken && !request.restricted){
+        response.clearCookie(RESTRICTED_COOKIE, { path: '/' });
+      }
+
+      /* kempo-server builds a route's request from the original one, not from the wrapper the middleware sees, so hand these over. */
+      if(request._originalRequest){
+        request._originalRequest.guest = request.guest;
+        request._originalRequest.restricted = request.restricted;
       }
 
       if(request.guest && (!found || found.touched)){
