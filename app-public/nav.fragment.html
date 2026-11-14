@@ -21,6 +21,11 @@
 		</a>
 		<location name="main-nav-links" label="Main menu" menu="true" />
 		<div style="flex: 1"></div>
+		<k-notification-bell
+			class="d-b"
+			page-href="{{pathToRoot}}notifications/"
+			open-direction="down left"
+		></k-notification-bell>
 		<a
 			href="{{pathToRoot}}account/"
 			class="d-ib"
@@ -37,6 +42,10 @@
 	</nav>
 	<script
 		src="{{pathToRoot}}kempo-ui/components/Icon.js"
+		type="module"
+	></script>
+	<script
+		src="/kempo/components/NotificationBell.js"
 		type="module"
 	></script>
 </fragment>

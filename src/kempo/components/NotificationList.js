@@ -2,10 +2,10 @@ import LightComponent from '/kempo-ui/components/LightComponent.js';
 import { html, nothing } from '/kempo-ui/lit-all.min.js';
 import '/kempo-ui/components/Icon.js';
 import '/kempo-ui/components/Pagination.js';
-import { getNotifications, markNotificationRead, markNotificationHandled, dismissNotification } from '/kempo/sdk.js';
+import { getNotifications, markNotificationViewed, markNotificationAcknowledged, dismissNotification } from '/kempo/sdk.js';
 
 /*
-  Presentation of a notification's level
+  Presentation of a notification's subtype. The four levels have an icon and a colour; any other word is drawn as info.
 */
 
 const LEVELS = {
@@ -14,6 +14,8 @@ const LEVELS = {
   warning: { icon: 'warning', color: 'tc-warning' },
   error: { icon: 'error', color: 'tc-danger' }
 };
+
+const STATUS_LABELS = { pending: 'Not shown yet', delivered: 'Shown', viewed: 'Viewed', acknowledged: 'Acknowledged', dismissed: 'Dismissed' };
 
 const API_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
 
@@ -33,16 +35,22 @@ const relativeTime = value => {
 };
 
 /*
-  Renders one signed-in user's notifications: level icon, title, message, relative time, the actions the
-  sender attached, and controls to mark one read or dismiss it. Title and message are rendered as text,
-  never as HTML.
+  Renders one person's notifications, signed in or a guest: subtype icon, title, message, relative time, the actions
+  the sender attached, and controls to mark one viewed or dismiss it. Title and message are rendered as text, never as
+  HTML.
 
-  Attributes: `unread-only`, `page-size` (default 20), `paginated` (adds page controls), `compact`
-  (tighter rows for a dropdown). Call `refresh()` to reload. Fires `notifications-change` with
-  `{ unread, total }` after every load or change, which is how a bell keeps its badge current.
+  Attributes: `type` (only that kind, such as `notice`), `status` (`active`, the default, is what a person still has; `all`
+  is their history, dismissed ones included; or one status), `show-status` (names each one's status, for a history),
+  `unread-only`, `page-size` (default 20), `paginated` (adds page controls) and `compact` (tighter rows for a
+  dropdown). Call `refresh()` to reload and `viewVisible()` to mark what is on screen as viewed. Fires
+  `notifications-change` with `{ unread, total }` after every load or change, which is how a bell keeps its badge
+  current.
 */
 export default class NotificationList extends LightComponent {
   static properties = {
+    type: { type: String, reflect: true },
+    status: { type: String, reflect: true },
+    showStatus: { type: Boolean, attribute: 'show-status', reflect: true },
     unreadOnly: { type: Boolean, attribute: 'unread-only', reflect: true },
     pageSize: { type: Number, attribute: 'page-size' },
     paginated: { type: Boolean, reflect: true },
@@ -58,6 +66,9 @@ export default class NotificationList extends LightComponent {
 
   constructor(){
     super();
+    this.type = '';
+    this.status = 'active';
+    this.showStatus = false;
     this.unreadOnly = false;
     this.pageSize = 20;
     this.paginated = false;
@@ -82,7 +93,7 @@ export default class NotificationList extends LightComponent {
 
   updated(changed){
     super.updated(changed);
-    if(changed.has('unreadOnly') && changed.get('unreadOnly') !== undefined){
+    if(['unreadOnly', 'type', 'status'].some(name => changed.has(name) && changed.get(name) !== undefined)){
       this.page = 1;
       this.refresh();
     }
@@ -93,7 +104,7 @@ export default class NotificationList extends LightComponent {
   */
 
   refresh = async () => {
-    const [error, data] = await getNotifications({ unreadOnly: this.unreadOnly, limit: this.pageSize, offset: (this.page - 1) * this.pageSize });
+    const [error, data] = await getNotifications({ type: this.type || undefined, status: this.status || undefined, unreadOnly: this.unreadOnly, limit: this.pageSize, offset: (this.page - 1) * this.pageSize });
     this.loading = false;
 
     if(error){
@@ -133,21 +144,28 @@ export default class NotificationList extends LightComponent {
     await this.refresh();
   };
 
-  read = item => this.run(item.id, async () => (await markNotificationRead(item.id))[0]?.msg);
+  viewVisible = async () => {
+    const unviewed = this.notifications.filter(item => !item.viewedAt && !item.dismissedAt);
+    if(!unviewed.length) return;
+    await Promise.all(unviewed.map(item => markNotificationViewed(item.id)));
+    await this.refresh();
+  };
+
+  view = item => this.run(item.id, async () => (await markNotificationViewed(item.id))[0]?.msg);
 
   dismiss = item => this.run(item.id, async () => (await dismissNotification(item.id))[0]?.msg);
 
   follow = (event, item, action) => {
     event.preventDefault();
     this.run(item.id, async () => {
-      await markNotificationRead(item.id);
+      await markNotificationAcknowledged(item.id);
       window.location.href = action.href;
     });
   };
 
   /*
-    The request is made by this browser with the signed-in user's own session, so the endpoint it names
-    applies its own permission checks to that user. Only a response that succeeded marks it handled.
+    The request is made by this browser as the person, so the endpoint it names applies its own permission checks to
+    them. Only a response that succeeded acknowledges the notification.
   */
   call = (item, action) => this.run(item.id, async () => {
     const { method, url, body } = action.api;
@@ -166,7 +184,7 @@ export default class NotificationList extends LightComponent {
       const detail = await response.json().catch(() => ({}));
       return `${action.label} failed: ${detail.error || detail.message || response.status}`;
     }
-    const [error] = await markNotificationHandled(item.id);
+    const [error] = await markNotificationAcknowledged(item.id);
     return error?.msg;
   });
 
@@ -188,23 +206,23 @@ export default class NotificationList extends LightComponent {
   };
 
   renderItem = item => {
-    const level = LEVELS[item.level] || LEVELS.info;
-    const unread = !item.readAt;
+    const level = LEVELS[item.subtype] || LEVELS.info;
+    const dismissed = Boolean(item.dismissedAt);
+    const unread = !item.viewedAt && !dismissed;
     const disabled = this.busy.has(item.id);
     return html`
-      <div class="d-f py b-bottom ${this.compact ? 'px' : 'pxh'} ${unread ? 'bg-alt' : ''}" data-notification-id=${item.id} data-unread=${unread}>
-        <k-icon class="${level.color} mr" name=${level.icon}></k-icon>
+      <div class="d-f ${this.compact ? 'py px b-bottom' : 'p mb b r'} ${unread ? 'bg-alt' : ''}" data-notification-id=${item.id} data-unread=${unread}>
         <div class="flex">
-          <div><strong class=${unread ? '' : 'tc-muted'}>${item.title}</strong> <span class="small tc-muted">${relativeTime(item.updatedAt)}</span></div>
+          <div><k-icon class="${level.color} mr" name=${level.icon}></k-icon><strong class=${unread ? '' : 'tc-muted'}>${item.title}</strong> <span class="small tc-muted">${relativeTime(item.updatedAt)}</span>${this.showStatus ? html` <span class="small tc-muted" data-status>${item.expired ? 'Expired' : STATUS_LABELS[item.status]}</span>` : nothing}</div>
           ${item.message ? html`<div class="mtq">${item.message}</div>` : nothing}
-          ${item.handledAt
-            ? html`<div class="small tc-muted mtq">Done ${relativeTime(item.handledAt)}</div>`
-            : item.actions?.length ? html`<div class="mth">${item.actions.map(action => this.renderAction(item, action))}</div>` : nothing}
+          ${item.acknowledgedAt
+            ? html`<div class="small tc-muted mtq">Done ${relativeTime(item.acknowledgedAt)}</div>`
+            : item.actions?.length && !dismissed ? html`<div class="mth">${item.actions.map(action => this.renderAction(item, action))}</div>` : nothing}
           ${this.rowErrors[item.id] ? html`<div class="tc-danger mtq" role="alert">${this.rowErrors[item.id]}</div>` : nothing}
         </div>
         <div class="d-f">
-          ${unread ? html`<button class="no-btn pq" title="Mark as read" aria-label="Mark as read" ?disabled=${disabled} @click=${() => this.read(item)}><k-icon name="check"></k-icon></button>` : nothing}
-          <button class="no-btn pq" title="Dismiss" aria-label="Dismiss" ?disabled=${disabled} @click=${() => this.dismiss(item)}><k-icon name="close"></k-icon></button>
+          ${unread ? html`<button class="no-btn pq" title="Mark as read" aria-label="Mark as read" ?disabled=${disabled} @click=${() => this.view(item)}><k-icon name="check"></k-icon></button>` : nothing}
+          ${dismissed ? nothing : html`<button class="no-btn pq" title="Dismiss" aria-label="Dismiss" ?disabled=${disabled} @click=${() => this.dismiss(item)}><k-icon name="close"></k-icon></button>`}
         </div>
       </div>
     `;

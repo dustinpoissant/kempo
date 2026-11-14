@@ -292,7 +292,7 @@ Handlers are **awaited one at a time, in registration order**. That means slow w
 | `extension:updated` | `{ name, oldVersion, newVersion }` | After any extension is updated |
 | `kempo:updated` | `{ oldVersion, newVersion, packages }` | Kempo itself was updated from the admin (on a Docker volume site, at the moment the owner switches); the server restarts a second later |
 | `page-created` | `{ page }` | After a page is created |
-| `notification:created` | `{ notification, recipientIds, refreshed }` | A notification reached at least one person |
+| `notification:created` | `{ notification, recipientIds, guestSessionIds, refreshed }` | A notification reached at least one person or guest |
 | `guest:merged` | `{ tx, guestSessionId, userId }` | A visitor who was a guest logged in or registered. Inside the merge's database transaction, after kempo moved its own rows: move what your extension keeps for `guestSessionId` to `userId` through `tx`. A handler that throws undoes the merge and the login is refused. See [Guest sessions](../guests.md) |
 | `guest:merged:committed` | `{ guestSessionId, userId, results }` | The merge has committed. `results` is what each `guest:merged` handler returned. Send notices here, not in `guest:merged`, so a rolled-back merge announces nothing |
 | `guest:expired` | `{ tx, guestSessionId }` | An unmerged guest is about to be deleted (it sat unused, or an administrator deleted it). Inside the transaction that deletes it: remove what you keep for it, such as files. A handler that throws keeps that guest for the next run |
@@ -988,7 +988,7 @@ A visitor who has not logged in is a guest: `request.guest` is `{ token }` on ro
 
 ## Notifications
 
-An extension can tell users about something that needs them, such as a failed background job, with `createNotification` from the [Server SDK](sdk.md#notifications). Target `userIds`, a `permission` or a `group`, give it a `dedupeKey` so a repeating failure is one notification, and attach up to three actions: a link, or an API call that the user's browser makes with their own session (so your route must check permissions itself). The admin shows a bell and a history page; a public site can use `<k-notification-bell>`. Notifications are optional for the user's core version: guard the call so your extension still works on a kempo that predates them. See [Notifications](../notifications.md).
+An extension can tell users about something that needs them, such as a failed background job, with `createNotification` from the [Server SDK](sdk.md#notifications). Target `userIds`, `guestSessionIds`, a `permission` or a `group`, choose a `type` (`notice` in the bell, `toast`, `banner`, a blocking `modal`, `inline`, or a word of your own that your component receives with `subscribe` from `/kempo/notifications/client.js`), give it a `dedupeKey` so a repeating failure is one notification, and attach up to three actions: a link, or an API call that the person's browser makes with their own session (so your route must check permissions itself). `mustAcknowledge` keeps it coming back until the person confirms it, and `expiresAt` stops one that has gone stale. The admin shows a bell and a history page; a public site can use `<k-notification-bell>`. Notifications are optional for the user's core version: guard the call so your extension still works on a kempo that predates them. See [Notifications](../notifications.md).
 
 ## Reference
 

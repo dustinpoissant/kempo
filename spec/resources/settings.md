@@ -36,6 +36,10 @@ setting:
 |---|---|---|---|---|
 | `system:site_name` | "Kempo Site" | string | Yes | Site display name |
 | `system:session_duration_days` | 7 | number | No | Session expiration |
+| `system:notification_poll_seconds` | 10 | number | No | Browser poll interval for notifications (0 asks on load and focus only) |
+| `system:notification_cooldown_seconds` | 180 | number | No | Wait before a must-acknowledge notification is shown again |
+| `system:notification_toast_seconds` | 10 | number | No | Toast time before it counts as viewed |
+| `system:notification_banner_seconds` | 10 | number | No | Banner time on screen before it counts as viewed |
 | `system:guest_session_days` | 30 | number | No | Guest cookie lifetime after the last visit |
 | `system:guest_idle_days` | 60 | number | No | Idle time before an unused guest is deleted (0 keeps them) |
 | `system:allow_registration` | true | boolean | Yes | Enable/disable registration |

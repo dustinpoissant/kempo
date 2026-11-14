@@ -1,22 +1,31 @@
-import { and, eq, gt, isNull, or, sql } from 'drizzle-orm';
+import { and, eq, isNull, sql } from 'drizzle-orm';
 import db from '../../db/index.js';
-import { notification, notificationRecipient } from '../../db/schema.js';
+import { notification } from '../../db/schema.js';
+import { isName, notExpired, recipientOf } from './helpers.js';
 
-export default async ({ userId } = {}) => {
-  if(!userId){
-    return [{ code: 400, msg: 'User ID is required' }, null];
+/* How many notifications a person has not viewed, not counting dismissed or expired ones, optionally of one `type`. */
+export default async ({ userId, guestSessionId, type } = {}) => {
+  const state = recipientOf({ userId, guestSessionId });
+
+  if(!state){
+    return [{ code: 400, msg: 'User ID or guest session is required' }, null];
+  }
+
+  if(type !== undefined && !isName(type)){
+    return [{ code: 400, msg: 'Type must be a type name' }, null];
   }
 
   try {
     const [{ count }] = await db
       .select({ count: sql`count(*)`.mapWith(Number) })
-      .from(notificationRecipient)
-      .innerJoin(notification, eq(notification.id, notificationRecipient.notificationId))
+      .from(state.table)
+      .innerJoin(notification, eq(notification.id, state.table.notificationId))
       .where(and(
-        eq(notificationRecipient.userId, userId),
-        isNull(notificationRecipient.readAt),
-        isNull(notificationRecipient.dismissedAt),
-        or(isNull(notification.expiresAt), gt(notification.expiresAt, new Date()))
+        eq(state.column, state.id),
+        isNull(state.table.viewedAt),
+        isNull(state.table.dismissedAt),
+        notExpired(new Date()),
+        type ? eq(notification.type, type) : undefined
       ));
 
     return [null, { count }];

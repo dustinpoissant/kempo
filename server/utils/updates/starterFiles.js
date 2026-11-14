@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
-import { dirname, join, relative, sep } from 'path';
+import { dirname, extname, join, relative, sep } from 'path';
 
 /*
   The starter files: what `npx kempo init` copies from the kempo package into a site (app-public/ into public/, and
@@ -24,7 +24,35 @@ export const SOURCES = [['app-public', 'public'], ['app-templates', 'templates']
 
 const RECORD = ['.kempo', 'shipped.json'];
 
-const hashOf = file => createHash('sha256').update(readFileSync(file)).digest('hex');
+/*
+  What counts as the same file. The fingerprint of a text file ignores what is not an edit: the line endings (a file
+  checked out on Windows has CRLF), whitespace at the ends, the order and indentation of the frontmatter comment, and the
+  frontmatter's bookkeeping (`updated`, `created`, `author`, `name`), which the admin rewrites whenever it saves a page,
+  template or fragment, even when nothing in it changed. Everything else counts: the body, and every other frontmatter
+  setting (`title`, `require-login` and the rest). Any other file is fingerprinted byte for byte.
+*/
+const TEXT = new Set(['.html', '.js', '.mjs', '.css', '.json', '.svg', '.txt', '.md', '.xml']);
+
+const BOOKKEEPING = new Set(['updated', 'created', 'author', 'name']);
+
+export const normalize = text => {
+  const content = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+  const match = content.match(/^<!--\s*\n([\s\S]*?)\n\s*-->/);
+  if(!match) return content.trim();
+
+  const settings = match[1].split('\n')
+    .map(line => line.trim())
+    .filter(line => line && !BOOKKEEPING.has(line.slice(0, Math.max(line.indexOf(':'), 0)).trim()))
+    .sort();
+
+  return `<!--\n${settings.join('\n')}\n-->\n${content.slice(match[0].length).trim()}`;
+};
+
+const rawHashOf = file => createHash('sha256').update(readFileSync(file)).digest('hex');
+
+const hashOf = file => (TEXT.has(extname(file).toLowerCase())
+  ? createHash('sha256').update(normalize(readFileSync(file, 'utf8'))).digest('hex')
+  : rawHashOf(file));
 
 const walk = dir => readdirSync(dir, { withFileTypes: true }).flatMap(entry => (entry.isDirectory() ? walk(join(dir, entry.name)) : [join(dir, entry.name)]));
 
@@ -79,8 +107,15 @@ export const planStarterFiles = ({ cwd, oldRoot, newRoot, forced = forcedFiles(n
     } else if(before.get(file.path) === file.hash || hashOf(target) === file.hash){
       plan.current.push(file.path);
     } else {
-      const shipped = recorded[file.path] ?? before.get(file.path);
-      if(shipped && hashOf(target) === shipped) plan.update.push(file.path);
+      /*
+        Unedited means equal to what kempo put there (the record) or to what the version being left ships. The record of an
+        older version holds a byte-for-byte hash, which a saved or re-checked-out file no longer matches, so the old version's
+        own file, fingerprinted the same way as this one, is tried as well, and so is the raw hash.
+      */
+      const targetFingerprint = hashOf(target);
+      const targetRaw = rawHashOf(target);
+      const unedited = [recorded[file.path], before.get(file.path)].some(shipped => shipped && (targetFingerprint === shipped || targetRaw === shipped));
+      if(unedited) plan.update.push(file.path);
       else if(forced.some(entry => entry === file.path || (entry.endsWith('/') && file.path.startsWith(entry)))) plan.forced.push(file.path);
       else plan.edited.push(file.path);
     }

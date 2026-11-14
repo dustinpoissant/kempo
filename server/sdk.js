@@ -247,9 +247,18 @@ export { default as createNotification } from './utils/notifications/createNotif
 export { default as deleteNotification } from './utils/notifications/deleteNotification.js';
 export { default as getNotifications } from './utils/notifications/getNotifications.js';
 export { default as getUnreadCount } from './utils/notifications/getUnreadCount.js';
-export { default as markAllRead } from './utils/notifications/markAllRead.js';
-export { default as markHandled } from './utils/notifications/markHandled.js';
-export { default as markRead } from './utils/notifications/markRead.js';
+export { default as getPendingNotifications } from './utils/notifications/getPendingNotifications.js';
+export { default as getNotificationConfig } from './utils/notifications/getNotificationConfig.js';
+export { default as resolveRecipient } from './utils/notifications/resolveRecipient.js';
+export { default as markDelivered } from './utils/notifications/markDelivered.js';
+export { default as markShown } from './utils/notifications/markShown.js';
+export { default as markViewed } from './utils/notifications/markViewed.js';
+export { default as markAllViewed } from './utils/notifications/markAllViewed.js';
+export { default as markAcknowledged } from './utils/notifications/markAcknowledged.js';
+/* The older names, for extensions written before notifications had types: read is viewed, handled is acknowledged. */
+export { default as markRead } from './utils/notifications/markViewed.js';
+export { default as markAllRead } from './utils/notifications/markAllViewed.js';
+export { default as markHandled } from './utils/notifications/markAcknowledged.js';
 export { default as pruneNotifications } from './utils/notifications/pruneNotifications.js';
 
 /*

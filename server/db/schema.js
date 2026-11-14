@@ -246,6 +246,12 @@ export const notification = pgTable('notification', {
   title: text('title').notNull(),
   message: text('message'),
   level: text('level').notNull().default('info'),
+  type: text('type').notNull().default('notice'),
+  subtype: text('subtype'),
+  priority: integer('priority').notNull().default(0),
+  mustAcknowledge: boolean('mustAcknowledge').notNull().default(false),
+  cooldownSeconds: integer('cooldownSeconds'),
+  displaySeconds: integer('displaySeconds'),
   actions: jsonb('actions').notNull().default([]),
   dedupeKey: text('dedupeKey'),
   createdAt: timestamp('createdAt').notNull(),
@@ -257,9 +263,12 @@ export const notification = pgTable('notification', {
 ]);
 
 /*
-  One row per person it was sent to, written when the notification is created so each person's read,
-  handled and dismissed state is their own and their history does not change if they later lose the
-  permission that earned them the notification.
+  One row per person it was sent to, written when the notification is created so each person's state is
+  their own and their history does not change if they later lose the permission that earned them the
+  notification. The state is a set of timestamps: delivered (a browser fetched it), viewed (it was on
+  screen long enough), acknowledged (the person confirmed it), dismissed (the person hid it) and
+  lastShownAt (when it was last put in front of them, for a notification that repeats). What a
+  notification's status is, is worked out from them (see server/utils/notifications/helpers.js).
 */
 export const notificationRecipient = pgTable('notificationRecipient', {
   notificationId: text('notificationId')
@@ -268,9 +277,11 @@ export const notificationRecipient = pgTable('notificationRecipient', {
   userId: text('userId')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  readAt: timestamp('readAt'),
-  handledAt: timestamp('handledAt'),
+  deliveredAt: timestamp('deliveredAt'),
+  viewedAt: timestamp('viewedAt'),
+  acknowledgedAt: timestamp('acknowledgedAt'),
   dismissedAt: timestamp('dismissedAt'),
+  lastShownAt: timestamp('lastShownAt'),
 }, table => [
   primaryKey({ columns: [table.notificationId, table.userId] }),
   index('notificationRecipient_userId_idx').on(table.userId),
@@ -306,9 +317,11 @@ export const notificationGuestRecipient = pgTable('notificationGuestRecipient', 
   guestSessionId: text('guestSessionId')
     .notNull()
     .references(() => guestSession.token, { onDelete: 'cascade' }),
-  readAt: timestamp('readAt'),
-  handledAt: timestamp('handledAt'),
+  deliveredAt: timestamp('deliveredAt'),
+  viewedAt: timestamp('viewedAt'),
+  acknowledgedAt: timestamp('acknowledgedAt'),
   dismissedAt: timestamp('dismissedAt'),
+  lastShownAt: timestamp('lastShownAt'),
 }, table => [
   primaryKey({ columns: [table.notificationId, table.guestSessionId] }),
   index('notificationGuestRecipient_guestSessionId_idx').on(table.guestSessionId),

@@ -207,16 +207,15 @@ export default [
   {
     name: 'notification-bell',
     title: 'Notification bell',
-    description: 'A bell with the number of unread notifications that opens the latest ones. Shows nothing when nobody is signed in.',
+    description: 'A bell with the number of notices a person has not viewed that opens them. It works for signed-in people and for guests.',
     icon: 'notifications',
     ...account,
     ...buttonLike,
-    keywords: ['notifications', 'alerts', 'bell', 'unread'],
+    keywords: ['notifications', 'alerts', 'bell', 'unread', 'notices'],
     tag: 'k-notification-bell',
     page: `${components}/NotificationBell.js`,
     attributes: [
-      { name: 'page-href', type: 'url', label: 'View all link', hint: 'A page with every notification. Leave it empty for no link.', default: '' },
-      { name: 'interval', type: 'number', label: 'Check every (milliseconds)', hint: '0 turns the background checks off.', default: 60000, min: 0 },
+      { name: 'page-href', type: 'url', label: 'View all link', hint: 'A page with every notification, such as /notifications/. Leave it empty for no link.', default: '' },
       { name: 'open-direction', type: 'string', label: 'Opens toward', hint: 'Where the list opens from the bell, such as down right or down left.', default: 'down right' },
       { name: 'button-class', type: 'string', label: 'Button classes', hint: 'Extra classes for the bell\'s button.', default: '' }
     ]
@@ -224,17 +223,46 @@ export default [
   {
     name: 'notification-list',
     title: 'Notification list',
-    description: 'The signed-in person\'s notifications.',
+    description: 'A person\'s notifications, signed in or a guest, of one kind or all of them.',
     icon: 'notifications',
     ...account,
     keywords: ['notifications', 'alerts', 'inbox', 'unread'],
     tag: 'k-notification-list',
     page: `${components}/NotificationList.js`,
     attributes: [
+      { name: 'type', type: 'string', label: 'Kind', hint: 'Only this kind of notification, such as notice. Leave it empty for every kind.', default: '' },
       { name: 'unread-only', type: 'boolean', label: 'Only unread', default: false },
       { name: 'page-size', type: 'number', label: 'Notifications per page', default: 20, min: 1, max: 100 },
       { name: 'paginated', type: 'boolean', label: 'Pages', hint: 'Show page buttons instead of a Show more button.', default: false },
       { name: 'compact', type: 'boolean', label: 'Compact', default: false }
+    ]
+  },
+  {
+    name: 'notification-history',
+    title: 'Notification history',
+    description: 'Everything a person was told, including what they dismissed, with a choice of kind and status. It works for signed-in people and for guests.',
+    icon: 'history',
+    ...account,
+    keywords: ['notifications', 'history', 'dismissed', 'alerts', 'inbox'],
+    tag: 'k-notification-history',
+    page: `${components}/NotificationHistory.js`,
+    attributes: [
+      { name: 'type', type: 'string', label: 'Starts on kind', hint: 'notice, toast, banner, modal or inline. Leave it empty for every kind.', default: '' },
+      { name: 'status', type: 'string', label: 'Starts on status', hint: 'all, active, viewed, acknowledged, dismissed or expired.', default: 'all' },
+      { name: 'page-size', type: 'number', label: 'Notifications per page', default: 20, min: 1, max: 100 }
+    ]
+  },
+  {
+    name: 'notification-inline',
+    title: 'Notification messages',
+    description: 'Where messages meant for this spot appear, such as "Your changes were saved" after a form sends the person back to this page. Nothing shows when there are none.',
+    icon: 'info',
+    ...account,
+    keywords: ['notifications', 'messages', 'inline', 'alerts', 'saved'],
+    tag: 'k-notification-inline',
+    page: `${components}/NotificationInline.js`,
+    attributes: [
+      { name: 'subtype', type: 'string', label: 'Only this subtype', hint: 'success, error, warning or info shows only those, so a page can have a place for errors and another for the rest. Leave it empty for all.', default: '' }
     ]
   },
   {

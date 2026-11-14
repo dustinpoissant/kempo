@@ -7,6 +7,15 @@ const earliest = (a, b) => (a && b ? (a < b ? a : b) : a ?? b);
 
 const latest = (a, b) => (a && b ? (a > b ? a : b) : a ?? b);
 
+/* The first time something was delivered or viewed, and the last time it was acknowledged, dismissed or shown. */
+const combine = (held, row) => ({
+  deliveredAt: earliest(held?.deliveredAt, row.deliveredAt),
+  viewedAt: earliest(held?.viewedAt, row.viewedAt),
+  acknowledgedAt: latest(held?.acknowledgedAt, row.acknowledgedAt),
+  dismissedAt: latest(held?.dismissedAt, row.dismissedAt),
+  lastShownAt: latest(held?.lastShownAt, row.lastShownAt),
+});
+
 /*
   Moves everything a guest owns to a user, when the visitor logs in or registers. Both are the same here: the account
   may be ten years old or ten seconds old, and it holds what the visitor did before.
@@ -18,7 +27,8 @@ const latest = (a, b) => (a && b ? (a > b ? a : b) : a ?? b);
   A guest that is missing is a 404 and one already merged is a 409, so a second tab finishing a login is not a failure
   worth stopping it for. Anything else is a 500.
 
-  A notification the user already has is not duplicated: the earliest read is kept, and the latest handled and dismissed.
+  A notification the user already has is not duplicated: the earliest delivered and viewed is kept, and the latest
+  acknowledged, dismissed and shown.
 
   After the commit, `guest:merged:committed` fires with `{ guestSessionId, userId, results }`, where `results` is what each
   `guest:merged` handler returned. It is for anything that must only happen once the merge has really happened, such as a
@@ -58,19 +68,9 @@ export default async ({ guestSessionId, userId }) => {
         const [held] = await tx.select().from(notificationRecipient).where(key).limit(1);
 
         if(held){
-          await tx.update(notificationRecipient).set({
-            readAt: earliest(held.readAt, row.readAt),
-            handledAt: latest(held.handledAt, row.handledAt),
-            dismissedAt: latest(held.dismissedAt, row.dismissedAt),
-          }).where(key);
+          await tx.update(notificationRecipient).set(combine(held, row)).where(key);
         } else {
-          await tx.insert(notificationRecipient).values({
-            notificationId: row.notificationId,
-            userId,
-            readAt: row.readAt,
-            handledAt: row.handledAt,
-            dismissedAt: row.dismissedAt,
-          });
+          await tx.insert(notificationRecipient).values({ notificationId: row.notificationId, userId, ...combine(null, row) });
         }
       }
 

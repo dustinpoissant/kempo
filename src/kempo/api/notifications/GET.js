@@ -1,20 +1,17 @@
-import getSession from '../../../../server/utils/auth/getSession.js';
+import resolveRecipient from '../../../../server/utils/notifications/resolveRecipient.js';
 import getNotifications from '../../../../server/utils/notifications/getNotifications.js';
+import { GUEST_COOKIE } from '../../../../server/utils/guests/constants.js';
 
 export default async (request, response) => {
-  const [sessionError, sessionData] = await getSession({ token: request.cookies.session_token });
+  const [recipientError, recipient] = await resolveRecipient({ sessionToken: request.cookies?.session_token, guestToken: request.cookies?.[GUEST_COOKIE] });
 
-  if(sessionError){
-    return response.status(sessionError.code === 500 ? 500 : 401).json({ error: sessionError.code === 500 ? sessionError.msg : 'Authentication required' });
+  if(recipientError){
+    return response.status(recipientError.code).json({ error: recipientError.code === 500 ? recipientError.msg : 'Authentication required' });
   }
 
-  const { unreadOnly, limit, offset } = request.query;
-  const [error, result] = await getNotifications({
-    userId: sessionData.user.id,
-    unreadOnly: unreadOnly === 'true',
-    limit,
-    offset
-  });
+  response.setHeader('Cache-Control', 'private, no-store');
+
+  const [error, result] = await getNotifications({ ...recipient, type: request.query.type, status: request.query.status, unreadOnly: request.query.unreadOnly === 'true', limit: request.query.limit, offset: request.query.offset });
 
   if(error){
     return response.status(error.code).json({ error: error.msg });

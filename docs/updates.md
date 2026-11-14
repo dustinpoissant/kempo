@@ -65,7 +65,11 @@ Kempo remembers the fingerprint (SHA-256) of each one it copied, in `.kempo/ship
 | Deleted by you | Stays deleted |
 | New in this version | Added |
 
-A site made before this record existed has none: a file is judged against what the running version ships, so a file that equals it counts as never edited and anything else counts as edited, and nothing is overwritten by mistake.
+**What counts as an edit.** Every file under `app-public/` and `app-templates/` is covered, whatever it is: pages, templates, fragments, global content, `CATCH.js`, `init.js`, styles, emails. For a text file the fingerprint ignores what is not an edit: line endings (a checkout on Windows has CRLF), whitespace at the ends, the order and indentation of the frontmatter comment, and the frontmatter's bookkeeping (`updated`, `created`, `author` and `name`), which the admin rewrites whenever it saves a page, template or fragment even if nothing in it changed. Everything else counts as an edit: the body, and every other frontmatter setting (`title`, `require-login`, `owner` and the rest). Images and other files are compared byte for byte.
+
+So a template you only saved in the admin is still the default and an update replaces it, which is how a change to every site's template (the notification client's script tag, say) reaches the sites that never changed theirs. A template you did change is kept as it is, and the update says it has a newer version; kempo never merges.
+
+A site made before this record existed has none: a file is judged against what the version it is leaving ships, so a file that equals it counts as never edited and anything else counts as edited, and nothing is overwritten by mistake.
 
 A version can name files it must replace even if you edited them, in its `package.json`:
 

@@ -297,6 +297,17 @@ export default {
     });
   },
 
+  'kempo offers a notification bell itself, on every site, with no extension': async ({ pass, fail }) => {
+    await withSite(async dir => {
+      const [, items] = await findNavItems({ extensionDirs: [] });
+      const bell = items.find(i => i.key === 'kempo:notifications');
+      if(!bell || bell.label !== 'Notification bell' || !bell.markup.includes('<k-notification-bell') || !bell.markup.includes('/kempo/components/NotificationBell.js') || !bell.description) return fail(JSON.stringify(items));
+      const { navItems } = await list(dir, []);
+      if(!navItems.some(n => n.key === 'kempo:notifications')) return fail('the Menus page is not told about it');
+      pass('');
+    });
+  },
+
   'kempo offers a spacer itself, on every site, with no extension': async ({ pass, fail }) => {
     await withSite(async dir => {
       const [, items] = await findNavItems({ extensionDirs: [] });

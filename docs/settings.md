@@ -84,6 +84,10 @@ console.log(settings['system:site_name']); // "My Site"
 |---|---|---|---|---|
 | `system:site_name` | "Kempo Site" | string | Yes | Site display name |
 | `system:session_duration_days` | 7 | number | No | Session token lifetime in days |
+| `system:notification_poll_seconds` | 10 | number | No | Seconds between a browser asking for new notifications, at least 1 (0 asks only when a page loads or the window is focused) |
+| `system:notification_cooldown_seconds` | 180 | number | No | Seconds before a notification that must be acknowledged is shown again, unless it sets its own |
+| `system:notification_toast_seconds` | 10 | number | No | Seconds a toast stays up before it counts as viewed, unless the notification sets its own |
+| `system:notification_banner_seconds` | 10 | number | No | Seconds a banner or inline message must be on screen before it counts as viewed |
 | `system:guest_session_days` | 30 | number | No | Days a visitor who has not logged in keeps their guest cookie after the last visit (0 is a cookie that ends with the browser session) |
 | `system:guest_idle_days` | 60 | number | No | Days an unused guest session is kept before it is deleted (0 keeps guests forever) |
 | `system:allow_registration` | true | boolean | Yes | Allow new user registrations |

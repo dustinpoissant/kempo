@@ -1,4 +1,4 @@
-import t from"/kempo/components/DashboardWidget.js";import{html as i}from"/kempo-ui/lit-all.min.js";import"/kempo/components/NotificationList.js";import{markAllNotificationsRead as o}from"/kempo/sdk.js";export default class e extends t{constructor(){super(),this.cta={label:"Mark all read",icon:"done_all",onClick:()=>this.markAllRead()}}markAllRead=async()=>{await o(),await(this.querySelector("k-notification-list")?.refresh())};renderContent(){return i`
-      <k-notification-list compact unread-only page-size=${3*this.height}></k-notification-list>
-    `}}customElements.define("k-widget-notifications",e);
+import t from"/kempo/components/DashboardWidget.js";import{html as i}from"/kempo-ui/lit-all.min.js";import"/kempo/components/NotificationList.js";import{markAllNotificationsViewed as e}from"/kempo/sdk.js";export default class o extends t{constructor(){super(),this.cta={label:"Mark all read",icon:"done_all",onClick:()=>this.markAllRead()}}markAllRead=async()=>{await e({type:"notice"}),await(this.querySelector("k-notification-list")?.refresh())};renderContent(){return i`
+      <k-notification-list type="notice" compact unread-only page-size=${3*this.height}></k-notification-list>
+    `}}customElements.define("k-widget-notifications",o);
 //# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\admin\components\widgets\Notifications.js.map

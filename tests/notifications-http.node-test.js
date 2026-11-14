@@ -25,6 +25,8 @@ const { user, userGroup, session, notification } = await load('server/db/schema.
 const createUser = (await load('server/utils/users/createUser.js')).default;
 const addUserToGroup = (await load('server/utils/groups/addUserToGroup.js')).default;
 const createNotification = (await load('server/utils/notifications/createNotification.js')).default;
+const createGuest = (await load('server/utils/guests/createGuest.js')).default;
+const { guestSession } = await load('server/db/schema.js');
 
 const databaseReachable = await reachable(db);
 
@@ -37,10 +39,11 @@ const ADMIN = { name: 'Notif Admin', email: 'notif-http-admin@test.local', passw
 const MEMBER = { name: 'Notif Member', email: 'notif-http-member@test.local', password: 'NotifMember123!' };
 const OTHER = { name: 'Notif Other', email: 'notif-http-other@test.local', password: 'NotifOther123!' };
 
-const state = { server: null, port: null, tmp: null, cookies: {}, ids: {}, notifications: {} };
+const state = { server: null, port: null, tmp: null, cookies: {}, ids: {}, notifications: {}, guests: [] };
 
 const purge = async () => {
   await db.delete(notification).where(eq(notification.owner, OWNER)).catch(() => {});
+  for(const token of state.guests) await db.delete(guestSession).where(eq(guestSession.token, token)).catch(() => {});
   for(const email of [ADMIN.email, MEMBER.email, OTHER.email]){
     const [row] = await db.select().from(user).where(eq(user.email, email));
     if(!row) continue;
@@ -76,7 +79,8 @@ const login = async ({ email, password }) => {
 
 const call = async (method, urlPath, as, body) => {
   const headers = {};
-  if(as && state.cookies[as]) headers.cookie = `session_token=${state.cookies[as]}`;
+  if(as?.startsWith('guest:')) headers.cookie = `kempo_guest=${as.slice(6)}`;
+  else if(as && state.cookies[as]) headers.cookie = `session_token=${state.cookies[as]}`;
   if(body !== undefined) headers['Content-Type'] = 'application/json';
   const res = await fetch(`http://127.0.0.1:${state.port}${urlPath}`, {
     method,
@@ -88,7 +92,7 @@ const call = async (method, urlPath, as, body) => {
   const text = await res.text();
   let json = null;
   try { json = JSON.parse(text); } catch {}
-  return { status: res.status, text, json };
+  return { status: res.status, text, json, headers: res.headers };
 };
 
 const send = async input => {
@@ -144,14 +148,17 @@ const buildTests = () => ({
     const routes = [
       ['GET', '/kempo/api/notifications'],
       ['GET', '/kempo/api/notifications/count'],
+      ['GET', '/kempo/api/notifications/pending'],
       ['POST', '/kempo/api/notifications/read-all'],
-      ['POST', `/kempo/api/notifications/${id}/read`],
-      ['POST', `/kempo/api/notifications/${id}/handled`],
+      ['POST', '/kempo/api/notifications/delivered'],
+      ['POST', `/kempo/api/notifications/${id}/viewed`],
+      ['POST', `/kempo/api/notifications/${id}/acknowledge`],
+      ['POST', `/kempo/api/notifications/${id}/shown`],
       ['DELETE', `/kempo/api/notifications/${id}`]
     ];
     state.cookies.invalid = 'a'.repeat(64);
 
-    for(const as of [null, 'invalid']){
+    for(const as of [null, 'invalid', 'guest:forged-guest-token']){
       for(const [method, urlPath] of routes){
         const { status, text } = await call(method, urlPath, as, method === 'GET' ? undefined : {});
         expect(status === 401, `${method} ${urlPath} as ${as ?? 'anonymous'} should be a 401, got ${status}`);
@@ -160,7 +167,7 @@ const buildTests = () => ({
     }
 
     const untouched = await call('GET', '/kempo/api/notifications', 'member');
-    expect(untouched.json.unread === 2 && untouched.json.notifications.every(n => n.readAt === null), 'nothing was changed by the refused requests');
+    expect(untouched.json.unread === 2 && untouched.json.notifications.every(n => n.viewedAt === null), 'nothing was changed by the refused requests');
     pass();
   },
 
@@ -174,7 +181,7 @@ const buildTests = () => ({
     expect(admin.status === 200 && admin.json.notifications.length === 0, 'an administrator has no access to other people\'s notifications');
 
     const shape = member.json.notifications[0];
-    expect(!('userId' in shape) && !('dedupeKey' in shape) && 'actions' in shape && 'readAt' in shape && 'handledAt' in shape, `unexpected fields ${Object.keys(shape)}`);
+    expect(!('userId' in shape) && !('dedupeKey' in shape) && 'actions' in shape && 'type' in shape && 'subtype' in shape && 'priority' in shape && 'status' in shape && 'viewedAt' in shape && 'acknowledgedAt' in shape, `unexpected fields ${Object.keys(shape)}`);
     pass();
   },
 
@@ -189,31 +196,32 @@ const buildTests = () => ({
     pass();
   },
 
-  'read, handled and dismiss act on the caller\'s own state and cannot reach anyone else\'s': async ({ pass }) => {
+  'viewed, acknowledge and dismiss act on the caller\'s own state and cannot reach anyone else\'s': async ({ pass }) => {
     const theirs = state.notifications.other.id;
     const shared = state.notifications.both.id;
 
-    for(const [method, suffix] of [['POST', '/read'], ['POST', '/handled'], ['DELETE', '']]){
+    for(const [method, suffix] of [['POST', '/viewed'], ['POST', '/acknowledge'], ['POST', '/shown'], ['DELETE', '']]){
       const attempt = await call(method, `/kempo/api/notifications/${theirs}${suffix}`, 'member', method === 'POST' ? {} : undefined);
       expect(attempt.status === 404, `${method} on someone else's notification should be a 404, got ${attempt.status}`);
     }
     const stillTheirs = await call('GET', '/kempo/api/notifications', 'other');
     const theirCopy = stillTheirs.json.notifications.find(n => n.id === theirs);
-    expect(theirCopy && theirCopy.readAt === null && theirCopy.handledAt === null, 'and their copy is untouched');
+    expect(theirCopy && theirCopy.viewedAt === null && theirCopy.acknowledgedAt === null && theirCopy.lastShownAt === null, 'and their copy is untouched');
 
-    expect((await call('POST', `/kempo/api/notifications/${shared}/read`, 'member', {})).status === 200, 'the member reads the shared one');
+    expect((await call('POST', `/kempo/api/notifications/${shared}/viewed`, 'member', {})).status === 200, 'the member views the shared one');
     const other = (await call('GET', '/kempo/api/notifications', 'other')).json.notifications.find(n => n.id === shared);
-    expect(other.readAt === null, 'which does not read it for the other recipient');
+    expect(other.viewedAt === null, 'which does not view it for the other recipient');
     expect((await call('GET', '/kempo/api/notifications/count', 'member')).json.count === 1, 'the member\'s count dropped');
     expect((await call('GET', '/kempo/api/notifications/count', 'other')).json.count === 2, 'the other\'s did not');
 
-    expect((await call('POST', `/kempo/api/notifications/${shared}/handled`, 'other', {})).status === 200, 'handled works for a recipient');
+    expect((await call('POST', `/kempo/api/notifications/${shared}/acknowledge`, 'other', {})).status === 200, 'acknowledge works for a recipient');
     const handled = (await call('GET', '/kempo/api/notifications', 'other')).json.notifications.find(n => n.id === shared);
-    expect(handled.handledAt && handled.readAt, 'handled also reads');
-    expect((await call('POST', '/kempo/api/notifications/no-such-id/read', 'member', {})).status === 404, 'an unknown id is a 404');
+    expect(handled.acknowledgedAt && handled.viewedAt && handled.deliveredAt, 'acknowledging also views and delivers');
+    expect((await call('POST', '/kempo/api/notifications/no-such-id/viewed', 'member', {})).status === 404, 'an unknown id is a 404');
 
     expect((await call('DELETE', `/kempo/api/notifications/${shared}`, 'member')).status === 200, 'the member dismisses theirs');
     expect(!(await call('GET', '/kempo/api/notifications', 'member')).json.notifications.some(n => n.id === shared), 'it is gone from the member\'s list');
+    expect((await call('GET', '/kempo/api/notifications?status=dismissed', 'member')).json.notifications.some(n => n.id === shared), 'but is in their history');
     expect((await call('GET', '/kempo/api/notifications', 'other')).json.notifications.some(n => n.id === shared), 'but not from the other\'s');
     pass();
   },
@@ -231,7 +239,7 @@ const buildTests = () => ({
   'a request cannot name another user or smuggle one in': async ({ pass }) => {
     const sneaky = await call('GET', `/kempo/api/notifications?userId=${state.ids.other}`, 'member');
     expect(!sneaky.json.notifications.some(n => n.title === 'For the other'), 'a userId query parameter must be ignored');
-    const body = await call('POST', `/kempo/api/notifications/${state.notifications.other.id}/read`, 'member', { userId: state.ids.other });
+    const body = await call('POST', `/kempo/api/notifications/${state.notifications.other.id}/viewed`, 'member', { userId: state.ids.other });
     expect(body.status === 404, 'a userId in the body must be ignored too');
     pass();
   },
@@ -252,6 +260,88 @@ const buildTests = () => ({
     pass();
   },
 
+  'an unknown status or type is a 400, and the list can be asked for one of each': async ({ pass }) => {
+    expect((await call('GET', '/kempo/api/notifications?status=bogus', 'member')).status === 400, 'an unknown status');
+    expect((await call('GET', '/kempo/api/notifications?type=%3Cx%3E', 'member')).status === 400, 'a type that is not a word');
+    expect((await call('GET', '/kempo/api/notifications/count?type=%3Cx%3E', 'member')).status === 400, 'and in the count');
+    const all = await call('GET', '/kempo/api/notifications?status=all&type=notice', 'member');
+    expect(all.status === 200 && all.json.notifications.every(n => n.type === 'notice'), 'a type filter');
+    pass();
+  },
+
+  'pending is a read that says what to show and how often to ask, and is never cached': async ({ pass }) => {
+    await send({ type: 'toast', subtype: 'success', title: 'Pending toast', userIds: [state.ids.member] });
+    await send({ type: 'notice', title: 'A notice', userIds: [state.ids.member] });
+
+    const first = await call('GET', '/kempo/api/notifications/pending', 'member');
+    expect(first.status === 200, `got ${first.status}`);
+    expect(first.headers.get('cache-control') === 'private, no-store', 'a response that depends on the cookie is never shared');
+    expect(first.json.notifications.some(n => n.title === 'Pending toast' && n.type === 'toast' && n.subtype === 'success'), 'the toast is pending');
+    expect(!first.json.notifications.some(n => n.title === 'A notice'), 'a notice is not, it waits in the bell');
+    expect(first.json.unreadNotices >= 1, 'and is counted for the bell');
+    expect(first.json.config.pollSeconds === 10 && first.json.config.toastSeconds === 10 && first.json.config.bannerSeconds === 10 && first.json.config.cooldownSeconds === 180, `the settings: ${JSON.stringify(first.json.config)}`);
+
+    const second = await call('GET', '/kempo/api/notifications/pending', 'member');
+    expect(JSON.stringify(second.json.notifications.map(n => n.id)) === JSON.stringify(first.json.notifications.map(n => n.id)), 'asking twice changes nothing');
+    expect(!first.json.notifications.some(n => n.title === 'For the other'), 'and never includes someone else\'s');
+    pass();
+  },
+
+  'delivered, shown, viewed and acknowledge change what is pending': async ({ pass }) => {
+    const toast = await send({ type: 'toast', title: 'Flow toast', userIds: [state.ids.member] });
+    const banner = await send({ type: 'banner', title: 'Flow banner', mustAcknowledge: true, cooldownSeconds: 3600, userIds: [state.ids.member] });
+    const titles = async () => (await call('GET', '/kempo/api/notifications/pending', 'member')).json.notifications.map(n => n.title);
+    expect((await titles()).includes('Flow toast') && (await titles()).includes('Flow banner'), 'both are pending');
+
+    const delivered = await call('POST', '/kempo/api/notifications/delivered', 'member', { ids: [toast.id, banner.id, 'no-such-id'] });
+    expect(delivered.status === 200 && delivered.json.updated === 2, `delivered: ${delivered.text}`);
+    expect((await call('POST', '/kempo/api/notifications/delivered', 'member', { ids: 'nope' })).status === 400, 'ids must be an array');
+    expect((await titles()).includes('Flow toast'), 'delivered alone does not stop a toast: it has not been viewed');
+
+    expect((await call('POST', `/kempo/api/notifications/${banner.id}/shown`, 'member', {})).status === 200, 'shown');
+    expect(!(await titles()).includes('Flow banner'), 'a banner that must be acknowledged waits out its cooldown after being shown');
+
+    expect((await call('POST', `/kempo/api/notifications/${toast.id}/viewed`, 'member', {})).status === 200, 'viewed');
+    expect(!(await titles()).includes('Flow toast'), 'a viewed toast is no longer pending');
+
+    expect((await call('POST', `/kempo/api/notifications/${banner.id}/acknowledge`, 'member', {})).status === 200, 'acknowledged');
+    const history = (await call('GET', '/kempo/api/notifications?status=acknowledged', 'member')).json.notifications;
+    expect(history.some(n => n.id === banner.id), 'acknowledged shows in the history');
+    pass();
+  },
+
+  'a guest has notifications of its own, and cannot reach a user\'s or another guest\'s': async ({ pass }) => {
+    const [, one] = await createGuest();
+    const [, two] = await createGuest();
+    state.guests.push(one.token, two.token);
+    const as = token => `guest:${token}`;
+
+    const [error, made] = await createNotification({ owner: OWNER, type: 'toast', title: 'For a guest', guestSessionIds: [one.token] });
+    expect(!error && made.guestSessionIds.length === 1, `sent: ${JSON.stringify(error)}`);
+    const id = made.notification.id;
+
+    const mine = await call('GET', '/kempo/api/notifications', as(one.token));
+    expect(mine.status === 200 && mine.json.notifications.some(n => n.title === 'For a guest'), 'the guest lists it');
+    expect((await call('GET', '/kempo/api/notifications', as(two.token))).json.notifications.length === 0, 'another guest has nothing');
+    expect((await call('GET', '/kempo/api/notifications/pending', as(one.token))).json.notifications.some(n => n.id === id), 'it is pending for the guest');
+    expect((await call('GET', '/kempo/api/notifications/pending', as(two.token))).json.notifications.length === 0, 'and not for the other');
+
+    for(const [method, suffix] of [['POST', '/viewed'], ['POST', '/acknowledge'], ['POST', '/shown'], ['DELETE', '']]){
+      expect((await call(method, `/kempo/api/notifications/${id}${suffix}`, as(two.token), method === 'POST' ? {} : undefined)).status === 404, `another guest cannot ${method} ${suffix}`);
+      expect((await call(method, `/kempo/api/notifications/${state.notifications.member.id}${suffix}`, as(one.token), method === 'POST' ? {} : undefined)).status === 404, `a guest cannot reach a user's notification with ${method} ${suffix}`);
+    }
+
+    expect((await call('POST', `/kempo/api/notifications/${id}/viewed`, as(one.token), {})).status === 200, 'the guest views it');
+    expect(!(await call('GET', '/kempo/api/notifications/pending', as(one.token))).json.notifications.some(n => n.id === id), 'no longer pending');
+    expect((await call('DELETE', `/kempo/api/notifications/${id}`, as(one.token))).status === 200, 'the guest dismisses it');
+    expect((await call('GET', '/kempo/api/notifications?status=dismissed', as(one.token))).json.notifications.some(n => n.id === id), 'and finds it in its history');
+
+    const both = await call('GET', '/kempo/api/notifications', 'member');
+    const withLogin = await fetch(`http://127.0.0.1:${state.port}/kempo/api/notifications`, { headers: { cookie: `session_token=${state.cookies.member}; kempo_guest=${one.token}` } }).then(response => response.json());
+    expect(JSON.stringify(withLogin.notifications.map(n => n.id)) === JSON.stringify(both.json.notifications.map(n => n.id)), 'with both cookies a login wins, so a signed-in person never sees a guest\'s notifications');
+    pass();
+  },
+
   'the admin page is for administrators and the bell component is served': async ({ pass }) => {
     const get = async (urlPath, as) => {
       const headers = as ? { cookie: `session_token=${state.cookies[as]}` } : {};
@@ -260,7 +350,8 @@ const buildTests = () => ({
     expect(await get('/admin/notifications') === 302, 'anonymous is redirected');
     expect(await get('/admin/notifications', 'member') === 302, 'a member without admin access is redirected');
     expect(await get('/admin/notifications', 'admin') === 200, 'an administrator sees it');
-    expect(await get('/kempo/components/NotificationBell.js') === 200 && await get('/kempo/components/NotificationList.js') === 200, 'the components are served for any site to use');
+    expect(await get('/kempo/components/NotificationBell.js') === 200 && await get('/kempo/components/NotificationList.js') === 200 && await get('/kempo/components/NotificationHistory.js') === 200 && await get('/kempo/components/NotificationInline.js') === 200, 'the components are served for any site to use');
+    expect(await get('/kempo/notifications/client.js') === 200, 'and so is the client that shows toasts, banners and modals');
     expect(await get('/kempo/icons/notifications.svg') === 200 && await get('/kempo/icons/info.svg') === 200, 'and so are their icons');
     pass();
   },

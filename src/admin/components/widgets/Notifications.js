@@ -1,10 +1,10 @@
 import DashboardWidget from '/kempo/components/DashboardWidget.js';
 import { html } from '/kempo-ui/lit-all.min.js';
 import '/kempo/components/NotificationList.js';
-import { markAllNotificationsRead } from '/kempo/sdk.js';
+import { markAllNotificationsViewed } from '/kempo/sdk.js';
 
 /*
-  The signed-in user's unread notifications. The list loads itself, so this widget has nothing to fetch.
+  The signed-in user's unread notices. The list loads itself, so this widget has nothing to fetch.
 */
 export default class NotificationsWidget extends DashboardWidget {
   constructor(){
@@ -17,7 +17,7 @@ export default class NotificationsWidget extends DashboardWidget {
   */
 
   markAllRead = async () => {
-    await markAllNotificationsRead();
+    await markAllNotificationsViewed({ type: 'notice' });
     await this.querySelector('k-notification-list')?.refresh();
   };
 
@@ -27,7 +27,7 @@ export default class NotificationsWidget extends DashboardWidget {
 
   renderContent(){
     return html`
-      <k-notification-list compact unread-only page-size=${this.height * 3}></k-notification-list>
+      <k-notification-list type="notice" compact unread-only page-size=${this.height * 3}></k-notification-list>
     `;
   }
 }

@@ -191,8 +191,8 @@ Kempo provides these tables out of the box:
 | `setting` | Key-value settings with type, visibility, and ownership |
 | `realtimeMessage` | Messages on channels that persist, so a reconnecting client can replay what it missed |
 | `realtimeChannel` | How far each realtime channel has been pruned, to tell a client it missed messages |
-| `notification` | Notifications raised by core or extensions: title, message, level, actions, dedupe key |
-| `notificationRecipient` | One row per person a notification was sent to, with their own read, handled and dismissed state |
+| `notification` | Notifications raised by core or extensions: type, subtype, title, message, priority, must-acknowledge, actions, dedupe key, expiry |
+| `notificationRecipient` | One row per person a notification was sent to, with their own delivered, viewed, acknowledged, dismissed and last-shown times |
 | `guestSession` | A visitor who has not logged in, tracked by a cookie, and where it went when they logged in |
 | `notificationGuestRecipient` | The same as `notificationRecipient`, for a guest |
 | `dashboardWidget` | Widgets extensions add to the admin dashboard: element, module script, size limits, permission |
@@ -388,6 +388,10 @@ Two default groups are created:
 |---|---|---|---|---|
 | `site_name` | `Kempo Site` | string | yes | The name of the website |
 | `session_duration_days` | `7` | number | no | Session duration in days |
+| `notification_poll_seconds` | `10` | number | no | Seconds between a browser asking for new notifications (0 asks only on page load and focus) |
+| `notification_cooldown_seconds` | `180` | number | no | Wait before a notification that must be acknowledged is shown again |
+| `notification_toast_seconds` | `10` | number | no | How long a toast stays up before it counts as viewed |
+| `notification_banner_seconds` | `10` | number | no | How long a banner must be on screen before it counts as viewed |
 | `guest_session_days` | `30` | number | no | Days a guest's cookie lasts after the last visit |
 | `guest_idle_days` | `60` | number | no | Days an unused guest is kept before it is deleted (0 keeps them) |
 | `allow_registration` | `true` | boolean | yes | Allow new users to register |
@@ -411,7 +415,7 @@ A visitor who has not logged in is a guest: a session tracked by a `kempo_guest`
 
 ## Notifications
 
-Core and extensions can notify users with `createNotification`: to specific users, everyone holding a permission, or a group. Each person has their own read state and history, a notification can carry buttons that link somewhere or call an API as the signed-in user, and a `dedupeKey` keeps a repeating event to one notification. The admin has a bell with an unread count and a Notifications page; a public site can use `<k-notification-bell>`. Existing sites get the two tables when the server starts. See [docs/notifications.md](docs/notifications.md).
+Server code, core or an extension, raises a notification with `createNotification`, and the person's browser shows it on whatever page they land on next, even after a redirect or on another device, for signed-in users and for guests. A notification has a `type` that decides how it is shown (`toast`, `banner`, `notice` in the bell, a blocking `modal`, `inline` where a page places it, or a word of an extension's own that the extension's component handles), a `subtype` (`success`, `error`, any word), a `priority`, an optional `expiresAt`, and `mustAcknowledge`, which keeps it coming back after a cooldown until the person acknowledges it. Each person has their own state (pending, delivered, viewed, acknowledged, dismissed) with a timestamp for each, and a history that keeps what they dismissed. A small client loaded by the page template asks the server every `system:notification_poll_seconds` (and on page load and focus), and draws toasts, banners and modals; `<k-notification-bell>`, `<k-notification-list>`, `<k-notification-history>` (also at `/notifications/`) and `<k-notification-inline>` are page builder widgets and plain elements. A notification can carry buttons that link somewhere or call an API as the person, and a `dedupeKey` keeps a repeating event to one notification. Existing sites get the new columns when the server starts. See [docs/notifications.md](docs/notifications.md).
 
 ## Updates
 

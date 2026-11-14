@@ -1,0 +1,12 @@
+import t from"/kempo-ui/components/LightComponent.js";import{html as i,nothing as s}from"/kempo-ui/lit-all.min.js";import"/kempo-ui/components/Icon.js";import{subscribe as e,getSettings as r}from"/kempo/notifications/client.js";const n={success:"bg-success",warning:"bg-warning",error:"bg-danger"};export default class o extends t{static properties={subtype:{type:String,reflect:!0},items:{state:!0},errors:{state:!0}};#t=null;#i=new Map;#s=!1;#e=null;constructor(){super(),this.subtype="",this.items=[],this.errors={}}connectedCallback(){super.connectedCallback(),this.#e=new IntersectionObserver(([t])=>{this.#s=t.isIntersecting}),this.#e.observe(this),this.#t=e("inline",this.receive)}disconnectedCallback(){super.disconnectedCallback(),this.#t?.(),this.#e?.disconnect(),this.#i.forEach(t=>t()),this.#i.clear()}receive=(t,i)=>{if(this.subtype&&t.subtype!==this.subtype)return;if(this.items.some(i=>i.notification.id===t.id))return;this.items=[...this.items,{notification:t,controls:i}],t.mustAcknowledge&&i.shown();let s=0;const e=setInterval(()=>{!document.hidden&&this.#s&&(s+=1,s>=r().bannerSeconds&&(clearInterval(e),i.viewed()))},1e3);this.#i.set(t.id,()=>clearInterval(e))};discard=t=>{this.#i.get(t)?.(),this.#i.delete(t),this.items=this.items.filter(i=>i.notification.id!==t)};dismiss=({notification:t,controls:i})=>{i.dismiss(),this.discard(t.id)};act=async({notification:t,controls:i},s)=>{this.errors={...this.errors,[t.id]:""};await i.run(s,i=>{this.errors={...this.errors,[t.id]:i}})&&this.discard(t.id)};renderItem=t=>{const{notification:e}=t,r=e.actions?.length?e.actions:e.mustAcknowledge?[{label:"Okay"}]:[];return i`
+      <div class="d-f p r mb ${n[e.subtype]??"bg-primary"}" role="status" data-notification-id=${e.id}>
+        <div class="flex">
+          <strong>${e.title}</strong>
+          ${e.message?i`<div>${e.message}</div>`:s}
+          ${r.length?i`<div class="mth">${r.map(s=>i`<button class="mr" @click=${()=>this.act(t,s)}>${s.label}</button>`)}</div>`:s}
+          ${this.errors[e.id]?i`<div role="alert">${this.errors[e.id]}</div>`:s}
+        </div>
+        <button class="no-btn" title="Dismiss" aria-label="Dismiss" @click=${()=>this.dismiss(t)}><k-icon name="close"></k-icon></button>
+      </div>
+    `};renderLightDom(){return i`${this.items.map(this.renderItem)}`}}customElements.define("k-notification-inline",o);
+//# sourceMappingURL=c:\Users\dusti\dev\kempo\dist\kempo\components\NotificationInline.js.map

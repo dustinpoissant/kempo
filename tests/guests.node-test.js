@@ -238,20 +238,20 @@ const buildTests = () => ({
     const both = await notify('both have it', [state.ids.alice]);
     const alreadyAlice = await notify('alice already dismissed it', [state.ids.alice]);
 
-    await sendToGuest(onlyGuest.id, token, { readAt: early });
-    await sendToGuest(both.id, token, { readAt: early, handledAt: early, dismissedAt: null });
-    await sendToGuest(alreadyAlice.id, token, { readAt: null, handledAt: null, dismissedAt: null });
-    await db.update(notificationRecipient).set({ readAt: late, handledAt: late }).where(eq(notificationRecipient.notificationId, both.id));
+    await sendToGuest(onlyGuest.id, token, { viewedAt: early });
+    await sendToGuest(both.id, token, { viewedAt: early, acknowledgedAt: early, dismissedAt: null });
+    await sendToGuest(alreadyAlice.id, token, { viewedAt: null, acknowledgedAt: null, dismissedAt: null });
+    await db.update(notificationRecipient).set({ viewedAt: late, acknowledgedAt: late }).where(eq(notificationRecipient.notificationId, both.id));
     await db.update(notificationRecipient).set({ dismissedAt: late }).where(eq(notificationRecipient.notificationId, alreadyAlice.id));
 
     const [error, result] = await mergeGuest({ guestSessionId: token, userId: state.ids.alice });
     expect(error === null && result.merged === true && result.notifications === 3, `merge: ${JSON.stringify(error ?? result)}`);
 
     const moved = await held(state.ids.alice, onlyGuest.id);
-    expect(moved && moved.readAt.getTime() === early.getTime(), 'a notification only the guest had is the user\'s now');
+    expect(moved && moved.viewedAt.getTime() === early.getTime(), 'a notification only the guest had is the user\'s now');
     const combined = await held(state.ids.alice, both.id);
-    expect(combined.readAt.getTime() === early.getTime(), 'the earliest read is kept');
-    expect(combined.handledAt.getTime() === late.getTime(), 'the latest handled is kept');
+    expect(combined.viewedAt.getTime() === early.getTime(), 'the earliest read is kept');
+    expect(combined.acknowledgedAt.getTime() === late.getTime(), 'the latest handled is kept');
     expect((await held(state.ids.alice, alreadyAlice.id)).dismissedAt.getTime() === late.getTime(), 'a dismissal is not undone by the guest not having dismissed it');
     expect((await db.select().from(notificationGuestRecipient).where(eq(notificationGuestRecipient.guestSessionId, token))).length === 0, 'nothing is left on the guest');
 

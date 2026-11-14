@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.15.0] - 2026-11-13
+
+Requires a restart once: the new columns are added and the old state carried over when the server starts. A public site loads `/kempo/notifications/client.js` from its template to show toasts, banners and modals (see docs/notifications.md).
+
+### Added
+
+- **Notification types, shown on the next page.** A notification has a `type`: `notice` (the default, in the bell), `toast`, `banner`, `modal` (blocking, with no way out but its buttons) and `inline` (where a page places `<k-notification-inline>`), or any word of an extension's own, which core ignores and the extension's own component handles through `subscribe(type, handler)` from `/kempo/notifications/client.js`. A `subtype` (`success`, `error`, `warning`, `info` colour kempo's own, any other word is free), a `priority` (a modal first, then higher priority), `mustAcknowledge` with a `cooldownSeconds`, `displaySeconds` for a toast and an optional `expiresAt` are new options of `createNotification`, and `level` remains as the older name of `subtype`.
+- **The notification client** (`/kempo/notifications/client.js`) asks the server for what to show the moment a page loads and then every `system:notification_poll_seconds` (default 10, at least 1), and again when the window is focused or the tab becomes visible. It draws toasts (kempo-ui's `Toast`; viewed when they time out, so leaving early shows them again on the next page), banners at the top of the page content (one at a time, viewed after the banner time) and modals, reports what happened, and hands every other type to its subscribers. The admin and the public template load it. A public template that was never edited gets the line with the update, like any starter file; one that was edited needs it added by hand.
+- **Per-person state as timestamps**: `deliveredAt`, `viewedAt`, `acknowledgedAt`, `dismissedAt` and `lastShownAt`, with a status (`pending`, `delivered`, `viewed`, `acknowledged`, `dismissed`) worked out from them, and `expired` by the clock. They replace `readAt` and `handledAt`; kempo carries the old state over when the server starts (`4.15.0-notification-state-timestamps`), and `markRead`, `markAllRead` and `markHandled` remain as the older names of `markViewed`, `markAllViewed` and `markAcknowledged`.
+- **Guests can be notified.** `createNotification` takes `guestSessionIds`, a guest's notifications have the same state and functions as a user's (`getNotifications`, `getPendingNotifications` and the rest take `{ userId }` or `{ guestSessionId }`), and the notification routes work with the login cookie or the guest cookie (`resolveRecipient`). They move to the account at login with their state.
+- **Routes**: `GET /kempo/api/notifications/pending`, `POST .../delivered`, `POST .../:id/shown`, `POST .../:id/viewed` and `POST .../:id/acknowledge`; the list takes `status` and `type`, and the count takes `type`. `.../:id/read` and `.../:id/handled` are replaced by `viewed` and `acknowledge`. The browser SDK's `markNotificationRead`, `markNotificationHandled` and `markAllNotificationsRead` are now `markNotificationViewed`, `markNotificationAcknowledged` and `markAllNotificationsViewed`.
+- **History.** Dismissing now hides a notification but keeps it, and `<k-notification-history>`, the `/notifications/` page (open to guests, since `/account` needs a login) and a page builder widget show everything a person was sent, with a choice of kind and status, until the retention removes it.
+- **`<k-notification-inline>`** and the **Notification history** and **Notification messages** page builder widgets; the Notification list widget takes a `type`.
+- A **Notification bell** menu item (`kempo:notifications`) is offered on every site's Menus page next to the spacer, for a site whose navigation file was edited and so does not get the bell with an update.
+- Settings: `system:notification_poll_seconds` (10), `system:notification_cooldown_seconds` (180), `system:notification_toast_seconds` (10), `system:notification_banner_seconds` (10).
+
+### Changed
+
+- **A starter file the admin only saved, or that has Windows line endings, is still the default.** The fingerprint kempo keeps of each starter file (`.kempo/shipped.json`) used to be of the exact bytes, so a template or fragment that the admin had saved without changing anything (it stamps `updated` into the frontmatter) counted as edited and never got an update again. It now ignores line endings, whitespace at the ends, the order and indentation of the frontmatter, and the frontmatter's `updated`, `created`, `author` and `name`; anything else is still an edit and is kept. Records made by older versions still work. This is what delivers the notification client's script tag to a template nobody changed. See docs/updates.md.
+- `<k-notification-bell>` counts the notices a person has not viewed, for guests as well as signed-in people, takes its count from the client and has no timer of its own (its `interval` attribute is gone), and opening it marks the notices on screen viewed one second later. The "Notifications" admin page shows the history.
+- `notification:created` carries `guestSessionIds`.
+
 ## [4.14.0] - 2026-11-13
 
 ### Changed

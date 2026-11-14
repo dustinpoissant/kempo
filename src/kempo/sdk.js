@@ -428,20 +428,35 @@ export const getDashboardWidgets = async () =>
   Notifications
 */
 
-export const getNotifications = async ({ unreadOnly = false, limit, offset } = {}) =>
-  get(`${API_BASE}/notifications`, { unreadOnly, limit, offset });
+/*
+  The signed-in person's notifications, or a guest's: the routes use whichever of the login and guest cookies the browser
+  has. `status` is active (the default), all, pending, delivered, viewed, acknowledged, dismissed or expired.
+  Reads are shared and kept for a few seconds like every read here, so the notification client polls with its
+  own fetch instead (see notifications/client.js).
+*/
+export const getNotifications = async ({ type, status, unreadOnly = false, limit, offset } = {}) =>
+  get(`${API_BASE}/notifications`, { type, status, unreadOnly, limit, offset });
 
-export const getUnreadNotificationCount = async () =>
-  get(`${API_BASE}/notifications/count`);
+export const getPendingNotifications = async () =>
+  get(`${API_BASE}/notifications/pending`);
 
-export const markNotificationRead = async (id) =>
-  post(`${API_BASE}/notifications/${encodeURIComponent(id)}/read`, {});
+export const getUnreadNotificationCount = async ({ type } = {}) =>
+  get(`${API_BASE}/notifications/count`, { type });
 
-export const markNotificationHandled = async (id) =>
-  post(`${API_BASE}/notifications/${encodeURIComponent(id)}/handled`, {});
+export const markNotificationsDelivered = async (ids) =>
+  post(`${API_BASE}/notifications/delivered`, { ids });
 
-export const markAllNotificationsRead = async () =>
-  post(`${API_BASE}/notifications/read-all`, {});
+export const markNotificationShown = async (id) =>
+  post(`${API_BASE}/notifications/${encodeURIComponent(id)}/shown`, {});
+
+export const markNotificationViewed = async (id) =>
+  post(`${API_BASE}/notifications/${encodeURIComponent(id)}/viewed`, {});
+
+export const markNotificationAcknowledged = async (id) =>
+  post(`${API_BASE}/notifications/${encodeURIComponent(id)}/acknowledge`, {});
+
+export const markAllNotificationsViewed = async ({ type } = {}) =>
+  post(`${API_BASE}/notifications/read-all`, { type });
 
 export const dismissNotification = async (id) =>
   del(`${API_BASE}/notifications/${encodeURIComponent(id)}`);

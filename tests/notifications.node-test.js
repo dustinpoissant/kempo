@@ -169,7 +169,7 @@ const buildTests = () => ({
 
     const alice = await listFor(state.ids.alice);
     const item = alice.notifications.find(n => n.title === 'To alice and bob');
-    expect(item && item.message === 'body' && item.level === 'warning' && item.readAt === null && item.handledAt === null, `alice should have it unread, got ${JSON.stringify(item)}`);
+    expect(item && item.message === 'body' && item.level === 'warning' && item.viewedAt === null && item.acknowledgedAt === null, `alice should have it unread, got ${JSON.stringify(item)}`);
     expect((await titlesFor(state.ids.carol)).length === 0, 'carol was not a recipient');
     pass();
   },
@@ -238,16 +238,16 @@ const buildTests = () => ({
     // carol was never a recipient: not found, and nothing changed for the real recipients
     const [foreignError] = await markRead({ userId: state.ids.carol, notificationId: saved.id });
     expect(foreignError?.code === 404, `a non-recipient should get a 404, got ${JSON.stringify(foreignError)}`);
-    expect((await listFor(state.ids.alice)).notifications.find(n => n.id === saved.id).readAt === null, 'a foreign attempt must not read it for alice');
+    expect((await listFor(state.ids.alice)).notifications.find(n => n.id === saved.id).viewedAt === null, 'a foreign attempt must not read it for alice');
 
     expect(!(await markRead({ userId: state.ids.alice, notificationId: saved.id }))[0], 'alice could not mark it read');
-    const readAt = (await listFor(state.ids.alice)).notifications.find(n => n.id === saved.id).readAt;
-    expect(readAt instanceof Date, 'alice should now have a readAt');
-    expect((await listFor(state.ids.bob)).notifications.find(n => n.id === saved.id).readAt === null, 'bob still has it unread');
+    const viewedAt = (await listFor(state.ids.alice)).notifications.find(n => n.id === saved.id).viewedAt;
+    expect(viewedAt instanceof Date, 'alice should now have a viewedAt');
+    expect((await listFor(state.ids.bob)).notifications.find(n => n.id === saved.id).viewedAt === null, 'bob still has it unread');
 
     await wait(15);
     await markRead({ userId: state.ids.alice, notificationId: saved.id });
-    expect((await listFor(state.ids.alice)).notifications.find(n => n.id === saved.id).readAt.getTime() === readAt.getTime(), 'reading twice keeps the first read time');
+    expect((await listFor(state.ids.alice)).notifications.find(n => n.id === saved.id).viewedAt.getTime() === viewedAt.getTime(), 'reading twice keeps the first read time');
 
     expect((await markRead({ userId: state.ids.alice, notificationId: 'no-such-id' }))[0].code === 404, 'an unknown id is a 404');
     expect((await markRead({ userId: state.ids.alice }))[0].code === 400, 'a missing id is a 400');
@@ -264,7 +264,7 @@ const buildTests = () => ({
     const all = await listFor(state.ids.carol);
     expect(all.total === all.notifications.length && all.total >= 3 && all.unread === 2, `expected 2 unread, got ${all.unread} of ${all.total}`);
     const unread = await listFor(state.ids.carol, { unreadOnly: true });
-    expect(unread.total === 2 && unread.unread === 2 && unread.notifications.every(n => n.readAt === null), 'the unread view lists only unread ones');
+    expect(unread.total === 2 && unread.unread === 2 && unread.notifications.every(n => n.viewedAt === null), 'the unread view lists only unread ones');
 
     const page = await listFor(state.ids.carol, { limit: 1, offset: 1 });
     expect(page.notifications.length === 1 && page.total === all.total && page.limit === 1 && page.offset === 1, 'paging keeps the overall total');
@@ -296,12 +296,12 @@ const buildTests = () => ({
 
     expect(!(await markHandled({ userId: state.ids.alice, notificationId: saved.id }))[0], 'alice could not mark it handled');
     const alice = (await listFor(state.ids.alice)).notifications.find(n => n.id === saved.id);
-    expect(alice.handledAt instanceof Date && alice.readAt instanceof Date, 'handled implies read');
-    expect((await listFor(state.ids.bob)).notifications.find(n => n.id === saved.id).handledAt === null, 'bob has not handled it');
+    expect(alice.acknowledgedAt instanceof Date && alice.viewedAt instanceof Date, 'handled implies read');
+    expect((await listFor(state.ids.bob)).notifications.find(n => n.id === saved.id).acknowledgedAt === null, 'bob has not handled it');
 
     const [error, result] = await markHandled({ owner: OWNER, dedupeKey: 'handle-me' });
     expect(error === null && result.updated === 2, `resolving by key updates every recipient, got ${JSON.stringify([error, result])}`);
-    expect((await listFor(state.ids.bob)).notifications.find(n => n.id === saved.id).handledAt instanceof Date, 'bob is now handled too');
+    expect((await listFor(state.ids.bob)).notifications.find(n => n.id === saved.id).acknowledgedAt instanceof Date, 'bob is now handled too');
     expect((await markHandled({ owner: OWNER, dedupeKey: 'no-such-key' }))[1].updated === 0, 'resolving a key nobody holds is not an error');
     pass();
   },
@@ -336,8 +336,8 @@ const buildTests = () => ({
     await send({ ...input, message: 'it failed once more' });
     const alice = await find(state.ids.alice);
     const bob = await find(state.ids.bob);
-    expect(alice.readAt === null && alice.handledAt === null && alice.message === 'it failed once more', 'a read, handled one comes back unread and not handled');
-    expect(bob && bob.readAt === null, 'a dismissed one comes back too, because it is a new occurrence');
+    expect(alice.viewedAt === null && alice.acknowledgedAt === null && alice.message === 'it failed once more', 'a read, handled one comes back unread and not handled');
+    expect(bob && bob.viewedAt === null, 'a dismissed one comes back too, because it is a new occurrence');
 
     // while it is unread, a repeat just updates it
     const again = await send({ ...input, message: 'and again' });
@@ -350,7 +350,7 @@ const buildTests = () => ({
     const { notification: saved } = await send({ title: 'Widening', userIds: [state.ids.alice], dedupeKey: 'widen' });
     await markRead({ userId: state.ids.alice, notificationId: saved.id });
     await send({ title: 'Widening', userIds: [state.ids.carol], dedupeKey: 'widen' });
-    expect((await listFor(state.ids.alice)).notifications.find(n => n.id === saved.id).readAt instanceof Date, 'alice was not a recipient the second time, so her state is untouched');
+    expect((await listFor(state.ids.alice)).notifications.find(n => n.id === saved.id).viewedAt instanceof Date, 'alice was not a recipient the second time, so her state is untouched');
     expect((await titlesFor(state.ids.carol)).includes('Widening'), 'carol is added');
     pass();
   },

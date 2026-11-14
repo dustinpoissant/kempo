@@ -32,7 +32,7 @@ Some things should work before a visitor has an account: a notification after a 
 `server/utils/guests/*`, `server/db/schema.js`, `middleware/kempo.js` (the cookie), `src/kempo/api/auth/login/email/POST.js` and `src/kempo/api/auth/register/email/POST.js` (the merge), `src/kempo/api/guest/GET.js`, `src/kempo/api/admin/guests/**`, `src/admin/accounts/guests/index.page.html`.
 
 ### Tables
-`guestSession(token pk, createdAt, lastSeenAt, mergedIntoUserId → user set null, mergedAt)`; `notificationGuestRecipient(notificationId, guestSessionId, readAt, handledAt, dismissedAt)` with a composite primary key and cascading deletes from both parents.
+`guestSession(token pk, createdAt, lastSeenAt, mergedIntoUserId → user set null, mergedAt)`; `notificationGuestRecipient(notificationId, guestSessionId, deliveredAt, viewedAt, acknowledgedAt, dismissedAt, lastShownAt)` with a composite primary key and cascading deletes from both parents.
 
 ### Server SDK
 `createGuest`, `getGuest`, `mergeGuest`, `mergeGuestIntoLogin`, `deleteGuest`, `listGuests`, `pruneGuests`, `planHook`, `triggerPlannedHook`, `GUEST_COOKIE`. See [docs/guests.md](../../docs/guests.md).

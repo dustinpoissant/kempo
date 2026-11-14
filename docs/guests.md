@@ -108,7 +108,7 @@ Each case covers what happens when a guest logs in to a **new** account (one jus
 
 ## What kempo moves itself
 
-Notifications. A notification sent to a guest is a row in `notificationGuestRecipient`, the guest's twin of `notificationRecipient`. When the guest logs in it becomes the user's. A notification the user already had is not duplicated: the earliest read is kept, and the latest handled and dismissed.
+Notifications. A notification sent to a guest (`guestSessionIds` of `createNotification`) is a row in `notificationGuestRecipient`, the guest's twin of `notificationRecipient`, with the same state. When the guest logs in it becomes the user's, state and all, so a toast the guest was shown stays shown. A notification the user already had is not duplicated: the earliest delivered and viewed is kept, and the latest acknowledged, dismissed and shown. See [Notifications](notifications.md).
 
 ## Server SDK
 

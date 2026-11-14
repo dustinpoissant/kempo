@@ -10,14 +10,14 @@ import { basisOf, clearState, paths, readState, requestSwitch } from './siteLayo
 import { applyStarterFiles } from './starterFiles.js';
 import { PACKAGE } from './helpers.js';
 import triggerHook from '../hooks/triggerHook.js';
-import markHandled from '../notifications/markHandled.js';
+import markAcknowledged from '../notifications/markAcknowledged.js';
 
 let switching = false;
 
 /* The notifications about extension updates are done with once the owner has acted on them. */
 const resolveExtensionNotices = async () => {
   const rows = await db.select({ id: notification.id }).from(notification).where(and(eq(notification.owner, PACKAGE), like(notification.dedupeKey, 'extension-updates:%')));
-  for(const { id } of rows) await markHandled({ notificationId: id });
+  for(const { id } of rows) await markAcknowledged({ notificationId: id });
 };
 
 /*
@@ -86,7 +86,7 @@ export default async ({ confirm = {}, siteRoot = process.env.KEMPO_SITE_ROOT, cw
     clearState(siteRoot, 'staged');
 
     if(staged.kempoUpdate){
-      await markHandled({ owner: PACKAGE, dedupeKey: `update:${staged.version}` });
+      await markAcknowledged({ owner: PACKAGE, dedupeKey: `update:${staged.version}` });
       await triggerHook('kempo:updated', { oldVersion: RUNNING_VERSION, newVersion: staged.version, packages: staged.packages });
     }
     if(plan.extensions.length) await resolveExtensionNotices();

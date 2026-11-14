@@ -1,14 +1,17 @@
-import getSession from '../../../../../server/utils/auth/getSession.js';
+import resolveRecipient from '../../../../../server/utils/notifications/resolveRecipient.js';
 import getUnreadCount from '../../../../../server/utils/notifications/getUnreadCount.js';
+import { GUEST_COOKIE } from '../../../../../server/utils/guests/constants.js';
 
 export default async (request, response) => {
-  const [sessionError, sessionData] = await getSession({ token: request.cookies.session_token });
+  const [recipientError, recipient] = await resolveRecipient({ sessionToken: request.cookies?.session_token, guestToken: request.cookies?.[GUEST_COOKIE] });
 
-  if(sessionError){
-    return response.status(sessionError.code === 500 ? 500 : 401).json({ error: sessionError.code === 500 ? sessionError.msg : 'Authentication required' });
+  if(recipientError){
+    return response.status(recipientError.code).json({ error: recipientError.code === 500 ? recipientError.msg : 'Authentication required' });
   }
 
-  const [error, result] = await getUnreadCount({ userId: sessionData.user.id });
+  response.setHeader('Cache-Control', 'private, no-store');
+
+  const [error, result] = await getUnreadCount({ ...recipient, type: request.query.type });
 
   if(error){
     return response.status(error.code).json({ error: error.msg });

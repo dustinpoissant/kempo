@@ -9,6 +9,7 @@ const ID = /^[\w-]+$/;
 /*
   What kempo itself offers, so it is there on every site and needs no extension. The spacer takes up
   the space left in a menu that is laid out in a row, which pushes the items after it to the far side.
+  The bell shows a person their notices, signed in or a guest, and links to their notification history.
 */
 const BUILT_IN = [{
   key: 'kempo:spacer',
@@ -18,6 +19,14 @@ const BUILT_IN = [{
   description: 'A flexible gap that pushes the items after it to the far side of the menu, such as the account link to the right. For a menu laid out in a row.',
   icon: '',
   markup: '<div class="flex"></div>'
+}, {
+  key: 'kempo:notifications',
+  extension: 'kempo',
+  id: 'notifications',
+  label: 'Notification bell',
+  description: 'A bell with the number of notices the person has not viewed, which opens them. It links to their notification history at /notifications/.',
+  icon: 'notifications',
+  markup: '<k-notification-bell class="d-b" page-href="/notifications/" open-direction="down left"></k-notification-bell>\n<script type="module" src="/kempo/components/NotificationBell.js"></script>'
 }];
 
 /*

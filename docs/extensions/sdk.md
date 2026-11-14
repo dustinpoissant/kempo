@@ -1260,7 +1260,7 @@ const [error, { menus, locations }] = await listMenus({ rootDir: './app-public' 
 
 ### Items extensions offer
 
-`findNavItems({ extensionDirs })` returns `[null, items]`: kempo's own items (`kempo:spacer`, a flexible gap) and the items enabled extensions offer through `*.menu-item.html` files, each `{ key, extension, id, label, description, icon, markup }` with `key` being `<extension>:<id>`. `listMenus` returns the same, without `markup`, as `navItems`, and marks each menu item `navItem` and `available`.
+`findNavItems({ extensionDirs })` returns `[null, items]`: kempo's own items (`kempo:spacer`, a flexible gap, and `kempo:notifications`, the notification bell) and the items enabled extensions offer through `*.menu-item.html` files, each `{ key, extension, id, label, description, icon, markup }` with `key` being `<extension>:<id>`. `listMenus` returns the same, without `markup`, as `navItems`, and marks each menu item `navItem` and `available`.
 
 ### Menus
 
@@ -1752,50 +1752,64 @@ export default async (request, response) => {
 
 ## Notifications
 
-Per-user notifications with read and handled state, history, dedupe and action buttons. See [Notifications](../notifications.md) for the concepts, the action rules and the HTTP API. All return `[error, result]`. Needs the `notification` and `notificationRecipient` tables (`npx drizzle-kit push` on an existing site).
+Notifications of any type (toast, banner, notice, modal, inline, or your own) for signed-in people and guests, each with their own state, a history, dedupe and action buttons. See [Notifications](../notifications.md) for the concepts, the types, the action rules and the HTTP API. All return `[error, result]`. Needs the `notification`, `notificationRecipient` and `notificationGuestRecipient` tables, which kempo adds when the server starts. Anything that acts for one person takes `{ userId }` or `{ guestSessionId }`.
 
-### `createNotification({ owner, title, message, level, actions, dedupeKey, expiresAt, userIds, permission, group })`
+### `createNotification({ owner, title, message, type, subtype, level, priority, mustAcknowledge, cooldownSeconds, displaySeconds, actions, dedupeKey, expiresAt, userIds, guestSessionIds, permission, group })`
 
-Sends a notification to the union of `userIds`, everyone holding `permission` (through groups, and all Administrators) and the members of `group`. At least one target is required; targets that resolve to nobody return `[null, { notification: null, recipientIds: [], refreshed: false }]`. Returns `[null, { notification, recipientIds, refreshed }]`. Errors: `400` for invalid input, including an action whose `href` or `api.url` is not a path on this site.
+Sends a notification to the union of `userIds`, `guestSessionIds` (guests that exist and have not logged in), everyone holding `permission` (through groups, and all Administrators) and the members of `group`. At least one target is required; targets that resolve to nobody return `[null, { notification: null, recipientIds: [], guestSessionIds: [], refreshed: false }]`. Returns `[null, { notification, recipientIds, guestSessionIds, refreshed }]`. Errors: `400` for invalid input, including a `type` or `subtype` that is not a short word, a `priority` that is not a whole number, and an action whose `href` or `api.url` is not a path on this site.
 
-A `dedupeKey` refreshes the existing `(owner, dedupeKey)` notification in place and re-opens it (unread, not handled, not dismissed) for the recipients of the call.
+`type` is `notice` by default; `toast`, `banner`, `modal` and `inline` are drawn by kempo's client, and any other word is your own for your own component to handle. `subtype` is any word (`level` is the older name). A `modal` must always be acknowledged. A `dedupeKey` refreshes the existing `(owner, dedupeKey)` notification in place and re-opens it (not delivered, viewed, acknowledged or dismissed) for the recipients of the call.
 
 ```javascript
 await createNotification({
   owner: 'my-ext',
+  type: 'banner',
+  subtype: 'error',
   title: 'Thumbnail failed: cover.png',
-  level: 'error',
   permission: 'my-ext:thumbnails:manage',
   dedupeKey: 'thumb:42',
+  mustAcknowledge: true,
   actions: [{ label: 'Try again', api: { method: 'POST', url: '/kempo/api/my-ext/retry', body: { id: 42 } } }]
 });
 ```
 
-An API action is only fetched by the browser, as the logged-in user; your route does its own permission checks.
+An API action is only fetched by the browser, as the person; your route does its own permission checks.
 
-### `getNotifications({ userId, unreadOnly, limit, offset })`
+### `getNotifications({ userId, guestSessionId, type, status, unreadOnly, limit, offset })`
 
-One person's notifications, newest first. Returns `[null, { notifications, total, unread, limit, offset }]`; `limit` is capped at 100. Dismissed and expired ones are left out.
+One person's notifications, highest priority first and then newest. `status` is `active` (the default: not dismissed and not expired), `all` (a history), or `pending`, `delivered`, `viewed`, `acknowledged`, `dismissed` or `expired`. Returns `[null, { notifications, total, unread, limit, offset }]`; each notification has `type`, `subtype`, `priority`, `status`, `expired` and the timestamps `deliveredAt`, `viewedAt`, `acknowledgedAt`, `dismissedAt` and `lastShownAt`. `unread` counts the person's unviewed notifications of that `type`. `limit` is capped at 100.
 
-### `getUnreadCount({ userId })`
+### `getPendingNotifications({ userId, guestSessionId })`
 
-Returns `[null, { count }]`.
+What a browser should show now: everything that is not a notice, not dismissed, acknowledged or expired, that has not been viewed or (if it must be acknowledged) is past its cooldown. Returns `[null, { notifications, config, unreadNotices }]`. A read: it changes nothing.
 
-### `markRead({ userId, notificationId })` / `markAllRead({ userId })`
+### `getUnreadCount({ userId, guestSessionId, type })`
 
-Mark one (404 if the person is not a recipient) or all of a person's notifications read.
+Returns `[null, { count }]` of the person's unviewed notifications, optionally of one `type`.
 
-### `markHandled({ userId, notificationId })` / `markHandled({ owner, dedupeKey })`
+### `markDelivered({ userId, guestSessionId, notificationIds })` / `markShown({ ..., notificationId })`
 
-Marks the action done and the notification read, for one person or, with `owner` and `dedupeKey` and no `userId`, for every recipient. Use it when you resolve the underlying problem yourself.
+A browser fetched these, or one was put in front of the person (which starts its cooldown). Both keep the first delivery time.
 
-### `deleteNotification({ notificationId, userId })` / `deleteNotification({ notificationId, everyone: true })`
+### `markViewed({ userId, guestSessionId, notificationId })` / `markAllViewed({ ..., type })`
 
-Dismiss for one person, or delete for everyone.
+Mark one (404 if the person is not a recipient) or all of a person's notifications, or of one `type`, viewed. They keep the first time. `markRead` and `markAllRead` are the older names.
+
+### `markAcknowledged({ userId, guestSessionId, notificationId })` / `markAcknowledged({ owner, dedupeKey })`
+
+Marks the action done, which also views and delivers it, for one person or, with `owner` and `dedupeKey` and no person, for every recipient, guests included. Use it when you resolve the underlying problem yourself. `markHandled` is the older name.
+
+### `deleteNotification({ notificationId, userId, guestSessionId })` / `deleteNotification({ notificationId, everyone: true })`
+
+Dismiss for one person (it stays in their history), or delete for everyone.
 
 ### `pruneNotifications({ now, retentionDays })`
 
 Deletes expired notifications and those last raised before the retention (`system:notification_retention_days`, default 90, 0 keeps forever). Also runs lazily, at most hourly, when a notification is created.
+
+### `getNotificationConfig()` / `resolveRecipient({ sessionToken, guestToken })`
+
+The poll, cooldown, toast and banner seconds. And whose notifications a request is for: the login first, then the guest, else a 401. Resolves to `[null, { userId }]` or `[null, { guestSessionId }]`.
 
 ## Guest Sessions
 

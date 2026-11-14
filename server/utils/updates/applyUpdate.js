@@ -6,7 +6,7 @@ import getInstallInfo from './getInstallInfo.js';
 import { installedVersion, npmFailure, runNpm, targetsFor } from './npm.js';
 import { restartMode, scheduleRestart } from './restart.js';
 import triggerHook from '../hooks/triggerHook.js';
-import markHandled from '../notifications/markHandled.js';
+import markAcknowledged from '../notifications/markAcknowledged.js';
 
 let updating = false;
 let restarting = false;
@@ -63,7 +63,7 @@ export default async ({ version = 'latest', extensions = [], cwd = process.cwd()
     }
 
     if(manifest){
-      await markHandled({ owner: PACKAGE, dedupeKey: `update:${manifest.version}` });
+      await markAcknowledged({ owner: PACKAGE, dedupeKey: `update:${manifest.version}` });
       await triggerHook('kempo:updated', { oldVersion: RUNNING_VERSION, newVersion: manifest.version, packages: targets });
     }
     restarting = true;
