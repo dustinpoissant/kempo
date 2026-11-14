@@ -233,6 +233,18 @@ Each route works for a signed-in person or a guest, using the login cookie first
 
 The browser SDK (`/kempo/sdk.js`) wraps them as `getNotifications`, `getPendingNotifications`, `getUnreadNotificationCount`, `markNotificationsDelivered`, `markNotificationShown`, `markNotificationViewed`, `markNotificationAcknowledged`, `markAllNotificationsViewed` and `dismissNotification`. The SDK keeps a read for a few seconds, so the notification client polls with its own `fetch`.
 
+## What kempo raises itself
+
+Kempo core tells a person about what happens to their account, with `owner: 'kempo'`. They are raised by the same functions that do the work (`changePassword`, `resetPassword`, `updateUser`), so every way of doing it gets them, and a failure to raise one is logged and never fails the action.
+
+| When | What the person gets |
+|---|---|
+| Their password is changed (`changePassword`) | A **toast** "Password changed" that expires in ten minutes, so it is shown on whatever page they land on next and not days later, and a **notice** "Your password was changed" that stays in their history, with a "Reset my password" link in case it was not them. |
+| Their password is reset with the emailed link (`resetPassword`) | The same, worded "reset". A reset also signs them in, so it merges their guest like a login does. |
+| An administrator changes their email address (`updateUser` with a different `email`) | A **banner** (a warning) that says what it was and what it is now, and that must be acknowledged: it comes back until they press "Review my account". Changing it again refreshes the same banner. Changing the name or the verified flag raises nothing. |
+
+The change password and reset password forms no longer show a toast of their own: they ask the client to fetch right after the change (`refresh()`), so the notification's toast appears at once, and still appears after a redirect.
+
 ## Showing notifications
 
 ### The client

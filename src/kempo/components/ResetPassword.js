@@ -3,6 +3,7 @@ import { html } from '/kempo-ui/lit-all.min.js';
 import Toast from '/kempo-ui/components/Toast.js';
 import '/kempo-ui/components/Toggle.js';
 import { resetPassword } from '../sdk.js';
+import { refresh } from '../notifications/client.js';
 
 /*
   The reset password form, for the page the emailed link opens (/reset-password/<token>). It asks for a new password
@@ -45,7 +46,7 @@ export default class ResetPassword extends LightComponent {
       Toast.error(error.msg);
       return;
     }
-    Toast.success('Password reset successful! Redirecting...');
+    refresh();
     setTimeout(() => { window.location.href = this.redirect; }, 1500);
   };
 

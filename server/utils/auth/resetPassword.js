@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import db from '../../db/index.js';
 import { verificationToken, user, session } from '../../db/schema.js';
 import { eq, and, gt } from 'drizzle-orm';
+import { notifyPasswordChanged } from '../notifications/accountNotices.js';
 
 export default async ({ token, password, logoutAll = false }) => {
   if(!token){
@@ -48,7 +49,9 @@ export default async ({ token, password, logoutAll = false }) => {
         .where(eq(session.userId, tokenRecord.userId));
     }
 
-    return [null, { 
+    await notifyPasswordChanged({ userId: tokenRecord.userId, reset: true });
+
+    return [null, {
       success: true,
       userId: tokenRecord.userId
     }];

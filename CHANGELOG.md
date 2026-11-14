@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.16.0] - 2026-11-14
+
+### Added
+
+- **Kempo tells people about their own account.** Changing a password (`changePassword`) or resetting it with the emailed link (`resetPassword`) raises a toast that expires in ten minutes, so it shows on whatever page the person lands on next, and a notice that stays in their history with a link to reset the password if it was not them. An administrator changing someone's email address (`updateUser`) raises a banner, a warning that must be acknowledged, saying what it was and what it is now; changing it again refreshes the same banner. They are raised by the utilities, so every way of making the change gets them, and one that cannot be raised never fails the change. See docs/notifications.md.
+
+### Changed
+
+- The change password and reset password forms show the notification's toast, which survives a redirect, instead of a toast of their own.
+
+### Fixed
+
+- Resetting a password signs the person in, and now merges their guest session like a login or registration does, instead of leaving it behind.
+- `updateUser` answered a `500` instead of a `409` when the email address was already in use, because the database error is wrapped and its code was not found.
+
 ## [4.15.0] - 2026-11-13
 
 Requires a restart once: the new columns are added and the old state carried over when the server starts. A public site loads `/kempo/notifications/client.js` from its template to show toasts, banners and modals (see docs/notifications.md).

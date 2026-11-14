@@ -4,6 +4,7 @@ import Toast from '/kempo-ui/components/Toast.js';
 import '/kempo-ui/components/Dialog.js';
 import '/kempo-ui/components/Toggle.js';
 import { changePassword } from '../sdk.js';
+import { refresh } from '../notifications/client.js';
 
 /*
   The form that changes the signed-in person's password, in a dialog: the current password, the new one twice, and whether to
@@ -47,7 +48,7 @@ class ChangePasswordDialog extends LightComponent {
       return;
     }
     form.reset();
-    Toast.success('Password Updated');
+    refresh();
   };
 
   clearMismatch = event => {

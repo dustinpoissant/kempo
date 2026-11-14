@@ -3,6 +3,8 @@ import loginEmail from '../../../../../server/utils/auth/loginEmail.js';
 import db from '../../../../../server/db/index.js';
 import { user } from '../../../../../server/db/schema.js';
 import { eq } from 'drizzle-orm';
+import mergeGuestIntoLogin from '../../../../../server/utils/guests/mergeGuestIntoLogin.js';
+import { GUEST_COOKIE } from '../../../../../server/utils/guests/constants.js';
 
 export default async (request, response) => {
   try {
@@ -28,6 +30,15 @@ export default async (request, response) => {
       return response.status(loginError.code).json({ error: loginError.msg });
     }
     
+    const guestToken = request.cookies?.[GUEST_COOKIE];
+    const [mergeError] = await mergeGuestIntoLogin({ guestSessionId: guestToken, userId: loginResult.user.id, sessionToken: loginResult.sessionToken });
+    if(mergeError){
+      return response.status(mergeError.code).json({ error: mergeError.msg });
+    }
+    if(guestToken){
+      response.clearCookie(GUEST_COOKIE, { path: '/' });
+    }
+
     response.cookie('session_token', loginResult.sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
